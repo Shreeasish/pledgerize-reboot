@@ -19,10 +19,6 @@ for line in lines:
         temp_group = []
 
 #%%
-pledge_files_dict = {item[0]: item[1:] for item in pledge_files}
+# How do I add multiple items in a single dict comprehension
+pledge_files_dict = {item[0]: x.split(":")[0] for item in pledge_files for x in item[1:] }
 print(pledge_files_dict)
-
-
-
-
-    
