@@ -6,7 +6,7 @@ from git import Repo
 PATH = os.path.abspath("/home/ska196/Pledges/references/src")
 REPO = Repo(PATH)
 assert not REPO.bare
-# For testing use 0:8
+# For testing use 0:62
 lines = [line for line in REPO.git.g('pledge').split('\n')[0:62]]
 
 #%%
