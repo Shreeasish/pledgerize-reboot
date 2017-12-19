@@ -23,6 +23,7 @@ for line in lines:
         pledge_files.append(temp_group[:-1])
         temp_group = []
 
+
 #%%
 # pledge_files_dict = {item[0]: x.split(":")[0] for item in pledge_files for x in item[1:] }
 print("Building filename:line number dictionary...\n",file=sys.stderr)
@@ -37,14 +38,26 @@ for items in pledge_files:
     if len(pledge_files_dict[items[0]]) > 2:
         print(" {} : Multiple pledges \n Line Numbers {} \n".\
         format(items[0], pledge_files_dict[items[0]]),file=sys.stdout)
+        print(" {} : Multiple pledges \n Line Numbers {} \n".\
+        format(items[0], pledge_files_dict[items[0]]),file=sys.stderr)
+
+
+pledge_locations_file = open('pledge_locations.txt','w')
+for key in pledge_files_dict:
+    print(key,file=pledge_locations_file)
+    print(pledge_files_dict[key],file=pledge_locations_file)
+    print("\n",file=pledge_locations_file)
+pledge_locations_file.close()
+
+
+'''
+# pledges seem to always be inserted in two lines like this
+# +	if (tame("stdio rpath", NULL) == -1)
+# +		err(1, "tame");
+# git log -L 216,217,bin/md5/md5.c
+'''
 
 #%%
-'''
-pledges seem to always be inserted in two lines like this
-+	if (tame("stdio rpath", NULL) == -1)
-+		err(1, "tame");
-git log -L 216,217,bin/md5/md5.c
-'''
 # {filename: (commit_id1,commit_id2) } 
 # Should only have one commit id per filename the ones which have two or more 
 # are more interesting
@@ -60,6 +73,7 @@ for file_name in pledge_files_dict:
         '''
         final_commit = ""
         for line in REPO.git.log( '-L ' + line_numbers[idx] + "," + line_numbers[idx] + ":" + file_name ).split("\n"):
+            print("Getting logs for lines -- " + line_numbers[idx] + "," + line_numbers[idx] + ":" + file_name,file=sys.stderr)
             if "commit" in line:
                 final_commit = line.split(" ")[1]
         commit_set.add(final_commit)
