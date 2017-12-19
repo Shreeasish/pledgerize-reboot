@@ -8,9 +8,12 @@ PATH = os.path.abspath("/home/ska196/Pledges/references/src")
 REPO = Repo(PATH)
 assert not REPO.bare
 # For testing use 0:62
-lines = [line for line in REPO.git.g('pledge').split('\n')[0:62]]
+print("Grep pledges...\n",file=sys.stderr)
+lines = [line for line in REPO.git.g('if.(pledge').split('\n')[0:62]]
+
 
 #%%
+print("Grouping Pledges...\n",file=sys.stderr)
 pledge_files = []
 temp_group = []
 for line in lines:
@@ -21,6 +24,7 @@ for line in lines:
 
 #%%
 # pledge_files_dict = {item[0]: x.split(":")[0] for item in pledge_files for x in item[1:] }
+print("Building filename:line number dictionary...\n",file=sys.stderr)
 pledge_files_dict = {}
 for items in pledge_files:
     for line_number in items[1:]:
@@ -28,8 +32,10 @@ for items in pledge_files:
             pledge_files_dict[items[0]] = [line_number.split(":")[0]]
         else:
             pledge_files_dict[items[0]].append( line_number.split(":")[0] )
-
-
+    
+    if len(pledge_files_dict[items[0]]) > 2:
+        print(" {} : Multiple pledges \n Line Numbers {} \n".\
+        format(items[0], pledge_files_dict[items[0]]),file=sys.stdout)
 
 #%%
 '''
@@ -41,18 +47,18 @@ git log -L 216,217,bin/md5/md5.c
 # {filename: (commit_id1,commit_id2) } 
 # Should only have one commit id per filename the ones which have two or more 
 # are more interesting
+print("Retrieving git log for each line... \n",file=sys.stderr)
 file_commit_dict = {}
-
 for file_name in pledge_files_dict:
     commit_set = set()
     line_numbers = pledge_files_dict[file_name]
-    for idx in range(0,len(line_numbers),2):
+    for idx in range(0,len(line_numbers),1):
         '''
         Get the last commit shown (earliest commit in for the line number). 
         This should be the commit where it was inserted.
         '''
         final_commit = ""
-        for line in REPO.git.log( '-L ' + line_numbers[idx] + "," + line_numbers[idx+1] + ":" + file_name ).split("\n"):
+        for line in REPO.git.log( '-L ' + line_numbers[idx] + "," + line_numbers[idx] + ":" + file_name ).split("\n"):
             if "commit" in line:
                 final_commit = line.split(" ")[1]
         commit_set.add(final_commit)
@@ -72,9 +78,11 @@ git log --pretty=%P -n 1 <child>
 '''
 
 #%%
+print("Retrieving commit window...\n",file=sys.stderr)
 outfile = open("commits.txt","w")
 for file_name in file_commit_dict:
     print(file_name,file=outfile)
     for commit in file_commit_dict[file_name]:
         print(REPO.git.log('--pretty=%P', '-n', '5', commit),file=outfile)
+    print("\n",file=outfile)
 outfile.close()
