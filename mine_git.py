@@ -9,7 +9,8 @@ REPO = Repo(PATH)
 assert not REPO.bare
 # For testing use 0:62
 print("Grep pledges...\n",file=sys.stderr)
-lines = [line for line in REPO.git.g('if.(pledge').split('\n')[0:62]]
+lines = [line for line in REPO.git.g('if.(pledge').split('\n')]
+# lines = [line for line in REPO.git.g('if.(pledge').split('\n')[0:62]]
 
 
 #%%
