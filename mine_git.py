@@ -98,6 +98,10 @@ outfile = open("commits.txt","w")
 for file_name in file_commit_dict:
     print(file_name,file=outfile)
     for commit in file_commit_dict[file_name]:
-        print(REPO.git.log('--pretty=%P', '-n', '5', commit),file=outfile)
+        if len(commit) == 0:
+            # zero commit issue
+            print("{} has no commits \n".format(file_name),file=sys.stdout)
+        else:
+            print(REPO.git.log('--pretty=%P', '-n', '5', commit),file=outfile)
     print("\n",file=outfile)
 outfile.close()

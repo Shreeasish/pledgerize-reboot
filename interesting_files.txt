@@ -1,0 +1,252 @@
+ games/backgammon/backgammon/main.c : Multiple pledges 
+ Line Numbers ['88', '102', '128'] 
+
+ gnu/usr.bin/cvs/src/main.c : Multiple pledges 
+ Line Numbers ['453', '755', '945', '948', '952'] 
+
+ libexec/fingerd/fingerd.c : Multiple pledges 
+ Line Numbers ['71', '124', '134', '214'] 
+
+ regress/sys/kern/pledge/ioctl/unfdpass.c : Multiple pledges 
+ Line Numbers ['87', '133', '235'] 
+
+ regress/sys/kern/pledge/sendrecvfd/sendrecvfd.c : Multiple pledges 
+ Line Numbers ['57', '62', '110', '115'] 
+
+ sbin/disklabel/disklabel.c : Multiple pledges 
+ Line Numbers ['214', '218', '222', '236', '258'] 
+
+ sbin/fsck_ffs/setup.c : Multiple pledges 
+ Line Numbers ['106', '149', '153', '156'] 
+
+ sbin/route/route.c : Multiple pledges 
+ Line Numbers ['246', '345', '1111'] 
+
+ sbin/shutdown/shutdown.c : Multiple pledges 
+ Line Numbers ['111', '357', '379'] 
+
+ usr.bin/at/at.c : Multiple pledges 
+ Line Numbers ['873', '995', '1002', '1007'] 
+
+ usr.bin/bc/bc.y : Multiple pledges 
+ Line Numbers ['1102', '1159', '1184'] 
+
+ usr.bin/chpass/chpass.c : Multiple pledges 
+ Line Numbers ['139', '161', '178'] 
+
+ usr.bin/ctfconv/ctfconv.c : Multiple pledges 
+ Line Numbers ['95', '135', '144'] 
+
+ usr.bin/doas/doas.c : Multiple pledges 
+ Line Numbers ['367', '379', '387'] 
+
+ usr.bin/file/file.c : Multiple pledges 
+ Line Numbers ['107', '183', '198'] 
+
+ usr.bin/find/find.c : Multiple pledges 
+ Line Numbers ['159', '162', '167', '171'] 
+
+ usr.bin/finger/finger.c : Multiple pledges 
+ Line Numbers ['129', '139', '225'] 
+
+ usr.bin/fstat/fstat.c : Multiple pledges 
+ Line Numbers ['283', '286', '289', '292', '297'] 
+
+ usr.bin/ftp/fetch.c : Multiple pledges 
+ Line Numbers ['647', '650', '944'] 
+
+ usr.bin/ftp/main.c : Multiple pledges 
+ Line Numbers ['470', '474', '480', '484'] 
+
+ usr.bin/getconf/getconf.c : Multiple pledges 
+ Line Numbers ['478', '484', '502', '516'] 
+
+ usr.bin/htpasswd/htpasswd.c : Multiple pledges 
+ Line Numbers ['60', '83', '103'] 
+
+ usr.bin/kdump/kdump.c : Multiple pledges 
+ Line Numbers ['211', '1365', '1371'] 
+
+ usr.bin/less/main.c : Multiple pledges 
+ Line Numbers ['94', '99', '231'] 
+
+ usr.bin/mandoc/main.c : Multiple pledges 
+ Line Numbers ['139', '296', '413', '416', '1144'] 
+
+ usr.bin/nc/netcat.c : Multiple pledges 
+ Line Numbers ['353', '356', '359', '362', '365', '368', '370', '519', '521'] 
+
+ usr.bin/nm/nm.c : Multiple pledges 
+ Line Numbers ['138', '144', '221'] 
+
+ usr.bin/passwd/local_passwd.c : Multiple pledges 
+ Line Numbers ['74', '97', '121'] 
+
+ usr.bin/sed/main.c : Multiple pledges 
+ Line Numbers ['165', '168', '183', '190', '192', '193', '195', '196'] 
+
+ usr.bin/signify/signify.c : Multiple pledges 
+ Line Numbers ['766', '841', '890', '893', '906'] 
+
+ usr.bin/skeyinit/skeyinit.c : Multiple pledges 
+ Line Numbers ['121', '138', '158', '195'] 
+
+ usr.bin/sndiod/sndiod.c : Multiple pledges 
+ Line Numbers ['381', '590', '593'] 
+
+ usr.bin/sort/sort.c : Multiple pledges 
+ Line Numbers ['873', '1056', '1079', '1082', '1087', '1090', '1122', '1125'] 
+
+ usr.bin/ssh/clientloop.c : Multiple pledges 
+ Line Numbers ['1209', '1215', '1221', '1228', '1233'] 
+
+ usr.bin/su/su.c : Multiple pledges 
+ Line Numbers ['76', '218', '333'] 
+
+ usr.bin/talk/talk.c : Multiple pledges 
+ Line Numbers ['57', '71', '74'] 
+
+ usr.bin/tcpbench/tcpbench.c : Multiple pledges 
+ Line Numbers ['1127', '1147', '1207', '1219', '1260'] 
+
+ usr.bin/tsort/tsort.c : Multiple pledges 
+ Line Numbers ['882', '883', '914', '1002'] 
+
+ usr.bin/uudecode/uudecode.c : Multiple pledges 
+ Line Numbers ['130', '133', '136'] 
+
+ usr.bin/who/who.c : Multiple pledges 
+ Line Numbers ['77', '294', '297'] 
+
+ usr.sbin/bgpctl/bgpctl.c : Multiple pledges 
+ Line Numbers ['136', '165', '183'] 
+
+ usr.sbin/identd/identd.c : Multiple pledges 
+ Line Numbers ['330', '364', '367'] 
+
+ usr.sbin/mtree/mtree.c : Multiple pledges 
+ Line Numbers ['144', '147', '150', '153'] 
+
+ usr.sbin/ocspcheck/ocspcheck.c : Multiple pledges 
+ Line Numbers ['312', '569', '615', '644'] 
+
+ usr.sbin/rdate/rdate.c : Multiple pledges 
+ Line Numbers ['146', '170', '200'] 
+
+ usr.sbin/snmpctl/snmpctl.c : Multiple pledges 
+ Line Numbers ['126', '143', '164'] 
+
+ usr.sbin/user/user.c : Multiple pledges 
+ Line Numbers ['1390', '1838', '2047', '2108', '2156', '2219', '2282', '2344'] 
+
+ usr.sbin/vmctl/main.c : Multiple pledges 
+ Line Numbers ['162', '459', '681', '695'] 
+
+games/backgammon/backgammon/main.c has pledges inserted at different times         
+Commit Ids -- {'1f22a2a0913f1dfd54593201e21dd612a003fef5', '87f25a4abf762f43d1a2045a585c035489c33d7d', '1152c6e6e1458c1d94d828fc0890331b0b711ddb'}
+games/quiz/quiz.c has pledges inserted at different times         
+Commit Ids -- {'da74d77a50927ad1bf801d50f90a2eef5d9d3ee3', '5e0221f5464d27155005554a09b13a8eca793bf0'}
+libexec/getty/main.c has pledges inserted at different times         
+Commit Ids -- {'cfbffc8c1740f43d302509db8667197a0f483674', '2acff6691b5b3db0fa0c10fdb993835abf4d7da7'}
+sbin/disklabel/disklabel.c has pledges inserted at different times         
+Commit Ids -- {'c6798c7b25eaabe54c74cfdba8f1ec2220395152', 'e384f6efb1362a0010a16f79ac0fdd849ba6c5b9'}
+sbin/fdisk/fdisk.c has pledges inserted at different times         
+Commit Ids -- {'1dbdb6ae7a5317b0d6fa82896edc177421cc3464', '7240ce9b7be4e21ae4806551aa4927b3406c9295'}
+sbin/fsck_ext2fs/setup.c has pledges inserted at different times         
+Commit Ids -- {'f0426f3aee93beb87ad41c44f4167b5aeb05c9a6', 'c0c611b7d51f68b61b6e3eea76f604bbb21048f3'}
+sbin/fsck_ffs/setup.c has pledges inserted at different times         
+Commit Ids -- {'9d5414f53359f32174c6da3a88c9f0043586ec51', 'f0426f3aee93beb87ad41c44f4167b5aeb05c9a6', 'c0c611b7d51f68b61b6e3eea76f604bbb21048f3'}
+sbin/route/route.c has pledges inserted at different times         
+Commit Ids -- {'e77d39333bd7f493a5477693de18ed2b19e16caf', 'ce9a50d7cd9fa0fcc99929766d73e270aaacb342', 'a26f10a3fafc52236f46e37925d266ad88d7a43f'}
+sbin/scan_ffs/scan_ffs.c has pledges inserted at different times         
+Commit Ids -- {'c05fbe6b3119eb06bfae2c0134ae39cacf6b5bed', 'e384f6efb1362a0010a16f79ac0fdd849ba6c5b9'}
+sbin/slaacd/frontend.c has pledges inserted at different times         
+Commit Ids -- {'f9631f1553deb3c66a714987864949b7405ee583', '0acf3e2d891bdf6c7073ca5365adc5715b778d14'}
+sys/kern/kern_pledge.c has pledges inserted at different times         
+Commit Ids -- {'d14eca6c8aa6d042c8c0bf0c1865ed74292e09a4', '350b464c5787ce73b4bf8e99960537423713261c'}
+usr.bin/at/at.c has pledges inserted at different times         
+Commit Ids -- {'2da949c63ee2397737b052549251752e68ad8ee2', '4236b3edc9da8c3d594722901263adc4e4205d5f'}
+usr.bin/compress/main.c has pledges inserted at different times         
+Commit Ids -- {'e8dc0357218dcf72f3bb6c2af3edf8a339dd44ae', '106315206e7186f08922633d3715ee496f143376'}
+usr.bin/cu/cu.c has pledges inserted at different times         
+Commit Ids -- {'758d4455ed859072fee0597078a69b96e7f922a5', '087a5e3bded332da879c0e9d84daad080bd11b0c'}
+usr.bin/cut/cut.c has pledges inserted at different times         
+Commit Ids -- {'df930be708d50e9715f173caa26ffe1b7599b157', 'c19ad1bd0580477c71d2d8cf1fc0528b786b5a12'}
+usr.bin/dc/dc.c has pledges inserted at different times         
+Commit Ids -- {'e351538e709c2f56c32d960961dc8c139157f80f', 'f4c97750248a1a37cfb73f4c511c59727beaced4'}
+usr.bin/file/file.c has pledges inserted at different times         
+Commit Ids -- {'df930be708d50e9715f173caa26ffe1b7599b157', '9dd185ad7bb0c7a2398a5bb52303197cd79497e8'}
+usr.bin/find/find.c has pledges inserted at different times         
+Commit Ids -- {'274633a250d07ee3e60b585100a6332e4c206592', '675912287cd23305e745227e0b848b3982bd6aaa'}
+usr.bin/fold/fold.c has pledges inserted at different times         
+Commit Ids -- {'df930be708d50e9715f173caa26ffe1b7599b157', '0313b39428c46286dd93a5dcd42d4db0026b9206'}
+usr.bin/htpasswd/htpasswd.c has pledges inserted at different times         
+Commit Ids -- {'81d54bdb24a2a3c1cc07ae0121629b46be8b6ae2', '2896bf38b7905e981de2e1844c96abb30564de1c'}
+usr.bin/kdump/kdump.c has pledges inserted at different times         
+Commit Ids -- {'91bc69b80d8c05b03476ea3b34fefd833b593f98', '34d0321520b4ad1bcee4fcb26d1baa08ed9fd046'}
+usr.bin/mandoc/main.c has pledges inserted at different times         
+Commit Ids -- {'779d88a99c8c25ae3c25d9a5f2715e0344d141a0', '5879777f45dba36abf9ddfb6064021fa49797b05'}
+usr.bin/nc/netcat.c has pledges inserted at different times         
+Commit Ids -- {'b0ad1c395ce0331f75ce276286cdde6ab13903cd', 'fe4784a6d15ad8c8009fee5b504815420848a38a', '8a46da9a1712493a20c0ef7df935a41a6af17789'}
+usr.bin/nm/nm.c has pledges inserted at different times         
+Commit Ids -- {'df930be708d50e9715f173caa26ffe1b7599b157', '9b85ddacc78f0576f1451ee12b0e1fcae58e2313', '9725d5c2c0f6ef5e54bf46096adf5c822c0aacbd'}
+usr.bin/sed/main.c has pledges inserted at different times         
+Commit Ids -- {'df930be708d50e9715f173caa26ffe1b7599b157', 'e7e08b57f5db5d32ce534ce0cde42441a95556aa'}
+usr.bin/signify/signify.c has pledges inserted at different times         
+Commit Ids -- {'de861b9319d76305c2083d172688c3f8353c5331', '86ca8ce6117043c23d18f374055d5effc2a3cf9d'}
+usr.bin/skeyinit/skeyinit.c has pledges inserted at different times         
+Commit Ids -- {'df930be708d50e9715f173caa26ffe1b7599b157', 'acc8f4f7219d72bfe0bcbf7e9b822ac21297f07e', '0df36d49693ea2f079144b049c509c5b236482ba'}
+usr.bin/sndiod/sndiod.c has pledges inserted at different times         
+Commit Ids -- {'55f6708358700e99f61d06172003acde33813d9c', '87bc9f6ac048b412db2d322eb87f6ace4c11753a'}
+usr.bin/sort/sort.c has pledges inserted at different times         
+Commit Ids -- {'b9475a202795978546ddb8fedc9c3e223526c0ab', '58777eb51c3f0f7bee1b5f3cb84ed58f8811ac84'}
+usr.bin/ssh/mux.c has pledges inserted at different times         
+Commit Ids -- {'bb8076222c1129dbd2c4906f512f03b03c19f664', 'aa1a5297b4e3e9d941e3ede803f8ed84b07168ac'}
+usr.bin/su/su.c has pledges inserted at different times         
+Commit Ids -- {'5d0cca7744cef05bdc6bf0a76149c923ca78b697', '256c532138760dd5fb0d022bc146f089f48da84a'}
+usr.bin/tcpbench/tcpbench.c has pledges inserted at different times         
+Commit Ids -- {'296aab8ebaa1c2b153a999ce6515fe1555551d8a', 'c60600c6d482521ed65f53bcc5dcb06de89d1e58'}
+usr.bin/tsort/tsort.c has pledges inserted at different times         
+Commit Ids -- {'b2490958e9d66b1bc83845daec043fc28dab8680', 'ee75a89a33ca5dc34432b2c5563d54bf51526da0'}
+usr.bin/unvis/unvis.c has pledges inserted at different times         
+Commit Ids -- {'ff591e8b3873d95dd21a3f6d0e4c0f0a9119f623', 'df930be708d50e9715f173caa26ffe1b7599b157'}
+usr.bin/vi/common/main.c has pledges inserted at different times         
+Commit Ids -- {'1daaadf30020f78d1a0b445bdc59f20e8ddacce1', '7849ae1c6749c7401b938ae7add6f612b199daa5'}
+usr.bin/vis/vis.c has pledges inserted at different times         
+Commit Ids -- {'df930be708d50e9715f173caa26ffe1b7599b157', '3b804fcf6f51473a3629623ecade996235ba91d8'}
+usr.bin/wall/wall.c has pledges inserted at different times         
+Commit Ids -- {'df930be708d50e9715f173caa26ffe1b7599b157', 'cf5b839319906f54b4efd4e2f9f7e64790477040'}
+usr.sbin/acme-client/netproc.c has pledges inserted at different times         
+Commit Ids -- {'25ca385b35d0d844a2588b8e7f05f4025fe82584', 'de579d12540ec65d8e12e3a9e6a85a5c1fbe09e2'}
+usr.sbin/config/main.c has pledges inserted at different times         
+Commit Ids -- {'e5473ccc3db8bfd3c242557b2e4992adee899d35', 'bf289d151f830ea51fc9ade018d8db98d29010b7'}
+usr.sbin/mailwrapper/mailwrapper.c has pledges inserted at different times         
+Commit Ids -- {'0b6ac1ffaf941117cb666889705629f297c7d79f', 'a53d1a28750b17549e8050be7a583aaa611458e4'}
+usr.sbin/ntpd/ntpd.c has pledges inserted at different times         
+Commit Ids -- {'a09466a034ea2bf40eeda6eeecf1b4c549226a2c', '348cf342aa4134b077dc8b11450b911a3f278f28'}
+usr.sbin/rdate/rdate.c has pledges inserted at different times         
+Commit Ids -- {'df930be708d50e9715f173caa26ffe1b7599b157', '6a6f1b391b11875979a1f4222092611c791615d3'}
+usr.sbin/smtpd/enqueue.c has pledges inserted at different times         
+Commit Ids -- {'ee59291b612d8b08eb2f596733bcdd2361809297', 'f70d44e69d1515238728179084a515f6b1ab8080'}
+usr.sbin/smtpd/lka.c has pledges inserted at different times         
+Commit Ids -- {'3ef9cbf79d94fc49fb5b0a033765ffa87ab001f1', 'a8c16586bfbc9aaf716e1cac453aa5dd25094330'}
+usr.sbin/user/user.c has pledges inserted at different times         
+Commit Ids -- {'716c272b16e98a852f63d814e666ff1349874d08', ''}
+usr.sbin/vmctl/main.c has pledges inserted at different times         
+Commit Ids -- {'eed20f3b05402270733e7088ce4ad75977623667', 'eb8d1da16b60d8e99e4003563b8ace389257b016'}
+{} has no commits 
+
+{} has no commits 
+
+{} has no commits 
+
+{} has no commits 
+
+{} has no commits 
+
+{} has no commits 
+
+{} has no commits 
+
+{} has no commits 
+
