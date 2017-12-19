@@ -1,4 +1,5 @@
 #%%
+import sys
 import os
 from git import Repo
 
@@ -27,7 +28,8 @@ for items in pledge_files:
             pledge_files_dict[items[0]] = [line_number.split(":")[0]]
         else:
             pledge_files_dict[items[0]].append( line_number.split(":")[0] )
-print(pledge_files_dict)
+
+
 
 #%%
 '''
@@ -36,12 +38,15 @@ pledges seem to always be inserted in two lines like this
 +		err(1, "tame");
 git log -L 216,217,bin/md5/md5.c
 '''
+# {filename: (commit_id1,commit_id2) } 
+# Should only have one commit id per filename the ones which have two or more 
+# are more interesting
+file_commit_dict = {}
 
 for file_name in pledge_files_dict:
     commit_set = set()
     line_numbers = pledge_files_dict[file_name]
     for idx in range(0,len(line_numbers),2):
-        print(line_numbers[idx] + "," + line_numbers[idx+1] + ":" + file_name)
         '''
         Get the last commit shown (earliest commit in for the line number). 
         This should be the commit where it was inserted.
@@ -51,4 +56,25 @@ for file_name in pledge_files_dict:
             if "commit" in line:
                 final_commit = line.split(" ")[1]
         commit_set.add(final_commit)
-    print("COMMIT SET -- ", commit_set)
+    
+    if(len(commit_set) > 1):
+        print("{} has pledges inserted at different times \
+        \nCommit Ids -- {}".format(file_name,commit_set),file=sys.stdout)
+
+    if file_name in file_commit_dict:
+        print("File {} reoccurs in dict".format(file_name),file=sys.stdout)
+    else:
+        file_commit_dict[file_name] = commit_set
+
+'''
+Get the commit window for each file
+git log --pretty=%P -n 1 <child>
+'''
+
+#%%
+outfile = open("commits.txt","w")
+for file_name in file_commit_dict:
+    print(file_name,file=outfile)
+    for commit in file_commit_dict[file_name]:
+        print(REPO.git.log('--pretty=%P', '-n', '5', commit),file=outfile)
+outfile.close()
