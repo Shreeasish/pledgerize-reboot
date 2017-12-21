@@ -13,6 +13,7 @@ lines = [line for line in REPO.git.g('if.(pledge').split('\n')]
 # lines = [line for line in REPO.git.g('if.(pledge').split('\n')[0:62]]
 
 
+
 #%%
 print("Grouping Pledges...\n",file=sys.stderr)
 pledge_files = []
@@ -22,7 +23,6 @@ for line in lines:
     if len(line) == 0:
         pledge_files.append(temp_group[:-1])
         temp_group = []
-
 
 #%%
 # pledge_files_dict = {item[0]: x.split(":")[0] for item in pledge_files for x in item[1:] }
@@ -34,14 +34,14 @@ for items in pledge_files:
             pledge_files_dict[items[0]] = [line_number.split(":")[0]]
         else:
             pledge_files_dict[items[0]].append( line_number.split(":")[0] )
-    
     if len(pledge_files_dict[items[0]]) > 2:
         print(" {} : Multiple pledges \n Line Numbers {} \n".\
         format(items[0], pledge_files_dict[items[0]]),file=sys.stdout)
         print(" {} : Multiple pledges \n Line Numbers {} \n".\
         format(items[0], pledge_files_dict[items[0]]),file=sys.stderr)
 
-
+#%%
+# Write to file
 pledge_locations_file = open('pledge_locations.txt','w')
 for key in pledge_files_dict:
     print(key,file=pledge_locations_file)
@@ -63,12 +63,18 @@ pledge_locations_file.close()
 # are more interesting
 print("Retrieving git log for each line... \n",file=sys.stderr)
 file_commit_dict = {}
+# Add check for line numbers which have been modified more than once
+# Usually there will always be more than one change since the name was changed from tame
+
+modification_FH = open("modifications.txt","w")
 for file_name in pledge_files_dict:
     commit_set = set()
     line_numbers = pledge_files_dict[file_name]
+
     for idx in range(0,len(line_numbers),1):
+        modification_ids = []
         '''
-        Get the last commit shown (earliest commit in for the line number). 
+        Get the last commit shown (earliest commit in git log for the line number). 
         This should be the commit where it was inserted.
         '''
         final_commit = ""
@@ -76,6 +82,11 @@ for file_name in pledge_files_dict:
             print("Getting logs for lines -- " + line_numbers[idx] + "," + line_numbers[idx] + ":" + file_name,file=sys.stderr)
             if "commit" in line:
                 final_commit = line.split(" ")[1]
+                modification_ids.append(final_commit)
+        
+        if len(modification_ids) > 1:
+            print("{}:{}::{}".format(file_name, line_numbers[idx], modification_ids),file=modification_FH)
+
         commit_set.add(final_commit)
     
     if(len(commit_set) > 1):
@@ -87,6 +98,7 @@ for file_name in pledge_files_dict:
     else:
         file_commit_dict[file_name] = commit_set
 
+modification_FH.close()
 '''
 Get the commit window for each file
 git log --pretty=%P -n 1 <child>
