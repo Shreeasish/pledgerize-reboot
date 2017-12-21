@@ -9,8 +9,7 @@
     `git config --global alias.g "grep --break --heading --line-number"`
 
 
-Source [Search a git repo like a ninja]
-(http://travisjeffery.com/b/2012/02/search-a-git-repo-like-a-ninja/)
+Source [Search a git repo like a ninja](http://travisjeffery.com/b/2012/02/search-a-git-repo-like-a-ninja/)
 
 # Requirements
 * [GitPython](https://github.com/gitpython-developers/GitPython)
