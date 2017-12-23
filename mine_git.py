@@ -80,14 +80,18 @@ for file_name in pledge_files_dict:
         final_commit = ""
         for line in REPO.git.log( '-L ' + line_numbers[idx] + "," + line_numbers[idx] + ":" + file_name ).split("\n"):
             print("Getting logs for lines -- " + line_numbers[idx] + "," + line_numbers[idx] + ":" + file_name,file=sys.stderr)
-            if "commit" in line:
+            # Picks up the word commit in the commit messages, ignored by a single check as commit messages 
+            # begin with white space
+            if "commit" in line: 
                 final_commit = line.split(" ")[1]
-                modification_ids.append(final_commit)
+                if(len(final_commit>1)):
+                    modification_ids.append(final_commit)
         
         if len(modification_ids) > 1:
             print("{}:{}::{}".format(file_name, line_numbers[idx], modification_ids),file=modification_FH)
 
-        commit_set.add(final_commit)
+        if(len(final_commit) > 1):
+            commit_set.add(final_commit)
     
     if(len(commit_set) > 1):
         print("{} has pledges inserted at different times \
