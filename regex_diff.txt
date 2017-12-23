@@ -1,0 +1,118 @@
+276,278d275
+< gnu/usr.bin/perl/cpan/OpenBSD-Pledge/t/OpenBSD-Pledge.t
+< 65:		if ($pledge) {
+< 
+360,362d356
+< regress/sys/kern/pledge/generic/manager.c
+< 252:		if (request && pledge(request, NULL) != 0)
+< 
+377d370
+< 83:	if ((fdpf_prepledge = open("/dev/pf", O_RDWR)) == -1) {
+379d371
+< 91:	if ((fdpf_postpledge = open("/dev/pf", O_RDWR)) == -1) {
+392d383
+< 162:	if (strcmp(argv[1], "nopledge") == 0 ) {
+530,537d520
+< sys/arch/amd64/amd64/vmm.c
+< 485:		if (p->p_p->ps_pledge & PLEDGE_PROC)
+< 734:			if (((p->p_p->ps_pledge &
+< 
+< sys/arch/i386/i386/vmm.c
+< 456:		if (p->p_p->ps_pledge & PLEDGE_PROC)
+< 705:			if (((p->p_p->ps_pledge &
+< 
+539,541d521
+< 94:#define DPRINTF(x...)    do { if (debug_pledge) printf(x); } while (0)
+< 95:#define DNPRINTF(n,x...) do { if (debug_pledge >= (n)) printf(x); } while (0)
+< 425:		if ((f = pledgereq_flags(rp)) == 0) {
+543d522
+< 499:	if (p->p_p->ps_pledge & pledge_syscalls[code])
+545,609d523
+< 523:	if (p->p_p->ps_pledge & PLEDGE_ERROR)
+< 553:	if (!ni || (ni->ni_pledge == 0))
+< 557:	if ((ni->ni_pledge & PLEDGE_EXEC) &&
+< 566:	if ((p->p_p->ps_pledge & PLEDGE_TMPPATH) &&
+< 576:	if ((p->p_p->ps_pledge & PLEDGE_TMPPATH) &&
+< 586:		if ((ni->ni_pledge == PLEDGE_RPATH) &&
+< 591:		if (ni->ni_pledge == PLEDGE_RPATH &&
+< 593:			if (p->p_p->ps_pledge & PLEDGE_GETPW)
+< 601:		if ((ni->ni_pledge & ~(PLEDGE_RPATH | PLEDGE_WPATH)) == 0 &&
+< 607:		if ((p->p_p->ps_pledge & PLEDGE_TTY) &&
+< 614:		if ((ni->ni_pledge == PLEDGE_RPATH) &&
+< 627:		if ((ni->ni_pledge == PLEDGE_RPATH) &&
+< 637:		if ((ni->ni_pledge == PLEDGE_RPATH) &&
+< 657:		if ((ni->ni_pledge == PLEDGE_RPATH) &&
+< 661:		if ((ni->ni_pledge == PLEDGE_RPATH) &&
+< 668:		if ((ni->ni_pledge == PLEDGE_RPATH) &&
+< 674:		if ((ni->ni_pledge == PLEDGE_RPATH) &&
+< 685:	if (ni->ni_pledge & ~p->p_p->ps_pledge)
+< 701:	if ((p->p_p->ps_pledge & PLEDGE_RECVFD) == 0)
+< 728:	if ((p->p_p->ps_pledge & PLEDGE_SENDFD) == 0)
+< 758:	if ((p->p_p->ps_pledge & PLEDGE_ROUTE)) {
+< 780:	if (p->p_p->ps_pledge & (PLEDGE_PS | PLEDGE_VMINFO)) {
+< 798:	if ((p->p_p->ps_pledge & PLEDGE_PS)) {
+< 820:	if ((p->p_p->ps_pledge & PLEDGE_VMINFO)) {
+< 830:	if ((p->p_p->ps_pledge & (PLEDGE_ROUTE | PLEDGE_INET | PLEDGE_DNS))) {
+< 839:	if ((p->p_p->ps_pledge & PLEDGE_DISKLABEL)) {
+< 930:	if (p->p_p->ps_pledge & PLEDGE_CHOWNUID)
+< 948:	if ((p->p_p->ps_pledge & PLEDGE_SETTIME))
+< 961:	if ((p->p_p->ps_pledge & (PLEDGE_INET | PLEDGE_UNIX | PLEDGE_DNS | PLEDGE_YPACTIVE)))
+< 995:	if ((p->p_p->ps_pledge & PLEDGE_INET)) {
+< 1006:	if ((p->p_p->ps_pledge & PLEDGE_BPF)) {
+< 1019:	if ((p->p_p->ps_pledge & PLEDGE_TAPE)) {
+< 1036:	if ((p->p_p->ps_pledge & PLEDGE_DRM)) {
+< 1048:	if ((p->p_p->ps_pledge & PLEDGE_AUDIO)) {
+< 1063:	if ((p->p_p->ps_pledge & PLEDGE_DISKLABEL)) {
+< 1090:	if ((p->p_p->ps_pledge & PLEDGE_PF)) {
+< 1113:	if ((p->p_p->ps_pledge & PLEDGE_TTY)) {
+< 1117:			if ((p->p_p->ps_pledge & PLEDGE_RPATH) == 0)
+< 1119:			if ((p->p_p->ps_pledge & PLEDGE_WPATH) == 0)
+< 1128:			if ((p->p_p->ps_pledge & PLEDGE_PROC) == 0)
+< 1157:	if ((p->p_p->ps_pledge & PLEDGE_ROUTE)) {
+< 1180:	if ((p->p_p->ps_pledge & PLEDGE_VMM)) {
+< 1211:	if ((p->p_p->ps_pledge & (PLEDGE_INET|PLEDGE_UNIX|PLEDGE_DNS|PLEDGE_YPACTIVE)) == 0)
+< 1224:	if ((p->p_p->ps_pledge & PLEDGE_DNS)) {
+< 1236:	if (p->p_p->ps_pledge & PLEDGE_YPACTIVE) {
+< 1254:	if ((p->p_p->ps_pledge & (PLEDGE_INET|PLEDGE_UNIX)) == 0)
+< 1265:	if ((p->p_p->ps_pledge & PLEDGE_INET) == 0)
+< 1297:			if (p->p_p->ps_pledge & PLEDGE_MCAST)
+< 1320:			if (p->p_p->ps_pledge & PLEDGE_MCAST)
+< 1338:		if (ISSET(p->p_p->ps_pledge, PLEDGE_DNS))
+< 1348:		if (ISSET(p->p_p->ps_pledge, PLEDGE_INET) ||
+< 1354:		if (ISSET(p->p_p->ps_pledge, PLEDGE_UNIX))
+< 1368:	if ((p->p_p->ps_pledge & PLEDGE_FLOCK))
+< 1405:	if ((p->p_p->ps_pledge & PLEDGE_PROC) == 0 && cmd == F_SETOWN)
+< 1415:	if (p->p_p->ps_pledge & PLEDGE_PROC)
+< 1430:	if (!(p->p_p->ps_pledge & PLEDGE_PROTEXEC) && (prot & PROT_EXEC))
+< 
+< sys/kern/kern_sig.c
+< 573:	if ((error = pledge_kill(cp, pid)) != 0)
+< 
+< sys/kern/vfs_syscalls.c
+< 1792:	if (nd.ni_pledge & PLEDGE_STATLIE) {
+< 2165:		if ((error = pledge_chown(p, uid, gid)))
+< 2217:		if ((error = pledge_chown(p, uid, gid)))
+< 2267:		if ((error = pledge_chown(p, uid, gid)))
+614,616d527
+< sys/uvm/uvm_swap.c
+< 671:	if ((error = suser(p, 0)) || (error = pledge_swapctl(p)))
+< 
+700d610
+< 171:	if (restricted && pledge("stdio tty", NULL) == -1)
+850d759
+< 1362:	if (len < sizeof(struct ktr_pledge))
+854,857d762
+< usr.bin/kdump/ktrstruct.c
+< 649:	} else if (strcmp(name, "pledgereq") == 0) {
+< 653:	} else if (strcmp(name, "pledgeexecreq") == 0) {
+< 
+1162d1066
+< 182:		if (!pledge_wpath && inplace == NULL) {
+1164d1067
+< 189:		if (!pledge_wpath && !pledge_rpath) {
+1291d1193
+< 573:	if (!pledge_applied) {
+1550d1451
+< 1761:			if (dofork && pledge("stdio inet", NULL) == -1)
+1834d1734
+< 160:	if (!ctl->has_pledge) {
