@@ -430,8 +430,12 @@ libexec/tradcpp/main.c
 ['1041']
 
 
+regress/sys/kern/pledge/execpromise/execpromise.c
+['51', '75']
+
+
 regress/sys/kern/pledge/generic/main.c
-['105']
+['67']
 
 
 regress/sys/kern/pledge/generic/test_stdio.c
@@ -475,7 +479,7 @@ sbin/clri/clri.c
 
 
 sbin/dhclient/dhclient.c
-['666', '669']
+['671', '674']
 
 
 sbin/disklabel/disklabel.c
@@ -1359,11 +1363,11 @@ usr.bin/time/time.c
 
 
 usr.bin/tmux/client.c
-['298', '569']
+['298', '574']
 
 
 usr.bin/tmux/server.c
-['173']
+['197']
 
 
 usr.bin/tmux/tmux.c
@@ -1415,7 +1419,7 @@ usr.bin/unifdef/unifdef.c
 
 
 usr.bin/uniq/uniq.c
-['69', '130']
+['69', '133']
 
 
 usr.bin/units/units.c
@@ -1447,7 +1451,7 @@ usr.bin/vis/vis.c
 
 
 usr.bin/w/w.c
-['161', '164']
+['160', '163']
 
 
 usr.bin/wall/ttymsg.c
