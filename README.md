@@ -1,7 +1,7 @@
-# <center>¯\\\_(ツ)\_/¯</center>
+# <center> ᕕ( ᐛ )ᕗ </center>
 
 # Configs
-* #####  Allow extended regular expressions 
+* #####  Allow extended regular expressions
     `git config --global grep.extendRegexp true`
 * #####  Always include line numbers <br>
     `git config --global grep.lineNumber true`
@@ -18,8 +18,8 @@ Source [Search a git repo like a ninja](http://travisjeffery.com/b/2012/02/searc
 * [General Documentation of Progress](https://docs.google.com/document/d/1VXyJoxYt7o5XYmYGgnslxCLMEDZLoXGFu2RJJPBCMwI/edit?usp=sharing)
 
 # Files in repo
-* #### `interesting_files.txt` is the stdout for mine_git.py. 
-    Has information about 
+* #### `interesting_files.txt` is the stdout for mine_git.py.
+    Has information about
     1. Files which have multiple pledges
 
     2. Files which have multiple pledges inserted at different times
@@ -28,4 +28,3 @@ Source [Search a git repo like a ninja](http://travisjeffery.com/b/2012/02/searc
 
 * #### `pledge_locations.txt` holds the grep output
 * #### `commits.txt` has the five 5 previous commits to a pledge/tame insertion, grouped by file name.
-
