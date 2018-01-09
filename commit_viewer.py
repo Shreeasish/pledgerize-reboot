@@ -15,6 +15,7 @@ assert not REPO.bare
 INVALID_INPUT = True
 
 
+
 def getFile(filename):
     try:
         handle  = open(filename,'r')
@@ -25,15 +26,61 @@ def getFile(filename):
 def display(commit_dict):
     assert commit_dict
 
+    print(commit_dict)
+
     keys = [key for key in commit_dict]
 
-    for i,key in enumerate(keys):
+    # for i in range(len(keys)): BEACUSE PYTHON..
+    i = 0
+    while i < len(commit_dict):
+        print("\nNew Key\n")
+        key = keys[i]
+        commits = commit_dict[keys[i]]
         header = '\033[' + '2;33;40m' + 'Parent -- ' + key + "\n"
-        for commit in commit_dict[key]:
-            pipepager(header + REPO.git.show('--color=always',commit,'--',key), cmd='less -R')
-#%%
+
+        # for commit in commit_dict[keys[i]]:
+        # for i2 in range(len(commits)):
+        j=0
+        while (j < len(commits)):
+            # Added key.split for modifications_commit.json. TODO Standardize filename:lineNumber seperator and Rerun
+            print(j,len(commits))
+
+            print(header + REPO.git.show('--color=always',commits[j],'--', key.split(",")[0]))
+            command = input("\nInteresting: i \t Not Interesting: o \nNext: j \t Prev: k \t NextKey: n \t PrevKey: m \t ShowAgain: s \t Pipe to less: l -- ")
+            print("\n")
+
+            if command.lower() == 'i':
+                pass
+            
+            elif command.lower() == 'o':
+                pass
+            
+            elif command.lower() == 'j':
+                j += 1
+
+            elif command.lower() == 'k':
+                if( j == 0 ):
+                    print("\n FIRST COMMIT\n")
+                    continue
+                j -= 1
+            
+            elif command.lower() == 'n':
+                break
+            
+            elif command.lower() == 'm':
+                if(i == 0 ):
+                    print("\n FIRST KEY \n")
+                    continue
+                i -= 2
+            elif command.lower() == 's':
+                print(header + REPO.git.show('--color=always',commits[j],'--', key.split(",")[0]))
+            elif command.lower() == 'l':
+                pipepager(header + REPO.git.show('--color=always',commits[j],'--', key.split(",")[0]),cmd="less -R")
+            else:
+                print("woops!")
+        i += 1
+
 def start() :
-    #%%
     global INVALID_INPUT
     json_files = [filename for filename in os.listdir(PATH) if filename.endswith('.json')]
     print(', '.join(json_files))
@@ -55,13 +102,13 @@ def start() :
         exit()
 
     if(commit_list.endswith('.json') != True):
-        print("Incorrect File Type\n", File=sys.stderr )
+        print("Incorrect File Type\n", file=sys.stderr )
         INVALID_INPUT = True
         return
     try:
         commit_FH = getFile(commit_list)
     except FileNotFoundError:
-        print("File not Found\n", File=sys.stderr )
+        print("File not Found\n", file=sys.stderr )
         return
 
     try:

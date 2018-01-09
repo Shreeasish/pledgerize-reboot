@@ -122,7 +122,7 @@ for file_name in pledge_files_dict:
     else:
         file_commit_dict[file_name] = commit_set
 
-with open("modifications.json","w") as modification_FH:
+with open("modifications_commit.json","w") as modification_FH:
     json.dump(modification_list, modification_FH)
 with open("additive_pledges.json", "w") as additive_pledges_FH:
     json.dump(additive_pledge_list, additive_pledges_FH)
