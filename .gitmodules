@@ -1,3 +1,6 @@
 [submodule "src"]
 	path = src
 	url = git@github.com:openbsd/src.git
+[submodule "clang-plugins-demo"]
+	path = clang-plugins-demo
+	url = git@github.com:Shreeasish/clang-plugins-demo.git

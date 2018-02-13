@@ -18,7 +18,7 @@ Source [Search a git repo like a ninja](http://travisjeffery.com/b/2012/02/searc
 * [General Documentation of Progress](https://docs.google.com/document/d/1VXyJoxYt7o5XYmYGgnslxCLMEDZLoXGFu2RJJPBCMwI/edit?usp=sharing)
 
 # Files in repo
-* #### `interesting_files.txt` is the stdout for mine_git.py.
+* `interesting_files.txt` is the stdout for mine_git.py.
     Has information about
     1. Files which have multiple pledges
 
@@ -26,5 +26,5 @@ Source [Search a git repo like a ninja](http://travisjeffery.com/b/2012/02/searc
 
     3. Files which have no commits for pledges but somehow showed up in the grep
 
-* #### `pledge_locations.txt` holds the grep output
-* #### `commits.txt` has the five 5 previous commits to a pledge/tame insertion, grouped by file name.
+*  `pledge_locations.txt` holds the grep output
+*  `commits.txt` has the five 5 previous commits to a pledge/tame insertion, grouped by file name.
