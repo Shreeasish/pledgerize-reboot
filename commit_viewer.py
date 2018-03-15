@@ -23,7 +23,7 @@ def getFile(filename):
     except FileNotFoundError:
         raise FileNotFoundError
 
-def display(commit_dict):
+def display(commit_dict, file_name):
     assert commit_dict
 
     print(commit_dict)
@@ -50,11 +50,15 @@ def display(commit_dict):
             print("\n")
 
             if command.lower() == 'i':
-                pass
-            
+                with open("interesting_commits.txt","a+") as commit_file:
+                    commit_file.write("\n" + file_name + commits[j])
+                j+=1
+
             elif command.lower() == 'o':
+                print("\n Next \n")
+                j += 1
                 pass
-            
+
             elif command.lower() == 'j':
                 j += 1
 
@@ -63,10 +67,10 @@ def display(commit_dict):
                     print("\n FIRST COMMIT\n")
                     continue
                 j -= 1
-            
+
             elif command.lower() == 'n':
                 break
-            
+
             elif command.lower() == 'm':
                 if(i == 0 ):
                     print("\n FIRST KEY \n")
@@ -125,7 +129,7 @@ def start() :
     else:
         commit_FH.close()
 
-    display(commit_dict)
+    display(commit_dict, commit_list.split("_")[0])
 
     INVALID_INPUT = False
     return

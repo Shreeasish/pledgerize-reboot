@@ -4,3 +4,6 @@
 [submodule "clang-plugins-demo"]
 	path = clang-plugins-demo
 	url = git@github.com:Shreeasish/clang-plugins-demo.git
+[submodule "hoisting/pledgerize"]
+	path = hoisting/pledgerize
+	url = https://github.com/Shreeasish/pledgerize

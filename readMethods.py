@@ -17,7 +17,7 @@ def read_modifications(fileHandle):
         raise ValueError
     data = json.load(fileHandle)
     commit_dict = dict()
-    for json_obj in data[:2]:
+    for json_obj in data:
         commit_dict[json_obj['id']] = json_obj['commit_ids']
 
     return commit_dict
