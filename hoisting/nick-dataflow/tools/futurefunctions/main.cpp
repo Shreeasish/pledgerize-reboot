@@ -37,7 +37,7 @@ static cl::opt<string> inPath{cl::Positional,
 
 enum 
 Promises{stdio, rpath, wpath, cpath, dpath, 
- tmppath, inet, mcast, fattr, chown, flock, //unix is set as a #define
+ tmppath, inet, mcast, fattr, chown, flock, promise_unix, //unix is set as a #define
  dns, getpw, sendfd, recvfd, tape, 
  tty, proc, exec, prot_exec, settime, ps,
  vminfo, id, pf,
@@ -46,17 +46,16 @@ Promises{stdio, rpath, wpath, cpath, dpath,
 
 const llvm::StringRef
 PromiseNames[] {"stdio", "rpath", "wpath", "cpath", "dpath", 
- "tmppath", "inet", "mcast", "fattr", "chown", "flock", //unix is set as a #define
+ "tmppath", "inet", "mcast", "fattr", "chown", "flock", "unix" //unix is set as a #define
  "dns", "getpw", "sendfd", "recvfd", "tape", 
  "tty", "proc", "exec", "prot_exec", "settime", "ps",
- "vminfo", "id", "pf" //For now
+ "vminfo", "id", "pf"
  };
 
-using FunctionsValue  = llvm::SparseBitVector<>;
-// using FunctionsValue = std::bitset<COUNT-1>;
+// using FunctionsValue  = llvm::SparseBitVector<>;
+using FunctionsValue = std::bitset<COUNT-1>;
 using FunctionsState  = analysis::AbstractState<FunctionsValue>;
 using FunctionsResult = analysis::DataflowResult<FunctionsValue>;
-
 
 static std::vector<const llvm::Function*> functions;
 static llvm::DenseMap<const llvm::Function*,size_t> functionIDs;
@@ -107,17 +106,15 @@ public:
       return;
     }
 
-   FunctionsValue requiredPrivileges{};
-
-   setRequiredPrivileges(requiredPrivileges, fun);
-
-    
+    // FunctionsValue requiredPrivileges{};
+    setRequiredPrivileges(state[nullptr], fun);
 
     auto [found, inserted] = functionIDs.insert({fun, functions.size()});
     if (inserted) {
       functions.push_back(fun);
     }
-    state[nullptr].set(found->second);
+
+    // state[nullptr].set(found->second);
   }
 };
 
@@ -162,10 +159,21 @@ printFollowers(llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> fol
 
     auto* called = getCalledFunction(llvm::CallSite{callsite});
     llvm::outs().changeColor(raw_ostream::Colors::YELLOW);
-    llvm::outs() << "After call to \"" << called->getName() << "\"";
-    for (auto id : after) {
-      llvm::outs() << " " << functions[id]->getName();
+    llvm::outs() << "After call to \"" << called->getName() << "\" ";
+    
+    
+    // for (auto id : after) {
+    //   llvm::outs() << " " << functions[id]->getName();
+    // }
+
+    for (int i = 0; i < COUNT-1; i++) {
+      if(after[i]){
+        llvm::outs() << PromiseNames[i] << " ";
+      }
+
     }
+
+
     llvm::outs() << "\n";
   }
 
