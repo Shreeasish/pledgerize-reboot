@@ -1,0 +1,64 @@
+int
+clock_settime(clockid_t clock_id, const struct timespec *tp);
+https://man.openbsd.org/clock_getres.2
+
+int
+stat(const char *path, struct stat *sb);
+https://man.openbsd.org/fstat.2
+
+int
+fdatasync(int fd);
+https://man.openbsd.org/fsync.2
+
+int
+truncate(const char *path, off_t length);
+https://man.openbsd.org/ftruncate.2
+
+void
+timerclear(struct timeval *);
+int
+timerisset(struct timeval *);
+int
+timercmp(struct timeval *a, struct timeval *b, CMP);
+void
+timersub(struct timeval *a, struct timeval *b, struct timeval *res);
+void
+timeradd(struct timeval *a, struct timeval *b, struct timeval *res);
+[Probably because these don't really affect the system]
+https://man.openbsd.org/getitimer.2
+
+
+int
+getlogin_r(char *name, size_t namelen);
+https://man.openbsd.org/getlogin.2
+
+
+int
+setrtable(int rtableid);
+[I guess this is because you can't change the routing table without getting it first via getrtable() which is protected by stdio]
+https://man.openbsd.org/getrtable.2
+
+int
+posix_madvise(void *addr, size_t len, int behav);
+[These seems an obvious add to the stdio syscalls]
+https://man.openbsd.org/madvise.2
+
+ssize_t
+recv(int s, void *buf, size_t len, int flags);
+https://man.openbsd.org/recvmsg.2
+
+ssize_t
+send(int s, const void *msg, size_t len, int flags);
+https://man.openbsd.org/sendto.2
+
+int
+pselect(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, const struct timespec *timeout, const sigset_t *mask);
+https://man.openbsd.org/select.2
+
+pid_t
+wait(int *status);
+pid_t
+waitpid(pid_t wpid, int *status, int options);
+pid_t
+wait3(int *status, int options, struct rusage *rusage);
+https://man.openbsd.org/wait4.2
