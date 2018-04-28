@@ -52,8 +52,8 @@ PromiseNames[] {"stdio", "rpath", "wpath", "cpath", "dpath",
  "vminfo", "id", "pf" //For now
  };
 
-// using FunctionsValue  = llvm::SparseBitVector<>;
-using FunctionsValue = std::bitset<COUNT-1>;
+using FunctionsValue  = llvm::SparseBitVector<>;
+// using FunctionsValue = std::bitset<COUNT-1>;
 using FunctionsState  = analysis::AbstractState<FunctionsValue>;
 using FunctionsResult = analysis::DataflowResult<FunctionsValue>;
 
@@ -109,17 +109,9 @@ public:
 
    FunctionsValue requiredPrivileges{};
 
-    setRequiredPrivileges(requiredPrivileges, fun);
+   setRequiredPrivileges(requiredPrivileges, fun);
 
-    llvm::outs().changeColor(raw_ostream::Colors::GREEN);
     
-    for(int i = 0; i < COUNT - 1; i++)
-    {
-      if(requiredPrivileges[i])
-      {
-        llvm::outs()<<(PromiseNames[i] + "\t");
-      }
-    }
 
     auto [found, inserted] = functionIDs.insert({fun, functions.size()});
     if (inserted) {
