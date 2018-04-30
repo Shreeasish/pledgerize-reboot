@@ -1,3 +1,8 @@
+set(SOURCES
+  futurefunctions.h
+  handler.cpp
+)
+
 
 add_executable(futurefunctions
   main.cpp

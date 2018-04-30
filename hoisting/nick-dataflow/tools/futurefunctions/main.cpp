@@ -1,4 +1,3 @@
-
 #include "llvm/ADT/SparseBitVector.h"
 #include "llvm/IR/CallSite.h"
 #include "llvm/IR/DebugInfo.h"
@@ -17,9 +16,10 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <variant>
 
 #include "DataflowAnalysis.h"
-
+#include "futurefunctions.h"
 
 using namespace llvm;
 using std::string;
@@ -35,30 +35,19 @@ static cl::opt<string> inPath{cl::Positional,
                               cl::Required,
                               cl::cat{futureFunctionsCategory}};
 
-enum 
-Promises{stdio, rpath, wpath, cpath, dpath, 
- tmppath, inet, mcast, fattr, chown, flock, promise_unix, //unix is set as a #define
- dns, getpw, sendfd, recvfd, tape, 
- tty, proc, exec, prot_exec, settime, ps,
- vminfo, id, pf,
- COUNT //For now
- };
 
-const llvm::StringRef
-PromiseNames[] {"stdio", "rpath", "wpath", "cpath", "dpath", 
- "tmppath", "inet", "mcast", "fattr", "chown", "flock", "unix" //unix is set as a #define
- "dns", "getpw", "sendfd", "recvfd", "tape", 
- "tty", "proc", "exec", "prot_exec", "settime", "ps",
- "vminfo", "id", "pf"
- };
+static FunctionsValue
+handle_fread(const llvm::CallSite cs) {
+  
+  const llvm::Value *called = cs.getCalledValue()->stripPointerCasts();
 
-// using FunctionsValue  = llvm::SparseBitVector<>;
-using FunctionsValue = std::bitset<COUNT-1>;
-using FunctionsState  = analysis::AbstractState<FunctionsValue>;
-using FunctionsResult = analysis::DataflowResult<FunctionsValue>;
+  
+  auto fun = llvm::dyn_cast<llvm::Function>(called);
 
-static std::vector<const llvm::Function*> functions;
-static llvm::DenseMap<const llvm::Function*,size_t> functionIDs;
+  llvm::outs() << fun->getName();
+
+  return FunctionsValue{"000"};
+} //handle_ function prefix
 
 static const llvm::Function *
 getCalledFunction(const llvm::CallSite cs) {
@@ -77,12 +66,8 @@ getCalledFunction(const llvm::CallSite cs) {
 
 
 static void
-setRequiredPrivileges(FunctionsValue& requiredPrivileges, const llvm::Function * fun ) { 
-  if(fun->getName().contains("fprintf")) {
-    llvm::outs()<<"Setting vector\n";
-    requiredPrivileges.set(stdio);
-    requiredPrivileges.set(prot_exec);
-  }
+setRequiredPrivileges(FunctionsValue& requiredPrivileges, const llvm::CallSite cs) { 
+  
 }
 
 
@@ -107,7 +92,7 @@ public:
     }
 
     // FunctionsValue requiredPrivileges{};
-    setRequiredPrivileges(state[nullptr], fun);
+    setRequiredPrivileges(state[nullptr], cs);
 
     auto [found, inserted] = functionIDs.insert({fun, functions.size()});
     if (inserted) {
@@ -187,6 +172,8 @@ printFollowers(llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> fol
 
 int
 main(int argc, char** argv) {
+
+
   // This boilerplate provides convenient stack traces and clean LLVM exit
   // handling. It also initializes the built in support for convenient
   // command line option handling.
@@ -230,3 +217,5 @@ main(int argc, char** argv) {
 
   return 0;
 }
+
+
