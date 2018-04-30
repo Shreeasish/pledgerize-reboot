@@ -17,26 +17,41 @@
 #include <string>
 #include <iostream>
 #include <variant>
+#include <unordered_map>
 
-#include "futurefunctions.h"
+#include "FutureFunctions.h"
 
-std::unordered_map<std::string, Handler> libcHandlers { 
-    "fread", Handler("01101")
+
+std::unordered_map<std::string, Handler> libcHandlers =
+{ 
+    {"fopen", Handler{"00011"}},
+    {"fread", Handler{&handle_fread}}
 };
 
-Handler::Handler(std::string bitString, const llvm::CallSite cs) : promisesBitset{bitString} { //Use '1000010' generated from python
-    for(int i = 0; i < COUNT-1; i++) {
-        if(promisesBitset[i])
-            llvm::outs() << PromiseNames[i];
-            }
-    };
+Handler::Handler(std::string bitString) : promisesBitset{bitString} { //Use '1000010' generated from python
+    llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
+    llvm::outs() << "From BitString Constructor \n";
+};
 
-Handler::Handler(HandlerFunctor hf, const llvm::CallSite cs) : handlerFunctor{ hf } {
-    promisesBitset = handlerFunctor(cs);
-    };
+Handler::Handler(HandlerFunctor hf) : handlerFunctor{ hf } {};
 
-FunctionsValue
+FunctionsValue 
 Handler::getPromisesBitset(llvm::CallSite cs) {
-    return promisesBitset;
+
+    if (handlerFunctor != nullptr) {
+        return handlerFunctor(cs);
+    }
+    else
+    {
+        return promisesBitset;
+    }
 }
 
+static FunctionsValue
+handle_fread(const llvm::CallSite cs) {
+    
+    llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
+    llvm::outs() << "From handler \n";
+
+    return FunctionsValue{"000"};
+} //handle_ function prefix

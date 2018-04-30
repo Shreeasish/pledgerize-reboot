@@ -19,7 +19,7 @@
 #include <variant>
 
 #include "DataflowAnalysis.h"
-#include "futurefunctions.h"
+#include "FutureFunctions.h"
 
 using namespace llvm;
 using std::string;
@@ -36,18 +36,7 @@ static cl::opt<string> inPath{cl::Positional,
                               cl::cat{futureFunctionsCategory}};
 
 
-static FunctionsValue
-handle_fread(const llvm::CallSite cs) {
-  
-  const llvm::Value *called = cs.getCalledValue()->stripPointerCasts();
 
-  
-  auto fun = llvm::dyn_cast<llvm::Function>(called);
-
-  llvm::outs() << fun->getName();
-
-  return FunctionsValue{"000"};
-} //handle_ function prefix
 
 static const llvm::Function *
 getCalledFunction(const llvm::CallSite cs) {
@@ -67,7 +56,13 @@ getCalledFunction(const llvm::CallSite cs) {
 
 static void
 setRequiredPrivileges(FunctionsValue& requiredPrivileges, const llvm::CallSite cs) { 
+  auto functionName = getCalledFunction(cs)->getName().str();
   
+  auto found = libcHandlers.find(functionName);
+  if(found != libcHandlers.end()){
+    auto promisesBitset = found->second.getPromisesBitset(cs);
+    requiredPrivileges |= promisesBitset;
+  }
 }
 
 

@@ -1,3 +1,5 @@
+#ifndef FUTUREFUNCTIONS_H
+#define FUTUREFUNCTIONS_H
 #include "llvm/ADT/SparseBitVector.h"
 #include "llvm/IR/CallSite.h"
 #include "llvm/IR/DebugInfo.h"
@@ -51,22 +53,21 @@ using HandlerFunctor = FunctionsValue (*)(const llvm::CallSite);
 static std::vector<const llvm::Function*> functions;
 static llvm::DenseMap<const llvm::Function*,size_t> functionIDs;
 
+static FunctionsValue
+handle_fread(llvm::CallSite cs);
 
-static void 
-handle_fread(FunctionsValue& requiredPrivileges, const llvm::Function * fun);
-
-
-#ifndef Handler_H
-#define Handler_H
 class Handler {
 
   FunctionsValue promisesBitset;
-  HandlerFunctor handlerFunctor;
+  HandlerFunctor handlerFunctor = nullptr;
 
 public:
   Handler(std::string bitString);
   Handler(HandlerFunctor hf);
-
-  FunctionsValue getPromisesBitset(llvm::CallSite(cs));
+   
+  FunctionsValue getPromisesBitset(llvm::CallSite);
 };
+
+extern std::unordered_map<std::string, Handler> libcHandlers;
+
 #endif

@@ -1,11 +1,11 @@
 set(SOURCES
-  futurefunctions.h
   handler.cpp
 )
 
 
 add_executable(futurefunctions
   main.cpp
+  handler.cpp
 )
 
 llvm_map_components_to_libnames(REQ_LLVM_LIBRARIES ${LLVM_TARGETS_TO_BUILD}
