@@ -40,9 +40,6 @@ Handler::getPromisesBitset(llvm::CallSite cs) {
 }
 
 // Custom Handler //
-
-
-
 CustomHandler::CustomHandler(int ap) : argposition{ap} {};
 CustomHandler::~CustomHandler(){};
 
@@ -64,7 +61,7 @@ getLibCHandlerMap(){
 
     libCHandlers.emplace("fread", "10001");
     libCHandlers.emplace("fopen", std::make_unique<Handlefread>(Handlefread(2)));
-
+    
 
     return libCHandlers;
 }
