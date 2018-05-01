@@ -1,4 +1,4 @@
-#include "llvm/ADT/SparseBitVector.h"
+
 #include "llvm/IR/CallSite.h"
 #include "llvm/IR/DebugInfo.h"
 #include "llvm/IR/LLVMContext.h"
@@ -21,37 +21,50 @@
 
 #include "FutureFunctions.h"
 
-
-std::unordered_map<std::string, Handler> libcHandlers =
-{ 
-    {"fopen", Handler{"00011"}},
-    {"fread", Handler{&handle_fread}}
-};
-
+// Handler //
 Handler::Handler(std::string bitString) : promisesBitset{bitString} { //Use '1000010' generated from python
     llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
     llvm::outs() << "From BitString Constructor \n";
 };
 
-Handler::Handler(HandlerFunctor hf) : handlerFunctor{ hf } {};
+Handler::Handler(HandlerFunctor&& hf) : handlerFunctor{ std::move(hf) } {};
 
 FunctionsValue 
 Handler::getPromisesBitset(llvm::CallSite cs) {
-
     if (handlerFunctor != nullptr) {
-        return handlerFunctor(cs);
+        return (*handlerFunctor)(cs);
     }
-    else
-    {
+    else {
         return promisesBitset;
     }
 }
 
-static FunctionsValue
-handle_fread(const llvm::CallSite cs) {
-    
-    llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
-    llvm::outs() << "From handler \n";
+// Custom Handler //
 
-    return FunctionsValue{"000"};
-} //handle_ function prefix
+
+
+CustomHandler::CustomHandler(int ap) : argposition{ap} {};
+CustomHandler::~CustomHandler(){};
+
+class Handlefread : public CustomHandler {
+
+public:
+    Handlefread(int n) : CustomHandler(n){};
+
+    int operator()(llvm::CallSite cs)  override {
+        //Do things with the callsite
+        return 2;
+    };
+};
+
+
+std::unordered_map<std::string, Handler>
+getLibCHandlerMap(){    
+    std::unordered_map<std::string, Handler> libCHandlers;
+
+    libCHandlers.emplace("fread", "10001");
+    libCHandlers.emplace("fopen", std::make_unique<Handlefread>(Handlefread(2)));
+
+
+    return libCHandlers;
+}

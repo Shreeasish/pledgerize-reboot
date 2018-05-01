@@ -34,10 +34,7 @@ static cl::opt<string> inPath{cl::Positional,
                               cl::init(""),
                               cl::Required,
                               cl::cat{futureFunctionsCategory}};
-
-
-
-
+                              
 static const llvm::Function *
 getCalledFunction(const llvm::CallSite cs) {
   if (!cs.getInstruction()) {
@@ -58,8 +55,11 @@ static void
 setRequiredPrivileges(FunctionsValue& requiredPrivileges, const llvm::CallSite cs) { 
   auto functionName = getCalledFunction(cs)->getName().str();
   
-  auto found = libcHandlers.find(functionName);
-  if(found != libcHandlers.end()){
+
+  auto libCHandlers = getLibCHandlerMap();
+
+  auto found = libCHandlers.find(functionName);
+  if(found != libCHandlers.end()){
     auto promisesBitset = found->second.getPromisesBitset(cs);
     requiredPrivileges |= promisesBitset;
   }
