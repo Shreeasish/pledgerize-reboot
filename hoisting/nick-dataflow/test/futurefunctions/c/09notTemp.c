@@ -9,7 +9,7 @@
 
 int
 main() {
-  FILE *outfile = fopen("/tmp/dummyTextFile.txt", "r");
+  FILE *outfile = fopen("./dummyTextFile.txt", "r");
   char buffer[100];
   fread(buffer, 50, 1, outfile);
   printf("%s\n",buffer);
