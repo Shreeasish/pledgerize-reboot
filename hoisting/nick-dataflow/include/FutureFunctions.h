@@ -48,6 +48,8 @@ PromiseNames[] {"stdio", "rpath", "wpath", "cpath", "dpath",
 using FunctionsValue  = std::bitset<COUNT-1>;
 using FunctionsState  = analysis::AbstractState<FunctionsValue>;
 using FunctionsResult = analysis::DataflowResult<FunctionsValue>;
+using Context = std::array<llvm::Instruction*, 2ul>;
+
 
 
 class CustomHandler {
@@ -57,7 +59,7 @@ public:
     CustomHandler(int ap);  
     virtual ~CustomHandler();
   
-    virtual int operator()(llvm::CallSite) = 0;
+    virtual FunctionsValue operator()(llvm::CallSite, const Context& context) = 0;
 
     int getArgPosition() {
       return argposition;
@@ -79,21 +81,20 @@ class Handler {
   FunctionsValue promisesBitset;
   HandlerFunctor handlerFunctor;
 
-  tmpanalysis::tmppathResultsTy* tmpResults;
-
 public:
   //Constructors
   Handler(std::string bitString);
   Handler(HandlerFunctor&& hf);
   
   //Methods
-  FunctionsValue getPromisesBitset(llvm::CallSite cs);
+  FunctionsValue getPromisesBitset(const llvm::CallSite& cs, const Context& context);
 
 };
 
-
+//==================Functions======================================//
 std::unordered_map<std::string, Handler>
 getLibCHandlerMap(
         tmpanalysis::tmppathResultsTy& tmpanalysisResults
         );
+
 #endif

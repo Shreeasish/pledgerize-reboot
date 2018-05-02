@@ -104,7 +104,7 @@ isConstantTempPath(llvm::Value* value) {
 class FilePolicyTransfer {
 public:
   void
-  operator()(llvm::Value& v, FileState& state) {
+  operator()(llvm::Value& v, FileState& state, const Context& context) {
     // Conservatively model all loaded info as unknown
     if (auto* li = dyn_cast<LoadInst>(&v)) {
       state[li].set();
@@ -189,7 +189,7 @@ collectFileRights(FileResult& fileStates, OutIterator tempRW) {
 }
 
 
-/* static void
+static void
 printLineNumber(llvm::raw_ostream& out, llvm::Instruction& inst) {
   if (const llvm::DILocation* debugLoc = inst.getDebugLoc()) {
     out << "At " << debugLoc->getFilename()
@@ -198,11 +198,11 @@ printLineNumber(llvm::raw_ostream& out, llvm::Instruction& inst) {
   } else {
     out << "At an unknown location:\n";
   }  
-} */
+} 
 
 
 
-/* Hijacked this to return analysis information
+
 static void
 printErrors(llvm::ArrayRef<std::pair<llvm::Instruction*, unsigned>> errors) {
   for (auto& [fileOperation, argNum] : errors) {
@@ -219,7 +219,7 @@ printErrors(llvm::ArrayRef<std::pair<llvm::Instruction*, unsigned>> errors) {
     llvm::outs() << "No errors detected\n";
   }
   llvm::outs().resetColor();
-} */
+} 
 
 
 // int

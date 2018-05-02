@@ -147,8 +147,9 @@ getIncomingState(DataflowResult<AbstractValue>& result, llvm::Instruction& i) {
 template <typename AbstractValue>
 class Transfer {
 public:
-  void
-  operator()(llvm::Value& v, AbstractState<AbstractValue>& s) {
+  template <typename Context> 
+  void 
+  operator()(llvm::Value& v, AbstractState<AbstractValue>& s, const Context& ) {
     llvm_unreachable("unimplemented transfer");
   }
 };
@@ -216,20 +217,21 @@ public:
     return llvm::predecessors(&bb);
   }
   static bool shouldMeetPHI() { return true; }
-  template <class State, class Transfer, class Meet>
+  template <class State, class Transfer, class Meet, class Context>
   static bool prepareSummaryState(llvm::CallSite cs,
                                   llvm::Function* callee,
                                   State& state,
                                   State& summaryState,
                                   Transfer& transfer,
-                                  Meet& meet) {
+                                  Meet& meet,
+                                  const Context& context) {
     unsigned index = 0;
     bool needsUpdate = false;
     for (auto& functionArg : callee->args()) {
       auto* passedConcrete = cs.getArgument(index);
       auto passedAbstract = state.find(passedConcrete);
       if (passedAbstract == state.end()) {
-        transfer(*passedConcrete, state);
+        transfer(*passedConcrete, state, context );
         passedAbstract = state.find(passedConcrete);
       }
       auto& arg     = summaryState[&functionArg];
@@ -267,13 +269,14 @@ public:
     return llvm::successors(&bb);
   }
   static bool shouldMeetPHI() { return false; }
-  template <class State, class Transfer, class Meet>
+  template <class State, class Transfer, class Meet, class Context>
   static bool prepareSummaryState(llvm::CallSite cs,
                                   llvm::Function* callee,
                                   State& state,
                                   State& summaryState,
                                   Transfer& transfer,
-                                  Meet& meet) {
+                                  Meet& meet,
+                                  const Context& context) {
     // TODO: This would be better if it checked whether the new state at this
     // function different from the old.
     bool needsUpdate = false;
@@ -379,7 +382,7 @@ public:
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
         } else {
-          applyTransfer(i, state);
+          applyTransfer(i, state, context);
         }
 //meet.printState(llvm::outs(),state);
         results[&i] = state;
@@ -449,7 +452,7 @@ public:
     auto& summaryState = calledState[callee];
     bool needsUpdate   = summaryState.size() == 0;
 
-    needsUpdate |= Direction::prepareSummaryState(cs, callee, state, summaryState, transfer, meet);
+    needsUpdate |= Direction::prepareSummaryState(cs, callee, state, summaryState, transfer, meet, context);
 
     if (!active.count(toCall) && needsUpdate) {
       computeDataflow(*callee, newContext);
@@ -505,12 +508,12 @@ private:
   }
 
   AbstractValue
-  meetOverPHI(State& state, const llvm::PHINode& phi) {
+  meetOverPHI(State& state, const llvm::PHINode& phi, const Context& context) {
     auto phiValue = AbstractValue();
     for (auto& value : phi.incoming_values()) {
       auto found = state.find(value.get());
       if (state.end() == found) {
-        transfer(*value.get(), state);
+        transfer(*value.get(), state, context);
         found = state.find(value.get());
       }
       phiValue = meet({phiValue, found->second});
@@ -519,13 +522,13 @@ private:
   }
 
   void
-  applyTransfer(llvm::Instruction& i, State& state) {
+  applyTransfer(llvm::Instruction& i, State& state, const Context& context) {
     if (auto* phi = llvm::dyn_cast<llvm::PHINode>(&i);
         phi && Direction::shouldMeetPHI()) {
       // Phis can be explicit meet operations
-      state[phi] = meetOverPHI(state, *phi);
+      state[phi] = meetOverPHI(state, *phi, context);
     } else {
-      transfer(i, state);
+      transfer(i, state, context);
     }
   }
 };

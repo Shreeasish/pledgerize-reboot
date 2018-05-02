@@ -22,26 +22,41 @@
 #include "FutureFunctions.h"
 #include "DataflowAnalysis.h"
 
+// Undefined reference issues so placed here
+static llvm::Function *
+getCalledFunction(llvm::CallSite cs) {
+  if (!cs.getInstruction()) {
+    return nullptr;
+  }
 
-// Handler //
+  llvm::Value *called = cs.getCalledValue()->stripPointerCasts();
+
+
+  return llvm::dyn_cast<llvm::Function>(called);
+}
+
+
+//================== Handler==================== //
 Handler::Handler(std::string bitString) : promisesBitset{bitString} { //Use '1000010' generated from python
     llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
-    llvm::outs() << "From BitString Constructor \n";
 };
 
 Handler::Handler(HandlerFunctor&& hf) : handlerFunctor{ std::move(hf) } {};
 
+
 FunctionsValue 
-Handler::getPromisesBitset(llvm::CallSite cs) {
+Handler::getPromisesBitset(const llvm::CallSite& cs, const Context& context) {
+    
     if (handlerFunctor != nullptr) {
-        return (*handlerFunctor)(cs);
+        return (*handlerFunctor)(cs, context);
     }
     else {
         return promisesBitset;
     }
 }
+//================== Handler==================== //
 
-// Custom Handler //
+//=============== Custom Handler================ //
 CustomHandler::CustomHandler(int ap) : argposition{ap} {};
 CustomHandler::~CustomHandler(){};
 
@@ -57,23 +72,44 @@ tmpanalysis::tmppathResultsTy& tmpResults;
 public:
     Handlefread(int n, tmpanalysis::tmppathResultsTy& tresults) : CustomHandler(n), tmpResults{tresults} {};
 
-    int operator()(llvm::CallSite cs)  override {
-        llvm::outs() << "Handlerfread initialized with argposition " << getArgPosition() << "\n";
+    FunctionsValue
+    operator()(const llvm::CallSite cs, const Context& context)  override {        
 
-        // for (auto& [context, contextResults] : results) {
-        //   for (auto& [function, functionResults] : contextResults) {
-        //     collectFileRights(functionResults, std::back_inserter(errors));
-        //   }
-        // }
+        auto& contextResults = tmpResults[context];
+
+        auto* function = getCalledFunction(cs);
 
         for (auto& [context, contextResults] : tmpResults) {
-            for (auto& [function, functionResults] : contextResults){
+                llvm::outs() << "For loop outer\n";
+            for (auto& [function, functionResults] : contextResults) {
                 
+                llvm::outs() << "For loop inner\n";
+                llvm::outs() << "Function" << function->getName();
             }
         }
-        return 2;
+        
+        auto& functionsResults = contextResults[function]; //Need to use non const key here
+
+        for (auto& [a,b] : functionsResults) {
+            llvm::outs() << *a << "Value of a" << "\n";
+        }
+
+        auto argument = cs.getArgument(getArgPosition());
+
+        // llvm::outs() << "Argument " << *argument << "\n";
+
+        auto argState = functionsResults.find(argument);
+
+        for (auto& [one,two] : functionsResults) {
+            llvm::outs() << *one << "Value" << "\n";
+        }
+        
+        if(argState != functionsResults.end()){
+            llvm::outs () << "Found the state for argposition " << getArgPosition() << "\n";
+        }
+        return 0;
     };
-};
+}; //=============== Custom Handler================ //
 
 
 std::unordered_map<std::string, Handler>
@@ -83,7 +119,7 @@ getLibCHandlerMap(
 
     std::unordered_map<std::string, Handler> libCHandlers;
     libCHandlers.emplace("fopen", "10001");
-    libCHandlers.emplace( "fread", std::make_unique<Handlefread>(Handlefread(2, tmpResults) )); // Argument position supplied here
+    libCHandlers.emplace("fread", std::make_unique<Handlefread>(Handlefread(3, tmpResults) )); // Argument position supplied here
     
     return libCHandlers;
-}
+};

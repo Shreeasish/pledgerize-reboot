@@ -29,6 +29,7 @@ using std::string;
 using std::unique_ptr;
 
 
+
 static cl::OptionCategory futureFunctionsCategory{"future functions options"};
 
 static cl::opt<string> inPath{cl::Positional,
@@ -60,14 +61,15 @@ getCalledFunction(const llvm::CallSite cs) {
 
 
 static void
-setRequiredPrivileges(FunctionsValue& requiredPrivileges, const llvm::CallSite cs) { 
-  auto functionName = getCalledFunction(cs)->getName().str();
+setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, const Context& context) { 
   
-
+  auto functionName = getCalledFunction(cs)->getName().str();
 
   auto found = libCHandlers.find(functionName);
-  if(found != libCHandlers.end()){
-    auto promisesBitset = found->second.getPromisesBitset(cs);
+  
+  if(found != libCHandlers.end()){   
+    //Use the context of the current callsite
+    auto promisesBitset = found->second.getPromisesBitset(cs, context);
     requiredPrivileges |= promisesBitset;
   }
 }
@@ -83,19 +85,22 @@ public:
 
 
 class FunctionsTransfer {
+  
 public:
   void
-  operator()(llvm::Value& v, FunctionsState& state) {
+  operator()(llvm::Value& v, FunctionsState& state, const Context& context) {
+    
     const CallSite cs{&v};
     const auto* fun = getCalledFunction(cs);
+
     // Pretend that indirect calls & non calls don't exist for this analysis
     if (!fun) {
       return;
     }
 
-    // FunctionsValue requiredPrivileges{};
-    setRequiredPrivileges(state[nullptr], cs);
-
+    FunctionsValue requiredPrivileges{};
+    setRequiredPrivileges(state[nullptr], cs, context);
+ 
     auto [found, inserted] = functionIDs.insert({fun, functions.size()});
     if (inserted) {
       functions.push_back(fun);
@@ -207,14 +212,15 @@ main(int argc, char** argv) {
   using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, analysis::Backward>;
   Analysis analysis{*module, mainFunction};
 
-  // Get all results
-  auto results = analysis.computeDataflow();
+  // Get all forward analyses here
   auto tmpAnalysisResults = tmpanalysis::gettmpAnalysisResults(*module);
 
-  // Get LibCHandler
+  // Get all the libraries here and initialise them with it
   libCHandlers = getLibCHandlerMap(
         tmpAnalysisResults
-        );
+         );
+
+  auto results = analysis.computeDataflow();
 
   std::vector<std::pair<llvm::Instruction*, FunctionsValue>> followers;
   for (auto& [context, contextResults] : results) {
