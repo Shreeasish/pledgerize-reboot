@@ -1,11 +1,13 @@
 set(SOURCES
   handler.cpp
+  taintAnalysis.cpp
 )
 
 
 add_executable(futurefunctions
   main.cpp
   handler.cpp
+  taintAnalysis.cpp
 )
 
 llvm_map_components_to_libnames(REQ_LLVM_LIBRARIES ${LLVM_TARGETS_TO_BUILD}

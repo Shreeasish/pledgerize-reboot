@@ -20,8 +20,11 @@
 
 #include "DataflowAnalysis.h"
 #include "FutureFunctions.h"
+#include "TaintAnalysis.h"
 
 using namespace llvm;
+
+
 using std::string;
 using std::unique_ptr;
 
@@ -35,6 +38,11 @@ static cl::opt<string> inPath{cl::Positional,
                               cl::Required,
                               cl::cat{futureFunctionsCategory}};
                               
+
+//LibC map here
+std::unordered_map<std::string, Handler> libCHandlers;
+
+
 static const llvm::Function *
 getCalledFunction(const llvm::CallSite cs) {
   if (!cs.getInstruction()) {
@@ -56,7 +64,6 @@ setRequiredPrivileges(FunctionsValue& requiredPrivileges, const llvm::CallSite c
   auto functionName = getCalledFunction(cs)->getName().str();
   
 
-  auto libCHandlers = getLibCHandlerMap();
 
   auto found = libCHandlers.find(functionName);
   if(found != libCHandlers.end()){
@@ -188,7 +195,7 @@ main(int argc, char** argv) {
     err.print(argv[0], errs());
     return -1;
   }
-
+  
   auto* mainFunction = module->getFunction("main");
   if (!mainFunction) {
     llvm::report_fatal_error("Unable to find main function.");
@@ -199,7 +206,15 @@ main(int argc, char** argv) {
   using Meet     = FunctionsMeet;
   using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, analysis::Backward>;
   Analysis analysis{*module, mainFunction};
+
+  // Get all results
   auto results = analysis.computeDataflow();
+  auto tmpAnalysisResults = tmpanalysis::gettmpAnalysisResults(*module);
+
+  // Get LibCHandler
+  libCHandlers = getLibCHandlerMap(
+        tmpAnalysisResults
+        );
 
   std::vector<std::pair<llvm::Instruction*, FunctionsValue>> followers;
   for (auto& [context, contextResults] : results) {
@@ -212,5 +227,4 @@ main(int argc, char** argv) {
 
   return 0;
 }
-
 

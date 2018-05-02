@@ -21,6 +21,7 @@
 #include <variant>
 
 #include "DataflowAnalysis.h"
+#include "TaintAnalysis.h"
 
 
 enum 
@@ -48,18 +49,24 @@ using FunctionsValue  = std::bitset<COUNT-1>;
 using FunctionsState  = analysis::AbstractState<FunctionsValue>;
 using FunctionsResult = analysis::DataflowResult<FunctionsValue>;
 
+
 class CustomHandler {
+
 public:
-  
+    
     CustomHandler(int ap);  
     virtual ~CustomHandler();
   
     virtual int operator()(llvm::CallSite) = 0;
 
+    int getArgPosition() {
+      return argposition;
+    }
+
 private:
     int argposition;
 
-};
+}; // end CustomHandler
 
 using HandlerFunctor  = std::unique_ptr<CustomHandler>;
 
@@ -72,6 +79,8 @@ class Handler {
   FunctionsValue promisesBitset;
   HandlerFunctor handlerFunctor;
 
+  tmpanalysis::tmppathResultsTy* tmpResults;
+
 public:
   //Constructors
   Handler(std::string bitString);
@@ -82,8 +91,9 @@ public:
 
 };
 
+
 std::unordered_map<std::string, Handler>
-getLibCHandlerMap();
-
-
+getLibCHandlerMap(
+        tmpanalysis::tmppathResultsTy& tmpanalysisResults
+        );
 #endif
