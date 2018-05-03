@@ -98,7 +98,7 @@ public:
       return;
     }
 
-    FunctionsValue requiredPrivileges{};
+    // FunctionsValue requiredPrivileges{};
     setRequiredPrivileges(state[nullptr], cs, context);
  
     auto [found, inserted] = functionIDs.insert({fun, functions.size()});

@@ -31,7 +31,6 @@ getCalledFunction(llvm::CallSite cs) {
 
   llvm::Value *called = cs.getCalledValue()->stripPointerCasts();
 
-
   return llvm::dyn_cast<llvm::Function>(called);
 }
 
@@ -42,7 +41,6 @@ Handler::Handler(std::string bitString) : promisesBitset{bitString} { //Use '100
 };
 
 Handler::Handler(HandlerFunctor&& hf) : handlerFunctor{ std::move(hf) } {};
-
 
 FunctionsValue 
 Handler::getPromisesBitset(const llvm::CallSite& cs, const Context& context) {
@@ -74,39 +72,24 @@ public:
 
     FunctionsValue
     operator()(const llvm::CallSite cs, const Context& context)  override {        
+        llvm::outs() << "Handler \n";
 
+        // llvm::outs() << tmpResults.count(context) << " tmpResults \n";
         auto& contextResults = tmpResults[context];
-
-        auto* function = getCalledFunction(cs);
-
-        for (auto& [context, contextResults] : tmpResults) {
-                llvm::outs() << "For loop outer\n";
-            for (auto& [function, functionResults] : contextResults) {
-                
-                llvm::outs() << "For loop inner\n";
-                llvm::outs() << "Function" << function->getName();
-            }
-        }
+        auto* instr = cs.getInstruction();
+        // llvm::outs() << contextResults.count(instr->getFunction()) << " contextResults \n";
         
-        auto& functionsResults = contextResults[function]; //Need to use non const key here
+        auto& functionResults = contextResults[instr->getFunction()];
+        auto state = analysis::getIncomingState(functionResults, *instr);
+        auto arg = cs.getArgument(getArgPosition());
+        auto isTmp = state[arg];
 
-        for (auto& [a,b] : functionsResults) {
-            llvm::outs() << *a << "Value of a" << "\n";
-        }
-
-        auto argument = cs.getArgument(getArgPosition());
-
-        // llvm::outs() << "Argument " << *argument << "\n";
-
-        auto argState = functionsResults.find(argument);
-
-        for (auto& [one,two] : functionsResults) {
-            llvm::outs() << *one << "Value" << "\n";
-        }
         
-        if(argState != functionsResults.end()){
-            llvm::outs () << "Found the state for argposition " << getArgPosition() << "\n";
+        if(isTmp.test(0)){
+            return std::bitset<COUNT-1>{1<<tmppath};
         }
+
+
         return 0;
     };
 }; //=============== Custom Handler================ //
@@ -118,7 +101,7 @@ getLibCHandlerMap(
         ) {    
 
     std::unordered_map<std::string, Handler> libCHandlers;
-    libCHandlers.emplace("fopen", "10001");
+    libCHandlers.emplace("fopen", "1");
     libCHandlers.emplace("fread", std::make_unique<Handlefread>(Handlefread(3, tmpResults) )); // Argument position supplied here
     
     return libCHandlers;
