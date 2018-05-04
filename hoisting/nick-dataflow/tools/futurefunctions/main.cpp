@@ -70,7 +70,13 @@ setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, con
   if(found != libCHandlers.end()){   
     //Use the context of the current callsite
     auto promisesBitset = found->second.getPromisesBitset(cs, context);
+
+    llvm::outs () << "things here ";
+    llvm::outs () << requiredPrivileges.to_ulong();
+    llvm::outs () << "\n";
+
     requiredPrivileges |= promisesBitset;
+    // requiredPrivileges |= 0;
   }
 }
 
@@ -158,7 +164,7 @@ printFollowers(llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> fol
     //   llvm::outs() << " " << functions[id]->getName();
     // }
 
-    for (int i = 0; i < COUNT-1; i++) {
+    for (int i = 0; i < COUNT ; i++) {
       if(after[i]){
         llvm::outs() << PromiseNames[i] << " ";
       }

@@ -24,28 +24,59 @@
 #include "TaintAnalysis.h"
 
 
-enum 
-Promises {stdio, rpath, wpath, cpath, dpath, 
- tmppath, inet, mcast, fattr, chown, flock, promise_unix, //unix is set as a #define
- dns, getpw, sendfd, recvfd, tape, 
- tty, proc, exec, prot_exec, settime, ps,
- vminfo, id, pf,
- COUNT //For now
- };
+enum Promises {
+  PLEDGE_ALWAYS,
+  PLEDGE_RPATH,
+  PLEDGE_WPATH,
+  PLEDGE_CPATH,
+  PLEDGE_STDIO,
+  PLEDGE_TMPPATH,
+  PLEDGE_DNS,
+  PLEDGE_INET,
+  PLEDGE_FLOCK,
+  PLEDGE_UNIX,
+  PLEDGE_ID,
+  PLEDGE_TAPE,
+  PLEDGE_GETPW,
+  PLEDGE_PROC,
+  PLEDGE_SETTIME,
+  PLEDGE_FATTR,
+  PLEDGE_PROTEXEC,
+  PLEDGE_TTY,
+  PLEDGE_SENDFD,
+  PLEDGE_RECVFD,
+  PLEDGE_EXEC,
+  PLEDGE_ROUTE,
+  PLEDGE_MCAST,
+  PLEDGE_VMINFO,
+  PLEDGE_PS,
+  PLEDGE_DISKLABEL,
+  PLEDGE_PF,
+  PLEDGE_AUDIO,
+  PLEDGE_DPATH,
+  PLEDGE_DRM,
+  PLEDGE_VMM,
+  PLEDGE_CHOWN,
+  PLEDGE_CHOWNUID,
+  PLEDGE_BPF,
+  PLEDGE_ERROR,
+  COUNT
+};
 
-const llvm::StringRef
-PromiseNames[] {"stdio", "rpath", "wpath", "cpath", "dpath", 
- "tmppath", "inet", "mcast", "fattr", "chown", "flock", "unix" //unix is set as a #define
- "dns", "getpw", "sendfd", "recvfd", "tape", 
- "tty", "proc", "exec", "prot_exec", "settime", "ps",
- "vminfo", "id", "pf"
- };
+
+const llvm::StringRef PromiseNames[] {
+  "rpath", "wpath", "cpath", "stdio", "tmppath", "dns", "inet", "flock", "unix",
+      "id", "tape", "getpw", "proc", "settime", "fattr", "protexec", "tty",
+      "sendfd", "recvfd", "exec", "route", "mcast", "vminfo", "ps", "disklabel",
+      "pf", "audio", "dpath", "drm", "vmm", "chown", "bpf", "error"
+};
+
 
 // using FunctionsValue  = llvm::SparseBitVector<>;
 
 //Custom Handler declared here, Should be moved to it's own file?
 
-using FunctionsValue  = std::bitset<COUNT-1>;
+using FunctionsValue  = std::bitset<COUNT>;
 using FunctionsState  = analysis::AbstractState<FunctionsValue>;
 using FunctionsResult = analysis::DataflowResult<FunctionsValue>;
 using Context = std::array<llvm::Instruction*, 2ul>;
@@ -83,7 +114,7 @@ class Handler {
 
 public:
   //Constructors
-  Handler(std::string bitString);
+  Handler(unsigned long bitString);
   Handler(HandlerFunctor&& hf);
   
   //Methods

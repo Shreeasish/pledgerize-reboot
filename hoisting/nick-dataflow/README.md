@@ -1,3 +1,17 @@
+# Notes
+
+
+promise_value is used to hold the value for a particular promise -- stdio <--> 1<<6  -- From pledge.h -- Done
+
+syscall_bitset holds the bitset for each syscall -- open <--> 1<<4 | 1<<6 -- From kern_pledge.c
+
+promise names also needs to be added -- From kern_pledge.c -- Done
+
+syscallmacro_syscall maps SYS_X to X -- -- from 
+
+
+==============================================
+
 These programs are demonstrations of how LLVM can be used for (very simple)
 static dataflow analyses (both inter- and intraprocedural). The presentation
 is illustrative and does not demonstrate how to implement scalable analyses.
