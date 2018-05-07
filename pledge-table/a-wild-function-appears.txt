@@ -4,6 +4,7 @@ https://man.openbsd.org/clock_getres.2
 
 int
 stat(const char *path, struct stat *sb);
+[found in kern_pledge.c]
 https://man.openbsd.org/fstat.2
 
 int

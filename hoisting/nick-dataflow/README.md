@@ -1,5 +1,7 @@
 # Notes
 
+cflow command used, indent pattern '    |' (4 spaces with a bar)
+cflow -i _s --level begin='' --level '0=    |' --level '1=' --level end0='' --level end1='' *  > new_header
 
 promise_value is used to hold the value for a particular promise -- stdio <--> 1<<6  -- From pledge.h -- Done
 

@@ -1,0 +1,3511 @@
+__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sgetc()
+    |mbrtowc()
+__fputwc_unlock() <wint_t __fputwc_unlock (wchar_t wc, FILE *fp) at fputwc.c:40>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |wcrtomb()
+    |__sfvwrite() <int __sfvwrite (FILE *fp, struct __suio uio) at fvwrite.c:49>:
+    |    |cantwrite()
+    |    |GETIOV()
+    |    |MIN()
+    |    |getpagesize()
+    |    |recallocarray()
+    |    |COPY()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |memchr()
+__sclose() <int __sclose (void *cookie) at stdio.c:85>:
+    |close()
+__sflags() <int __sflags (const char *mode, int *optr) at flags.c:46>:
+__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |FLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |FUNLOCKFILE()
+__sfp() <FILE *__sfp (void) at findfp.c:102>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |_MUTEX_LOCK()
+    |_MUTEX_UNLOCK()
+    |moreglue() <struct glue moreglue (int n) at findfp.c:70>
+    |_FILEEXT_INIT()
+__sfvwrite() <int __sfvwrite (FILE *fp, struct __suio uio) at fvwrite.c:49>:
+    |cantwrite()
+    |GETIOV()
+    |MIN()
+    |getpagesize()
+    |recallocarray()
+    |COPY()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |memchr()
+__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |isatty()
+__sread() <int __sread (void *cookie, char *buf, int n) at stdio.c:43>:
+    |read()
+__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FREEUB()
+    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |isatty()
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |FLOCKFILE()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |FUNLOCKFILE()
+__srget() <int __srget (FILE *fp) at rget.c:43>:
+    |_SET_ORIENTATION()
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |FLOCKFILE()
+    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |FUNLOCKFILE()
+__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |lseek()
+__svfscanf() <int __svfscanf (FILE *fp, const char *fmt0, __va_list ap) at vfscanf.c:100>:
+    |_SET_ORIENTATION()
+    |isspace() <__only_inline int isspace (int _c) at ctype.h:155>:
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FREEUB()
+    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |isatty()
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |FLOCKFILE()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |FUNLOCKFILE()
+    |__sccl() <u_char *__sccl (char *tab, u_char *fmt) at vfscanf.c:872>:
+    |va_arg()
+    |isupper() <__only_inline int isupper (int _c) at ctype.h:160>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbrtowc()
+    |fread() <size_t fread (void *, size_t, size_t, FILE *) at stdio.h:221>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |memcpy()
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |FLOCKFILE()
+    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |FUNLOCKFILE()
+    |wctob()
+    |ungetc() <int ungetc (int c, FILE *fp) at ungetc.c:79>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |_UB()
+    |__submore() <int __submore (FILE *fp) at ungetc.c:47>:
+    |    |_UB()
+    |    |malloc()
+    |    |reallocarray()
+    |    |memcpy()
+    |iswspace()
+    |strtoumax()
+    |strtoimax()
+    |strtold()
+    |strtod()
+    |strtof()
+__swbuf() <int __swbuf (int c, FILE *fp) at wbuf.c:44>:
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+__swrite() <int __swrite (void *cookie, const char *buf, int n) at stdio.c:58>:
+    |lseek()
+    |write()
+__swsetup() <int __swsetup (FILE *fp) at wsetup.c:44>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |HASUB()
+    |FREEUB()
+    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+__ungetwc() <wint_t __ungetwc (wint_t wc, FILE *fp) at ungetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sclearerr()
+__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 250)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const wchar_t *fmt, va_list ap) at vfwprintf.c:98> (R):
+    |_FILEEXT_SETUP()
+    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (recursive: see 304)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const wchar_t *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfwprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |GETARG()
+    |btowc()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |free()
+    |__mbsconv() <wchar_t *__mbsconv (char *mbsarg, int prec) at vfwprintf.c:167>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbrlen()
+    |strlen()
+    |calloc()
+    |mbrtowc()
+    |free()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (wchar_t *p0, int exp, int fmtch) at vfwprintf.c:1504>:
+    |to_char()
+    |UARG()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |wmemchr()
+    |wcslen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |va_end()
+    |__sferror()
+    |munmap()
+__vfwscanf() <int __vfwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, __va_list ap) at vfwscanf.c:103>:
+    |_SET_ORIENTATION()
+    |iswspace()
+    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sgetc()
+    |mbrtowc()
+    |__ungetwc() <wint_t __ungetwc (wint_t wc, FILE *fp) at ungetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sclearerr()
+    |va_arg()
+    |iswupper()
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |wcrtomb()
+    |memcpy()
+    |INCCL()
+    |wcstoimax()
+    |wcstoumax()
+    |mbrtowc()
+    |localeconv()
+    |wcstold()
+    |wcstod()
+    |wcstof()
+_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+_mktemp() <char *_mktemp (char *path) at mktemp.c:114>:
+    |mktemp_internal() <int mktemp_internal (char *path, int slen, int mode, int flags) at mktemp.c:45>:
+    |    |strlen()
+    |    |arc4random_buf()
+    |    |nitems()
+    |    |lstat()
+    |    |open()
+    |    |mkdir()
+asprintf() <int asprintf (char **str, const char *fmt, ...) at asprintf.c:30>:
+    |getpagesize()
+    |_FILEEXT_SETUP()
+    |malloc()
+    |va_start()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 399)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |va_end()
+    |recallocarray()
+    |free()
+clearerr() <void clearerr (FILE *fp) at clrerr.c:39>:
+    |FLOCKFILE()
+    |__sclearerr()
+    |FUNLOCKFILE()
+dprintf() <int dprintf (int fd, const char *__restrict fmt, ...) at dprintf.c:39>:
+    |va_start()
+    |vdprintf() <int vdprintf (int fd, const char *__restrict fmt, va_list ap) at vdprintf.c:51>:
+    |_FILEEXT_SETUP()
+    |__dwrite() <int __dwrite (void *cookie, const char *buf, int n) at vdprintf.c:44>:
+    |write()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 466)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |fflush() <int fflush (FILE *fp) at fflush.c:40>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |FLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |FUNLOCKFILE()
+    |    |FLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |FUNLOCKFILE()
+    |va_end()
+fclose() <int fclose (FILE *fp) at fclose.c:40>:
+    |FLOCKFILE()
+    |WCIO_FREE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |free()
+    |HASUB()
+    |FREEUB()
+    |HASLB()
+    |FREELB()
+    |FUNLOCKFILE()
+fdopen() <FILE *fdopen (int fd, const char *mode) at fdopen.c:43>:
+    |__sflags() <int __sflags (const char *mode, int *optr) at flags.c:46>:
+    |fcntl()
+    |__sfp() <FILE *__sfp (void) at findfp.c:102>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |_MUTEX_LOCK()
+    |_MUTEX_UNLOCK()
+    |moreglue() <struct glue moreglue (int n) at findfp.c:70>
+    |_FILEEXT_INIT()
+    |__sread() <int __sread (void *cookie, char *buf, int n) at stdio.c:43>:
+    |read()
+    |__swrite() <int __swrite (void *cookie, const char *buf, int n) at stdio.c:58>:
+    |lseek()
+    |write()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |lseek()
+    |__sclose() <int __sclose (void *cookie) at stdio.c:85>:
+    |    |close()
+feof() <int feof (FILE *fp) at feof.c:43>:
+    |FLOCKFILE()
+    |__sfeof()
+    |FUNLOCKFILE()
+ferror() <int ferror (FILE *fp) at ferror.c:43>:
+    |FLOCKFILE()
+    |__sferror()
+    |FUNLOCKFILE()
+fflush() <int fflush (FILE *fp) at fflush.c:40>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |FLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |FUNLOCKFILE()
+    |FLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |FUNLOCKFILE()
+fgetc() <int fgetc (FILE *fp) at fgetc.c:37>:
+    |getc() <int getc (FILE *fp) at getc.c:55>:
+    |    |FLOCKFILE()
+    |    |__sgetc()
+    |    |FUNLOCKFILE()
+fgetln() <char *fgetln (FILE *fp, size_t *lenp) at fgetln.c:64>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FREEUB()
+    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |isatty()
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |FLOCKFILE()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |FUNLOCKFILE()
+    |memchr()
+    |FUNLOCKFILE()
+    |__slbexpand() <int __slbexpand (FILE *fp, size_t newsize) at fgetln.c:43>:
+    |recallocarray()
+    |memcpy()
+fgetpos() <int fgetpos (FILE *fp, fpos_t *pos) at fgetpos.c:40>:
+    |ftello() <off_t ftello (FILE *fp) at ftell.c:43>:
+    |fpos_t()
+    |FLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FUNLOCKFILE()
+    |fpos_t()
+fgets() <char *fgets (char *, int, FILE *) at stdio.h:215>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FREEUB()
+    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |isatty()
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |FLOCKFILE()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |FUNLOCKFILE()
+    |FUNLOCKFILE()
+    |memchr()
+    |memcpy()
+fgetwc() <wint_t fgetwc (FILE *fp) at fgetwc.c:81>:
+    |FLOCKFILE()
+    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sgetc()
+    |mbrtowc()
+    |FUNLOCKFILE()
+fgetwln() <wchar_t *fgetwln (FILE *__restrict fp, size_t *lenp) at fgetwln.c:52>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sgetc()
+    |mbrtowc()
+    |__slbexpand() <int __slbexpand (FILE *fp, size_t newsize) at fgetwln.c:38>:
+    |reallocarray()
+    |__sfeof()
+    |FUNLOCKFILE()
+fgetws() < at wchar.h:199>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sgetc()
+    |mbrtowc()
+    |ferror() <int ferror (FILE *fp) at ferror.c:43>:
+    |FLOCKFILE()
+    |__sferror()
+    |FUNLOCKFILE()
+    |FUNLOCKFILE()
+fileno() <int fileno (FILE *fp) at fileno.c:43>:
+    |FLOCKFILE()
+    |__sfileno()
+    |FUNLOCKFILE()
+flockfile() <void flockfile (FILE *fp) at flockfile.c:7>:
+    |FLOCKFILE()
+fmemopen() <FILE *fmemopen (void *buf, size_t size, const char *mode) at fmemopen.c:117>:
+    |__sflags() <int __sflags (const char *mode, int *optr) at flags.c:46>:
+    |malloc()
+    |__sfp() <FILE *__sfp (void) at findfp.c:102>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |_MUTEX_LOCK()
+    |_MUTEX_UNLOCK()
+    |moreglue() <struct glue moreglue (int n) at findfp.c:70>
+    |_FILEEXT_INIT()
+    |free()
+    |memchr()
+    |fmemopen_read() <int fmemopen_read (void *v, char *b, int l) at fmemopen.c:36>
+    |fmemopen_write() <int fmemopen_write (void *v, const char *b, int l) at fmemopen.c:49>
+    |fmemopen_seek() <fpos_t fmemopen_seek (void *v, fpos_t off, int whence) at fmemopen.c:71>:
+    |fmemopen_close_free() <int fmemopen_close_free (void *v) at fmemopen.c:106>:
+    |free()
+    |fmemopen_close() <int fmemopen_close (void *v) at fmemopen.c:98>:
+    |    |free()
+fopen() <FILE *fopen (const char *file, const char *mode) at fopen.c:44>:
+    |__sflags() <int __sflags (const char *mode, int *optr) at flags.c:46>:
+    |__sfp() <FILE *__sfp (void) at findfp.c:102>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |_MUTEX_LOCK()
+    |_MUTEX_UNLOCK()
+    |moreglue() <struct glue moreglue (int n) at findfp.c:70>
+    |_FILEEXT_INIT()
+    |open()
+    |close()
+    |__sread() <int __sread (void *cookie, char *buf, int n) at stdio.c:43>:
+    |read()
+    |__swrite() <int __swrite (void *cookie, const char *buf, int n) at stdio.c:58>:
+    |lseek()
+    |write()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |lseek()
+    |__sclose() <int __sclose (void *cookie) at stdio.c:85>:
+    |    |close()
+fprintf() <int fprintf (FILE *fp, const char *fmt, ...) at fprintf.c:38>:
+    |va_start()
+    |vfprintf() <int vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:258>:
+    |FLOCKFILE()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 755)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |FUNLOCKFILE()
+    |va_end()
+fpurge() <int fpurge (FILE *fp) at fpurge.c:44>:
+    |FLOCKFILE()
+    |FUNLOCKFILE()
+    |HASUB()
+    |FREEUB()
+    |WCIO_FREE()
+fputc() <int fputc (int c, FILE *fp) at fputc.c:38>:
+    |putc() <int putc (int c, FILE *fp) at putc.c:61>:
+    |    |FLOCKFILE()
+    |    |putc_unlocked() <int putc_unlocked (int c, FILE *fp) at putc.c:44>:
+    |    |cantwrite()
+    |    |_SET_ORIENTATION()
+    |    |__sputc()
+    |    |FUNLOCKFILE()
+fputs() <int fputs (const char *s, FILE *fp) at fputs.c:43>:
+    |strlen()
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |__sfvwrite() <int __sfvwrite (FILE *fp, struct __suio uio) at fvwrite.c:49>:
+    |cantwrite()
+    |GETIOV()
+    |MIN()
+    |getpagesize()
+    |recallocarray()
+    |COPY()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |memchr()
+    |FUNLOCKFILE()
+fputwc() <wint_t fputwc (wchar_t wc, FILE *fp) at fputwc.c:78>:
+    |FLOCKFILE()
+    |__fputwc_unlock() <wint_t __fputwc_unlock (wchar_t wc, FILE *fp) at fputwc.c:40>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |wcrtomb()
+    |__sfvwrite() <int __sfvwrite (FILE *fp, struct __suio uio) at fvwrite.c:49>:
+    |    |cantwrite()
+    |    |GETIOV()
+    |    |MIN()
+    |    |getpagesize()
+    |    |recallocarray()
+    |    |COPY()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |memchr()
+    |FUNLOCKFILE()
+fread() <size_t fread (void *, size_t, size_t, FILE *) at stdio.h:221>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |memcpy()
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |FLOCKFILE()
+    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |FUNLOCKFILE()
+freopen() <FILE *freopen (const char *file, const char *mode, FILE *fp) at freopen.c:50>:
+    |__sflags() <int __sflags (const char *mode, int *optr) at flags.c:46>:
+    |fclose() <int fclose (FILE *fp) at fclose.c:40>:
+    |FLOCKFILE()
+    |WCIO_FREE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |free()
+    |HASUB()
+    |FREEUB()
+    |HASLB()
+    |FREELB()
+    |FUNLOCKFILE()
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |FLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |open()
+    |free()
+    |HASUB()
+    |FREEUB()
+    |_UB()
+    |WCIO_FREE()
+    |HASLB()
+    |FREELB()
+    |FUNLOCKFILE()
+    |dup3()
+    |close()
+    |__sread() <int __sread (void *cookie, char *buf, int n) at stdio.c:43>:
+    |read()
+    |__swrite() <int __swrite (void *cookie, const char *buf, int n) at stdio.c:58>:
+    |lseek()
+    |write()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |lseek()
+    |__sclose() <int __sclose (void *cookie) at stdio.c:85>:
+    |    |close()
+fscanf() <int fscanf (FILE *fp, const char *fmt, ...) at fscanf.c:38>:
+    |va_start()
+    |vfscanf() <int vfscanf (FILE *fp, const char *fmt0, __va_list ap) at vfscanf.c:962>:
+    |FLOCKFILE()
+    |__svfscanf() <int __svfscanf (FILE *fp, const char *fmt0, __va_list ap) at vfscanf.c:100>:
+    |_SET_ORIENTATION()
+    |isspace() <__only_inline int isspace (int _c) at ctype.h:155>:
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FREEUB()
+    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |isatty()
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |FLOCKFILE()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |FUNLOCKFILE()
+    |__sccl() <u_char *__sccl (char *tab, u_char *fmt) at vfscanf.c:872>:
+    |va_arg()
+    |isupper() <__only_inline int isupper (int _c) at ctype.h:160>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbrtowc()
+    |fread() <size_t fread (void *, size_t, size_t, FILE *) at stdio.h:221>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |memcpy()
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |FLOCKFILE()
+    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |FUNLOCKFILE()
+    |wctob()
+    |ungetc() <int ungetc (int c, FILE *fp) at ungetc.c:79>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |_UB()
+    |__submore() <int __submore (FILE *fp) at ungetc.c:47>:
+    |    |_UB()
+    |    |malloc()
+    |    |reallocarray()
+    |    |memcpy()
+    |iswspace()
+    |strtoumax()
+    |strtoimax()
+    |strtold()
+    |strtod()
+    |strtof()
+    |FUNLOCKFILE()
+    |va_end()
+fseek() <int fseek (FILE *fp, long offset, int whence) at fseek.c:249>:
+    |fseeko() <int fseeko (FILE *fp, off_t offset, int whence) at fseek.c:49>:
+    |    |fpos_t()
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |FLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |FUNLOCKFILE()
+    |    |HASUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |    |fstat()
+    |    |FREEUB()
+    |    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |    |_MUTEX_LOCK()
+    |    |    |_FILEEXT_SETUP()
+    |    |    |__atexit_register_cleanup()
+    |    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |_MUTEX_UNLOCK()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |HASUB()
+    |    |    |FREEUB()
+    |    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |    |fstat()
+    |    |    |S_ISCHR()
+    |    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |    |lseek()
+    |    |    |malloc()
+    |    |    |isatty()
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |    |FLOCKFILE()
+    |    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |    |FUNLOCKFILE()
+fseeko() <int fseeko (FILE *fp, off_t offset, int whence) at fseek.c:49>:
+    |fpos_t()
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |FLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |FUNLOCKFILE()
+    |HASUB()
+    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |isatty()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |lseek()
+    |fstat()
+    |FREEUB()
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |FLOCKFILE()
+    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |FUNLOCKFILE()
+fsetpos() <int fsetpos (FILE *iop, const fpos_t *pos) at fsetpos.c:40>:
+    |fseeko() <int fseeko (FILE *fp, off_t offset, int whence) at fseek.c:49>:
+    |    |fpos_t()
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |FLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |FUNLOCKFILE()
+    |    |HASUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |    |fstat()
+    |    |FREEUB()
+    |    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |    |_MUTEX_LOCK()
+    |    |    |_FILEEXT_SETUP()
+    |    |    |__atexit_register_cleanup()
+    |    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |_MUTEX_UNLOCK()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |HASUB()
+    |    |    |FREEUB()
+    |    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |    |fstat()
+    |    |    |S_ISCHR()
+    |    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |    |lseek()
+    |    |    |malloc()
+    |    |    |isatty()
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |    |FLOCKFILE()
+    |    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |    |FUNLOCKFILE()
+ftell() <long ftell (FILE *fp) at ftell.c:89>:
+    |ftello() <off_t ftello (FILE *fp) at ftell.c:43>:
+    |    |fpos_t()
+    |    |FLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FUNLOCKFILE()
+ftello() <off_t ftello (FILE *fp) at ftell.c:43>:
+    |fpos_t()
+    |FLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FUNLOCKFILE()
+ftrylockfile() <int ftrylockfile (FILE *fp) at flockfile.c:15>:
+funlockfile() <void funlockfile (FILE *fp) at flockfile.c:25>:
+    |FUNLOCKFILE()
+funopen() <FILE *funopen (const void *cookie, int (*readfn) (void *, char *, int), int (*writefn) (void *, const char *, int), fpos_t (*seekfn) (void *, fpos_t, int), int (*closefn) (void *)) at funopen.c:39>:
+    |__sfp() <FILE *__sfp (void) at findfp.c:102>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |_MUTEX_LOCK()
+    |    |_MUTEX_UNLOCK()
+    |    |moreglue() <struct glue moreglue (int n) at findfp.c:70>
+    |    |_FILEEXT_INIT()
+fwide() <int fwide (FILE *fp, int mode) at fwide.c:37>:
+    |FLOCKFILE()
+    |WCIO_GET()
+    |FUNLOCKFILE()
+fwprintf() <int fwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt, ...) at fwprintf.c:39>:
+    |va_start()
+    |vfwprintf() <int vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:1081>:
+    |FLOCKFILE()
+    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const wchar_t *fmt, va_list ap) at vfwprintf.c:98> (R):
+    |_FILEEXT_SETUP()
+    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (recursive: see 1222)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const wchar_t *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfwprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |GETARG()
+    |btowc()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |free()
+    |__mbsconv() <wchar_t *__mbsconv (char *mbsarg, int prec) at vfwprintf.c:167>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbrlen()
+    |strlen()
+    |calloc()
+    |mbrtowc()
+    |free()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (wchar_t *p0, int exp, int fmtch) at vfwprintf.c:1504>:
+    |to_char()
+    |UARG()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |wmemchr()
+    |wcslen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |FUNLOCKFILE()
+    |va_end()
+fwrite() <size_t fwrite (const void *, size_t, size_t, FILE *) at stdio.h:230>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |__sfvwrite() <int __sfvwrite (FILE *fp, struct __suio uio) at fvwrite.c:49>:
+    |cantwrite()
+    |GETIOV()
+    |MIN()
+    |getpagesize()
+    |recallocarray()
+    |COPY()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |memchr()
+    |FUNLOCKFILE()
+fwscanf() <int fwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, ...) at fwscanf.c:34>:
+    |va_start()
+    |vfwscanf() <int vfwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, __va_list ap) at vfwscanf.c:791>:
+    |FLOCKFILE()
+    |__vfwscanf() <int __vfwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, __va_list ap) at vfwscanf.c:103>:
+    |_SET_ORIENTATION()
+    |iswspace()
+    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sgetc()
+    |mbrtowc()
+    |__ungetwc() <wint_t __ungetwc (wint_t wc, FILE *fp) at ungetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sclearerr()
+    |va_arg()
+    |iswupper()
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |wcrtomb()
+    |memcpy()
+    |INCCL()
+    |wcstoimax()
+    |wcstoumax()
+    |mbrtowc()
+    |localeconv()
+    |wcstold()
+    |wcstod()
+    |wcstof()
+    |FUNLOCKFILE()
+    |va_end()
+getc() <int getc (FILE *fp) at getc.c:55>:
+    |FLOCKFILE()
+    |__sgetc()
+    |FUNLOCKFILE()
+getc_unlocked() <int getc_unlocked (FILE *fp) at getc.c:43>:
+    |__sgetc()
+getchar() <int getchar (void) at getchar.c:56>:
+    |getc() <int getc (FILE *fp) at getc.c:55>:
+    |    |FLOCKFILE()
+    |    |__sgetc()
+    |    |FUNLOCKFILE()
+getchar_unlocked() <int getchar_unlocked (void) at getchar.c:42>:
+    |getc_unlocked() <int getc_unlocked (FILE *fp) at getc.c:43>:
+    |    |__sgetc()
+getdelim() <ssize_t getdelim (char **__restrict buf, size_t *__restrict buflen, int sep, FILE *__restrict fp) at getdelim.c:46>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FREEUB()
+    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |isatty()
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |FLOCKFILE()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |FUNLOCKFILE()
+    |__sferror()
+    |memchr()
+    |powerof2()
+    |recallocarray()
+    |memcpy()
+    |FUNLOCKFILE()
+getline() <ssize_t getline (char **__restrict buf, size_t *__restrict buflen, FILE *__restrict fp) at getline.c:34>:
+    |getdelim() <ssize_t getdelim (char **__restrict buf, size_t *__restrict buflen, int sep, FILE *__restrict fp) at getdelim.c:46>:
+    |    |FLOCKFILE()
+    |    |_SET_ORIENTATION()
+    |    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |FLOCKFILE()
+    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |FUNLOCKFILE()
+    |    |__sferror()
+    |    |memchr()
+    |    |powerof2()
+    |    |recallocarray()
+    |    |memcpy()
+    |    |FUNLOCKFILE()
+getw() <int getw (FILE *fp) at getw.c:37>:
+    |fread() <size_t fread (void *, size_t, size_t, FILE *) at stdio.h:221>:
+    |    |FLOCKFILE()
+    |    |_SET_ORIENTATION()
+    |    |FUNLOCKFILE()
+    |    |memcpy()
+    |    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |    |_MUTEX_LOCK()
+    |    |    |_FILEEXT_SETUP()
+    |    |    |__atexit_register_cleanup()
+    |    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |_MUTEX_UNLOCK()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |HASUB()
+    |    |    |FREEUB()
+    |    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |    |fstat()
+    |    |    |S_ISCHR()
+    |    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |    |lseek()
+    |    |    |malloc()
+    |    |    |isatty()
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |    |FLOCKFILE()
+    |    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |    |FUNLOCKFILE()
+getwc() <wint_t getwc (FILE *fp) at getwc.c:41>:
+    |fgetwc() <wint_t fgetwc (FILE *fp) at fgetwc.c:81>:
+    |    |FLOCKFILE()
+    |    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |    |_SET_ORIENTATION()
+    |    |WCIO_GET()
+    |    |__sgetc()
+    |    |mbrtowc()
+    |    |FUNLOCKFILE()
+getwchar() <wint_t getwchar () at getwchar.c:41>:
+    |fgetwc() <wint_t fgetwc (FILE *fp) at fgetwc.c:81>:
+    |    |FLOCKFILE()
+    |    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |    |_SET_ORIENTATION()
+    |    |WCIO_GET()
+    |    |__sgetc()
+    |    |mbrtowc()
+    |    |FUNLOCKFILE()
+isalnum() <__only_inline int isalnum (int _c) at ctype.h:115>:
+isalnum_l() <__only_inline int isalnum_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:216>:
+    |isalnum() <__only_inline int isalnum (int _c) at ctype.h:115>:
+isalpha() <__only_inline int isalpha (int _c) at ctype.h:120>:
+isalpha_l() <__only_inline int isalpha_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:222>:
+    |isalpha() <__only_inline int isalpha (int _c) at ctype.h:120>:
+isblank_l() <__only_inline int isblank_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:228>:
+    |isblank() <__only_inline int isblank (int _c) at ctype.h:186>
+iscntrl() <__only_inline int iscntrl (int _c) at ctype.h:125>:
+iscntrl_l() <__only_inline int iscntrl_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:234>:
+    |iscntrl() <__only_inline int iscntrl (int _c) at ctype.h:125>:
+isdigit() <__only_inline int isdigit (int _c) at ctype.h:130>:
+isdigit_l() <__only_inline int isdigit_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:240>:
+    |isdigit() <__only_inline int isdigit (int _c) at ctype.h:130>:
+isgraph() <__only_inline int isgraph (int _c) at ctype.h:135>:
+isgraph_l() <__only_inline int isgraph_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:246>:
+    |isgraph() <__only_inline int isgraph (int _c) at ctype.h:135>:
+islower() <__only_inline int islower (int _c) at ctype.h:140>:
+islower_l() <__only_inline int islower_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:252>:
+    |islower() <__only_inline int islower (int _c) at ctype.h:140>:
+isprint() <__only_inline int isprint (int _c) at ctype.h:145>:
+isprint_l() <__only_inline int isprint_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:258>:
+    |isprint() <__only_inline int isprint (int _c) at ctype.h:145>:
+ispunct() <__only_inline int ispunct (int _c) at ctype.h:150>:
+ispunct_l() <__only_inline int ispunct_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:264>:
+    |ispunct() <__only_inline int ispunct (int _c) at ctype.h:150>:
+isspace() <__only_inline int isspace (int _c) at ctype.h:155>:
+isspace_l() <__only_inline int isspace_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:270>:
+    |isspace() <__only_inline int isspace (int _c) at ctype.h:155>:
+isupper() <__only_inline int isupper (int _c) at ctype.h:160>:
+isupper_l() <__only_inline int isupper_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:276>:
+    |isupper() <__only_inline int isupper (int _c) at ctype.h:160>:
+isxdigit() <__only_inline int isxdigit (int _c) at ctype.h:165>:
+isxdigit_l() <__only_inline int isxdigit_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:282>:
+    |isxdigit() <__only_inline int isxdigit (int _c) at ctype.h:165>:
+mkdtemp() <char *mkdtemp (char *path) at mktemp.c:157>:
+    |mktemp_internal() <int mktemp_internal (char *path, int slen, int mode, int flags) at mktemp.c:45>:
+    |    |strlen()
+    |    |arc4random_buf()
+    |    |nitems()
+    |    |lstat()
+    |    |open()
+    |    |mkdir()
+mkostemp() <int mkostemp (char *path, int flags) at mktemp.c:144>:
+    |mktemp_internal() <int mktemp_internal (char *path, int slen, int mode, int flags) at mktemp.c:45>:
+    |    |strlen()
+    |    |arc4random_buf()
+    |    |nitems()
+    |    |lstat()
+    |    |open()
+    |    |mkdir()
+mkostemps() <int mkostemps (char *path, int slen, int flags) at mktemp.c:131>:
+    |mktemp_internal() <int mktemp_internal (char *path, int slen, int mode, int flags) at mktemp.c:45>:
+    |    |strlen()
+    |    |arc4random_buf()
+    |    |nitems()
+    |    |lstat()
+    |    |open()
+    |    |mkdir()
+mkstemp() <int mkstemp (char *path) at mktemp.c:137>:
+    |mktemp_internal() <int mktemp_internal (char *path, int slen, int mode, int flags) at mktemp.c:45>:
+    |    |strlen()
+    |    |arc4random_buf()
+    |    |nitems()
+    |    |lstat()
+    |    |open()
+    |    |mkdir()
+mkstemps() <int mkstemps (char *path, int slen) at mktemp.c:151>:
+    |mktemp_internal() <int mktemp_internal (char *path, int slen, int mode, int flags) at mktemp.c:45>:
+    |    |strlen()
+    |    |arc4random_buf()
+    |    |nitems()
+    |    |lstat()
+    |    |open()
+    |    |mkdir()
+mktemp() <char *mktemp (char *path) at mktemp.c:125>:
+    |_mktemp() <char *_mktemp (char *path) at mktemp.c:114>:
+    |    |mktemp_internal() <int mktemp_internal (char *path, int slen, int mode, int flags) at mktemp.c:45>:
+    |    |    |strlen()
+    |    |    |arc4random_buf()
+    |    |    |nitems()
+    |    |    |lstat()
+    |    |    |open()
+    |    |    |mkdir()
+open_memstream() <FILE *open_memstream (char **pbuf, size_t *psize) at open_memstream.c:114>:
+    |malloc()
+    |__sfp() <FILE *__sfp (void) at findfp.c:102>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |_MUTEX_LOCK()
+    |_MUTEX_UNLOCK()
+    |moreglue() <struct glue moreglue (int n) at findfp.c:70>
+    |_FILEEXT_INIT()
+    |free()
+    |calloc()
+    |memstream_write() <int memstream_write (void *v, const char *b, int l) at open_memstream.c:39>:
+    |recallocarray()
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |memstream_seek() <fpos_t memstream_seek (void *v, fpos_t off, int whence) at open_memstream.c:76>:
+    |MINIMUM()
+    |memstream_close() <int memstream_close (void *v) at open_memstream.c:104>:
+    |free()
+    |_SET_ORIENTATION()
+open_wmemstream() <FILE *open_wmemstream (wchar_t **pbuf, size_t *psize) at open_wmemstream.c:124>:
+    |malloc()
+    |__sfp() <FILE *__sfp (void) at findfp.c:102>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |_MUTEX_LOCK()
+    |_MUTEX_UNLOCK()
+    |moreglue() <struct glue moreglue (int n) at findfp.c:70>
+    |_FILEEXT_INIT()
+    |free()
+    |calloc()
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |wmemstream_write() <int wmemstream_write (void *v, const char *b, int l) at open_wmemstream.c:41>:
+    |reallocarray()
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbsnrtowcs() < at wchar.h:173>
+    |wmemstream_seek() <fpos_t wmemstream_seek (void *v, fpos_t off, int whence) at open_wmemstream.c:80>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |MINIMUM()
+    |wmemstream_close() <int wmemstream_close (void *v) at open_wmemstream.c:114>:
+    |free()
+    |_SET_ORIENTATION()
+perror() <void perror (const char *s) at perror.c:40>:
+    |strlen()
+    |strerror_r()
+    |writev()
+printf() <int printf (const char *, ...) at systm.h:160>:
+    |va_start()
+    |vfprintf() <int vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:258>:
+    |FLOCKFILE()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 1601)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |FUNLOCKFILE()
+    |va_end()
+putc() <int putc (int c, FILE *fp) at putc.c:61>:
+    |FLOCKFILE()
+    |putc_unlocked() <int putc_unlocked (int c, FILE *fp) at putc.c:44>:
+    |cantwrite()
+    |_SET_ORIENTATION()
+    |__sputc()
+    |FUNLOCKFILE()
+putc_unlocked() <int putc_unlocked (int c, FILE *fp) at putc.c:44>:
+    |cantwrite()
+    |_SET_ORIENTATION()
+    |__sputc()
+putchar() <int putchar (int c) at putchar.c:55>:
+    |putc() <int putc (int c, FILE *fp) at putc.c:61>:
+    |    |FLOCKFILE()
+    |    |putc_unlocked() <int putc_unlocked (int c, FILE *fp) at putc.c:44>:
+    |    |cantwrite()
+    |    |_SET_ORIENTATION()
+    |    |__sputc()
+    |    |FUNLOCKFILE()
+putchar_unlocked() <int putchar_unlocked (int c) at putchar.c:41>:
+    |putc_unlocked() <int putc_unlocked (int c, FILE *fp) at putc.c:44>:
+    |    |cantwrite()
+    |    |_SET_ORIENTATION()
+    |    |__sputc()
+puts() <int puts (const char *s) at puts.c:43>:
+    |strlen()
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |__sfvwrite() <int __sfvwrite (FILE *fp, struct __suio uio) at fvwrite.c:49>:
+    |cantwrite()
+    |GETIOV()
+    |MIN()
+    |getpagesize()
+    |recallocarray()
+    |COPY()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |memchr()
+    |FUNLOCKFILE()
+putw() <int putw (int w, FILE *fp) at putw.c:39>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |__sfvwrite() <int __sfvwrite (FILE *fp, struct __suio uio) at fvwrite.c:49>:
+    |cantwrite()
+    |GETIOV()
+    |MIN()
+    |getpagesize()
+    |recallocarray()
+    |COPY()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |memchr()
+    |FUNLOCKFILE()
+putwc() <wint_t putwc (wchar_t wc, FILE *fp) at putwc.c:41>:
+    |fputwc() <wint_t fputwc (wchar_t wc, FILE *fp) at fputwc.c:78>:
+    |    |FLOCKFILE()
+    |    |__fputwc_unlock() <wint_t __fputwc_unlock (wchar_t wc, FILE *fp) at fputwc.c:40>:
+    |    |_SET_ORIENTATION()
+    |    |WCIO_GET()
+    |    |wcrtomb()
+    |    |__sfvwrite() <int __sfvwrite (FILE *fp, struct __suio uio) at fvwrite.c:49>:
+    |    |    |cantwrite()
+    |    |    |GETIOV()
+    |    |    |MIN()
+    |    |    |getpagesize()
+    |    |    |recallocarray()
+    |    |    |COPY()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |memchr()
+    |    |FUNLOCKFILE()
+putwchar() <wint_t putwchar (wchar_t wc) at putwchar.c:41>:
+    |fputwc() <wint_t fputwc (wchar_t wc, FILE *fp) at fputwc.c:78>:
+    |    |FLOCKFILE()
+    |    |__fputwc_unlock() <wint_t __fputwc_unlock (wchar_t wc, FILE *fp) at fputwc.c:40>:
+    |    |_SET_ORIENTATION()
+    |    |WCIO_GET()
+    |    |wcrtomb()
+    |    |__sfvwrite() <int __sfvwrite (FILE *fp, struct __suio uio) at fvwrite.c:49>:
+    |    |    |cantwrite()
+    |    |    |GETIOV()
+    |    |    |MIN()
+    |    |    |getpagesize()
+    |    |    |recallocarray()
+    |    |    |COPY()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |memchr()
+    |    |FUNLOCKFILE()
+remove() <int remove (const char *file) at remove.c:40>:
+    |lstat()
+    |S_ISDIR()
+    |rmdir()
+    |unlink()
+rewind() <void rewind (FILE *fp) at rewind.c:38>:
+    |fseek() <int fseek (FILE *fp, long offset, int whence) at fseek.c:249>:
+    |fseeko() <int fseeko (FILE *fp, off_t offset, int whence) at fseek.c:49>:
+    |    |fpos_t()
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |FLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |FUNLOCKFILE()
+    |    |HASUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |    |fstat()
+    |    |FREEUB()
+    |    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |    |_MUTEX_LOCK()
+    |    |    |_FILEEXT_SETUP()
+    |    |    |__atexit_register_cleanup()
+    |    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |_MUTEX_UNLOCK()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |HASUB()
+    |    |    |FREEUB()
+    |    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |    |fstat()
+    |    |    |S_ISCHR()
+    |    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |    |lseek()
+    |    |    |malloc()
+    |    |    |isatty()
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |    |FLOCKFILE()
+    |    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |    |FUNLOCKFILE()
+    |clearerr() <void clearerr (FILE *fp) at clrerr.c:39>:
+    |    |FLOCKFILE()
+    |    |__sclearerr()
+    |    |FUNLOCKFILE()
+scanf() <int scanf (const char *fmt, ...) at scanf.c:38>:
+    |va_start()
+    |vfscanf() <int vfscanf (FILE *fp, const char *fmt0, __va_list ap) at vfscanf.c:962>:
+    |FLOCKFILE()
+    |__svfscanf() <int __svfscanf (FILE *fp, const char *fmt0, __va_list ap) at vfscanf.c:100>:
+    |_SET_ORIENTATION()
+    |isspace() <__only_inline int isspace (int _c) at ctype.h:155>:
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FREEUB()
+    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |isatty()
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |FLOCKFILE()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |FUNLOCKFILE()
+    |__sccl() <u_char *__sccl (char *tab, u_char *fmt) at vfscanf.c:872>:
+    |va_arg()
+    |isupper() <__only_inline int isupper (int _c) at ctype.h:160>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbrtowc()
+    |fread() <size_t fread (void *, size_t, size_t, FILE *) at stdio.h:221>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |memcpy()
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |FLOCKFILE()
+    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |FUNLOCKFILE()
+    |wctob()
+    |ungetc() <int ungetc (int c, FILE *fp) at ungetc.c:79>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |_UB()
+    |__submore() <int __submore (FILE *fp) at ungetc.c:47>:
+    |    |_UB()
+    |    |malloc()
+    |    |reallocarray()
+    |    |memcpy()
+    |iswspace()
+    |strtoumax()
+    |strtoimax()
+    |strtold()
+    |strtod()
+    |strtof()
+    |FUNLOCKFILE()
+    |va_end()
+setbuf() <void setbuf (FILE *fp, char *buf) at setbuf.c:38>:
+    |setvbuf() <int setvbuf (FILE *fp, char *buf, int mode, size_t size) at setvbuf.c:43>:
+    |    |FLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |WCIO_FREE()
+    |    |free()
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |FUNLOCKFILE()
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |    |_MUTEX_LOCK()
+    |    |    |_FILEEXT_SETUP()
+    |    |    |__atexit_register_cleanup()
+    |    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |_MUTEX_UNLOCK()
+setbuffer() <void setbuffer (FILE *fp, char *buf, int size) at setbuffer.c:37>:
+    |setvbuf() <int setvbuf (FILE *fp, char *buf, int mode, size_t size) at setvbuf.c:43>:
+    |    |FLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |WCIO_FREE()
+    |    |free()
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |FUNLOCKFILE()
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |    |_MUTEX_LOCK()
+    |    |    |_FILEEXT_SETUP()
+    |    |    |__atexit_register_cleanup()
+    |    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |_MUTEX_UNLOCK()
+setlinebuf() <int setlinebuf (FILE *fp) at setbuffer.c:48>:
+    |setvbuf() <int setvbuf (FILE *fp, char *buf, int mode, size_t size) at setvbuf.c:43>:
+    |    |FLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |WCIO_FREE()
+    |    |free()
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |FUNLOCKFILE()
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |    |_MUTEX_LOCK()
+    |    |    |_FILEEXT_SETUP()
+    |    |    |__atexit_register_cleanup()
+    |    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |_MUTEX_UNLOCK()
+setvbuf() <int setvbuf (FILE *fp, char *buf, int mode, size_t size) at setvbuf.c:43>:
+    |FLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FREEUB()
+    |WCIO_FREE()
+    |free()
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |FUNLOCKFILE()
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+snprintf() <int snprintf (char *str, size_t n, const char *fmt, ...) at snprintf.c:41>:
+    |_FILEEXT_SETUP()
+    |va_start()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 1997)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |va_end()
+sprintf() <int sprintf (char *str, const char *fmt, ...) at sprintf.c:46>:
+    |_FILEEXT_SETUP()
+    |va_start()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 2055)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |va_end()
+sscanf() <int sscanf (const char *str, const char *fmt, ...) at sscanf.c:47>:
+    |_FILEEXT_SETUP()
+    |strlen()
+    |eofread() <int eofread (void *cookie, char *buf, int len) at sscanf.c:40>
+    |va_start()
+    |__svfscanf() <int __svfscanf (FILE *fp, const char *fmt0, __va_list ap) at vfscanf.c:100>:
+    |_SET_ORIENTATION()
+    |isspace() <__only_inline int isspace (int _c) at ctype.h:155>:
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FREEUB()
+    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |isatty()
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |FLOCKFILE()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |FUNLOCKFILE()
+    |__sccl() <u_char *__sccl (char *tab, u_char *fmt) at vfscanf.c:872>:
+    |va_arg()
+    |isupper() <__only_inline int isupper (int _c) at ctype.h:160>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbrtowc()
+    |fread() <size_t fread (void *, size_t, size_t, FILE *) at stdio.h:221>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |memcpy()
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |FLOCKFILE()
+    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |FUNLOCKFILE()
+    |wctob()
+    |ungetc() <int ungetc (int c, FILE *fp) at ungetc.c:79>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |_UB()
+    |__submore() <int __submore (FILE *fp) at ungetc.c:47>:
+    |    |_UB()
+    |    |malloc()
+    |    |reallocarray()
+    |    |memcpy()
+    |iswspace()
+    |strtoumax()
+    |strtoimax()
+    |strtold()
+    |strtod()
+    |strtof()
+    |va_end()
+swprintf() <int swprintf (wchar_t *__restrict s, size_t n, const wchar_t *__restrict fmt, ...) at swprintf.c:35>:
+    |va_start()
+    |vswprintf() <int vswprintf (wchar_t *__restrict s, size_t n, const wchar_t *__restrict fmt, __va_list ap) at vswprintf.c:40>:
+    |_FILEEXT_SETUP()
+    |malloc()
+    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const wchar_t *fmt, va_list ap) at vfwprintf.c:98> (R):
+    |_FILEEXT_SETUP()
+    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (recursive: see 2213)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const wchar_t *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfwprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |GETARG()
+    |btowc()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |free()
+    |__mbsconv() <wchar_t *__mbsconv (char *mbsarg, int prec) at vfwprintf.c:167>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbrlen()
+    |strlen()
+    |calloc()
+    |mbrtowc()
+    |free()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (wchar_t *p0, int exp, int fmtch) at vfwprintf.c:1504>:
+    |to_char()
+    |UARG()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |wmemchr()
+    |wcslen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |free()
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbsrtowcs() < at wchar.h:112>
+    |va_end()
+swscanf() <int swscanf (const wchar_t *__restrict str, const wchar_t *__restrict fmt, ...) at swscanf.c:34>:
+    |va_start()
+    |vswscanf() <int vswscanf (const wchar_t *__restrict str, const wchar_t *__restrict fmt, __va_list ap) at vswscanf.c:52>:
+    |wcslen()
+    |malloc()
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |wcsrtombs() < at wchar.h:132>
+    |free()
+    |_FILEEXT_SETUP()
+    |eofread() <int eofread (void *cookie, char *buf, int len) at vswscanf.c:46>
+    |__vfwscanf() <int __vfwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, __va_list ap) at vfwscanf.c:103>:
+    |    |_SET_ORIENTATION()
+    |    |iswspace()
+    |    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |    |_SET_ORIENTATION()
+    |    |WCIO_GET()
+    |    |__sgetc()
+    |    |mbrtowc()
+    |    |__ungetwc() <wint_t __ungetwc (wint_t wc, FILE *fp) at ungetwc.c:38>:
+    |    |_SET_ORIENTATION()
+    |    |WCIO_GET()
+    |    |__sclearerr()
+    |    |va_arg()
+    |    |iswupper()
+    |    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |    |wcrtomb()
+    |    |memcpy()
+    |    |INCCL()
+    |    |wcstoimax()
+    |    |wcstoumax()
+    |    |mbrtowc()
+    |    |localeconv()
+    |    |wcstold()
+    |    |wcstod()
+    |    |wcstof()
+    |va_end()
+tempnam() <char *tempnam (const char *dir, const char *pfx) at tempnam.c:43>:
+    |malloc()
+    |issetugid()
+    |getenv()
+    |snprintf() <int snprintf (char *str, size_t n, const char *fmt, ...) at snprintf.c:41>:
+    |_FILEEXT_SETUP()
+    |va_start()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 2313)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |va_end()
+    |strlen()
+    |_mktemp() <char *_mktemp (char *path) at mktemp.c:114>:
+    |mktemp_internal() <int mktemp_internal (char *path, int slen, int mode, int flags) at mktemp.c:45>:
+    |    |strlen()
+    |    |arc4random_buf()
+    |    |nitems()
+    |    |lstat()
+    |    |open()
+    |    |mkdir()
+    |free()
+tmpfile() <FILE *tmpfile (void) at tmpfile.c:45>:
+    |memcpy()
+    |sigfillset()
+    |sigprocmask()
+    |mkstemp() <int mkstemp (char *path) at mktemp.c:137>:
+    |mktemp_internal() <int mktemp_internal (char *path, int slen, int mode, int flags) at mktemp.c:45>:
+    |    |strlen()
+    |    |arc4random_buf()
+    |    |nitems()
+    |    |lstat()
+    |    |open()
+    |    |mkdir()
+    |unlink()
+    |umask()
+    |fchmod()
+    |fdopen() <FILE *fdopen (int fd, const char *mode) at fdopen.c:43>:
+    |__sflags() <int __sflags (const char *mode, int *optr) at flags.c:46>:
+    |fcntl()
+    |__sfp() <FILE *__sfp (void) at findfp.c:102>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |_MUTEX_LOCK()
+    |_MUTEX_UNLOCK()
+    |moreglue() <struct glue moreglue (int n) at findfp.c:70>
+    |_FILEEXT_INIT()
+    |__sread() <int __sread (void *cookie, char *buf, int n) at stdio.c:43>:
+    |read()
+    |__swrite() <int __swrite (void *cookie, const char *buf, int n) at stdio.c:58>:
+    |lseek()
+    |write()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |lseek()
+    |__sclose() <int __sclose (void *cookie) at stdio.c:85>:
+    |    |close()
+    |close()
+tmpnam() <char *tmpnam (char *s) at tmpnam.c:43>:
+    |snprintf() <int snprintf (char *str, size_t n, const char *fmt, ...) at snprintf.c:41>:
+    |_FILEEXT_SETUP()
+    |va_start()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 2423)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |va_end()
+    |_mktemp() <char *_mktemp (char *path) at mktemp.c:114>:
+    |    |mktemp_internal() <int mktemp_internal (char *path, int slen, int mode, int flags) at mktemp.c:45>:
+    |    |    |strlen()
+    |    |    |arc4random_buf()
+    |    |    |nitems()
+    |    |    |lstat()
+    |    |    |open()
+    |    |    |mkdir()
+tolower() <__only_inline int tolower (int _c) at ctype.h:170>:
+tolower_l() <__only_inline int tolower_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:288>:
+    |tolower() <__only_inline int tolower (int _c) at ctype.h:170>:
+toupper() <__only_inline int toupper (int _c) at ctype.h:177>:
+toupper_l() <__only_inline int toupper_l (int _c, locale_t _l __attribute__ ((__unused__))) at ctype.h:294>:
+    |toupper() <__only_inline int toupper (int _c) at ctype.h:177>:
+ungetc() <int ungetc (int c, FILE *fp) at ungetc.c:79>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |_UB()
+    |__submore() <int __submore (FILE *fp) at ungetc.c:47>:
+    |    |_UB()
+    |    |malloc()
+    |    |reallocarray()
+    |    |memcpy()
+ungetwc() <wint_t ungetwc (wint_t wc, FILE *fp) at ungetwc.c:69>:
+    |FLOCKFILE()
+    |__ungetwc() <wint_t __ungetwc (wint_t wc, FILE *fp) at ungetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sclearerr()
+    |FUNLOCKFILE()
+vasprintf() <int vasprintf (char **str, const char *fmt, __va_list ap) at vasprintf.c:29>:
+    |getpagesize()
+    |_FILEEXT_SETUP()
+    |malloc()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 2523)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |recallocarray()
+    |free()
+vdprintf() <int vdprintf (int fd, const char *__restrict fmt, va_list ap) at vdprintf.c:51>:
+    |_FILEEXT_SETUP()
+    |__dwrite() <int __dwrite (void *cookie, const char *buf, int n) at vdprintf.c:44>:
+    |write()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 2583)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |fflush() <int fflush (FILE *fp) at fflush.c:40>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |FLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |FUNLOCKFILE()
+    |    |FLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |FUNLOCKFILE()
+vfprintf() <int vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:258>:
+    |FLOCKFILE()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 2648)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcrtomb()
+    |GETARG()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |to_char()
+    |UARG()
+    |free()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |wcsrtombs() < at wchar.h:132>
+    |wcrtomb()
+    |malloc()
+    |free()
+    |strnlen()
+    |strlen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |FLUSH()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |FUNLOCKFILE()
+vfscanf() <int vfscanf (FILE *fp, const char *fmt0, __va_list ap) at vfscanf.c:962>:
+    |FLOCKFILE()
+    |__svfscanf() <int __svfscanf (FILE *fp, const char *fmt0, __va_list ap) at vfscanf.c:100>:
+    |_SET_ORIENTATION()
+    |isspace() <__only_inline int isspace (int _c) at ctype.h:155>:
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |FREEUB()
+    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |fstat()
+    |S_ISCHR()
+    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |lseek()
+    |malloc()
+    |isatty()
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |FLOCKFILE()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |FUNLOCKFILE()
+    |__sccl() <u_char *__sccl (char *tab, u_char *fmt) at vfscanf.c:872>:
+    |va_arg()
+    |isupper() <__only_inline int isupper (int _c) at ctype.h:160>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbrtowc()
+    |fread() <size_t fread (void *, size_t, size_t, FILE *) at stdio.h:221>:
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |memcpy()
+    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |FLOCKFILE()
+    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |FUNLOCKFILE()
+    |wctob()
+    |ungetc() <int ungetc (int c, FILE *fp) at ungetc.c:79>:
+    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |_MUTEX_LOCK()
+    |_FILEEXT_SETUP()
+    |__atexit_register_cleanup()
+    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |_MUTEX_UNLOCK()
+    |FLOCKFILE()
+    |_SET_ORIENTATION()
+    |FUNLOCKFILE()
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |HASUB()
+    |_UB()
+    |__submore() <int __submore (FILE *fp) at ungetc.c:47>:
+    |    |_UB()
+    |    |malloc()
+    |    |reallocarray()
+    |    |memcpy()
+    |iswspace()
+    |strtoumax()
+    |strtoimax()
+    |strtold()
+    |strtod()
+    |strtof()
+    |FUNLOCKFILE()
+vfwprintf() <int vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:1081>:
+    |FLOCKFILE()
+    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const wchar_t *fmt, va_list ap) at vfwprintf.c:98> (R):
+    |_FILEEXT_SETUP()
+    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (recursive: see 2800)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const wchar_t *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfwprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |GETARG()
+    |btowc()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |free()
+    |__mbsconv() <wchar_t *__mbsconv (char *mbsarg, int prec) at vfwprintf.c:167>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbrlen()
+    |strlen()
+    |calloc()
+    |mbrtowc()
+    |free()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (wchar_t *p0, int exp, int fmtch) at vfwprintf.c:1504>:
+    |to_char()
+    |UARG()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |wmemchr()
+    |wcslen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |FUNLOCKFILE()
+vfwscanf() <int vfwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, __va_list ap) at vfwscanf.c:791>:
+    |FLOCKFILE()
+    |__vfwscanf() <int __vfwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, __va_list ap) at vfwscanf.c:103>:
+    |_SET_ORIENTATION()
+    |iswspace()
+    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sgetc()
+    |mbrtowc()
+    |__ungetwc() <wint_t __ungetwc (wint_t wc, FILE *fp) at ungetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sclearerr()
+    |va_arg()
+    |iswupper()
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |wcrtomb()
+    |memcpy()
+    |INCCL()
+    |wcstoimax()
+    |wcstoumax()
+    |mbrtowc()
+    |localeconv()
+    |wcstold()
+    |wcstod()
+    |wcstof()
+    |FUNLOCKFILE()
+vprintf() <int vprintf (const char *fmt, __va_list ap) at vprintf.c:37>:
+    |vfprintf() <int vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:258>:
+    |    |FLOCKFILE()
+    |    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |    |_SET_ORIENTATION()
+    |    |cantwrite()
+    |    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |    |_FILEEXT_SETUP()
+    |    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 2885)
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |va_copy()
+    |    |PRINT()
+    |    |GETASTER()
+    |    |is_digit()
+    |    |APPEND_DIGIT()
+    |    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |    |ADDASTER()
+    |    |is_digit()
+    |    |APPEND_DIGIT()
+    |    |ADDTYPE()
+    |    |ADDSARG()
+    |    |ADDUARG()
+    |    |mmap()
+    |    |va_arg()
+    |    |munmap()
+    |    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |    |wcrtomb()
+    |    |GETARG()
+    |    |SARG()
+    |    |__freedtoa()
+    |    |__hldtoa()
+    |    |__hdtoa()
+    |    |__ldtoa()
+    |    |__dtoa()
+    |    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |    |to_char()
+    |    |UARG()
+    |    |free()
+    |    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |    |wcsrtombs() < at wchar.h:132>
+    |    |wcrtomb()
+    |    |malloc()
+    |    |free()
+    |    |strnlen()
+    |    |strlen()
+    |    |to_char()
+    |    |abort()
+    |    |PAD()
+    |    |nl_langinfo()
+    |    |PRINTANDPAD()
+    |    |FLUSH()
+    |    |va_end()
+    |    |__sferror()
+    |    |munmap()
+    |    |FUNLOCKFILE()
+vscanf() <int vscanf (const char *fmt, __va_list ap) at vscanf.c:37>:
+    |vfscanf() <int vfscanf (FILE *fp, const char *fmt0, __va_list ap) at vfscanf.c:962>:
+    |    |FLOCKFILE()
+    |    |__svfscanf() <int __svfscanf (FILE *fp, const char *fmt0, __va_list ap) at vfscanf.c:100>:
+    |    |_SET_ORIENTATION()
+    |    |isspace() <__only_inline int isspace (int _c) at ctype.h:155>:
+    |    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |FLOCKFILE()
+    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |FUNLOCKFILE()
+    |    |__sccl() <u_char *__sccl (char *tab, u_char *fmt) at vfscanf.c:872>:
+    |    |va_arg()
+    |    |isupper() <__only_inline int isupper (int _c) at ctype.h:160>:
+    |    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |    |mbrtowc()
+    |    |fread() <size_t fread (void *, size_t, size_t, FILE *) at stdio.h:221>:
+    |    |FLOCKFILE()
+    |    |_SET_ORIENTATION()
+    |    |FUNLOCKFILE()
+    |    |memcpy()
+    |    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |    |_MUTEX_LOCK()
+    |    |    |_FILEEXT_SETUP()
+    |    |    |__atexit_register_cleanup()
+    |    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |_MUTEX_UNLOCK()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |HASUB()
+    |    |    |FREEUB()
+    |    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |    |fstat()
+    |    |    |S_ISCHR()
+    |    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |    |lseek()
+    |    |    |malloc()
+    |    |    |isatty()
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |    |FLOCKFILE()
+    |    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |    |FUNLOCKFILE()
+    |    |wctob()
+    |    |ungetc() <int ungetc (int c, FILE *fp) at ungetc.c:79>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |FLOCKFILE()
+    |    |_SET_ORIENTATION()
+    |    |FUNLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |_UB()
+    |    |__submore() <int __submore (FILE *fp) at ungetc.c:47>:
+    |    |    |_UB()
+    |    |    |malloc()
+    |    |    |reallocarray()
+    |    |    |memcpy()
+    |    |iswspace()
+    |    |strtoumax()
+    |    |strtoimax()
+    |    |strtold()
+    |    |strtod()
+    |    |strtof()
+    |    |FUNLOCKFILE()
+vsnprintf() <int vsnprintf (char *str, size_t n, const char *fmt, __va_list ap) at vsnprintf.c:40>:
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |    |_SET_ORIENTATION()
+    |    |cantwrite()
+    |    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |    |_FILEEXT_SETUP()
+    |    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 3038)
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |va_copy()
+    |    |PRINT()
+    |    |GETASTER()
+    |    |is_digit()
+    |    |APPEND_DIGIT()
+    |    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |    |ADDASTER()
+    |    |is_digit()
+    |    |APPEND_DIGIT()
+    |    |ADDTYPE()
+    |    |ADDSARG()
+    |    |ADDUARG()
+    |    |mmap()
+    |    |va_arg()
+    |    |munmap()
+    |    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |    |wcrtomb()
+    |    |GETARG()
+    |    |SARG()
+    |    |__freedtoa()
+    |    |__hldtoa()
+    |    |__hdtoa()
+    |    |__ldtoa()
+    |    |__dtoa()
+    |    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |    |to_char()
+    |    |UARG()
+    |    |free()
+    |    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |    |wcsrtombs() < at wchar.h:132>
+    |    |wcrtomb()
+    |    |malloc()
+    |    |free()
+    |    |strnlen()
+    |    |strlen()
+    |    |to_char()
+    |    |abort()
+    |    |PAD()
+    |    |nl_langinfo()
+    |    |PRINTANDPAD()
+    |    |FLUSH()
+    |    |va_end()
+    |    |__sferror()
+    |    |munmap()
+vsprintf() <int vsprintf (char *str, const char *fmt, __va_list ap) at vsprintf.c:45>:
+    |_FILEEXT_SETUP()
+    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (R):
+    |    |_SET_ORIENTATION()
+    |    |cantwrite()
+    |    |__sbprintf() <int __sbprintf (FILE *fp, const char *fmt, va_list ap) at vfprintf.c:120> (R):
+    |    |_FILEEXT_SETUP()
+    |    |__vfprintf() <int __vfprintf (FILE *fp, const char *fmt0, __va_list ap) at vfprintf.c:270> (recursive: see 3094)
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |va_copy()
+    |    |PRINT()
+    |    |GETASTER()
+    |    |is_digit()
+    |    |APPEND_DIGIT()
+    |    |__find_arguments() <int __find_arguments (const char *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfprintf.c:1135>:
+    |    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |    |ADDASTER()
+    |    |is_digit()
+    |    |APPEND_DIGIT()
+    |    |ADDTYPE()
+    |    |ADDSARG()
+    |    |ADDUARG()
+    |    |mmap()
+    |    |va_arg()
+    |    |munmap()
+    |    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |    |wcrtomb()
+    |    |GETARG()
+    |    |SARG()
+    |    |__freedtoa()
+    |    |__hldtoa()
+    |    |__hdtoa()
+    |    |__ldtoa()
+    |    |__dtoa()
+    |    |exponent() <int exponent (char *p0, int exp, int fmtch) at vfprintf.c:1509>:
+    |    |to_char()
+    |    |UARG()
+    |    |free()
+    |    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |    |__wcsconv() <char *__wcsconv (wchar_t *wcsarg, int prec) at vfprintf.c:156>:
+    |    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |    |wcsrtombs() < at wchar.h:132>
+    |    |wcrtomb()
+    |    |malloc()
+    |    |free()
+    |    |strnlen()
+    |    |strlen()
+    |    |to_char()
+    |    |abort()
+    |    |PAD()
+    |    |nl_langinfo()
+    |    |PRINTANDPAD()
+    |    |FLUSH()
+    |    |va_end()
+    |    |__sferror()
+    |    |munmap()
+vsscanf() <int vsscanf (const char *str, const char *fmt, __va_list ap) at vsscanf.c:46>:
+    |_FILEEXT_SETUP()
+    |strlen()
+    |eofread() <int eofread (void *cookie, char *buf, int len) at vsscanf.c:39>
+    |__svfscanf() <int __svfscanf (FILE *fp, const char *fmt0, __va_list ap) at vfscanf.c:100>:
+    |    |_SET_ORIENTATION()
+    |    |isspace() <__only_inline int isspace (int _c) at ctype.h:155>:
+    |    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |FREEUB()
+    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |fstat()
+    |    |S_ISCHR()
+    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |lseek()
+    |    |malloc()
+    |    |isatty()
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |FLOCKFILE()
+    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |FUNLOCKFILE()
+    |    |__sccl() <u_char *__sccl (char *tab, u_char *fmt) at vfscanf.c:872>:
+    |    |va_arg()
+    |    |isupper() <__only_inline int isupper (int _c) at ctype.h:160>:
+    |    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |    |mbrtowc()
+    |    |fread() <size_t fread (void *, size_t, size_t, FILE *) at stdio.h:221>:
+    |    |FLOCKFILE()
+    |    |_SET_ORIENTATION()
+    |    |FUNLOCKFILE()
+    |    |memcpy()
+    |    |__srefill() <int __srefill (FILE *fp) at refill.c:52>:
+    |    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |    |_MUTEX_LOCK()
+    |    |    |_FILEEXT_SETUP()
+    |    |    |__atexit_register_cleanup()
+    |    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |_MUTEX_UNLOCK()
+    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |HASUB()
+    |    |    |FREEUB()
+    |    |    |__smakebuf() <void __smakebuf (FILE *fp) at makebuf.c:49>:
+    |    |    |__swhatbuf() <int __swhatbuf (FILE *fp, size_t *bufsize, int *couldbetty) at makebuf.c:80>:
+    |    |    |fstat()
+    |    |    |S_ISCHR()
+    |    |    |__sseek() <fpos_t __sseek (void *cookie, fpos_t offset, int whence) at stdio.c:69>:
+    |    |    |    |lseek()
+    |    |    |malloc()
+    |    |    |isatty()
+    |    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |    |lflush() <int lflush (FILE *fp) at refill.c:40>:
+    |    |    |    |__sflush_locked() <int __sflush_locked (FILE *fp) at fflush.c:90>:
+    |    |    |    |    |FLOCKFILE()
+    |    |    |    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |    |    |    |FUNLOCKFILE()
+    |    |wctob()
+    |    |ungetc() <int ungetc (int c, FILE *fp) at ungetc.c:79>:
+    |    |__sinit() <void __sinit (void) at findfp.c:162>:
+    |    |_MUTEX_LOCK()
+    |    |_FILEEXT_SETUP()
+    |    |__atexit_register_cleanup()
+    |    |_cleanup() <void _cleanup (void) at findfp.c:152>:
+    |    |_fwalk() <int _fwalk (int (*function) (FILE *)) at fwalk.c:40>:
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |_MUTEX_UNLOCK()
+    |    |FLOCKFILE()
+    |    |_SET_ORIENTATION()
+    |    |FUNLOCKFILE()
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |HASUB()
+    |    |_UB()
+    |    |__submore() <int __submore (FILE *fp) at ungetc.c:47>:
+    |    |    |_UB()
+    |    |    |malloc()
+    |    |    |reallocarray()
+    |    |    |memcpy()
+    |    |iswspace()
+    |    |strtoumax()
+    |    |strtoimax()
+    |    |strtold()
+    |    |strtod()
+    |    |strtof()
+vswprintf() <int vswprintf (wchar_t *__restrict s, size_t n, const wchar_t *__restrict fmt, __va_list ap) at vswprintf.c:40>:
+    |_FILEEXT_SETUP()
+    |malloc()
+    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const wchar_t *fmt, va_list ap) at vfwprintf.c:98> (R):
+    |_FILEEXT_SETUP()
+    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (recursive: see 3247)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const wchar_t *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfwprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |GETARG()
+    |btowc()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |free()
+    |__mbsconv() <wchar_t *__mbsconv (char *mbsarg, int prec) at vfwprintf.c:167>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbrlen()
+    |strlen()
+    |calloc()
+    |mbrtowc()
+    |free()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (wchar_t *p0, int exp, int fmtch) at vfwprintf.c:1504>:
+    |to_char()
+    |UARG()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |wmemchr()
+    |wcslen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |free()
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbsrtowcs() < at wchar.h:112>
+vswscanf() <int vswscanf (const wchar_t *__restrict str, const wchar_t *__restrict fmt, __va_list ap) at vswscanf.c:52>:
+    |wcslen()
+    |malloc()
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |wcsrtombs() < at wchar.h:132>
+    |free()
+    |_FILEEXT_SETUP()
+    |eofread() <int eofread (void *cookie, char *buf, int len) at vswscanf.c:46>
+    |__vfwscanf() <int __vfwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, __va_list ap) at vfwscanf.c:103>:
+    |    |_SET_ORIENTATION()
+    |    |iswspace()
+    |    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |    |_SET_ORIENTATION()
+    |    |WCIO_GET()
+    |    |__sgetc()
+    |    |mbrtowc()
+    |    |__ungetwc() <wint_t __ungetwc (wint_t wc, FILE *fp) at ungetwc.c:38>:
+    |    |_SET_ORIENTATION()
+    |    |WCIO_GET()
+    |    |__sclearerr()
+    |    |va_arg()
+    |    |iswupper()
+    |    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |    |wcrtomb()
+    |    |memcpy()
+    |    |INCCL()
+    |    |wcstoimax()
+    |    |wcstoumax()
+    |    |mbrtowc()
+    |    |localeconv()
+    |    |wcstold()
+    |    |wcstod()
+    |    |wcstof()
+vwprintf() <int vwprintf (const wchar_t *__restrict fmt, __va_list ap) at vwprintf.c:39>:
+    |vfwprintf() <int vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:1081>:
+    |    |FLOCKFILE()
+    |    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (R):
+    |    |_SET_ORIENTATION()
+    |    |cantwrite()
+    |    |__sbprintf() <int __sbprintf (FILE *fp, const wchar_t *fmt, va_list ap) at vfwprintf.c:98> (R):
+    |    |_FILEEXT_SETUP()
+    |    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (recursive: see 3339)
+    |    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |    |va_copy()
+    |    |PRINT()
+    |    |GETASTER()
+    |    |is_digit()
+    |    |APPEND_DIGIT()
+    |    |__find_arguments() <int __find_arguments (const wchar_t *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfwprintf.c:1135>:
+    |    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |    |ADDASTER()
+    |    |is_digit()
+    |    |APPEND_DIGIT()
+    |    |ADDTYPE()
+    |    |ADDSARG()
+    |    |ADDUARG()
+    |    |mmap()
+    |    |va_arg()
+    |    |munmap()
+    |    |GETARG()
+    |    |btowc()
+    |    |SARG()
+    |    |__freedtoa()
+    |    |__hldtoa()
+    |    |__hdtoa()
+    |    |free()
+    |    |__mbsconv() <wchar_t *__mbsconv (char *mbsarg, int prec) at vfwprintf.c:167>:
+    |    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |    |mbrlen()
+    |    |strlen()
+    |    |calloc()
+    |    |mbrtowc()
+    |    |free()
+    |    |__ldtoa()
+    |    |__dtoa()
+    |    |exponent() <int exponent (wchar_t *p0, int exp, int fmtch) at vfwprintf.c:1504>:
+    |    |to_char()
+    |    |UARG()
+    |    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |    |wmemchr()
+    |    |wcslen()
+    |    |to_char()
+    |    |abort()
+    |    |PAD()
+    |    |nl_langinfo()
+    |    |PRINTANDPAD()
+    |    |va_end()
+    |    |__sferror()
+    |    |munmap()
+    |    |FUNLOCKFILE()
+vwscanf() <int vwscanf (const wchar_t *__restrict fmt, __va_list ap) at vwscanf.c:34>:
+    |vfwscanf() <int vfwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, __va_list ap) at vfwscanf.c:791>:
+    |    |FLOCKFILE()
+    |    |__vfwscanf() <int __vfwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, __va_list ap) at vfwscanf.c:103>:
+    |    |_SET_ORIENTATION()
+    |    |iswspace()
+    |    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |    |_SET_ORIENTATION()
+    |    |WCIO_GET()
+    |    |__sgetc()
+    |    |mbrtowc()
+    |    |__ungetwc() <wint_t __ungetwc (wint_t wc, FILE *fp) at ungetwc.c:38>:
+    |    |_SET_ORIENTATION()
+    |    |WCIO_GET()
+    |    |__sclearerr()
+    |    |va_arg()
+    |    |iswupper()
+    |    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |    |wcrtomb()
+    |    |memcpy()
+    |    |INCCL()
+    |    |wcstoimax()
+    |    |wcstoumax()
+    |    |mbrtowc()
+    |    |localeconv()
+    |    |wcstold()
+    |    |wcstod()
+    |    |wcstof()
+    |    |FUNLOCKFILE()
+wprintf() <int wprintf (const wchar_t *__restrict fmt, ...) at wprintf.c:39>:
+    |va_start()
+    |vfwprintf() <int vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:1081>:
+    |FLOCKFILE()
+    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (R):
+    |_SET_ORIENTATION()
+    |cantwrite()
+    |__sbprintf() <int __sbprintf (FILE *fp, const wchar_t *fmt, va_list ap) at vfwprintf.c:98> (R):
+    |_FILEEXT_SETUP()
+    |__vfwprintf() <int __vfwprintf (FILE *__restrict fp, const wchar_t *__restrict fmt0, __va_list ap) at vfwprintf.c:280> (recursive: see 3426)
+    |__sflush() <int __sflush (FILE *fp) at fflush.c:58>:
+    |va_copy()
+    |PRINT()
+    |GETASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |__find_arguments() <int __find_arguments (const wchar_t *fmt0, va_list ap, union arg argtable, size_t *argtablesiz) at vfwprintf.c:1135>:
+    |memset() <void *memset (void *, int, size_t) at systm.h:199>
+    |ADDASTER()
+    |is_digit()
+    |APPEND_DIGIT()
+    |ADDTYPE()
+    |ADDSARG()
+    |ADDUARG()
+    |mmap()
+    |va_arg()
+    |munmap()
+    |GETARG()
+    |btowc()
+    |SARG()
+    |__freedtoa()
+    |__hldtoa()
+    |__hdtoa()
+    |free()
+    |__mbsconv() <wchar_t *__mbsconv (char *mbsarg, int prec) at vfwprintf.c:167>:
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |mbrlen()
+    |strlen()
+    |calloc()
+    |mbrtowc()
+    |free()
+    |__ldtoa()
+    |__dtoa()
+    |exponent() <int exponent (wchar_t *p0, int exp, int fmtch) at vfwprintf.c:1504>:
+    |to_char()
+    |UARG()
+    |syslog_r() <void syslog_r (int, struct syslog_data *, const char *, ...) at syslog.h:205>
+    |wmemchr()
+    |wcslen()
+    |to_char()
+    |abort()
+    |PAD()
+    |nl_langinfo()
+    |PRINTANDPAD()
+    |va_end()
+    |__sferror()
+    |munmap()
+    |FUNLOCKFILE()
+    |va_end()
+wscanf() <int wscanf (const wchar_t *__restrict fmt, ...) at wscanf.c:34>:
+    |va_start()
+    |vfwscanf() <int vfwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, __va_list ap) at vfwscanf.c:791>:
+    |FLOCKFILE()
+    |__vfwscanf() <int __vfwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, __va_list ap) at vfwscanf.c:103>:
+    |_SET_ORIENTATION()
+    |iswspace()
+    |__fgetwc_unlock() <wint_t __fgetwc_unlock (FILE *fp) at fgetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sgetc()
+    |mbrtowc()
+    |__ungetwc() <wint_t __ungetwc (wint_t wc, FILE *fp) at ungetwc.c:38>:
+    |_SET_ORIENTATION()
+    |WCIO_GET()
+    |__sclearerr()
+    |va_arg()
+    |iswupper()
+    |bzero() <void bzero (void *, size_t) at systm.h:188>
+    |wcrtomb()
+    |memcpy()
+    |INCCL()
+    |wcstoimax()
+    |wcstoumax()
+    |mbrtowc()
+    |localeconv()
+    |wcstold()
+    |wcstod()
+    |wcstof()
+    |FUNLOCKFILE()
+    |va_end()
