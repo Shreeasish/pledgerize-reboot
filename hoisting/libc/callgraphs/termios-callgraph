@@ -1,0 +1,25 @@
+cfmakeraw() <void cfmakeraw (struct termios t) at cfmakeraw.c:38>:
+tcdrain() <int tcdrain (int fd) at tcdrain.c:37>:
+    |ENTER_CANCEL_POINT()
+    |ioctl()
+    |LEAVE_CANCEL_POINT()
+tcflow() <int tcflow (int fd, int action) at tcflow.c:37>:
+    |ioctl()
+    |tcgetattr() <int tcgetattr (int fd, struct termios t) at tcgetattr.c:35>:
+    |ioctl()
+    |HIDDEN()
+tcflush() <int tcflush (int fd, int which) at tcflush.c:37>:
+    |ioctl()
+tcgetattr() <int tcgetattr (int fd, struct termios t) at tcgetattr.c:35>:
+    |ioctl()
+tcgetpgrp() <pid_t tcgetpgrp (int fd) at tcgetpgrp.c:35>:
+    |ioctl()
+tcgetsid() <pid_t tcgetsid (int fd) at tcgetsid.c:35>:
+    |ioctl()
+tcsendbreak() <int tcsendbreak (int fd, int len) at tcsendbreak.c:36>:
+    |ioctl()
+    |HIDDEN()
+tcsetattr() <int tcsetattr (int fd, int opt, const struct termios *t) at tcsetattr.c:36>:
+    |ioctl()
+tcsetpgrp() <int tcsetpgrp (int fd, pid_t pgrp) at tcsetpgrp.c:35>:
+    |ioctl()

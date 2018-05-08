@@ -1,0 +1,35 @@
+uuid_compare() <int32_t uuid_compare (const uuid_t *a, const uuid_t *b, uint32_t *status) at uuid_compare.c:51>:
+    |uuid_is_nil() <int32_t uuid_is_nil (const uuid_t *u, uint32_t *status) at uuid_is_nil.c:42>:
+    |memcmp()
+    |DIFF_RETURN()
+    |memcmp()
+uuid_create() <void uuid_create (uuid_t *u, uint32_t *status) at uuid_create.c:45>:
+    |arc4random_buf()
+uuid_create_nil() <void uuid_create_nil (uuid_t *u, uint32_t *status) at uuid_create_nil.c:42>:
+    |memset()
+uuid_dec_be() <void uuid_dec_be (const void *buf, uuid_t *uuid) at uuid_stream.c:201>:
+    |be32dec() <__inline uint32_t be32dec (const void *pp) at uuid_stream.c:92>:
+    |be16dec() <__inline uint16_t be16dec (const void *pp) at uuid_stream.c:84>:
+uuid_dec_le() <void uuid_dec_le (const void *buf, uuid_t *uuid) at uuid_stream.c:171>:
+    |le32dec() <__inline uint32_t le32dec (const void *pp) at uuid_stream.c:108>:
+    |le16dec() <__inline uint16_t le16dec (const void *pp) at uuid_stream.c:100>:
+uuid_enc_be() <void uuid_enc_be (void *buf, const uuid_t *uuid) at uuid_stream.c:186>:
+    |be32enc() <__inline void be32enc (void *pp, uint32_t u) at uuid_stream.c:125>:
+    |be16enc() <__inline void be16enc (void *pp, uint16_t u) at uuid_stream.c:116>:
+uuid_enc_le() <void uuid_enc_le (void *buf, const uuid_t *uuid) at uuid_stream.c:156>:
+    |le32enc() <__inline void le32enc (void *pp, uint32_t u) at uuid_stream.c:145>:
+    |le16enc() <__inline void le16enc (void *pp, uint16_t u) at uuid_stream.c:136>:
+uuid_equal() <int32_t uuid_equal (const uuid_t *a, const uuid_t *b, uint32_t *status) at uuid_equal.c:42>:
+    |uuid_is_nil() <int32_t uuid_is_nil (const uuid_t *u, uint32_t *status) at uuid_is_nil.c:42>:
+    |memcmp()
+    |memcmp()
+uuid_from_string() <void uuid_from_string (const char *s, uuid_t *u, uint32_t *status) at uuid_from_string.c:47>:
+    |uuid_create_nil() <void uuid_create_nil (uuid_t *u, uint32_t *status) at uuid_create_nil.c:42>:
+    |memset()
+    |strlen()
+    |sscanf()
+uuid_hash() <uint16_t uuid_hash (const uuid_t *u, uint32_t *status) at uuid_hash.c:41>:
+uuid_is_nil() <int32_t uuid_is_nil (const uuid_t *u, uint32_t *status) at uuid_is_nil.c:42>:
+    |memcmp()
+uuid_to_string() <void uuid_to_string (const uuid_t *u, char **s, uint32_t *status) at uuid_to_string.c:47>:
+    |asprintf()

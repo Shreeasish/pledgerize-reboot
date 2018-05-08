@@ -1,0 +1,2 @@
+strtold() <long double strtold (const char *__restrict s, char **__restrict sp) at strtold.c:39>:
+    |strtorx()

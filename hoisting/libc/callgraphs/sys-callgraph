@@ -1,0 +1,262 @@
+HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+WRAP() <pid_t WRAP (vfork) (void) at w_vfork.c:23>:
+    |TAILQ_FIRST()
+    |TIB_GET()
+    |getthrid()
+    |_ATFORK_LOCK()
+    |TAILQ_FOREACH_REVERSE()
+    |TAILQ_FOREACH()
+    |_ATFORK_UNLOCK()
+    |sigismember()
+    |sigdelset()
+__stack_smash_handler() <void __stack_smash_handler (const char func[], int damaged) at stack_protector.c:51>:
+    |sigfillset()
+    |sigdelset()
+    |sigprocmask()
+    |strlcpy()
+    |strlcat()
+    |sendsyslog()
+    |strlen()
+    |memset()
+    |sigemptyset()
+    |sigaction()
+    |thrkill()
+    |_exit()
+_thread_canceled() <void _thread_canceled (void) at canceled.c:21>:
+    |exit()
+accept() <int accept (int s, struct sockaddr addr, socklen_t *addrlen) at w_accept.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |accept() <int accept (int s, struct sockaddr addr, socklen_t *addrlen) at w_accept.c:22> (recursive: see 28)
+    |LEAVE_CANCEL_POINT()
+accept4() <int accept4 (int s, struct sockaddr addr, socklen_t *addrlen, int flags) at w_accept4.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |accept4() <int accept4 (int s, struct sockaddr addr, socklen_t *addrlen, int flags) at w_accept4.c:22> (recursive: see 34)
+    |LEAVE_CANCEL_POINT()
+close() <int close (int fd) at w_close.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |close() <int close (int fd) at w_close.c:22> (recursive: see 40)
+    |LEAVE_CANCEL_POINT()
+closefrom() <int closefrom (int fd) at w_closefrom.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |closefrom() <int closefrom (int fd) at w_closefrom.c:22> (recursive: see 46)
+    |LEAVE_CANCEL_POINT()
+connect() <int connect (int s, const struct sockaddr *name, socklen_t namelen) at w_connect.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |connect() <int connect (int s, const struct sockaddr *name, socklen_t namelen) at w_connect.c:22> (recursive: see 52)
+    |LEAVE_CANCEL_POINT()
+fcntl() <int fcntl (int fd, int cmd, ...) at w_fcntl.c:23> (R):
+    |va_start()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |fcntl() <int fcntl (int fd, int cmd, ...) at w_fcntl.c:23> (recursive: see 58)
+    |va_arg()
+    |ENTER_CANCEL_POINT()
+    |LEAVE_CANCEL_POINT()
+    |va_end()
+fsync() <int fsync (int fd) at w_fsync.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |fsync() <int fsync (int fd) at w_fsync.c:22> (recursive: see 67)
+    |LEAVE_CANCEL_POINT()
+ftruncate() <int ftruncate (int fd, off_t length) at ftruncate.c:44>:
+    |__syscall()
+lseek() <off_t lseek (int fd, off_t offset, int whence) at lseek.c:44>:
+    |__syscall()
+mmap() <void *mmap (void *addr, size_t len, int prot, int flags, int fd, off_t offset) at mmap.c:45>:
+    |__syscall()
+mquery() <void *mquery (void *addr, size_t len, int prot, int flags, int fd, off_t offset) at mquery.c:19>:
+    |__syscall()
+msgrcv() <int msgrcv (int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) at w_msgrcv.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |msgrcv() <int msgrcv (int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) at w_msgrcv.c:22> (recursive: see 81)
+    |LEAVE_CANCEL_POINT()
+msgsnd() <int msgsnd (int msqid, const void *msgp, size_t msgsz, int msgflg) at w_msgsnd.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |msgsnd() <int msgsnd (int msqid, const void *msgp, size_t msgsz, int msgflg) at w_msgsnd.c:22> (recursive: see 87)
+    |LEAVE_CANCEL_POINT()
+msync() <int msync (void *addr, size_t len, int flags) at w_msync.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |msync() <int msync (void *addr, size_t len, int flags) at w_msync.c:22> (recursive: see 93)
+    |LEAVE_CANCEL_POINT()
+nanosleep() <int nanosleep (const struct timespec *timeout, struct timespec remainder) at w_nanosleep.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |nanosleep() <int nanosleep (const struct timespec *timeout, struct timespec remainder) at w_nanosleep.c:22> (recursive: see 99)
+    |LEAVE_CANCEL_POINT()
+open() <int open (const char *path, int flags, ...) at w_open.c:23> (R):
+    |va_start()
+    |va_arg()
+    |va_end()
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |open() <int open (const char *path, int flags, ...) at w_open.c:23> (recursive: see 105)
+    |LEAVE_CANCEL_POINT()
+openat() <int openat (int fd, const char *path, int flags, ...) at w_openat.c:23> (R):
+    |va_start()
+    |va_arg()
+    |va_end()
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |openat() <int openat (int fd, const char *path, int flags, ...) at w_openat.c:23> (recursive: see 114)
+    |LEAVE_CANCEL_POINT()
+poll() <int poll (struct pollfd fds, nfds_t nfds, int timeout) at w_poll.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |poll() <int poll (struct pollfd fds, nfds_t nfds, int timeout) at w_poll.c:22> (recursive: see 123)
+    |LEAVE_CANCEL_POINT()
+posix_madvise() <int posix_madvise (void *addr, size_t len, int behav) at posix_madvise.c:9>:
+    |madvise()
+ppoll() <int ppoll (struct pollfd fds, nfds_t nfds, const struct timespec *timeout, const sigset_t *sigmask) at w_ppoll.c:23> (R):
+    |sigismember()
+    |sigdelset()
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |ppoll() <int ppoll (struct pollfd fds, nfds_t nfds, const struct timespec *timeout, const sigset_t *sigmask) at w_ppoll.c:23> (recursive: see 131)
+    |LEAVE_CANCEL_POINT()
+pread() <ssize_t pread (int fd, void *buf, size_t nbyte, off_t offset) at w_pread.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |pread() <ssize_t pread (int fd, void *buf, size_t nbyte, off_t offset) at w_pread.c:22> (recursive: see 139)
+    |LEAVE_CANCEL_POINT()
+preadv() <ssize_t preadv (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at w_preadv.c:23> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |preadv() <ssize_t preadv (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at w_preadv.c:23> (recursive: see 145)
+    |LEAVE_CANCEL_POINT()
+pselect() <int pselect (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, const struct timespec *timeout, const sigset_t *sigmask) at w_pselect.c:23> (R):
+    |sigismember()
+    |sigdelset()
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |pselect() <int pselect (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, const struct timespec *timeout, const sigset_t *sigmask) at w_pselect.c:23> (recursive: see 151)
+    |LEAVE_CANCEL_POINT()
+pthread_sigmask() <int pthread_sigmask (int how, const sigset_t *set, sigset_t *oset) at pthread_sigmask.c:23>:
+    |WRAP() <pid_t WRAP (vfork) (void) at w_vfork.c:23>:
+    |TAILQ_FIRST()
+    |TIB_GET()
+    |getthrid()
+    |_ATFORK_LOCK()
+    |TAILQ_FOREACH_REVERSE()
+    |TAILQ_FOREACH()
+    |_ATFORK_UNLOCK()
+    |sigismember()
+    |sigdelset()
+    |sigprocmask()
+pwrite() <ssize_t pwrite (int fd, const void *buf, size_t nbyte, off_t offset) at w_pwrite.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |pwrite() <ssize_t pwrite (int fd, const void *buf, size_t nbyte, off_t offset) at w_pwrite.c:22> (recursive: see 171)
+    |LEAVE_CANCEL_POINT()
+pwritev() <ssize_t pwritev (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at w_pwritev.c:23> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |pwritev() <ssize_t pwritev (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at w_pwritev.c:23> (recursive: see 177)
+    |LEAVE_CANCEL_POINT()
+read() <ssize_t read (int fd, void *buf, size_t nbytes) at w_read.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |read() <ssize_t read (int fd, void *buf, size_t nbytes) at w_read.c:22> (recursive: see 183)
+    |LEAVE_CANCEL_POINT()
+readv() <ssize_t readv (int fd, const struct iovec *iov, int iovcnt) at w_readv.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |readv() <ssize_t readv (int fd, const struct iovec *iov, int iovcnt) at w_readv.c:22> (recursive: see 189)
+    |LEAVE_CANCEL_POINT()
+recvfrom() <ssize_t recvfrom (int fd, void *buf, size_t len, int flags, struct sockaddr addr, socklen_t *addrlen) at w_recvfrom.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |recvfrom() <ssize_t recvfrom (int fd, void *buf, size_t len, int flags, struct sockaddr addr, socklen_t *addrlen) at w_recvfrom.c:22> (recursive: see 195)
+    |LEAVE_CANCEL_POINT()
+recvmsg() <ssize_t recvmsg (int fd, struct msghdr msg, int flags) at w_recvmsg.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |recvmsg() <ssize_t recvmsg (int fd, struct msghdr msg, int flags) at w_recvmsg.c:22> (recursive: see 201)
+    |LEAVE_CANCEL_POINT()
+select() <int select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval timeout) at w_select.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |select() <int select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval timeout) at w_select.c:22> (recursive: see 207)
+    |LEAVE_CANCEL_POINT()
+semctl() <int semctl (int semid, int semnum, int cmd, ...) at semctl.c:38>:
+    |va_start()
+    |va_arg()
+    |va_end()
+    |__semctl()
+sendmsg() <ssize_t sendmsg (int s, const struct msghdr *msg, int flags) at w_sendmsg.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |sendmsg() <ssize_t sendmsg (int s, const struct msghdr *msg, int flags) at w_sendmsg.c:22> (recursive: see 218)
+    |LEAVE_CANCEL_POINT()
+sendto() <ssize_t sendto (int fd, const void *msg, size_t len, int flags, const struct sockaddr *to, socklen_t tolen) at w_sendto.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |sendto() <ssize_t sendto (int fd, const void *msg, size_t len, int flags, const struct sockaddr *to, socklen_t tolen) at w_sendto.c:22> (recursive: see 224)
+    |LEAVE_CANCEL_POINT()
+sigsuspend() <int sigsuspend (const sigset_t *set) at w_sigsuspend.c:23> (R):
+    |sigismember()
+    |sigdelset()
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |sigsuspend() <int sigsuspend (const sigset_t *set) at w_sigsuspend.c:23> (recursive: see 230)
+    |LEAVE_CANCEL_POINT()
+timer_create() <int timer_create (clockid_t clock_id, struct sigevent evp, timer_t *timerid) at timer_create.c:13>:
+timer_delete() <int timer_delete (timer_t timerid) at timer_delete.c:10>:
+timer_getoverrun() <int timer_getoverrun (timer_t timerid) at timer_getoverrun.c:10>:
+timer_gettime() <int timer_gettime (timer_t timerid, struct itimerspec value) at timer_gettime.c:10>:
+timer_settime() <int timer_settime (timer_t timerid, int flags, const struct itimerspec *value, struct itimerspec ovalue) at timer_settime.c:11>:
+truncate() <int truncate (const char *path, off_t length) at truncate.c:45>:
+    |__syscall()
+wait4() <int wait4 (pid_t wpid, int *status, int options, struct rusage rusage) at w_wait4.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |wait4() <int wait4 (pid_t wpid, int *status, int options, struct rusage rusage) at w_wait4.c:22> (recursive: see 245)
+    |LEAVE_CANCEL_POINT()
+write() <ssize_t write (int fd, const void *buf, size_t nbytes) at w_write.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |write() <ssize_t write (int fd, const void *buf, size_t nbytes) at w_write.c:22> (recursive: see 251)
+    |LEAVE_CANCEL_POINT()
+writev() <ssize_t writev (int fd, const struct iovec *iov, int iovcnt) at w_writev.c:22> (R):
+    |ENTER_CANCEL_POINT()
+    |HIDDEN() <ssize_t HIDDEN (pwritev) (int fd, const struct iovec *iovp, int iovcnt, off_t offset) at pwritev.c:47>:
+    |__syscall()
+    |writev() <ssize_t writev (int fd, const struct iovec *iov, int iovcnt) at w_writev.c:22> (recursive: see 257)
+    |LEAVE_CANCEL_POINT()

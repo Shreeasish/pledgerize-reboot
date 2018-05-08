@@ -1,0 +1,17 @@
+main() <void main (void) at blowfish.c:666>:
+    |blf_key() <void blf_key (blf_ctx *c, const u_int8_t *k, u_int16_t len) at blowfish.c:504>:
+    |Blowfish_initstate() <void Blowfish_initstate (blf_ctx *c) at blowfish.c:119>:
+    |Blowfish_expand0state() <void Blowfish_expand0state (blf_ctx *c, const u_int8_t *key, u_int16_t keybytes) at blowfish.c:421>:
+    |    |Blowfish_stream2word() <u_int32_t Blowfish_stream2word (const u_int8_t *data, u_int16_t databytes, u_int16_t *current) at blowfish.c:399>:
+    |    |Blowfish_encipher() <void Blowfish_encipher (blf_ctx *c, u_int32_t *xl, u_int32_t *xr) at blowfish.c:67>:
+    |    |    |BLFRND()
+    |blf_enc() <void blf_enc (blf_ctx *c, u_int32_t *data, u_int16_t blocks) at blowfish.c:515>:
+    |Blowfish_encipher() <void Blowfish_encipher (blf_ctx *c, u_int32_t *xl, u_int32_t *xr) at blowfish.c:67>:
+    |    |BLFRND()
+    |blf_dec() <void blf_dec (blf_ctx *c, u_int32_t *data, u_int16_t blocks) at blowfish.c:529>:
+    |Blowfish_decipher() <void Blowfish_decipher (blf_ctx *c, u_int32_t *xl, u_int32_t *xr) at blowfish.c:93>:
+    |    |BLFRND()
+    |printf()
+    |report() <void report (u_int32_t data[], u_int16_t len) at blowfish.c:658>:
+    |printf()
+    |strlen()

@@ -1,0 +1,817 @@
+main() <main (int argc, char **argv) at timesoftfloat.c:2477>:
+    |strcmp()
+    |fputs()
+    |fail() <void fail (const char *message, ...) at timesoftfloat.c:46>:
+    |fputs()
+    |va_start()
+    |vfprintf()
+    |va_end()
+    |exit()
+    |timeFunction() <void timeFunction (uint8 functionCode, int8 roundingPrecisionIn, int8 roundingModeIn, int8 tininessModeIn) at timesoftfloat.c:2406>:
+    |    |timeFunctionVariety() <void timeFunctionVariety (uint8 functionCode, int8 roundingPrecision, int8 roundingMode, int8 tininessMode) at timesoftfloat.c:2048>:
+    |    |    |time_a_int32_z_float32() <void time_a_int32_z_float32 (float32 function (int32)) at timesoftfloat.c:102>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |int32_to_float32() <float32 int32_to_float32 (int32 a) at softfloat.c:527>:
+    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |normalizeRoundAndPackFloat32() <float32 normalizeRoundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:262>:
+    |    |    |    |countLeadingZeros32()
+    |    |    |    |roundAndPackFloat32() <float32 roundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:199>:
+    |    |    |    |    |float_raise()
+    |    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |    |shift32RightJamming()
+    |    |    |time_a_int32_z_float64() <void time_a_int32_z_float64 (float64 function (int32)) at timesoftfloat.c:129>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |int32_to_float64() <float64 int32_to_float64 (int32 a) at softfloat.c:545>:
+    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |FLOAT64_MANGLE()
+    |    |    |countLeadingZeros32()
+    |    |    |shift64Right()
+    |    |    |time_a_int32_z_floatx80() <void time_a_int32_z_floatx80 (floatx80 function (int32)) at timesoftfloat.c:158>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_int32_z_float128() <void time_a_int32_z_float128 (float128 function (int32)) at timesoftfloat.c:189>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_int64_z_float32() <void time_a_int64_z_float32 (float32 function (int64)) at timesoftfloat.c:257>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_int64_z_float64() <void time_a_int64_z_float64 (float64 function (int64)) at timesoftfloat.c:284>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_int64_z_floatx80() <void time_a_int64_z_floatx80 (floatx80 function (int64)) at timesoftfloat.c:313>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_int64_z_float128() <void time_a_int64_z_float128 (float128 function (int64)) at timesoftfloat.c:344>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_float32_z_int32() <void time_a_float32_z_int32 (int32 function (float32)) at timesoftfloat.c:388>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float32_to_int32() <int32 float32_to_int32 (float32 a) at softfloat.c:579>:
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |float_raise()
+    |    |    |float32_to_int32_round_to_zero() <int32 float32_to_int32_round_to_zero (float32 a) at softfloat.c:650>:
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |float_raise()
+    |    |    |time_a_float32_z_int64() <void time_a_float32_z_int64 (int64 function (float32)) at timesoftfloat.c:415>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_float32_z_float64() <void time_a_float32_z_float64 (float64 function (float32)) at timesoftfloat.c:442>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float32_to_float64() <float64 float32_to_float64 (float32 a) at softfloat.c:690>:
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |commonNaNToFloat64()
+    |    |    |float32ToCommonNaN()
+    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |FLOAT64_MANGLE()
+    |    |    |normalizeFloat32Subnormal() <void normalizeFloat32Subnormal (bits32 aSig, int16 *zExpPtr, bits32 *zSigPtr) at softfloat.c:147>:
+    |    |    |countLeadingZeros32()
+    |    |    |shift64Right()
+    |    |    |time_a_float32_z_floatx80() <void time_a_float32_z_floatx80 (floatx80 function (float32)) at timesoftfloat.c:471>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_float32_z_float128() <void time_a_float32_z_float128 (float128 function (float32)) at timesoftfloat.c:502>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_az_float32() <void time_az_float32 (float32 function (float32)) at timesoftfloat.c:531>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float32_round_to_int() <float32 float32_round_to_int (float32 a) at softfloat.c:722>:
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |propagateFloat32NaN()
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |time_abz_float32() <void time_abz_float32 (float32 function (float32, float32)) at timesoftfloat.c:593>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float32_add() <float32 float32_add (float32 a, float32 b) at softfloat.c:932>:
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |addFloat32Sigs() <float32 addFloat32Sigs (float32 a, float32 b, flag zSign) at softfloat.c:786>:
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |propagateFloat32NaN()
+    |    |    |shift32RightJamming()
+    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |roundAndPackFloat32() <float32 roundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:199>:
+    |    |    |    |float_raise()
+    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |shift32RightJamming()
+    |    |    |subFloat32Sigs() <float32 subFloat32Sigs (float32 a, float32 b, flag zSign) at softfloat.c:858>:
+    |    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |    |propagateFloat32NaN()
+    |    |    |    |float_raise()
+    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |shift32RightJamming()
+    |    |    |    |normalizeRoundAndPackFloat32() <float32 normalizeRoundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:262>:
+    |    |    |    |    |countLeadingZeros32()
+    |    |    |    |    |roundAndPackFloat32() <float32 roundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:199>:
+    |    |    |    |    |    |float_raise()
+    |    |    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |    |    |shift32RightJamming()
+    |    |    |float32_sub() <float32 float32_sub (float32 a, float32 b) at softfloat.c:954>:
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |subFloat32Sigs() <float32 subFloat32Sigs (float32 a, float32 b, flag zSign) at softfloat.c:858>:
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |propagateFloat32NaN()
+    |    |    |float_raise()
+    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |shift32RightJamming()
+    |    |    |normalizeRoundAndPackFloat32() <float32 normalizeRoundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:262>:
+    |    |    |    |countLeadingZeros32()
+    |    |    |    |roundAndPackFloat32() <float32 roundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:199>:
+    |    |    |    |    |float_raise()
+    |    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |    |shift32RightJamming()
+    |    |    |addFloat32Sigs() <float32 addFloat32Sigs (float32 a, float32 b, flag zSign) at softfloat.c:786>:
+    |    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |    |propagateFloat32NaN()
+    |    |    |    |shift32RightJamming()
+    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |roundAndPackFloat32() <float32 roundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:199>:
+    |    |    |    |    |float_raise()
+    |    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |    |shift32RightJamming()
+    |    |    |float32_mul() <float32 float32_mul (float32 a, float32 b) at softfloat.c:976>:
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |propagateFloat32NaN()
+    |    |    |float_raise()
+    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |normalizeFloat32Subnormal() <void normalizeFloat32Subnormal (bits32 aSig, int16 *zExpPtr, bits32 *zSigPtr) at softfloat.c:147>:
+    |    |    |countLeadingZeros32()
+    |    |    |mul32To64()
+    |    |    |roundAndPackFloat32() <float32 roundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:199>:
+    |    |    |    |float_raise()
+    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |shift32RightJamming()
+    |    |    |float32_div() <float32 float32_div (float32 a, float32 b) at softfloat.c:1035>:
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |propagateFloat32NaN()
+    |    |    |float_raise()
+    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |normalizeFloat32Subnormal() <void normalizeFloat32Subnormal (bits32 aSig, int16 *zExpPtr, bits32 *zSigPtr) at softfloat.c:147>:
+    |    |    |countLeadingZeros32()
+    |    |    |estimateDiv64To32()
+    |    |    |mul32To64()
+    |    |    |sub64()
+    |    |    |add64()
+    |    |    |roundAndPackFloat32() <float32 roundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:199>:
+    |    |    |    |float_raise()
+    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |shift32RightJamming()
+    |    |    |float32_rem() <float32 float32_rem (float32 a, float32 b) at softfloat.c:1105>:
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |propagateFloat32NaN()
+    |    |    |float_raise()
+    |    |    |normalizeFloat32Subnormal() <void normalizeFloat32Subnormal (bits32 aSig, int16 *zExpPtr, bits32 *zSigPtr) at softfloat.c:147>:
+    |    |    |countLeadingZeros32()
+    |    |    |estimateDiv64To32()
+    |    |    |normalizeRoundAndPackFloat32() <float32 normalizeRoundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:262>:
+    |    |    |    |countLeadingZeros32()
+    |    |    |    |roundAndPackFloat32() <float32 roundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:199>:
+    |    |    |    |    |float_raise()
+    |    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |    |shift32RightJamming()
+    |    |    |time_az_float32_pos() <void time_az_float32_pos (float32 function (float32)) at timesoftfloat.c:639>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float32_sqrt() <float32 float32_sqrt (float32 a) at softfloat.c:1192>:
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |propagateFloat32NaN()
+    |    |    |float_raise()
+    |    |    |normalizeFloat32Subnormal() <void normalizeFloat32Subnormal (bits32 aSig, int16 *zExpPtr, bits32 *zSigPtr) at softfloat.c:147>:
+    |    |    |countLeadingZeros32()
+    |    |    |estimateSqrt32()
+    |    |    |mul32To64()
+    |    |    |sub64()
+    |    |    |shortShift64Left()
+    |    |    |add64()
+    |    |    |shift32RightJamming()
+    |    |    |roundAndPackFloat32() <float32 roundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:199>:
+    |    |    |    |float_raise()
+    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |shift32RightJamming()
+    |    |    |time_ab_float32_z_flag() <void time_ab_float32_z_flag (flag function (float32, float32)) at timesoftfloat.c:558>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float32_eq() <flag float32_eq (float32 a, float32 b) at softfloat.c:1251>:
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |float32_is_signaling_nan()
+    |    |    |float_raise()
+    |    |    |float32_le() <flag float32_le (float32 a, float32 b) at softfloat.c:1274>:
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |float_raise()
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |float32_lt() <flag float32_lt (float32 a, float32 b) at softfloat.c:1298>:
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |float_raise()
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |float32_eq_signaling() <flag float32_eq_signaling (float32 a, float32 b) at softfloat.c:1324>:
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |float_raise()
+    |    |    |float32_le_quiet() <flag float32_le_quiet (float32 a, float32 b) at softfloat.c:1345>:
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |float32_is_signaling_nan()
+    |    |    |float_raise()
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |float32_lt_quiet() <flag float32_lt_quiet (float32 a, float32 b) at softfloat.c:1373>:
+    |    |    |extractFloat32Exp() <INLINE int16 extractFloat32Exp (float32 a) at softfloat.c:119>
+    |    |    |extractFloat32Frac() <INLINE bits32 extractFloat32Frac (float32 a) at softfloat.c:107>
+    |    |    |float32_is_signaling_nan()
+    |    |    |float_raise()
+    |    |    |extractFloat32Sign() <INLINE flag extractFloat32Sign (float32 a) at softfloat.c:131>
+    |    |    |time_a_float64_z_int32() <void time_a_float64_z_int32 (int32 function (float64)) at timesoftfloat.c:705>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float64_to_int32() <int32 float64_to_int32 (float64 a) at softfloat.c:1405>:
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |shortShift64Left()
+    |    |    |float_raise()
+    |    |    |float64_to_int32_round_to_zero() <int32 float64_to_int32_round_to_zero (float64 a) at softfloat.c:1479>:
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |shortShift64Left()
+    |    |    |float_raise()
+    |    |    |time_a_float64_z_int64() <void time_a_float64_z_int64 (int64 function (float64)) at timesoftfloat.c:732>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_float64_z_float32() <void time_a_float64_z_float32 (float32 function (float64)) at timesoftfloat.c:759>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float64_to_float32() <float32 float64_to_float32 (float64 a) at softfloat.c:1529>:
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |commonNaNToFloat32()
+    |    |    |float64ToCommonNaN()
+    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |shift64RightJamming()
+    |    |    |roundAndPackFloat32() <float32 roundAndPackFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:199>:
+    |    |    |    |float_raise()
+    |    |    |    |packFloat32() <INLINE float32 packFloat32 (flag zSign, int16 zExp, bits32 zSig) at softfloat.c:169>:
+    |    |    |    |shift32RightJamming()
+    |    |    |time_a_float64_z_floatx80() <void time_a_float64_z_floatx80 (floatx80 function (float64)) at timesoftfloat.c:788>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_float64_z_float128() <void time_a_float64_z_float128 (float128 function (float64)) at timesoftfloat.c:819>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_az_float64() <void time_az_float64 (float64 function (float64)) at timesoftfloat.c:848>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float64_round_to_int() <float64 float64_round_to_int (float64 a) at softfloat.c:1561>:
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |propagateFloat64NaN()
+    |    |    |add64()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |    |FLOAT64_MANGLE()
+    |    |    |time_abz_float64() <void time_abz_float64 (float64 function (float64, float64)) at timesoftfloat.c:910>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float64_add() <float64 float64_add (float64 a, float64 b) at softfloat.c:1823>:
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |addFloat64Sigs() <float64 addFloat64Sigs (float64 a, float64 b, flag zSign) at softfloat.c:1665>:
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |propagateFloat64NaN()
+    |    |    |shift64ExtraRightJamming()
+    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |FLOAT64_MANGLE()
+    |    |    |add64()
+    |    |    |roundAndPackFloat64() <float64 roundAndPackFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1, bits32 zSig2) at softfloat.c:410>:
+    |    |    |    |eq64()
+    |    |    |    |float_raise()
+    |    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |    |FLOAT64_MANGLE()
+    |    |    |    |lt64()
+    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |add64()
+    |    |    |subFloat64Sigs() <float64 subFloat64Sigs (float64 a, float64 b, flag zSign) at softfloat.c:1743>:
+    |    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |    |FLOAT64_DEMANGLE()
+    |    |    |    |LIT64()
+    |    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |    |FLOAT64_DEMANGLE()
+    |    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |    |FLOAT64_DEMANGLE()
+    |    |    |    |shortShift64Left()
+    |    |    |    |propagateFloat64NaN()
+    |    |    |    |float_raise()
+    |    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |    |FLOAT64_MANGLE()
+    |    |    |    |shift64RightJamming()
+    |    |    |    |sub64()
+    |    |    |    |normalizeRoundAndPackFloat64() <float64 normalizeRoundAndPackFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:495>:
+    |    |    |    |    |countLeadingZeros32()
+    |    |    |    |    |shortShift64Left()
+    |    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |    |roundAndPackFloat64() <float64 roundAndPackFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1, bits32 zSig2) at softfloat.c:410>:
+    |    |    |    |    |    |eq64()
+    |    |    |    |    |    |float_raise()
+    |    |    |    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |    |    |    |FLOAT64_MANGLE()
+    |    |    |    |    |    |lt64()
+    |    |    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |    |    |add64()
+    |    |    |float64_sub() <float64 float64_sub (float64 a, float64 b) at softfloat.c:1845>:
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |subFloat64Sigs() <float64 subFloat64Sigs (float64 a, float64 b, flag zSign) at softfloat.c:1743>:
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |shortShift64Left()
+    |    |    |propagateFloat64NaN()
+    |    |    |float_raise()
+    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |FLOAT64_MANGLE()
+    |    |    |shift64RightJamming()
+    |    |    |sub64()
+    |    |    |normalizeRoundAndPackFloat64() <float64 normalizeRoundAndPackFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:495>:
+    |    |    |    |countLeadingZeros32()
+    |    |    |    |shortShift64Left()
+    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |roundAndPackFloat64() <float64 roundAndPackFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1, bits32 zSig2) at softfloat.c:410>:
+    |    |    |    |    |eq64()
+    |    |    |    |    |float_raise()
+    |    |    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |    |    |FLOAT64_MANGLE()
+    |    |    |    |    |lt64()
+    |    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |    |add64()
+    |    |    |addFloat64Sigs() <float64 addFloat64Sigs (float64 a, float64 b, flag zSign) at softfloat.c:1665>:
+    |    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |    |FLOAT64_DEMANGLE()
+    |    |    |    |LIT64()
+    |    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |    |FLOAT64_DEMANGLE()
+    |    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |    |FLOAT64_DEMANGLE()
+    |    |    |    |propagateFloat64NaN()
+    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |    |FLOAT64_MANGLE()
+    |    |    |    |add64()
+    |    |    |    |roundAndPackFloat64() <float64 roundAndPackFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1, bits32 zSig2) at softfloat.c:410>:
+    |    |    |    |    |eq64()
+    |    |    |    |    |float_raise()
+    |    |    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |    |    |FLOAT64_MANGLE()
+    |    |    |    |    |lt64()
+    |    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |    |add64()
+    |    |    |float64_mul() <float64 float64_mul (float64 a, float64 b) at softfloat.c:1867>:
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |propagateFloat64NaN()
+    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |FLOAT64_MANGLE()
+    |    |    |float_raise()
+    |    |    |normalizeFloat64Subnormal() <void normalizeFloat64Subnormal (bits32 aSig0, bits32 aSig1, int16 *zExpPtr, bits32 *zSig0Ptr, bits32 *zSig1Ptr) at softfloat.c:333>:
+    |    |    |countLeadingZeros32()
+    |    |    |shortShift64Left()
+    |    |    |shortShift64Left()
+    |    |    |mul64To128()
+    |    |    |add64()
+    |    |    |shift64ExtraRightJamming()
+    |    |    |roundAndPackFloat64() <float64 roundAndPackFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1, bits32 zSig2) at softfloat.c:410>:
+    |    |    |    |eq64()
+    |    |    |    |float_raise()
+    |    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |    |FLOAT64_MANGLE()
+    |    |    |    |lt64()
+    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |add64()
+    |    |    |float64_div() <float64 float64_div (float64 a, float64 b) at softfloat.c:1929>:
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |propagateFloat64NaN()
+    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |FLOAT64_MANGLE()
+    |    |    |float_raise()
+    |    |    |normalizeFloat64Subnormal() <void normalizeFloat64Subnormal (bits32 aSig0, bits32 aSig1, int16 *zExpPtr, bits32 *zSig0Ptr, bits32 *zSig1Ptr) at softfloat.c:333>:
+    |    |    |countLeadingZeros32()
+    |    |    |shortShift64Left()
+    |    |    |shortShift64Left()
+    |    |    |le64()
+    |    |    |shift64Right()
+    |    |    |estimateDiv64To32()
+    |    |    |mul64By32To96()
+    |    |    |sub96()
+    |    |    |add96()
+    |    |    |shift64ExtraRightJamming()
+    |    |    |roundAndPackFloat64() <float64 roundAndPackFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1, bits32 zSig2) at softfloat.c:410>:
+    |    |    |    |eq64()
+    |    |    |    |float_raise()
+    |    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |    |FLOAT64_MANGLE()
+    |    |    |    |lt64()
+    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |add64()
+    |    |    |float64_rem() <float64 float64_rem (float64 a, float64 b) at softfloat.c:2010>:
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |propagateFloat64NaN()
+    |    |    |float_raise()
+    |    |    |normalizeFloat64Subnormal() <void normalizeFloat64Subnormal (bits32 aSig0, bits32 aSig1, int16 *zExpPtr, bits32 *zSig0Ptr, bits32 *zSig1Ptr) at softfloat.c:333>:
+    |    |    |countLeadingZeros32()
+    |    |    |shortShift64Left()
+    |    |    |shortShift64Left()
+    |    |    |le64()
+    |    |    |sub64()
+    |    |    |estimateDiv64To32()
+    |    |    |mul64By32To96()
+    |    |    |shortShift96Left()
+    |    |    |shift64Right()
+    |    |    |add64()
+    |    |    |normalizeRoundAndPackFloat64() <float64 normalizeRoundAndPackFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:495>:
+    |    |    |    |countLeadingZeros32()
+    |    |    |    |shortShift64Left()
+    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |roundAndPackFloat64() <float64 roundAndPackFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1, bits32 zSig2) at softfloat.c:410>:
+    |    |    |    |    |eq64()
+    |    |    |    |    |float_raise()
+    |    |    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |    |    |FLOAT64_MANGLE()
+    |    |    |    |    |lt64()
+    |    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |    |add64()
+    |    |    |time_az_float64_pos() <void time_az_float64_pos (float64 function (float64)) at timesoftfloat.c:980>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float64_sqrt() <float64 float64_sqrt (float64 a) at softfloat.c:2115>:
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |propagateFloat64NaN()
+    |    |    |float_raise()
+    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |FLOAT64_MANGLE()
+    |    |    |normalizeFloat64Subnormal() <void normalizeFloat64Subnormal (bits32 aSig0, bits32 aSig1, int16 *zExpPtr, bits32 *zSig0Ptr, bits32 *zSig1Ptr) at softfloat.c:333>:
+    |    |    |countLeadingZeros32()
+    |    |    |shortShift64Left()
+    |    |    |shortShift64Left()
+    |    |    |estimateSqrt32()
+    |    |    |mul32To64()
+    |    |    |sub64()
+    |    |    |add64()
+    |    |    |estimateDiv64To32()
+    |    |    |sub96()
+    |    |    |add96()
+    |    |    |shift64ExtraRightJamming()
+    |    |    |roundAndPackFloat64() <float64 roundAndPackFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1, bits32 zSig2) at softfloat.c:410>:
+    |    |    |    |eq64()
+    |    |    |    |float_raise()
+    |    |    |    |packFloat64() <INLINE float64 packFloat64 (flag zSign, int16 zExp, bits32 zSig0, bits32 zSig1) at softfloat.c:377>:
+    |    |    |    |FLOAT64_MANGLE()
+    |    |    |    |lt64()
+    |    |    |    |shift64ExtraRightJamming()
+    |    |    |    |add64()
+    |    |    |time_ab_float64_z_flag() <void time_ab_float64_z_flag (flag function (float64, float64)) at timesoftfloat.c:875>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |float64_eq() <flag float64_eq (float64 a, float64 b) at softfloat.c:2185>:
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |float64_is_signaling_nan()
+    |    |    |float_raise()
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |float64_le() <flag float64_le (float64 a, float64 b) at softfloat.c:2211>:
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |float_raise()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |float64_lt() <flag float64_lt (float64 a, float64 b) at softfloat.c:2240>:
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |float_raise()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |float64_eq_signaling() <flag float64_eq_signaling (float64 a, float64 b) at softfloat.c:2272>:
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |float_raise()
+    |    |    |float64_le_quiet() <flag float64_le_quiet (float64 a, float64 b) at softfloat.c:2295>:
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |float64_is_signaling_nan()
+    |    |    |float_raise()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |    |FLOAT64_DEMANGLE()
+    |    |    |float64_lt_quiet() <flag float64_lt_quiet (float64 a, float64 b) at softfloat.c:2324>:
+    |    |    |extractFloat64Exp() <INLINE int16 extractFloat64Exp (float64 a) at softfloat.c:302>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac0() <INLINE bits32 extractFloat64Frac0 (float64 a) at softfloat.c:290>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |extractFloat64Frac1() <INLINE bits32 extractFloat64Frac1 (float64 a) at softfloat.c:277>:
+    |    |    |FLOAT64_DEMANGLE()
+    |    |    |LIT64()
+    |    |    |float64_is_signaling_nan()
+    |    |    |float_raise()
+    |    |    |extractFloat64Sign() <INLINE flag extractFloat64Sign (float64 a) at softfloat.c:314>:
+    |    |    |    |FLOAT64_DEMANGLE()
+    |    |    |time_a_floatx80_z_int32() <void time_a_floatx80_z_int32 (int32 function (floatx80)) at timesoftfloat.c:1051>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_floatx80_z_int64() <void time_a_floatx80_z_int64 (int64 function (floatx80)) at timesoftfloat.c:1083>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_floatx80_z_float32() <void time_a_floatx80_z_float32 (float32 function (floatx80)) at timesoftfloat.c:1115>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_floatx80_z_float64() <void time_a_floatx80_z_float64 (float64 function (floatx80)) at timesoftfloat.c:1147>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_floatx80_z_float128() <void time_a_floatx80_z_float128 (float128 function (floatx80)) at timesoftfloat.c:1181>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_az_floatx80() <void time_az_floatx80 (floatx80 function (floatx80)) at timesoftfloat.c:1215>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_abz_floatx80() <void time_abz_floatx80 (floatx80 function (floatx80, floatx80)) at timesoftfloat.c:1289>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_az_floatx80_pos() <void time_az_floatx80_pos (floatx80 function (floatx80)) at timesoftfloat.c:1369>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_ab_floatx80_z_flag() <void time_ab_floatx80_z_flag (flag function (floatx80, floatx80)) at timesoftfloat.c:1247>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_float128_z_int32() <void time_a_float128_z_int32 (int32 function (float128)) at timesoftfloat.c:1446>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_float128_z_int64() <void time_a_float128_z_int64 (int64 function (float128)) at timesoftfloat.c:1478>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_float128_z_float32() <void time_a_float128_z_float32 (float32 function (float128)) at timesoftfloat.c:1510>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_float128_z_float64() <void time_a_float128_z_float64 (float64 function (float128)) at timesoftfloat.c:1542>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_a_float128_z_floatx80() <void time_a_float128_z_floatx80 (floatx80 function (float128)) at timesoftfloat.c:1576>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_az_float128() <void time_az_float128 (float128 function (float128)) at timesoftfloat.c:1610>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_abz_float128() <void time_abz_float128 (float128 function (float128, float128)) at timesoftfloat.c:1684>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_az_float128_pos() <void time_az_float128_pos (float128 function (float128)) at timesoftfloat.c:1763>:
+    |    |    |clock()
+    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |printf()
+    |    |    |    |fputs()
+    |    |    |    |fputc()
+    |    |    |time_ab_float128_z_flag() <void time_ab_float128_z_flag (flag function (float128, float128)) at timesoftfloat.c:1642>:
+    |    |    |    |clock()
+    |    |    |    |reportTime() <void reportTime (int32 count, long clocks) at timesoftfloat.c:62>:
+    |    |    |    |    |printf()
+    |    |    |    |    |fputs()
+    |    |    |    |    |fputc()
