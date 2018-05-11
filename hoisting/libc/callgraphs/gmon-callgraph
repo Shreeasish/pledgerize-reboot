@@ -1,12 +1,12 @@
-_MCOUNT_DECL() < at mcount.c:45>:
+_MCOUNT_DECL() < at ./gmon/mcount.c:45>:
     |curcpu()
-_mcleanup() <void _mcleanup (void) at gmon.c:138>:
+_mcleanup() <void _mcleanup (void) at ./gmon/gmon.c:138>:
     |ERR()
     |sysctl()
-    |hertz() <int hertz (void) at gmon.c:315>:
-    |setitimer()
-    |moncontrol() <void moncontrol (int mode) at gmon.c:293>:
-    |profil()
+    |hertz() <int hertz (void) at ./gmon/gmon.c:315>:
+    |    |setitimer()
+    |moncontrol() <void moncontrol (int mode) at ./gmon/gmon.c:293>:
+    |    |profil()
     |issetugid()
     |getenv()
     |strlen()
@@ -18,13 +18,13 @@ _mcleanup() <void _mcleanup (void) at gmon.c:138>:
     |write()
     |bzero()
     |munmap()
-moncontrol() <void moncontrol (int mode) at gmon.c:293>:
+moncontrol() <void moncontrol (int mode) at ./gmon/gmon.c:293>:
     |profil()
-monstartup() <void monstartup (u_long lowpc, u_long highpc) at gmon.c:56>:
+monstartup() <void monstartup (u_long lowpc, u_long highpc) at ./gmon/gmon.c:56>:
     |ROUNDDOWN()
     |ROUNDUP()
     |mmap()
-    |moncontrol() <void moncontrol (int mode) at gmon.c:293>:
-    |profil()
+    |moncontrol() <void moncontrol (int mode) at ./gmon/gmon.c:293>:
+    |    |profil()
     |munmap()
     |ERR()

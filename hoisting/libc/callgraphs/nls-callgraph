@@ -1,23 +1,23 @@
-catclose() <int catclose (nl_catd catd) at catclose.c:40>:
+catclose() <int catclose (nl_catd catd) at ./nls/catclose.c:40>:
     |munmap()
     |free()
-catgets() <char *catgets (nl_catd catd, int set_id, int msg_id, const char *s) at catgets.c:39>:
+catgets() <char *catgets (nl_catd catd, int set_id, int msg_id, const char *s) at ./nls/catgets.c:39>:
     |ntohl()
-catopen() <nl_catd catopen (const char *name, int oflag) at catopen.c:52>:
+catopen() <nl_catd catopen (const char *name, int oflag) at ./nls/catopen.c:52>:
     |strchr()
-    |load_msgcat() <nl_catd load_msgcat (const char *path) at catopen.c:164>:
-    |open()
-    |fstat()
-    |close()
-    |mmap()
-    |ntohl()
-    |malloc()
-    |verify_msgcat() <int verify_msgcat (nl_catd catd) at catopen.c:215>:
-    |ntohl()
-    |MAXIMUM()
-    |memchr()
-    |free()
-    |munmap()
+    |load_msgcat() <nl_catd load_msgcat (const char *path) at ./nls/catopen.c:164>:
+    |    |open()
+    |    |fstat()
+    |    |close()
+    |    |mmap()
+    |    |ntohl()
+    |    |malloc()
+    |    |verify_msgcat() <int verify_msgcat (nl_catd catd) at ./nls/catopen.c:215>:
+    |    |    |ntohl()
+    |    |    |MAXIMUM()
+    |    |    |memchr()
+    |    |free()
+    |    |munmap()
     |issetugid()
     |getenv()
     |strcmp()

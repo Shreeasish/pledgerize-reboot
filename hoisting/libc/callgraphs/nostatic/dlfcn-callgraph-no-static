@@ -1,0 +1,20 @@
+__attribute__() <__attribute__ ((__regparm__ (1))) at ./dlfcn/dlfcn_stubs.c:127>:
+__tls_get_addr() <void *__tls_get_addr (tls_index *ti) at ./dlfcn/dlfcn_stubs.c:121>:
+_csu_finish() <char ***_csu_finish (char **argv, char **envp, void (*cleanup) (void)) at ./dlfcn/init.c:75>:
+    |atexit()
+_dl_allocate_tib() <void *_dl_allocate_tib (size_t extra) at ./dlfcn/tib.c:41>:
+    |ELF_ROUND()
+    |posix_memalign()
+    |_static_tls_init() <struct tib _static_tls_init (char *base, void *thread) at ./dlfcn/init.c:244>
+_dl_free_tib() <void _dl_free_tib (void *tib, size_t extra) at ./dlfcn/tib.c:75>:
+    |ELF_ROUND()
+    |free()
+dl_iterate_phdr() <int dl_iterate_phdr (int (*callback) (struct dl_phdr_info *, size_t, void *), void *data) at ./dlfcn/dlfcn_stubs.c:90>:
+dladdr() <int dladdr (const void *addr, struct dl_info info) at ./dlfcn/dlfcn_stubs.c:102>:
+    |printf()
+dlclose() <int dlclose (void *handle) at ./dlfcn/dlfcn_stubs.c:64>:
+    |printf()
+dlopen() <void *dlopen (const char *libname, int how) at ./dlfcn/dlfcn_stubs.c:57>:
+    |printf()
+dlsym() <void *dlsym (void *handle, const char *name) at ./dlfcn/dlfcn_stubs.c:71>:
+    |printf()
