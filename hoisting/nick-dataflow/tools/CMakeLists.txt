@@ -1,2 +1,2 @@
 add_subdirectory(futurefunctions)
-
+add_subdirectory(callgraphanalyzer)

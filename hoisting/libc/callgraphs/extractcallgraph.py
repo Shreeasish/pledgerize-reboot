@@ -167,7 +167,9 @@ difference = symbols.difference(dict_symbols)
 len(difference)
 
 with open("symbol-difference","w") as symboldf:
-    print(difference,file=symboldf)
+    pprint(difference,stream=symboldf)
+
+
 
 no_defs = set(edge_dict.keys()).difference(found_functions)
 

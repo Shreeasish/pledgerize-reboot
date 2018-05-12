@@ -87,7 +87,7 @@ public:
 
     if (isTmp.test(0)) {
         // llvm::outs() << "TMPPATH \n" << std::bitset<COUNT>{1 << PLEDGE_TMPPATH}.to_ulong();
-      return std::bitset<COUNT>{1 << PLEDGE_TMPPATH - 1};
+      return std::bitset<COUNT>{1 << (PLEDGE_TMPPATH - 1) };
     }
 
 
