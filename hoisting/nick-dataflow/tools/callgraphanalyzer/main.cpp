@@ -12,6 +12,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/IR/GlobalValue.h"
+#include "llvm/ADT/StringRef.h"
 
 #include <vector>
 #include <bitset>
@@ -21,10 +22,12 @@
 #include <variant>
 #include <stack>
 #include <algorithm>
+#include <bitset>
 
-#include "DataflowAnalysis.h"
-#include "FutureFunctions.h"
-#include "TaintAnalysis.h"
+// #include "DataflowAnalysis.h"
+// #include "FutureFunctions.h"
+// #include "TaintAnalysis.h"
+#include "CallGraphAnalyzer.h"
 
 using namespace llvm;
 
@@ -33,12 +36,12 @@ using std::string;
 using std::unique_ptr;
 
 using FunctionStack = std::stack<llvm::Function*>;
-using CallGraph     = llvm::DenseMap<llvm::Function*, std::vector<llvm::Function*>>;
-using CallPath      = std::vector<llvm::Function*>;
-using MatrixKey     = std::pair<llvm::Function*,llvm::Function*>;
-using GraphMatrix 
-                    = llvm::DenseMap<MatrixKey,int>;
-
+using CallGraph = llvm::DenseMap<llvm::Function*, std::vector<llvm::Function*>>;
+using CallPath  = std::vector<llvm::Function*>;
+using MatrixKey = std::pair<llvm::Function*, llvm::Function*>;
+using GraphMatrix = llvm::DenseMap<MatrixKey, int>;
+using FuncPrivMap =
+    llvm::DenseMap<llvm::Function*, std::bitset<Promises::COUNT>>;
 
 static cl::OptionCategory futureFunctionsCategory{"Graph analyzer options"};
 
@@ -64,7 +67,6 @@ getCalledFunction(llvm::CallSite cs) {
   return llvm::dyn_cast<llvm::Function>(called);
 }
 
-
 int
 main(int argc, char** argv) {
   // This boilerplate provides convenient stack traces and clean LLVM exit
@@ -87,66 +89,68 @@ main(int argc, char** argv) {
     return -1;
   }
 
+  static auto printBitset = [](std::bitset<COUNT> bitv){
+    for(int i = 38; i>=0; i--){
+      llvm::outs() << bitv[i];
+    }
+    llvm::outs() << "\n";
+  };
+  
   FunctionStack functionStack;
   CallGraph callGraph;
   CallPath callPath;
   GraphMatrix graphMatrix;
+  FuncPrivMap funcPrivs;
 
   auto addToMap = [&callGraph,&graphMatrix]
-          (llvm::Function* target, llvm::Function* package) {
-            callGraph[target].push_back(package);
-            
-            MatrixKey mKey{target,package};
+          (llvm::Function* caller, llvm::Function* callee) {
+            callGraph[caller].push_back(callee);
+            MatrixKey mKey{caller,callee};
             graphMatrix[mKey] = 1;
         };
+
+  auto addPrivilege = [&funcPrivs](llvm::StringRef functionName, llvm::Function* function){
+    if(functionName.startswith("_libc_")){
+      functionName = functionName.split("_libc_").second;
+    }
+    if(syscallBitsetMap.count(functionName)){
+      llvm::outs() << functionName << " inserted\n";
+      funcPrivs[function] |= syscallBitsetMap[functionName];
+    }
+  };
+
+  llvm::outs() << "funcPrivs size" << funcPrivs.size()<< "\n";
 
   for (auto& caller : *module) {
     for (auto& bb : caller) {
       for (auto& i : bb) {
-        
         llvm::CallSite cs{&i};
         if(!cs) {
           continue;
         }
         
         auto* callee = getCalledFunction(cs);
-
         if(!callee) {
           continue;
         }
+
         addToMap(&caller,callee);
+        addPrivilege(callee->getName(), callee);
       }
     }
   }
+  llvm::outs().flush();
+  llvm::errs() << "Building Callgraph \n";
 
-  //Attach Syscalls to dictionary
-
-  auto isllvmFunction = [](auto* check){
-    if(check->getName().contains("llvm"))
-      return true;
-    return false;
-  };
-
-  
-  for (auto& k : *module) {
-    if(isllvmFunction(&k)) { continue; }
-
-    
-    for(auto& i : *module){
-      if(isllvmFunction(&i)) { continue; }
-      
-
-      for(auto& j : *module){
-        if(isllvmFunction(&j)) { continue; }
+  for (auto& [k,kv] : callGraph) {
+    // if(isllvmFunction(&k)) { continue; }
+    for(auto& [i,iv] : callGraph){
+      // if(isllvmFunction(&i)) { continue; }
+      for(auto& [j,jv] : callGraph){
         
-
-        MatrixKey ijKey{&k,&i};
-        MatrixKey ikKey{&i,&k};
-        MatrixKey kjKey{&k,&j};
-
-        if(graphMatrix.count(ijKey)){
-          continue;
-        }
+        MatrixKey ijKey{k,i};
+        MatrixKey ikKey{i,k};
+        MatrixKey kjKey{k,j};
 
         if(graphMatrix[ikKey] && graphMatrix[kjKey]){
           graphMatrix[ijKey] = 1;
@@ -154,8 +158,21 @@ main(int argc, char** argv) {
       }
     }
   }
-  
 
+  for(auto& [function_pair,called] :graphMatrix){
+    if(called){
+      if (funcPrivs.count(function_pair.second)) {
+        llvm::outs() << "f1 " << function_pair.first->getName() << "  f2 "
+                     << function_pair.second->getName() << "\n";
+        funcPrivs[function_pair.first] |= funcPrivs[function_pair.second];
+        printBitset(funcPrivs[function_pair.first]);
+      }
+    }
+  }
+
+
+
+  
 
 
 
