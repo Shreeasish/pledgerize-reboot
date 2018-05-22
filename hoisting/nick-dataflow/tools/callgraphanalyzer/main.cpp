@@ -90,6 +90,7 @@ main(int argc, char** argv) {
   }
 
   static auto printBitset = [](std::bitset<COUNT> bitv){
+    llvm::outs() << bitv.to_ulong() << ", ";
     for(int i = 38; i>=0; i--){
       llvm::outs() << bitv[i];
     }
@@ -162,20 +163,17 @@ main(int argc, char** argv) {
   for(auto& [function_pair,called] :graphMatrix){
     if(called){
       if (funcPrivs.count(function_pair.second)) {
-        llvm::outs() << "f1 " << function_pair.first->getName() << "  f2 "
-                     << function_pair.second->getName() << "\n";
+        // llvm::outs() << "f1 " << function_pair.first->getName() << "  f2 "
+        //              << function_pair.second->getName() << "\n";
         funcPrivs[function_pair.first] |= funcPrivs[function_pair.second];
-        printBitset(funcPrivs[function_pair.first]);
+
       }
     }
   }
 
-
-
-  
-
-
-
+  for (auto [function, bitv] : funcPrivs) {
+    llvm::outs() << function_pair.first << ", " << printBitset(func[])
+  }
 
 
   return 0;
