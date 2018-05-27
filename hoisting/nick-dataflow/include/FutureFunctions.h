@@ -22,75 +22,20 @@
 
 #include "DataflowAnalysis.h"
 #include "TaintAnalysis.h"
-
-
-enum Promises {
-  PLEDGE_ALWAYS,
-  PLEDGE_RPATH,
-  PLEDGE_WPATH,
-  PLEDGE_CPATH,
-  PLEDGE_STDIO,
-  PLEDGE_TMPPATH,
-  PLEDGE_DNS,
-  PLEDGE_INET,
-  PLEDGE_FLOCK,
-  PLEDGE_UNIX,
-  PLEDGE_ID,
-  PLEDGE_TAPE,
-  PLEDGE_GETPW,
-  PLEDGE_PROC,
-  PLEDGE_SETTIME,
-  PLEDGE_FATTR,
-  PLEDGE_PROTEXEC,
-  PLEDGE_TTY,
-  PLEDGE_SENDFD,
-  PLEDGE_RECVFD,
-  PLEDGE_EXEC,
-  PLEDGE_ROUTE,
-  PLEDGE_MCAST,
-  PLEDGE_VMINFO,
-  PLEDGE_PS,
-  PLEDGE_DISKLABEL,
-  PLEDGE_PF,
-  PLEDGE_AUDIO,
-  PLEDGE_DPATH,
-  PLEDGE_DRM,
-  PLEDGE_VMM,
-  PLEDGE_CHOWN,
-  PLEDGE_CHOWNUID,
-  PLEDGE_BPF,
-  PLEDGE_ERROR,
-  COUNT
-};
-
-
-const llvm::StringRef PromiseNames[] {
-  "rpath", "wpath", "cpath", "stdio", "tmppath", "dns", "inet", "flock", "unix",
-      "id", "tape", "getpw", "proc", "settime", "fattr", "protexec", "tty",
-      "sendfd", "recvfd", "exec", "route", "mcast", "vminfo", "ps", "disklabel",
-      "pf", "audio", "dpath", "drm", "vmm", "chown", "bpf", "error"
-};
-
-
-// using FunctionsValue  = llvm::SparseBitVector<>;
-
-//Custom Handler declared here, Should be moved to it's own file?
+#include "PromiseDeclarations.h"
 
 using FunctionsValue  = std::bitset<COUNT>;
 using FunctionsState  = analysis::AbstractState<FunctionsValue>;
 using FunctionsResult = analysis::DataflowResult<FunctionsValue>;
 using Context = std::array<llvm::Instruction*, 2ul>;
 
-
-
 class CustomHandler {
-
 public:
+    CustomHandler(int ap) : argposition{ap} {};
+    virtual ~CustomHandler(){};
     
-    CustomHandler(int ap);  
-    virtual ~CustomHandler();
-  
     virtual FunctionsValue operator()(llvm::CallSite, const Context& context) = 0;
+
 
     int getArgPosition() {
       return argposition;
@@ -106,19 +51,23 @@ using HandlerFunctor  = std::unique_ptr<CustomHandler>;
 static std::vector<const llvm::Function*> functions;
 static llvm::DenseMap<const llvm::Function*,size_t> functionIDs;
 
-
 class Handler {
+public:
+  Handler(unsigned long bitString) : promisesBitset{bitString} {};
+  Handler(HandlerFunctor&& hf) : handlerFunctor{std::move(hf)} {};
 
+  FunctionsValue
+  getPromisesBitset(const llvm::CallSite& cs, const Context& context) {
+    if (handlerFunctor != nullptr) {
+      return (*handlerFunctor)(cs, context);
+    } else {
+      return promisesBitset;
+    }
+  }
+
+private:
   FunctionsValue promisesBitset;
   HandlerFunctor handlerFunctor;
-
-public:
-  //Constructors
-  Handler(unsigned long bitString);
-  Handler(HandlerFunctor&& hf);
-  
-  //Methods
-  FunctionsValue getPromisesBitset(const llvm::CallSite& cs, const Context& context);
 
 };
 

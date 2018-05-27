@@ -1,0 +1,1029 @@
+_mcleanup
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+fmemopen_close
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+statvfs
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+pmap_getmaps
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+fmemopen_close_free
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+alloc_segs
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+asr_ctx_envopts
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+fstatvfs
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+gethostnamadr_async_run
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+__stack_smash_handler
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+uuid_to_string
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+lbackref
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- PLEDGE_RECVFD PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+valloc
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+pmap_rmtcall
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+globfree
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+monstartup
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+ldissect
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+asr_check_reload
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+sockatmark
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+asr_abort
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+utime
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- --- PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_FATTR --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+flush_meta
+--- --- --- --- --- --- PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getlogin
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+hash_sync
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+usleep
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+clnt_broadcast
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+getloadavg
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_auth_next_arg
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+hash_seq
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+hash_close
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+posix_madvise
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getmntinfo
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+hdestroy.806
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+uuid_from_string
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+asr_ctx_free
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+getent
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+uuid_create
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+hash_delete
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+sleep
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+pthread_key_delete
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+mktemp_internal
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- --- PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+asctime3
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+svcraw_create
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+grantpt
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+unlockpt
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO --- PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+load_msgcat
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+pthread_once
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+mktemp
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- --- PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- --- PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+__grow_type_table
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+posix_openpt
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+isfdtype
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+callrpc
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__grow_type_table.1958
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_TTY --- --- --- --- --- --- --- --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+mkostemps
+--- --- --- --- PLEDGE_STDIO --- PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+readtcp
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+ptsname
+--- PLEDGE_RPATH PLEDGE_WPATH --- --- --- --- --- PLEDGE_FLOCK --- --- --- --- --- --- --- --- PLEDGE_TTY --- --- --- --- --- --- --- --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__xfputwc
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+mkdtemp
+--- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+wcstombs
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+do_posix_spawn
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__find_arguments.1948
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- --- PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+posix_spawn
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+mkstemps
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_rs_init
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+posix_spawnp
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__dwrite
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+registerrpc
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+_rs_rekey
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+globextend
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+posix_spawn_file_actions_init
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+asr_ctx_from_string
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_FATTR --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+universal
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+svc_run
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+posix_spawn_file_actions_adddup2
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+alarm
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+mpool_bkt
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+_thread_canceled
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+posix_spawn_file_actions_addclose
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__find_arguments
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_thread_set_callbacks
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+glob2
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+posix_spawn_file_actions_addopen
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+shm_mkstemp
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+execlp
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+sigsetmask
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+res_send_async_run
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+vsprintf
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+validate_packet
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+posix_spawnattr_destroy
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+execv
+--- --- --- --- --- --- --- --- --- --- PLEDGE_ID --- --- --- --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+sockaddr_connect
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+writetcp.1856
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+mergesort
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__bt_first
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+shm_unlink
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+readtcp.1855
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+posix_spawnattr_init
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+makefd_xprt
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+res_search_async_run
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+ether_hostton
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+bt_broot
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+svctcp_destroy
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+bt_psplit
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+bt_page
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+execle
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+__res_send
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+rendezvous_request
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+pthread_cond_broadcast
+--- --- --- --- --- --- --- --- --- --- PLEDGE_ID --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+ether_ntoa
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+svcudp_reply
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+_thread_finalize
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+pthread_cond_signal
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+ether_aton
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+authunix_validate
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+pthread_condattr_destroy
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+svcudp_recv
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_ether_aton
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+ether_ntohost
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+svcfd_create
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_rthread_cond_timedwait
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+pthread_cond_destroy
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+login_setenv
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+pthread_cond_wait
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+rewinddir
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+lrand48
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+pthread_cond_timedwait
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__assert
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+stravis
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getservbyport
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+pthread_sigmask
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+mbtowc
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+psignal
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+fgetwln
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+svcudp_enablecache
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+free_dns_rr
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+parse_dns_rrsection
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+svcudp_destroy
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+setclasscontext
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+__bt_pdelete
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+__bt_relink
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+res_search
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+strtosize
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+siginterrupt
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+setservent
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+asr_ctx_parse
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+rresvport
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+endservent
+--- --- --- --- --- --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+group_from_gid
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+sigblock
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+user_from_uid
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getservent
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+sigpause
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+res_querydomain
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+inet_net_ntop
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+tcgetsid
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_thread_dofork
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- --- PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+sradixsort
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+tcsendbreak
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+r_sort_b
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getpwuid
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+svc_unregister
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+getpwuid_internal
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+tcsetpgrp
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+lockf
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+getrpcbynumber
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+introsort
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getttynam
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+endpwent
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+tempnam
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+setpwent
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getbsize
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getrrsetbyname
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_csu_finish
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getdiskbyname
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+addrinfo_add
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getrpcbyname
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+get_port
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+xdrstdio_getlong
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+tcdrain
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_TTY --- --- --- --- --- --- --- --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getaddrinfo_async_run
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+random_l
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+yp_all
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+inet_ntoa
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+timesub
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_xdr_ypresp_all_seq
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+tcflow
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+free_dns_query
+--- --- --- --- --- --- PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+_rthread_mutex_timedlock
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+getrrsetbyname_async_run
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+ctime_r
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+rand
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+pthread_mutex_timedlock
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+tcflush
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+inet_neta
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+offtime
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+ctime
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+inet_net_pton
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+tcgetpgrp
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+mblen
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+glob0
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+posix_memalign
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+globexp1
+--- --- --- --- --- --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+getprotoent
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+times
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+yp_unbind
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+xdrrec_destroy
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+bcrypt_hashpass
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+endprotoent
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+calloc
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+tzparse
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+bcrypt_initsalt
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+setprotoent
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+realloc
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__has_ypmaster
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+xdrrec_setpos
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+yp_master
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+yp_maplist
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__ypparse
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+gmtsub
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+xdrrec_getpos
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+find_chunknum
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+localsub
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getpwent
+--- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__initdb
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+__cvt
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+delete
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+herror
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+tmpnam
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_TTY --- --- --- --- --- --- --- --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+ofree
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+tzset_basic
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+free
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__cxa_thread_atexit_impl
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_TTY --- --- --- --- --- --- --- --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+initshells
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+getpass
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+unmap
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+insert
+--- --- --- --- --- --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getusershell
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_TTY --- --- --- --- --- --- --- --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getpwnam_internal
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+map
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+_dl_allocate_tib
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+realpath
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_dl_free_tib
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+omalloc
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_TTY --- --- --- --- --- --- --- --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+tzload
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+malloc
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+wrterror
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+tzsetwall
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+setusershell
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_TTY --- --- --- --- --- --- --- --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_thread_tag_init
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+xprt_register
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+__yppwlookup
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+endusershell
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+_strptime
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+fts_stat
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+clntudp_destroy
+--- --- --- --- --- --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+clntudp_call
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+setdomainname
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+killpg
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+dbm_open
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getnetbyaddr
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+clock
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+ftok
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getopt_long_only
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getopt_long
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_auth_checknologin
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+endfsent
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getopt_internal
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+wait3
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+scandir
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+getfsspec
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getfsfile
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+__strtodg
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+fstabscan
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getpeereid
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+clnttcp_call
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+rvOK
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+authunix_refresh
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+authunix_destroy
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+yperr_string
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+ruserok
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+_parse_netid
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+yp_order
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getfsent
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getprotobynumber
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+__gethostloop
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+xdr_wrapstring
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+hdestroy
+--- --- --- --- PLEDGE_STDIO --- PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+nftw
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+clnttcp_destroy
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+nice
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- --- --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+__icheckhost
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+hcreate
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+gethostid
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+p_bracket
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- PLEDGE_GETPW --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+p_bre
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+setproctitle
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+gcvt
+--- PLEDGE_RPATH PLEDGE_WPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+ordinary
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+ualarm
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+nlist
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+repeat
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+clnt_perrno
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getnameinfo_async_run
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+daemon
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX --- --- PLEDGE_GETPW --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+xdr_netobj
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+doinsert
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO --- PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_numerichost
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+uname
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+freegl
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+lookup
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+res_mkquery
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+clntraw_create
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+getgrnam
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- --- PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+setmode
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+p_ere
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- PLEDGE_GETPW PLEDGE_PROC --- --- --- --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+hash_access
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getgrnam_r
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+setpgrp
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getgrgid
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+regcomp
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+tsearch
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+open_wmemstream
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+ftw
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+memstream_close
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+clock_getcpuclockid
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+fts_build
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+addgroup
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+sethostname
+--- --- --- --- --- --- --- --- --- --- PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+_ng_parse
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- PLEDGE_PROTEXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+sethostid
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+sbackref
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+tdelete
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX --- --- --- PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+getstring
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+grscan
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+wmemstream_write
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+__fdopendir
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+collect_key
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET --- PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+in_lookup1
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+getnetbyname
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- PLEDGE_EXEC --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+fts_safe_changedir
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH --- PLEDGE_STDIO PLEDGE_TMPPATH --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+doemit
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+collect_data
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC PLEDGE_TTY --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- PLEDGE_PF PLEDGE_AUDIO --- --- --- --- --- --- --- --- --- --- ---
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- --- PLEDGE_PROC --- --- --- --- --- --- PLEDGE_EXEC --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- PLEDGE_YPACTIVE ---
+pause
+--- PLEDGE_RPATH PLEDGE_WPATH PLEDGE_CPATH PLEDGE_STDIO PLEDGE_TMPPATH PLEDGE_DNS PLEDGE_INET PLEDGE_FLOCK PLEDGE_UNIX PLEDGE_ID --- PLEDGE_GETPW PLEDGE_PROC --- --- PLEDGE_PROTEXEC --- --- --- --- --- PLEDGE_MCAST PLEDGE_VMINFO PLEDGE_PS --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- PLEDGE_STDIO --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---

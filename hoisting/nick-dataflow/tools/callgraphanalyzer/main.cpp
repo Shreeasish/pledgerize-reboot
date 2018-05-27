@@ -114,9 +114,8 @@ main(int argc, char** argv) {
     if(functionName.startswith("_libc_")){
       functionName = functionName.split("_libc_").second;
     }
-    if(syscallBitsetMap.count(functionName)){
-      llvm::outs() << functionName << " inserted\n";
-      funcPrivs[function] |= syscallBitsetMap[functionName];
+    if(syscallWebBitsetMap.count(functionName)){
+      funcPrivs[function] |= syscallWebBitsetMap[functionName];
     }
   };
 
@@ -132,7 +131,7 @@ main(int argc, char** argv) {
         
         auto* callee = getCalledFunction(cs);
         if(!callee) {
-          continue;
+          continue; 
         }
 
         addToMap(&caller,callee);
@@ -163,18 +162,17 @@ main(int argc, char** argv) {
   for(auto& [function_pair,called] :graphMatrix){
     if(called){
       if (funcPrivs.count(function_pair.second)) {
-        // llvm::outs() << "f1 " << function_pair.first->getName() << "  f2 "
-        //              << function_pair.second->getName() << "\n";
         funcPrivs[function_pair.first] |= funcPrivs[function_pair.second];
-
       }
     }
   }
 
   for (auto [function, bitv] : funcPrivs) {
-    llvm::outs() << function_pair.first << ", " << printBitset(func[])
+    if(function->getVisibility() == llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
+      continue;
+    }
+    llvm::outs() << function->getName() << ", ";
+    printBitset(bitv);
   }
-
-
   return 0;
 }

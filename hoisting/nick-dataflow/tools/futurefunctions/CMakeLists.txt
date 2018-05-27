@@ -1,4 +1,5 @@
 set(SOURCES
+  main.cpp
   handler.cpp
   taintAnalysis.cpp
 )
@@ -43,22 +44,23 @@ install(TARGETS futurefunctions
   RUNTIME DESTINATION bin
 )
 
-# add_executable(hoist
-#   hoist.cpp
-#   handler.cpp
-#   taintAnalysis.cpp
-# )
-# target_link_libraries(hoist ${REQ_LLVM_LIBRARIES})
-#   find_package(Threads REQUIRED)
-#   find_package(Curses REQUIRED)
-# target_link_libraries(hoist
-#   ${CMAKE_THREAD_LIBS_INIT}
-#   ${CMAKE_DL_LIBS}
-#   ${CURSES_LIBRARIES}
-# )
-# set_target_properties(hoist
-#                       PROPERTIES
-#                       LINKER_LANGUAGE CXX
-#                       PREFIX ""
-# )
+add_executable(hoist
+  hoist.cpp
+  handler.cpp
+  taintAnalysis.cpp
+)
+
+target_link_libraries(hoist ${REQ_LLVM_LIBRARIES})
+  find_package(Threads REQUIRED)
+  find_package(Curses REQUIRED)
+target_link_libraries(hoist
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${CMAKE_DL_LIBS}
+  ${CURSES_LIBRARIES}
+)
+set_target_properties(hoist
+                      PROPERTIES
+                      LINKER_LANGUAGE CXX
+                      PREFIX ""
+)
 

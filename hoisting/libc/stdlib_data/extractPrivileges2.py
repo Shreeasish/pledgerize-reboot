@@ -12,8 +12,10 @@ pledge_list = set()
 
 with open("with_header") as cgfile:
     cgs = cgfile.readlines()
+
 with open("pledge-table2.csv") as ptfile:
     ptable = ptfile.read().splitlines()
+
 with open("pledge_list") as plist:
     [pledge_list.add(row) for row in plist.read().splitlines()]
 

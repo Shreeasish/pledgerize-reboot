@@ -22,7 +22,6 @@
 #include "FutureFunctions.h"
 #include "DataflowAnalysis.h"
 
-// Undefined reference issues so placed here
 static llvm::Function*
 getCalledFunction(llvm::CallSite cs) {
   if (!cs.getInstruction()) {
@@ -30,39 +29,9 @@ getCalledFunction(llvm::CallSite cs) {
   }
 
   llvm::Value* called = cs.getCalledValue()->stripPointerCasts();
-
   return llvm::dyn_cast<llvm::Function>(called);
 }
 
-
-//================== Handler==================== //
-Handler::Handler(unsigned long bitString)
-  : promisesBitset{bitString} {  // Use '1000010' generated from python
-  llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
-};
-
-Handler::Handler(HandlerFunctor&& hf) : handlerFunctor{std::move(hf)} {};
-
-FunctionsValue
-Handler::getPromisesBitset(const llvm::CallSite& cs, const Context& context) {
-  if (handlerFunctor != nullptr) {
-    return (*handlerFunctor)(cs, context);
-  } else {
-    return promisesBitset;
-  }
-}
-//================== Handler==================== //
-
-//=============== Custom Handler================ //
-CustomHandler::CustomHandler(int ap) : argposition{ap} {};
-CustomHandler::~CustomHandler(){};
-
-// The handler should never trigger the analysis. The analysis should be
-// performed once in the beginning. All analyses that are required for handlers
-// should have their results passed into the function that returns the handlers.
-
-
-// Custom Handler Derived Class
 class Handlefread : public CustomHandler {
   tmpanalysis::tmppathResultsTy& tmpResults;
 
@@ -72,24 +41,16 @@ public:
 
   FunctionsValue
   operator()(const llvm::CallSite cs, const Context& context) override {
-    // llvm::outs() << "Handler \n";
-
-    // llvm::outs() << tmpResults.count(context) << " tmpResults \n";
     auto& contextResults = tmpResults[context];
     auto* instr          = cs.getInstruction();
-    // llvm::outs() << contextResults.count(instr->getFunction()) << "
-    // contextResults \n";
-
     auto& functionResults = contextResults[instr->getFunction()];
     auto state            = analysis::getIncomingState(functionResults, *instr);
     auto arg              = cs.getArgument(getArgPosition());
     auto isTmp            = state[arg];
 
     if (isTmp.test(0)) {
-        // llvm::outs() << "TMPPATH \n" << std::bitset<COUNT>{1 << PLEDGE_TMPPATH}.to_ulong();
       return std::bitset<COUNT>{1 << (PLEDGE_TMPPATH - 1) };
     }
-
 
     return 0;
   };
@@ -101,9 +62,12 @@ getLibCHandlerMap(tmpanalysis::tmppathResultsTy& tmpResults) {
   std::unordered_map<std::string, Handler> libCHandlers;
   //   libCHandlers.emplace("fopen", "1");
   libCHandlers.emplace("fread",
-                       std::make_unique<Handlefread>(Handlefread(
-                           3, tmpResults)));  // Argument position supplied here
+                       std::make_unique<Handlefread>(
+                           3, tmpResults));  // Argument position supplied here
   libCHandlers.emplace("__sclose", 16);
+  
+  // libCHandlers.emplace("customFunc",promiseHandler(16),addHandler<temppathHandler>(2))
+  
   libCHandlers.emplace("__smakebuf", 16);
   libCHandlers.emplace("__swhatbuf", 16);
   libCHandlers.emplace("__sseek", 16);

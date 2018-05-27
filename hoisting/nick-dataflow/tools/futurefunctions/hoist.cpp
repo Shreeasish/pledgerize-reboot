@@ -189,7 +189,7 @@ printFollowers(llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> fol
 
 struct ConditionSummary {
   struct Edge {
-    int position;
+    size_t position;
     ConditionSummary* child;
   };
   struct Branch {
@@ -312,7 +312,7 @@ public:
           edges.reserve(targets.size());
           for (auto* target : targets) {
             if (summaries[target]) {
-              edges.push_back({edges.size(), summaries[target]});
+              edges.push_back({ edges.size(), summaries[target]});
             }
           }
           children.push_back({event.as.call, std::move(edges)});
@@ -367,12 +367,12 @@ ConditionTree::build(llvm::Module& m, Pred& shouldGuard, GetPosts& getPosts) {
           auto* terminator = bb->getTerminator();
           ConditionSummary::Branch newBranch{terminator, {}};
 
-          for (int position = 0, numSuccessors = terminator->getNumSuccessors();
+          for (size_t position = 0, numSuccessors = terminator->getNumSuccessors();
               position < numSuccessors; ++position) {
             auto* successor = terminator->getSuccessor(position);
             auto* summary = extractSummaries(successor, newPost, extractSummaries);
             if (summary) {
-              newBranch.edges.push_back({position, summary});
+              newBranch.edges.push_back({ position, summary});
             }
           }
           bb = newPost;
