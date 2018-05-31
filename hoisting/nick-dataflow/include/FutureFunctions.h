@@ -13,12 +13,12 @@
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/raw_ostream.h"
 
-
 #include <bitset>
 #include <memory>
 #include <string>
 #include <iostream>
 #include <variant>
+#include <functional>
 
 #include "DataflowAnalysis.h"
 #include "TaintAnalysis.h"
@@ -29,52 +29,91 @@ using FunctionsState  = analysis::AbstractState<FunctionsValue>;
 using FunctionsResult = analysis::DataflowResult<FunctionsValue>;
 using Context = std::array<llvm::Instruction*, 2ul>;
 
-class CustomHandler {
-public:
-    CustomHandler(int ap) : argposition{ap} {};
-    virtual ~CustomHandler(){};
-    
-    virtual FunctionsValue operator()(llvm::CallSite, const Context& context) = 0;
 
+struct
+AnalysisPackage{
+  tmpanalysis::tmppathResultsTy tmppathResults;
+};
+
+
+class PledgeCheckerBase {
+public:
+    PledgeCheckerBase(int ap) : argposition{ap} {}
+    virtual ~PledgeCheckerBase(){}
+    
+    virtual FunctionsValue operator()(llvm::CallSite, const Context& context, AnalysisPackage* package) = 0;
 
     int getArgPosition() {
       return argposition;
     }
-
 private:
     int argposition;
+}; // end PledgeCheckerBase
 
-}; // end CustomHandler
 
-using HandlerFunctor  = std::unique_ptr<CustomHandler>;
+using PledgeCheckerBaseUPtr  = std::unique_ptr<PledgeCheckerBase>;
+using AnalysisVector  = std::vector<PledgeCheckerBaseUPtr>;
 
 static std::vector<const llvm::Function*> functions;
 static llvm::DenseMap<const llvm::Function*,size_t> functionIDs;
 
-class Handler {
+
+class FunctionPledges { 
 public:
-  Handler(unsigned long bitString) : promisesBitset{bitString} {};
-  Handler(HandlerFunctor&& hf) : handlerFunctor{std::move(hf)} {};
+  FunctionPledges(unsigned long bitString) : promisesBitset{bitString} {}
+  FunctionPledges(unsigned long bitString, AnalysisPackage* package, AnalysisVector avector) 
+                                           : promisesBitset{bitString},
+                                             analysisPackage{package},
+                                             analysisVector{std::move(avector)} {}
+                                           
+  // FunctionPledges(PledgeCheckerBaseUPtr&& hf) : handlerFunctor{std::move(hf)} {}
 
   FunctionsValue
   getPromisesBitset(const llvm::CallSite& cs, const Context& context) {
-    if (handlerFunctor != nullptr) {
-      return (*handlerFunctor)(cs, context);
-    } else {
-      return promisesBitset;
+    // if (handlerFunctor != nullptr) {
+    //   return (*handlerFunctor)(cs, context, analysisPackage);
+    // } else {
+    //   return promisesBitset;
+    // }
+    for (auto const& checker : analysisVector) {
+      promisesBitset |= (*checker)(cs, context, analysisPackage);
     }
+    return promisesBitset;
   }
 
 private:
+  AnalysisVector analysisVector;
   FunctionsValue promisesBitset;
-  HandlerFunctor handlerFunctor;
+  // Pointers left here
+  AnalysisPackage* analysisPackage;
+  // PledgeCheckerBaseUPtr handlerFunctor;
+}; // end FunctionPledges
 
-};
 
-//==================Functions======================================//
-std::unordered_map<std::string, Handler>
-getLibCHandlerMap(
-        tmpanalysis::tmppathResultsTy& tmpanalysisResults
-        );
+class FunctionPledgesBuilder {
+public:
+  FunctionPledgesBuilder(unsigned long bitString) : promisesBitset  {bitString} {}
+  FunctionPledgesBuilder(unsigned long bitString, AnalysisPackage* package)
+                                                  : promisesBitset  {bitString},
+                                                    analysisPackage {package} {}
+
+  FunctionPledgesBuilder& add(PledgeCheckerBaseUPtr pledgeChecker) {
+    analysisVector.push_back(std::move(pledgeChecker));
+    return *this;
+  }
+
+  FunctionPledges build() {
+    return FunctionPledges(promisesBitset.to_ulong(), analysisPackage, std::move(analysisVector));
+  }
+
+private:
+  AnalysisVector analysisVector;
+  AnalysisPackage* analysisPackage;
+  FunctionsValue promisesBitset;
+}; // end FunctionPledgeBuilder
+
+
+std::unordered_map<std::string, FunctionPledges>
+getLibCHandlerMap(AnalysisPackage& package);
 
 #endif

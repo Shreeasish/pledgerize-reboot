@@ -32,42 +32,61 @@ getCalledFunction(llvm::CallSite cs) {
   return llvm::dyn_cast<llvm::Function>(called);
 }
 
-class Handlefread : public CustomHandler {
-  tmpanalysis::tmppathResultsTy& tmpResults;
+// class  : public PledgeCheckerBase {
+//   tmpanalysis::tmppathResultsTy& tmpResults;
 
+// public:
+//   Handlefread(int n, tmpanalysis::tmppathResultsTy& tresults)
+//     : PledgeCheckerBase(n), tmpResults{tresults} {};
+
+//   FunctionsValue
+//   operator()(const llvm::CallSite cs, const Context& context) override {
+//     auto& contextResults = tmpResults[context];
+//     auto* instr          = cs.getInstruction();
+//     auto& functionResults = contextResults[instr->getFunction()];
+//     auto state            = analysis::getIncomingState(functionResults, *instr);
+//     auto arg              = cs.getArgument(getArgPosition());
+//     auto isTmp            = state[arg];
+
+//     if (isTmp.test(0)) {
+//       return std::bitset<COUNT>{1 << (PLEDGE_TMPPATH - 1) };
+//     }
+
+//     return 0;
+//   };
+// }; 
+
+class CheckTMPPATH : public PledgeCheckerBase { 
 public:
-  Handlefread(int n, tmpanalysis::tmppathResultsTy& tresults)
-    : CustomHandler(n), tmpResults{tresults} {};
+  CheckTMPPATH(int ap): PledgeCheckerBase(ap){}
 
-  FunctionsValue
-  operator()(const llvm::CallSite cs, const Context& context) override {
-    auto& contextResults = tmpResults[context];
-    auto* instr          = cs.getInstruction();
+  // TODO: Correct tmppath logic -> RW not needed if in /tmp/
+  FunctionsValue  
+  operator()(const llvm::CallSite cs, const Context& context, AnalysisPackage* analysisPackage) override {
+    auto& contextResults  = analysisPackage->tmppathResults[context];
+    auto* instr           = cs.getInstruction();
     auto& functionResults = contextResults[instr->getFunction()];
     auto state            = analysis::getIncomingState(functionResults, *instr);
     auto arg              = cs.getArgument(getArgPosition());
     auto isTmp            = state[arg];
 
     if (isTmp.test(0)) {
-      return std::bitset<COUNT>{1 << (PLEDGE_TMPPATH - 1) };
+      return std::bitset<COUNT>{1 << (PLEDGE_TMPPATH) };
     }
 
     return 0;
   };
-};  //=============== Custom Handler================ //
+};
 
+std::unordered_map<std::string, FunctionPledges>
+getLibCHandlerMap(AnalysisPackage& package) {
+  std::unordered_map<std::string, FunctionPledges> libCHandlers;
 
-std::unordered_map<std::string, Handler>
-getLibCHandlerMap(tmpanalysis::tmppathResultsTy& tmpResults) {
-  std::unordered_map<std::string, Handler> libCHandlers;
-  //   libCHandlers.emplace("fopen", "1");
   libCHandlers.emplace("fread",
-                       std::make_unique<Handlefread>(
-                           3, tmpResults));  // Argument position supplied here
+                            FunctionPledgesBuilder(16, &package)
+                           .add(std::make_unique<CheckTMPPATH>(3))
+                           .build());
   libCHandlers.emplace("__sclose", 16);
-  
-  // libCHandlers.emplace("customFunc",promiseHandler(16),addHandler<temppathHandler>(2))
-  
   libCHandlers.emplace("__smakebuf", 16);
   libCHandlers.emplace("__swhatbuf", 16);
   libCHandlers.emplace("__sseek", 16);
@@ -75,7 +94,6 @@ getLibCHandlerMap(tmpanalysis::tmppathResultsTy& tmpResults) {
   libCHandlers.emplace("__srefill", 16);
   libCHandlers.emplace("__srget", 16);
   libCHandlers.emplace("__svfscanf", 16);
-  // libCHandlers.emplace("fread", 16);
   libCHandlers.emplace("__swrite", 16);
   libCHandlers.emplace("__swsetup", 16);
   libCHandlers.emplace("__vfprintf", 16);

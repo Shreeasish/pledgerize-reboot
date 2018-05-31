@@ -41,7 +41,7 @@ static cl::opt<string> inPath{cl::Positional,
                               
 
 //LibC map here
-std::unordered_map<std::string, Handler> libCHandlers;
+std::unordered_map<std::string, FunctionPledges> libCHandlers;
 
 
 static const llvm::Function *
@@ -168,10 +168,7 @@ printFollowers(llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> fol
       if(after[i]){
         llvm::outs() << PromiseNames[i] << " ";
       }
-
     }
-
-
     llvm::outs() << "\n";
   }
 
@@ -185,8 +182,6 @@ printFollowers(llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> fol
 
 int
 main(int argc, char** argv) {
-
-
   // This boilerplate provides convenient stack traces and clean LLVM exit
   // handling. It also initializes the built in support for convenient
   // command line option handling.
@@ -219,12 +214,10 @@ main(int argc, char** argv) {
   Analysis analysis{*module, mainFunction};
 
   // Get all forward analyses here
-  auto tmpAnalysisResults = tmpanalysis::gettmpAnalysisResults(*module);
-
-  // Get all the libraries here and initialise them with it
-  libCHandlers = getLibCHandlerMap(
-        tmpAnalysisResults
-         );
+  AnalysisPackage package;
+  package.tmppathResults = tmpanalysis::gettmpAnalysisResults(*module);
+  // Get the library handler map here
+  libCHandlers = getLibCHandlerMap(package);
 
   auto results = analysis.computeDataflow();
 

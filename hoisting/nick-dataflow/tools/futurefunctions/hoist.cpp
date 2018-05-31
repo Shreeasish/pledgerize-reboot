@@ -49,7 +49,7 @@ static cl::opt<string> inPath{cl::Positional,
                               
 
 //LibC map here
-std::unordered_map<std::string, Handler> libCHandlers;
+std::unordered_map<std::string, FunctionPledges> libCHandlers;
 
 
 static const llvm::Function *
@@ -534,13 +534,10 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, analysis::Backward>;
   Analysis analysis{m, mainFunction};
 
-  // Get all forward analyses here
-  auto tmpAnalysisResults = tmpanalysis::gettmpAnalysisResults(m);
-
-  // Get all the libraries here and initialise them with it
-  libCHandlers = getLibCHandlerMap(
-        tmpAnalysisResults
-         );
+  AnalysisPackage package;
+  package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
+  // Get the library handler map here
+  libCHandlers = getLibCHandlerMap(package);
 
   auto results = analysis.computeDataflow();
 
