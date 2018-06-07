@@ -11,6 +11,7 @@
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/ADT/StringMap.h"
+#include "llvm/IR/Constants.h"
 
 #include <bitset>
 #include <memory>
@@ -22,8 +23,15 @@
 #include "FutureFunctions.h"
 #include "DataflowAnalysis.h"
 
+
+// Headers included for checking flags
+#include <netinet/in.h>  //mcast
+
+
 static llvm::Function*
 getCalledFunction(llvm::CallSite cs) {
+
+
   if (!cs.getInstruction()) {
     return nullptr;
   }
@@ -44,9 +52,9 @@ getCalledFunction(llvm::CallSite cs) {
 //     auto& contextResults = tmpResults[context];
 //     auto* instr          = cs.getInstruction();
 //     auto& functionResults = contextResults[instr->getFunction()];
-//     auto state            = analysis::getIncomingState(functionResults, *instr);
-//     auto arg              = cs.getArgument(getArgPosition());
-//     auto isTmp            = state[arg];
+//     auto state            = analysis::getIncomingState(functionResults,
+//     *instr); auto arg              = cs.getArgument(getArgPosition()); auto
+//     isTmp            = state[arg];
 
 //     if (isTmp.test(0)) {
 //       return std::bitset<COUNT>{1 << (PLEDGE_TMPPATH - 1) };
@@ -54,15 +62,17 @@ getCalledFunction(llvm::CallSite cs) {
 
 //     return 0;
 //   };
-// }; 
+// };
 
-class CheckTMPPATH : public PledgeCheckerBase { 
+class CheckTMPPATH : public PledgeCheckerBase {
 public:
-  CheckTMPPATH(int ap): PledgeCheckerBase(ap){}
+  CheckTMPPATH(int ap) : PledgeCheckerBase(ap) {}
 
   // TODO: Correct tmppath logic -> RW not needed if in /tmp/
-  FunctionsValue  
-  operator()(const llvm::CallSite cs, const Context& context, AnalysisPackage* analysisPackage) override {
+  FunctionsValue
+  operator()(const llvm::CallSite cs,
+             const Context& context,
+             AnalysisPackage* analysisPackage) override {
     auto& contextResults  = analysisPackage->tmppathResults[context];
     auto* instr           = cs.getInstruction();
     auto& functionResults = contextResults[instr->getFunction()];
@@ -71,7 +81,26 @@ public:
     auto isTmp            = state[arg];
 
     if (isTmp.test(0)) {
-      return std::bitset<COUNT>{1 << (PLEDGE_TMPPATH) };
+      return 1 << (PLEDGE_TMPPATH);
+    }
+
+    return 0;
+  };
+};
+
+class CheckMCAST : public PledgeCheckerBase {
+public:
+  CheckMCAST(int ap) : PledgeCheckerBase(ap) {}
+
+  FunctionsValue
+  operator()(const llvm::CallSite cs,
+             const Context& context,
+             AnalysisPackage* AnalysisPackage) override {
+    auto* arg   = cs.getArgument(getArgPosition());
+    auto* argInt = llvm::dyn_cast<llvm::ConstantInt>(arg);
+    // llvm::outs() << *argInt;
+    if (argInt->getSExtValue() == IP_MULTICAST_IF) {
+      return 1 << PLEDGE_MCAST;
     }
 
     return 0;
@@ -83,9 +112,12 @@ getLibCHandlerMap(AnalysisPackage& package) {
   std::unordered_map<std::string, FunctionPledges> libCHandlers;
 
   libCHandlers.emplace("fread",
-                            FunctionPledgesBuilder(16, &package)
+                       FunctionPledgesBuilder(16, &package)
                            .add(std::make_unique<CheckTMPPATH>(3))
                            .build());
+  libCHandlers.emplace(
+      "setsockopt",
+      FunctionPledgesBuilder(16).add(std::make_unique<CheckMCAST>(2)).build());
   libCHandlers.emplace("__sclose", 16);
   libCHandlers.emplace("__smakebuf", 16);
   libCHandlers.emplace("__swhatbuf", 16);

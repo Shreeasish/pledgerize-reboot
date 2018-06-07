@@ -71,10 +71,6 @@ setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, con
     //Use the context of the current callsite
     auto promisesBitset = found->second.getPromisesBitset(cs, context);
 
-    llvm::outs () << "things here ";
-    llvm::outs () << requiredPrivileges.to_ulong();
-    llvm::outs () << "\n";
-
     requiredPrivileges |= promisesBitset;
     // requiredPrivileges |= 0;
   }

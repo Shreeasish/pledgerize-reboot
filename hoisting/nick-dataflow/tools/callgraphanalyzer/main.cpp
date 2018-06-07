@@ -20,9 +20,11 @@
 #include <string>
 #include <iostream>
 #include <variant>
-#include <stack>
+#include <queue>
 #include <algorithm>
+#include <stack>
 #include <bitset>
+#include <set>
 
 // #include "DataflowAnalysis.h"
 // #include "FutureFunctions.h"
@@ -42,6 +44,7 @@ using MatrixKey = std::pair<llvm::Function*, llvm::Function*>;
 using GraphMatrix = llvm::DenseMap<MatrixKey, int>;
 using FuncPrivMap =
     llvm::DenseMap<llvm::Function*, std::bitset<Promises::COUNT>>;
+using FunctionQueue = std::queue<llvm::Function*>;
 
 static cl::OptionCategory futureFunctionsCategory{"Graph analyzer options"};
 
@@ -103,15 +106,26 @@ main(int argc, char** argv) {
   GraphMatrix graphMatrix;
   FuncPrivMap funcPrivs;
 
-  auto addToMap = [&callGraph,&graphMatrix]
-          (llvm::Function* caller, llvm::Function* callee) {
-            callGraph[caller].push_back(callee);
-            MatrixKey mKey{caller,callee};
-            graphMatrix[mKey] = 1;
-        };
+  auto printEdgeList = [](GraphMatrix& graphMatrix ) {
+    llvm::outs () << "digraph G {\n";
+        for(auto& [functions, called] : graphMatrix){
+          if(called)
+          {
+           llvm::outs () << functions.first->getName() << " -> " << functions.second->getName() << ";";
+           llvm::outs() << "\n";
+          }
+        }
+    llvm::outs () << "}";
+      };
 
-  auto addPrivilege = [&funcPrivs](llvm::StringRef functionName, llvm::Function* function){
-    if(functionName.startswith("_libc_")){
+  auto addToMap = [&callGraph, &graphMatrix](llvm::Function* caller, llvm::Function* callee) {
+    callGraph[caller].push_back(callee);
+    MatrixKey mKey{caller, callee};
+    graphMatrix[mKey] = 1;
+  };
+
+  auto addPrivilege = [&funcPrivs](llvm::StringRef functionName, llvm::Function* function) {
+    if(functionName.startswith("_libc_")) {
       functionName = functionName.split("_libc_").second;
     }
     if(syscallWebBitsetMap.count(functionName)){
@@ -119,19 +133,20 @@ main(int argc, char** argv) {
     }
   };
 
-  llvm::outs() << "funcPrivs size" << funcPrivs.size()<< "\n";
 
   for (auto& caller : *module) {
     for (auto& bb : caller) {
       for (auto& i : bb) {
+
+        // TODO: Function Pointer Resolver
         llvm::CallSite cs{&i};
-        if(!cs) {
+        if (!cs) {
           continue;
         }
-        
+
         auto* callee = getCalledFunction(cs);
-        if(!callee) {
-          continue; 
+        if (!callee) {
+          continue;
         }
 
         addToMap(&caller,callee);
@@ -139,8 +154,77 @@ main(int argc, char** argv) {
       }
     }
   }
+  FunctionQueue bfsQueue;
+  CallPath bfsPath;
+  auto initializeQueue = [&callGraph](FunctionQueue& bfsQueue, CallPath& bfsPath) {
+    for (auto& [caller, callee] : callGraph) {
+      if (caller->getVisibility()
+          == llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
+        continue;
+      }
+      bfsQueue.push(caller);
+    } 
+
+    bfsQueue.push(nullptr);
+    return;
+  };
+
   llvm::outs().flush();
-  llvm::errs() << "Building Callgraph \n";
+  llvm::errs() << "Commence BFS\n";
+
+  initializeQueue(bfsQueue, bfsPath);
+  int depth = 0;
+  llvm::DenseMap<int,std::set<llvm::Function*>> depthMap;
+  
+
+  llvm::outs() << "digraph G {\n\t rankdir=LR;\n";
+  while (!bfsQueue.empty()) {
+    auto* front = bfsQueue.front();
+
+    if(front == nullptr){
+      bfsQueue.pop();
+      if(bfsQueue.empty()){
+        llvm::outs() <<  " } \n";
+        continue;
+      }
+      depth++;
+      continue;
+    }
+
+    if(std::find(bfsPath.begin(), bfsPath.end(), front) != bfsPath.end()) {
+      bfsQueue.pop();
+      continue;
+    }
+
+    bfsQueue.pop();
+    depthMap[depth].insert(front);
+
+    auto& callees = callGraph[front];
+    for( auto* callee : callees) {
+      bfsQueue.push(callee);
+      bfsPath.push_back(front);
+      llvm::outs() << front->getName() << " -> "; 
+      llvm::outs() << callee->getName() << ";\n"; 
+    }
+  }
+
+  for(auto [depth, functions] : depthMap){
+    llvm::outs() << "{ rank = same; ";
+    const auto seperator = ", ";
+    const auto* sep =  "";
+    for(auto* item : functions) {
+      llvm::outs() << sep << item->getName();
+      sep = seperator;
+    }
+    llvm::outs() << " }\n ";
+  }
+
+  llvm::outs() << "}";
+  llvm::outs().flush();
+  llvm::errs() << "BFS Finished\n";
+
+  llvm::outs().flush();
+  llvm::errs() << "Building Transitive Closures\n";
 
   for (auto& [k,kv] : callGraph) {
     // if(isllvmFunction(&k)) { continue; }
@@ -167,6 +251,8 @@ main(int argc, char** argv) {
     }
   }
 
+  printEdgeList(graphMatrix);
+
   for (auto [function, bitv] : funcPrivs) {
     if(function->getVisibility() == llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
       continue;
@@ -174,5 +260,6 @@ main(int argc, char** argv) {
     llvm::outs() << function->getName() << ", ";
     printBitset(bitv);
   }
+
   return 0;
 }
