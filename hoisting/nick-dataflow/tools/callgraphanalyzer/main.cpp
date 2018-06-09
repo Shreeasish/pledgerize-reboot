@@ -106,6 +106,7 @@ main(int argc, char** argv) {
 
   auto addPrivilege = [&funcPrivs](llvm::StringRef functionName, llvm::Function* function) {
     if(functionName.startswith("_libc_")) {
+      llvm::outs() << functionName << "\n";
       functionName = functionName.split("_libc_").second;
     }
     if(syscallWebBitsetMap.count(functionName)){
@@ -162,6 +163,7 @@ main(int argc, char** argv) {
     llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
       continue;
     }
+
     dfs(&f, dfs);
   }
 
@@ -184,7 +186,7 @@ main(int argc, char** argv) {
     llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
       continue;
     }
-    llvm::outs() << function->getName() << ", ";
+    // llvm::outs() << function->getName() << ", ";
     printBitset(bitv);
   }
 

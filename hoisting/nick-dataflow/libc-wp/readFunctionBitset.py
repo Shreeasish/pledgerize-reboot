@@ -1,3 +1,4 @@
+#! /home/shreeasish/anaconda3/envs/gitwork/bin/python 
 import pandas as pd
 import sys
 
@@ -30,4 +31,4 @@ with open(sys.argv[-1]) as webfile:
 
 for rows in webfpledges.iterrows():
     print(rows[1].get('function'))
-    print(bitsettoString(rows[1].get('bitstring').strip()))
+#    print(bitsettoString(rows[1].get('bitstring').strip()))
