@@ -38,15 +38,10 @@ using namespace llvm;
 using std::string;
 using std::unique_ptr;
 
-using FunctionStack = std::stack<llvm::Function*>;
 using CallGraph = llvm::DenseMap<llvm::Function*, std::vector<llvm::Function*>>;
-using CallPath  = std::deque<llvm::Function*>;
-using MatrixKey = std::pair<llvm::Function*, llvm::Function*>;
-using GraphMatrix = llvm::DenseMap<MatrixKey, int>;
+using FunctionDeque  = std::deque<llvm::Function*>;
 using FuncPrivMap =
     llvm::DenseMap<llvm::Function*, std::bitset<Promises::COUNT>>;
-using FunctionQueue = std::queue<llvm::Function*>;
-using FunctionWorklist = std::vector<llvm::Function*>;
 
 static cl::OptionCategory futureFunctionsCategory{"Graph analyzer options"};
 
@@ -102,28 +97,11 @@ main(int argc, char** argv) {
     llvm::outs() << "\n";
   };
   
-  FunctionStack functionStack;
   CallGraph callGraph;
-  CallPath callPath;
-  GraphMatrix graphMatrix;
   FuncPrivMap funcPrivs;
 
-  auto printEdgeList = [](GraphMatrix& graphMatrix ) {
-    llvm::outs () << "digraph G {\n";
-        for(auto& [functions, called] : graphMatrix){
-          if(called)
-          {
-           llvm::outs () << functions.first->getName() << " -> " << functions.second->getName() << ";";
-           llvm::outs() << "\n";
-          }
-        }
-    llvm::outs () << "}";
-      };
-
-  auto addToMap = [&callGraph, &graphMatrix](llvm::Function* caller, llvm::Function* callee) {
+  auto addToMap = [&callGraph](llvm::Function* caller, llvm::Function* callee) {
     callGraph[caller].push_back(callee);
-    MatrixKey mKey{caller, callee};
-    graphMatrix[mKey] = 1;
   };
 
   auto addPrivilege = [&funcPrivs](llvm::StringRef functionName, llvm::Function* function) {
@@ -164,89 +142,19 @@ main(int argc, char** argv) {
     }
   }
 
-  // BFS
-  // FunctionQueue bfsQueue;
-  // CallPath bfsPath;
-  // auto initializeQueue = [&callGraph](FunctionQueue& bfsQueue, CallPath& bfsPath) {
-  //   for (auto& [caller, callee] : callGraph) {
-  //     if (caller->getVisibility()
-  //         == llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
-  //       continue;
-  //     }
-  //     bfsQueue.push(caller);
-  //   } 
-
-  //   bfsQueue.push(nullptr);
-  //   return;
-  // };
-
-  // llvm::outs().flush();
-  // llvm::errs() << "Commence BFS\n";
-
-  // initializeQueue(bfsQueue, bfsPath);
-  // int depth = 0;
-  // llvm::DenseMap<int,std::set<llvm::Function*>> depthMap;
-  
-
-  // llvm::outs() << "digraph G {\n\t rankdir=LR;\n";
-  // while (!bfsQueue.empty()) {
-  //   auto* front = bfsQueue.front();
-
-  //   if(front == nullptr){
-  //     bfsQueue.pop();
-  //     if(bfsQueue.empty()){
-  //       llvm::outs() <<  " } \n";
-  //       continue;
-  //     }
-  //     depth++;
-  //     continue;
-  //   }
-
-  //   if(std::find(bfsPath.begin(), bfsPath.end(), front) != bfsPath.end()) {
-  //     bfsQueue.pop();
-  //     continue;
-  //   }
-
-  //   bfsQueue.pop();
-  //   depthMap[depth].insert(front);
-
-  //   auto& callees = callGraph[front];
-  //   for( auto* callee : callees) {
-  //     bfsQueue.push(callee);
-  //     bfsPath.push_back(front);
-  //     llvm::outs() << front->getName() << " -> "; 
-  //     llvm::outs() << callee->getName() << ";\n"; 
-  //   }
-  // }
-
-  // for(auto [depth, functions] : depthMap){
-  //   llvm::outs() << "{ rank = same; ";
-  //   const auto seperator = ", ";
-  //   const auto* sep =  "";
-  //   for(auto* item : functions) {
-  //     llvm::outs() << sep << item->getName();
-  //     sep = seperator;
-  //   }
-  //   llvm::outs() << " }\n ";
-  // }
-
-  // llvm::outs() << "}";
-  // llvm::outs().flush();
-  // llvm::errs() << "BFS Finished\n";
-
   llvm::outs().flush();
   llvm::errs() << "Building Transitive Closures\n";
 
-  CallPath poFunctions;
+  FunctionDeque functionWorklist;
   llvm::DenseSet<llvm::Function *> seenSet;
-  auto dfs = [&poFunctions, &seenSet, &callGraph](llvm::Function* function, auto& dfs) -> void {
+  auto dfs = [&functionWorklist, &seenSet, &callGraph](llvm::Function* function, auto& dfs) -> void {
     if(!seenSet.insert(function).second){
       return;
     }
     for (auto& callee : callGraph[function]) {
       dfs(callee, dfs);
     }
-    poFunctions.push_back(function);
+    functionWorklist.push_back(function);
   };
 
   for (auto& f : *module) {
@@ -257,9 +165,9 @@ main(int argc, char** argv) {
     dfs(&f, dfs);
   }
 
-  while(!poFunctions.empty()){
-    auto* front = poFunctions.front();
-    poFunctions.pop_front();
+  while(!functionWorklist.empty()){
+    auto* front = functionWorklist.front();
+    functionWorklist.pop_front();
     // llvm::errs() << front->getName() << "\n";
     auto frontPrivs = funcPrivs[front]; 
     for(auto* callee : callGraph[front]) {
@@ -267,37 +175,9 @@ main(int argc, char** argv) {
     }
     if( funcPrivs[front] != frontPrivs) {
       auto& callers = inverseCallGraph[front];
-      poFunctions.insert(poFunctions.end(), callers.begin(), callers.end());
+      functionWorklist.insert(functionWorklist.end(), callers.begin(), callers.end());
     }
   }
-
-
-  // for (auto& [k,kv] : callGraph) {
-  //   // if(isllvmFunction(&k)) { continue; }
-  //   for(auto& [i,iv] : callGraph){
-  //     // if(isllvmFunction(&i)) { continue; }
-  //     for(auto& [j,jv] : callGraph){
-
-  //       MatrixKey ijKey{k,i};
-  //       MatrixKey ikKey{i,k};
-  //       MatrixKey kjKey{k,j};
-
-  //       if(graphMatrix[ikKey] && graphMatrix[kjKey]){
-  //         graphMatrix[ijKey] = 1;
-  //       }
-  //     }
-  //   }
-  // }
-
-  // for(auto& [function_pair,called] :graphMatrix){
-  //   if(called){
-  //     if (funcPrivs.count(function_pair.second)) {
-  //       funcPrivs[function_pair.first] |= funcPrivs[function_pair.second];
-  //     }
-  //   }
-  // }
-
-  // printEdgeList(graphMatrix);
 
   for (auto [function, bitv] : funcPrivs) {
     if(function->getVisibility() ==
@@ -309,4 +189,78 @@ main(int argc, char** argv) {
   }
 
   return 0;
+}
+
+
+void printBFS(CallGraph callGraph){
+  using FunctionQueue = std::queue<llvm::Function*>;
+  FunctionQueue bfsQueue;
+  FunctionDeque bfsPath;
+  auto initializeQueue = [&callGraph](FunctionQueue& bfsQueue, FunctionDeque&
+  bfsPath) {
+    for (auto& [caller, callee] : callGraph) {
+      if (caller->getVisibility()
+          == llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
+        continue;
+      }
+      bfsQueue.push(caller);
+    }
+
+    bfsQueue.push(nullptr);
+    return;
+  };
+
+  llvm::outs().flush();
+  llvm::errs() << "Commence BFS\n";
+
+  initializeQueue(bfsQueue, bfsPath);
+  int depth = 0;
+  llvm::DenseMap<int,std::set<llvm::Function*>> depthMap;
+  
+
+  llvm::outs() << "digraph G {\n\t rankdir=LR;\n";
+  while (!bfsQueue.empty()) {
+    auto* front = bfsQueue.front();
+
+    if(front == nullptr){
+      bfsQueue.pop();
+      if(bfsQueue.empty()){
+        llvm::outs() <<  " } \n";
+        continue;
+      }
+      depth++;
+      continue;
+    }
+
+    if(std::find(bfsPath.begin(), bfsPath.end(), front) != bfsPath.end()) {
+      bfsQueue.pop();
+      continue;
+    }
+
+    bfsQueue.pop();
+    depthMap[depth].insert(front);
+
+    auto& callees = callGraph[front];
+    for( auto* callee : callees) {
+      bfsQueue.push(callee);
+      bfsPath.push_back(front);
+      llvm::outs() << front->getName() << " -> "; 
+      llvm::outs() << callee->getName() << ";\n"; 
+    }
+  }
+
+  for(auto [depth, functions] : depthMap){
+    llvm::outs() << "{ rank = same; ";
+    const auto seperator = ", ";
+    const auto* sep =  "";
+    for(auto* item : functions) {
+      llvm::outs() << sep << item->getName();
+      sep = seperator;
+    }
+    llvm::outs() << " }\n ";
+  }
+
+  llvm::outs() << "}";
+  llvm::outs().flush();
+  llvm::errs() << "BFS Finished\n";
 }
