@@ -73,7 +73,7 @@ main(int argc, char** argv) {
   // handling. It also initializes the built in support for convenient
   // command line option handling.
   sys::PrintStackTraceOnErrorSignal(argv[0]);
-  llvm::PrettyStackTraceProgram X(argc, argv);
+  llvm::PrettyStackTraceProgram X(argc, argv);//libc function called xdr_wrap exists
   llvm_shutdown_obj shutdown;
   cl::HideUnrelatedOptions(futureFunctionsCategory);
   cl::ParseCommandLineOptions(argc, argv);
@@ -104,11 +104,18 @@ main(int argc, char** argv) {
     callGraph[caller].push_back(callee);
   };
 
-  auto addPrivilege = [&funcPrivs](llvm::StringRef functionName, llvm::Function* function) {
+  auto stripFunctionName = [](llvm::StringRef functionName) -> llvm::StringRef{
     if(functionName.startswith("_libc_")) {
-      llvm::outs() << functionName << "\n";
       functionName = functionName.split("_libc_").second;
     }
+    if(functionName.endswith("_wrap")) { //libc function called xdr_wrap exists
+      functionName = functionName.split("_wrap").first; 
+    }
+    return functionName;
+  };
+
+  auto addPrivilege = [&funcPrivs, &stripFunctionName](llvm::StringRef functionName, llvm::Function* function) {
+    functionName = stripFunctionName(functionName);
     if(syscallWebBitsetMap.count(functionName)){
       funcPrivs[function] |= syscallWebBitsetMap[functionName];
     }
@@ -159,10 +166,13 @@ main(int argc, char** argv) {
   };
 
   for (auto& f : *module) {
-    if(f.getVisibility() ==
-    llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
-      continue;
-    }
+    // if(f.getVisibility() ==
+    // llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
+    //   continue;
+    // }
+    // if(f.isDeclaration()) {
+    //   continue;
+    // }
 
     dfs(&f, dfs);
   }
@@ -181,18 +191,42 @@ main(int argc, char** argv) {
     }
   }
 
+
+  auto printFunctionLocation = [](llvm::Function* function) {
+    llvm::outs().changeColor(raw_ostream::Colors::GREEN);
+    llvm::outs() << function->getSubprogram()->getFilename() << ":";
+    llvm::outs() << function->getSubprogram()->getLine() << "\n";
+  };
+
+  auto printFunctionAttributes = [](llvm::Function* function) {
+    llvm::outs().changeColor(raw_ostream::Colors::GREEN);
+    for (auto& attribute : function->getAttributes()) {
+      llvm::outs() << attribute.getAsString();
+      llvm::outs() << "\n";
+    }
+    llvm::outs() << "\n";
+    llvm::outs().changeColor(raw_ostream::Colors::WHITE);
+  };
+
   for (auto [function, bitv] : funcPrivs) {
-    if(function->getVisibility() ==
-    llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
+    // if(function->getVisibility() ==
+    // llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
+    //   continue;
+    // }
+    
+    if(function->isDeclaration()) {
       continue;
     }
-    // llvm::outs() << function->getName() << ", ";
+
+    llvm::outs() << stripFunctionName(function->getName()) << ", ";
     printBitset(bitv);
+
+    // printFunctionLocation(function);
+    // printFunctionAttributes(function);
   }
 
   return 0;
 }
-
 
 void printBFS(CallGraph callGraph){
   using FunctionQueue = std::queue<llvm::Function*>;
