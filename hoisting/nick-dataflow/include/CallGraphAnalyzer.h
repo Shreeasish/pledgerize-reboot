@@ -241,7 +241,7 @@ syscallBitsetMap{
     {"swapctl", std::bitset<COUNT>().set(PLEDGE_VMINFO)},
 };
 
-static SyscallBitsetMap syscallWebBitsetMap{
+static SyscallBitsetMap syscallManMap{
     {"clock_getres", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"clock_gettime", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"close", std::bitset<COUNT>().set(PLEDGE_STDIO)},

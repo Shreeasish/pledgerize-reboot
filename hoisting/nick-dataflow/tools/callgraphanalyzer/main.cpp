@@ -114,10 +114,13 @@ main(int argc, char** argv) {
     return functionName;
   };
 
+
   auto addPrivilege = [&funcPrivs, &stripFunctionName](llvm::StringRef functionName, llvm::Function* function) {
+    auto& bitsetMap = syscallBitsetMap;
+
     functionName = stripFunctionName(functionName);
-    if(syscallWebBitsetMap.count(functionName)){
-      funcPrivs[function] |= syscallWebBitsetMap[functionName];
+    if(bitsetMap.count(functionName)){
+      funcPrivs[function] |= bitsetMap[functionName];
     }
   };
 
