@@ -227,7 +227,6 @@ main(int argc, char** argv) {
     // printFunctionLocation(function);
     // printFunctionAttributes(function);
   }
-
   return 0;
 }
 

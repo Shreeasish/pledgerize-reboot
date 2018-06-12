@@ -59,7 +59,7 @@ assert(len(mrows) == 1)
 for row in krows.iterrows():
     print('Function Name:', row[1].get('function'))
     kpledgeset.add(bitsettoString(row[1].get('bitstring').strip()))
-    print('Kernal Pledges:', bitsettoString(row[1].get('bitstring').strip()))
+    print('Kernel Pledges:', bitsettoString(row[1].get('bitstring').strip()))
 
 for row in mrows.iterrows():
     mpledgeset.add(bitsettoString(row[1].get('bitstring').strip()))

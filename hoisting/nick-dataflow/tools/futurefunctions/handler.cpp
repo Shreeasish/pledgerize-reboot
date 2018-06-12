@@ -118,69 +118,86 @@ getLibCHandlerMap(AnalysisPackage& package) {
   libCHandlers.emplace(
       "setsockopt",
       FunctionPledgesBuilder(16).add(std::make_unique<CheckMCAST>(2)).build());
-  libCHandlers.emplace("__sclose", 16);
-  libCHandlers.emplace("__smakebuf", 16);
-  libCHandlers.emplace("__swhatbuf", 16);
-  libCHandlers.emplace("__sseek", 16);
-  libCHandlers.emplace("__sread", 16);
-  libCHandlers.emplace("__srefill", 16);
-  libCHandlers.emplace("__srget", 16);
-  libCHandlers.emplace("__svfscanf", 16);
-  libCHandlers.emplace("__swrite", 16);
-  libCHandlers.emplace("__swsetup", 16);
-  libCHandlers.emplace("__vfprintf", 16);
-  libCHandlers.emplace("__vfwprintf", 16);
-  libCHandlers.emplace("_mktemp", 62);
-  libCHandlers.emplace("mktemp_internal", 62);
-  libCHandlers.emplace("asprintf", 16);
-  libCHandlers.emplace("dprintf", 16);
-  libCHandlers.emplace("vdprintf", 16);
-  libCHandlers.emplace("fdopen", 16);
-  libCHandlers.emplace("fgetln", 16);
-  libCHandlers.emplace("fgets", 16);
-  libCHandlers.emplace("fopen", 16);
-  libCHandlers.emplace("fprintf", 16);
-  libCHandlers.emplace("vfprintf", 16);
-  libCHandlers.emplace("freopen", 16);
-  libCHandlers.emplace("fscanf", 16);
-  libCHandlers.emplace("vfscanf", 16);
-  libCHandlers.emplace("fseek", 16);
-  libCHandlers.emplace("fseeko", 16);
-  libCHandlers.emplace("fsetpos", 16);
-  libCHandlers.emplace("fwprintf", 16);
-  libCHandlers.emplace("vfwprintf", 16);
-  libCHandlers.emplace("getdelim", 16);
-  libCHandlers.emplace("getline", 16);
-  libCHandlers.emplace("getw", 16);
-  libCHandlers.emplace("mkdtemp", 62);
-  libCHandlers.emplace("mkostemp", 62);
-  libCHandlers.emplace("mkostemps", 62);
-  libCHandlers.emplace("mkstemp", 62);
-  libCHandlers.emplace("mkstemps", 62);
-  libCHandlers.emplace("mktemp", 62);
-  libCHandlers.emplace("perror", 16);
-  libCHandlers.emplace("printf", 16);
-  libCHandlers.emplace("remove", 46);
-  libCHandlers.emplace("rewind", 16);
-  libCHandlers.emplace("scanf", 16);
-  libCHandlers.emplace("setbuf", 16);
-  libCHandlers.emplace("setvbuf", 16);
-  libCHandlers.emplace("setbuffer", 16);
-  libCHandlers.emplace("setlinebuf", 16);
-  libCHandlers.emplace("snprintf", 16);
-  libCHandlers.emplace("sprintf", 16);
-  libCHandlers.emplace("sscanf", 16);
-  libCHandlers.emplace("swprintf", 16);
-  libCHandlers.emplace("vswprintf", 16);
-  libCHandlers.emplace("tempnam", 62);
-  libCHandlers.emplace("tmpnam", 62);
-  libCHandlers.emplace("vasprintf", 16);
-  libCHandlers.emplace("vprintf", 16);
-  libCHandlers.emplace("vscanf", 16);
-  libCHandlers.emplace("vsnprintf", 16);
-  libCHandlers.emplace("vsprintf", 16);
-  libCHandlers.emplace("vsscanf", 16);
-  libCHandlers.emplace("vwprintf", 16);
-  libCHandlers.emplace("wprintf", 16);
+  libCHandlers.emplace("err", FunctionPledgesBuilder(16).build()); //Should only use stderr
+  libCHandlers.emplace("errx",FunctionPledgesBuilder(16).build()); //Like err, also exits the program 
+  libCHandlers.emplace("exit",FunctionPledgesBuilder(0).build());  //Program can always exit
+  libCHandlers.emplace(
+      "fprintf",
+      FunctionPledgesBuilder(16).add(std::make_unique<CheckTMPPATH>(0))); //Check the first argument(file pointer) for tmppath
+  libCHandlers.emplace("getopt",FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("isdigit",FunctionPledgesBuilder(0).build());
+  libCHandlers.emplace("isspace",FunctionPledgesBuilder(0).build());
+  libCHandlers.emplace("localtime",FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("printf",FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("snprintf",FunctionPledgesBuilder(0).build()); // According to manpage, works only the char * provided
+
+  
+
+
+  
+  // libCHandlers.emplace("__sclose", 16);
+  // libCHandlers.emplace("__smakebuf", 16);
+  // libCHandlers.emplace("__swhatbuf", 16);
+  // libCHandlers.emplace("__sseek", 16);
+  // libCHandlers.emplace("__sread", 16);
+  // libCHandlers.emplace("__srefill", 16);
+  // libCHandlers.emplace("__srget", 16);
+  // libCHandlers.emplace("__svfscanf", 16);
+  // libCHandlers.emplace("__swrite", 16);
+  // libCHandlers.emplace("__swsetup", 16);
+  // libCHandlers.emplace("__vfprintf", 16);
+  // libCHandlers.emplace("__vfwprintf", 16);
+  // libCHandlers.emplace("_mktemp", 62);
+  // libCHandlers.emplace("mktemp_internal", 62);
+  // libCHandlers.emplace("asprintf", 16);
+  // libCHandlers.emplace("dprintf", 16);
+  // libCHandlers.emplace("vdprintf", 16);
+  // libCHandlers.emplace("fdopen", 16);
+  // libCHandlers.emplace("fgetln", 16);
+  // libCHandlers.emplace("fgets", 16);
+  // libCHandlers.emplace("fopen", 16);
+  // libCHandlers.emplace("fprintf", 16);
+  // libCHandlers.emplace("vfprintf", 16);
+  // libCHandlers.emplace("freopen", 16);
+  // libCHandlers.emplace("fscanf", 16);
+  // libCHandlers.emplace("vfscanf", 16);
+  // libCHandlers.emplace("fseek", 16);
+  // libCHandlers.emplace("fseeko", 16);
+  // libCHandlers.emplace("fsetpos", 16);
+  // libCHandlers.emplace("fwprintf", 16);
+  // libCHandlers.emplace("vfwprintf", 16);
+  // libCHandlers.emplace("getdelim", 16);
+  // libCHandlers.emplace("getline", 16);
+  // libCHandlers.emplace("getw", 16);
+  // libCHandlers.emplace("mkdtemp", 62);
+  // libCHandlers.emplace("mkostemp", 62);
+  // libCHandlers.emplace("mkostemps", 62);
+  // libCHandlers.emplace("mkstemp", 62);
+  // libCHandlers.emplace("mkstemps", 62);
+  // libCHandlers.emplace("mktemp", 62);
+  // libCHandlers.emplace("perror", 16);
+  // libCHandlers.emplace("printf", 16);
+  // libCHandlers.emplace("remove", 46);
+  // libCHandlers.emplace("rewind", 16);
+  // libCHandlers.emplace("scanf", 16);
+  // libCHandlers.emplace("setbuf", 16);
+  // libCHandlers.emplace("setvbuf", 16);
+  // libCHandlers.emplace("setbuffer", 16);
+  // libCHandlers.emplace("setlinebuf", 16);
+  // libCHandlers.emplace("snprintf", 16);
+  // libCHandlers.emplace("sprintf", 16);
+  // libCHandlers.emplace("sscanf", 16);
+  // libCHandlers.emplace("swprintf", 16);
+  // libCHandlers.emplace("vswprintf", 16);
+  // libCHandlers.emplace("tempnam", 62);
+  // libCHandlers.emplace("tmpnam", 62);
+  // libCHandlers.emplace("vasprintf", 16);
+  // libCHandlers.emplace("vprintf", 16);
+  // libCHandlers.emplace("vscanf", 16);
+  // libCHandlers.emplace("vsnprintf", 16);
+  // libCHandlers.emplace("vsprintf", 16);
+  // libCHandlers.emplace("vsscanf", 16);
+  // libCHandlers.emplace("vwprintf", 16);
+  // libCHandlers.emplace("wprintf", 16);
   return libCHandlers;
 };
