@@ -43,6 +43,8 @@ using FunctionDeque  = std::deque<llvm::Function*>;
 using FuncPrivMap =
     llvm::DenseMap<llvm::Function*, std::bitset<Promises::COUNT>>;
 
+using FunctionSet = llvm::DenseSet<llvm::Function *>;
+
 static cl::OptionCategory futureFunctionsCategory{"Graph analyzer options"};
 
 static cl::opt<string> inPath{cl::Positional,
@@ -157,7 +159,7 @@ main(int argc, char** argv) {
   llvm::errs() << "Building Transitive Closures\n";
 
   FunctionDeque functionWorklist;
-  llvm::DenseSet<llvm::Function *> seenSet;
+  FunctionSet seenSet;
   auto dfs = [&functionWorklist, &seenSet, &callGraph](llvm::Function* function, auto& dfs) -> void {
     if(!seenSet.insert(function).second){
       return;
@@ -216,17 +218,36 @@ main(int argc, char** argv) {
     // llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
     //   continue;
     // }
-    
     if(function->isDeclaration()) {
       continue;
     }
-
     llvm::outs() << stripFunctionName(function->getName()) << ", ";
     printBitset(bitv);
-
     // printFunctionLocation(function);
     // printFunctionAttributes(function);
   }
+
+  llvm::errs() << "\n  DFS Function Graph \n" ;
+  auto dfsviz = [&callGraph, &seenSet](llvm::Function* function,
+                                       auto& dfsviz) -> void {
+    if (!seenSet.insert(function).second) {
+      return;
+    }
+    auto callees = callGraph[function];
+
+    for (auto* callee : callees) {
+      dfsviz(callee, dfsviz);
+      llvm::outs() << function->getName() << "->" << callee->getName() << "\n";
+    }
+  };
+
+  for (auto& [function, callees] : callGraph){
+    seenSet.clear();
+    llvm::outs() << "digraph " << function->getName() << " {"<< "\n";
+    dfsviz(function, dfsviz);
+    llvm::outs() << "}\n" ; 
+  }
+
   return 0;
 }
 

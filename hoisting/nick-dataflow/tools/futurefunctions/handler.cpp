@@ -123,7 +123,7 @@ getLibCHandlerMap(AnalysisPackage& package) {
   libCHandlers.emplace("exit",FunctionPledgesBuilder(0).build());  //Program can always exit
   libCHandlers.emplace(
       "fprintf",
-      FunctionPledgesBuilder(16).add(std::make_unique<CheckTMPPATH>(0))); //Check the first argument(file pointer) for tmppath
+      FunctionPledgesBuilder(16).add(std::make_unique<CheckTMPPATH>(0)).build()); //Check the first argument(file pointer) for tmppath
   libCHandlers.emplace("getopt",FunctionPledgesBuilder(16).build());
   libCHandlers.emplace("isdigit",FunctionPledgesBuilder(0).build());
   libCHandlers.emplace("isspace",FunctionPledgesBuilder(0).build());
