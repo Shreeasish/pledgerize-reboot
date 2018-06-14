@@ -1,0 +1,4 @@
+digraph _libc_fwide {
+node [shape = record];
+rankdir = LR;
+}

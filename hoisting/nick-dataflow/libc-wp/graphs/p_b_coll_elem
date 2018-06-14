@@ -1,0 +1,11 @@
+digraph p_b_coll_elem {
+node [shape = record];
+rankdir = LR;
+p_b_coll_elem [label = "p_b_coll_elem | 000000000000000000000000000000000000000" ]
+strncmp [label = "strncmp | 000000000000000000000000000000000000000" ] 
+p_b_coll_elem -> strncmp 
+p_b_coll_elem [label = "p_b_coll_elem | 000000000000000000000000000000000000000" ]
+strlen [label = "strlen | 000000000000000000000000000000000000000" ] 
+p_b_coll_elem -> strlen 
+rank = same; strncmp ; strlen ;
+}

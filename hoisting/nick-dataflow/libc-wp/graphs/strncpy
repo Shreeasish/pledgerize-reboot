@@ -1,0 +1,4 @@
+digraph _libc_strncpy {
+node [shape = record];
+rankdir = LR;
+}

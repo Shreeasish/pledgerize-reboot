@@ -1,0 +1,8 @@
+digraph wcscoll_l {
+node [shape = record];
+rankdir = LR;
+wcscoll_l [label = "wcscoll_l | 000000000000000000000000000000000000000" ]
+wcscmp [label = "wcscmp | 000000000000000000000000000000000000000" ] 
+wcscoll_l -> wcscmp 
+rank = same; wcscmp ;
+}

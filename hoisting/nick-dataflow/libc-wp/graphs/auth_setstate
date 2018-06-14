@@ -1,0 +1,4 @@
+digraph _libc_auth_setstate {
+node [shape = record];
+rankdir = LR;
+}

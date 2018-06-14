@@ -1,0 +1,29 @@
+digraph _libc_atexit {
+node [shape = record];
+rankdir = LR;
+getpagesize [label = "getpagesize | 000000000000000000000000000000000010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+getpagesize -> sysctl 
+rank = same; sysctl ;
+__cxa_atexit [label = "__cxa_atexit | 000000000000000000000000000000000010000" ]
+getpagesize [label = "getpagesize | 000000000000000000000000000000000010000" ] 
+__cxa_atexit -> getpagesize 
+__cxa_atexit [label = "__cxa_atexit | 000000000000000000000000000000000010000" ]
+mprotect [label = "mprotect | 000000000000000000000000000000000010000" ] 
+__cxa_atexit -> mprotect 
+mmap [label = "mmap | 000000000000000000000000000000000010000" ]
+__syscall [label = "__syscall | 000000000000000000000000000000000000000" ] 
+mmap -> __syscall 
+rank = same; __syscall ;
+__cxa_atexit [label = "__cxa_atexit | 000000000000000000000000000000000010000" ]
+mmap [label = "mmap | 000000000000000000000000000000000010000" ] 
+__cxa_atexit -> mmap 
+__cxa_atexit [label = "__cxa_atexit | 000000000000000000000000000000000010000" ]
+mprotect [label = "mprotect | 000000000000000000000000000000000010000" ] 
+__cxa_atexit -> mprotect 
+rank = same; getpagesize ; mprotect ; mmap ; mprotect ;
+atexit [label = "atexit | 000000000000000000000000000000000010000" ]
+__cxa_atexit [label = "__cxa_atexit | 000000000000000000000000000000000010000" ] 
+atexit -> __cxa_atexit 
+rank = same; __cxa_atexit ;
+}

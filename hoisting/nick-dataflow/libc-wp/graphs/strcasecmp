@@ -1,0 +1,4 @@
+digraph _libc_strcasecmp {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,4 @@
+digraph __bt_pgin {
+node [shape = record];
+rankdir = LR;
+}

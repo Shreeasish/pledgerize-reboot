@@ -1,0 +1,8 @@
+digraph getloadavg {
+node [shape = record];
+rankdir = LR;
+getloadavg [label = "getloadavg | 000000000000000000000000000000000010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+getloadavg -> sysctl 
+rank = same; sysctl ;
+}

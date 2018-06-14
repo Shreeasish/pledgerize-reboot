@@ -1,0 +1,18 @@
+digraph timesub {
+node [shape = record];
+rankdir = LR;
+leaps_thru_end_of [label = "leaps_thru_end_of | 000000000000000000000000000000000000000" ]
+leaps_thru_end_of [label = "leaps_thru_end_of | 000000000000000000000000000000000000000" ] 
+leaps_thru_end_of -> leaps_thru_end_of 
+rank = same; leaps_thru_end_of ;
+timesub [label = "timesub | 000000000000000000000000000000000000000" ]
+leaps_thru_end_of [label = "leaps_thru_end_of | 000000000000000000000000000000000000000" ] 
+timesub -> leaps_thru_end_of 
+timesub [label = "timesub | 000000000000000000000000000000000000000" ]
+leaps_thru_end_of [label = "leaps_thru_end_of | 000000000000000000000000000000000000000" ] 
+timesub -> leaps_thru_end_of 
+timesub [label = "timesub | 000000000000000000000000000000000000000" ]
+leaps_thru_end_of [label = "leaps_thru_end_of | 000000000000000000000000000000000000000" ] 
+timesub -> leaps_thru_end_of 
+rank = same; leaps_thru_end_of ; leaps_thru_end_of ; leaps_thru_end_of ;
+}

@@ -1,0 +1,4 @@
+digraph _libc_wcscmp {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,27 @@
+digraph _libc_wcscasecmp {
+node [shape = record];
+rankdir = LR;
+towlower [label = "towlower | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+towlower -> _CurrentRuneLocale 
+towlower [label = "towlower | 000000000000000000000000000000000000000" ]
+_wctrans_init [label = "_wctrans_init | 000000000000000000000000000000000000000" ] 
+towlower -> _wctrans_init 
+towlower [label = "towlower | 000000000000000000000000000000000000000" ]
+_towctrans_ext [label = "_towctrans_ext | 000000000000000000000000000000000000000" ] 
+towlower -> _towctrans_ext 
+rank = same; _CurrentRuneLocale ; _wctrans_init ; _towctrans_ext ;
+wcscasecmp [label = "wcscasecmp | 000000000000000000000000000000000000000" ]
+towlower [label = "towlower | 000000000000000000000000000000000000000" ] 
+wcscasecmp -> towlower 
+wcscasecmp [label = "wcscasecmp | 000000000000000000000000000000000000000" ]
+towlower [label = "towlower | 000000000000000000000000000000000000000" ] 
+wcscasecmp -> towlower 
+wcscasecmp [label = "wcscasecmp | 000000000000000000000000000000000000000" ]
+towlower [label = "towlower | 000000000000000000000000000000000000000" ] 
+wcscasecmp -> towlower 
+wcscasecmp [label = "wcscasecmp | 000000000000000000000000000000000000000" ]
+towlower [label = "towlower | 000000000000000000000000000000000000000" ] 
+wcscasecmp -> towlower 
+rank = same; towlower ; towlower ; towlower ; towlower ;
+}

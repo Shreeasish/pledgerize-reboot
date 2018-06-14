@@ -1,0 +1,4 @@
+digraph _libc_gettimeofday {
+node [shape = record];
+rankdir = LR;
+}

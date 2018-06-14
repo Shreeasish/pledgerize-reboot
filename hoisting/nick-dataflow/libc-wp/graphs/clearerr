@@ -1,0 +1,4 @@
+digraph _libc_clearerr {
+node [shape = record];
+rankdir = LR;
+}

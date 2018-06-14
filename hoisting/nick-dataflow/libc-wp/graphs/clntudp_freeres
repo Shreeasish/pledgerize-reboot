@@ -1,0 +1,4 @@
+digraph clntudp_freeres {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,4 @@
+digraph pthread_equal {
+node [shape = record];
+rankdir = LR;
+}

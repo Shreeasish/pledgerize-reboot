@@ -1,0 +1,24 @@
+digraph _libc_wcstoimax {
+node [shape = record];
+rankdir = LR;
+wcstoimax [label = "wcstoimax | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+wcstoimax -> __errno 
+iswspace [label = "iswspace | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+iswspace -> _CurrentRuneLocale 
+iswspace [label = "iswspace | 000000000000000000000000000000000000000" ]
+___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
+iswspace -> ___runetype_mb 
+rank = same; _CurrentRuneLocale ; ___runetype_mb ;
+wcstoimax [label = "wcstoimax | 000000000000000000000000000000000000000" ]
+iswspace [label = "iswspace | 000000000000000000000000000000000000000" ] 
+wcstoimax -> iswspace 
+wcstoimax [label = "wcstoimax | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+wcstoimax -> __errno 
+wcstoimax [label = "wcstoimax | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+wcstoimax -> __errno 
+rank = same; __errno ; iswspace ; __errno ; __errno ;
+}

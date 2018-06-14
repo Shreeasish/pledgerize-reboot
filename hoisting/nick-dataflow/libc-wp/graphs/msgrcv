@@ -1,0 +1,4 @@
+digraph _libc_msgrcv {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,4 @@
+digraph _libc_srand48_deterministic {
+node [shape = record];
+rankdir = LR;
+}

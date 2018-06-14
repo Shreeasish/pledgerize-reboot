@@ -1,0 +1,4 @@
+digraph __hexdig_init_D2A {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,4 @@
+digraph uuid_dec_be {
+node [shape = record];
+rankdir = LR;
+}

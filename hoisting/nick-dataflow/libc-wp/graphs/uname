@@ -1,0 +1,23 @@
+digraph uname {
+node [shape = record];
+rankdir = LR;
+uname [label = "uname | 000000000000000000000000000000000010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+uname -> sysctl 
+uname [label = "uname | 000000000000000000000000000000000010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+uname -> sysctl 
+uname [label = "uname | 000000000000000000000000000000000010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+uname -> sysctl 
+uname [label = "uname | 000000000000000000000000000000000010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+uname -> sysctl 
+uname [label = "uname | 000000000000000000000000000000000010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+uname -> sysctl 
+uname [label = "uname | 000000000000000000000000000000000010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+uname -> sysctl 
+rank = same; sysctl ; sysctl ; sysctl ; sysctl ; sysctl ; sysctl ;
+}

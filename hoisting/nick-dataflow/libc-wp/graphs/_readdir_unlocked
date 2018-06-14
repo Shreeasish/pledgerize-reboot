@@ -1,0 +1,11 @@
+digraph _readdir_unlocked {
+node [shape = record];
+rankdir = LR;
+_readdir_unlocked [label = "_readdir_unlocked | 000000000000000000000000000000000000010" ]
+getdents [label = "getdents | 000000000000000000000000000000000000010" ] 
+_readdir_unlocked -> getdents 
+_readdir_unlocked [label = "_readdir_unlocked | 000000000000000000000000000000000000010" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_readdir_unlocked -> __errno 
+rank = same; getdents ; __errno ;
+}

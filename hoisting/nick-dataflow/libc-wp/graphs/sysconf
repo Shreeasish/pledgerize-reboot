@@ -1,0 +1,57 @@
+digraph _libc_sysconf {
+node [shape = record];
+rankdir = LR;
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+getrlimit [label = "getrlimit | 000000000000000000000000000000000010000" ] 
+sysconf -> getrlimit 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+sysconf -> __errno 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+getrlimit [label = "getrlimit | 000000000000000000000000000000000010000" ] 
+sysconf -> getrlimit 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+sysconf -> __errno 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+getrlimit [label = "getrlimit | 000000000000000000000000000000000010000" ] 
+sysconf -> getrlimit 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+sysconf -> __errno 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+sysconf -> sysctl 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+sysconf -> __errno 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+socket [label = "socket | 010000000000000000000000000001011000000" ] 
+sysconf -> socket 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+sysconf -> __errno 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+close [label = "close | 000000000000000000000000000000000010000" ] 
+sysconf -> close 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+sysconf -> sysctl 
+getpagesize [label = "getpagesize | 000000000000000000000000000000000010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+getpagesize -> sysctl 
+rank = same; sysctl ;
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+getpagesize [label = "getpagesize | 000000000000000000000000000000000010000" ] 
+sysconf -> getpagesize 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+sysconf -> sysctl 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+sysconf -> __errno 
+sysconf [label = "sysconf | 010000000000000000000000000001011010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+sysconf -> sysctl 
+rank = same; getrlimit ; __errno ; getrlimit ; __errno ; getrlimit ; __errno ; sysctl ; __errno ; socket ; __errno ; close ; sysctl ; getpagesize ; sysctl ; __errno ; sysctl ;
+}

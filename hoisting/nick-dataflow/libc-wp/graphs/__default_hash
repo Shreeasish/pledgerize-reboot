@@ -1,0 +1,4 @@
+digraph __default_hash {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,4 @@
+digraph _libc_pselect {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,4 @@
+digraph __bt_defpfx {
+node [shape = record];
+rankdir = LR;
+}

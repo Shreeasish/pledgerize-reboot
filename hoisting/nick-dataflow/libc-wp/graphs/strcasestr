@@ -1,0 +1,11 @@
+digraph _libc_strcasestr {
+node [shape = record];
+rankdir = LR;
+strcasestr [label = "strcasestr | 000000000000000000000000000000000000000" ]
+strlen [label = "strlen | 000000000000000000000000000000000000000" ] 
+strcasestr -> strlen 
+strcasestr [label = "strcasestr | 000000000000000000000000000000000000000" ]
+strncasecmp [label = "strncasecmp | 000000000000000000000000000000000000000" ] 
+strcasestr -> strncasecmp 
+rank = same; strlen ; strncasecmp ;
+}

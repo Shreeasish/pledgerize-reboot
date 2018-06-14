@@ -1,0 +1,17 @@
+digraph wctrans {
+node [shape = record];
+rankdir = LR;
+wctrans [label = "wctrans | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+wctrans -> _CurrentRuneLocale 
+wctrans [label = "wctrans | 000000000000000000000000000000000000000" ]
+_wctrans_init [label = "_wctrans_init | 000000000000000000000000000000000000000" ] 
+wctrans -> _wctrans_init 
+wctrans [label = "wctrans | 000000000000000000000000000000000000000" ]
+strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
+wctrans -> strcmp 
+wctrans [label = "wctrans | 000000000000000000000000000000000000000" ]
+strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
+wctrans -> strcmp 
+rank = same; _CurrentRuneLocale ; _wctrans_init ; strcmp ; strcmp ;
+}

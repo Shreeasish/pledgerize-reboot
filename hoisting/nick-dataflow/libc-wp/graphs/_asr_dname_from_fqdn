@@ -1,0 +1,8 @@
+digraph _asr_dname_from_fqdn {
+node [shape = record];
+rankdir = LR;
+_asr_dname_from_fqdn [label = "_asr_dname_from_fqdn | 000000000000000000000000000000000000000" ]
+strchr [label = "strchr | 000000000000000000000000000000000000000" ] 
+_asr_dname_from_fqdn -> strchr 
+rank = same; strchr ;
+}

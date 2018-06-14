@@ -1,0 +1,4 @@
+digraph _libc_xdrrec_endofrecord {
+node [shape = record];
+rankdir = LR;
+}

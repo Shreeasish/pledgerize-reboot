@@ -1,0 +1,17 @@
+digraph _libc_tcsetattr {
+node [shape = record];
+rankdir = LR;
+tcsetattr [label = "tcsetattr | 000000000000000000000000000000000010000" ]
+ioctl [label = "ioctl | 000000000000000000000000000000000010000" ] 
+tcsetattr -> ioctl 
+tcsetattr [label = "tcsetattr | 000000000000000000000000000000000010000" ]
+ioctl [label = "ioctl | 000000000000000000000000000000000010000" ] 
+tcsetattr -> ioctl 
+tcsetattr [label = "tcsetattr | 000000000000000000000000000000000010000" ]
+ioctl [label = "ioctl | 000000000000000000000000000000000010000" ] 
+tcsetattr -> ioctl 
+tcsetattr [label = "tcsetattr | 000000000000000000000000000000000010000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+tcsetattr -> __errno 
+rank = same; ioctl ; ioctl ; ioctl ; __errno ;
+}

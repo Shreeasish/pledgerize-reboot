@@ -1,0 +1,4 @@
+digraph xdr_int16_t {
+node [shape = record];
+rankdir = LR;
+}

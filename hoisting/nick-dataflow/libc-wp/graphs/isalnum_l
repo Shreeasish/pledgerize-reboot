@@ -1,0 +1,8 @@
+digraph isalnum_l {
+node [shape = record];
+rankdir = LR;
+isalnum_l [label = "isalnum_l | 000000000000000000000000000000000000000" ]
+isalnum [label = "isalnum | 000000000000000000000000000000000000000" ] 
+isalnum_l -> isalnum 
+rank = same; isalnum ;
+}

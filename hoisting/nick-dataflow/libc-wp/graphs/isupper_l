@@ -1,0 +1,8 @@
+digraph isupper_l {
+node [shape = record];
+rankdir = LR;
+isupper_l [label = "isupper_l | 000000000000000000000000000000000000000" ]
+isupper [label = "isupper | 000000000000000000000000000000000000000" ] 
+isupper_l -> isupper 
+rank = same; isupper ;
+}

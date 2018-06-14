@@ -1,0 +1,4 @@
+digraph _libc_strtok {
+node [shape = record];
+rankdir = LR;
+}

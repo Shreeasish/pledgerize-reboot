@@ -1,0 +1,8 @@
+digraph _asr_strdname {
+node [shape = record];
+rankdir = LR;
+_asr_strdname [label = "_asr_strdname | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+_asr_strdname -> strlcpy 
+rank = same; strlcpy ;
+}

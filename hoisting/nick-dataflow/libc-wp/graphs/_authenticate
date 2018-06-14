@@ -1,0 +1,4 @@
+digraph _authenticate {
+node [shape = record];
+rankdir = LR;
+}

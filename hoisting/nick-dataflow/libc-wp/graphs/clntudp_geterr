@@ -1,0 +1,4 @@
+digraph clntudp_geterr {
+node [shape = record];
+rankdir = LR;
+}

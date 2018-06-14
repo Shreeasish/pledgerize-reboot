@@ -1,0 +1,4 @@
+digraph _libc__rb_set_parent {
+node [shape = record];
+rankdir = LR;
+}

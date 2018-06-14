@@ -1,0 +1,4 @@
+digraph _libc_nanosleep {
+node [shape = record];
+rankdir = LR;
+}

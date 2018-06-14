@@ -1,0 +1,4 @@
+digraph _libc_getrlimit {
+node [shape = record];
+rankdir = LR;
+}

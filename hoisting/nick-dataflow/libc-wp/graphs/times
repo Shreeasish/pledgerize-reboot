@@ -1,0 +1,14 @@
+digraph times {
+node [shape = record];
+rankdir = LR;
+times [label = "times | 000000000000000000000000000000000010000" ]
+getrusage [label = "getrusage | 000000000000000000000000000000000010000" ] 
+times -> getrusage 
+times [label = "times | 000000000000000000000000000000000010000" ]
+getrusage [label = "getrusage | 000000000000000000000000000000000010000" ] 
+times -> getrusage 
+times [label = "times | 000000000000000000000000000000000010000" ]
+clock_gettime [label = "clock_gettime | 000000000000000000000000000000000010000" ] 
+times -> clock_gettime 
+rank = same; getrusage ; getrusage ; clock_gettime ;
+}

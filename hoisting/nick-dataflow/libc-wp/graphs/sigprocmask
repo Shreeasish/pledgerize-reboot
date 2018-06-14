@@ -1,0 +1,4 @@
+digraph _libc_sigprocmask {
+node [shape = record];
+rankdir = LR;
+}

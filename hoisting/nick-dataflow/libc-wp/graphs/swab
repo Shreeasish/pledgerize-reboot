@@ -1,0 +1,4 @@
+digraph swab {
+node [shape = record];
+rankdir = LR;
+}

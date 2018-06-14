@@ -1,0 +1,8 @@
+digraph tcsetpgrp {
+node [shape = record];
+rankdir = LR;
+tcsetpgrp [label = "tcsetpgrp | 000000000000000000000000000000000010000" ]
+ioctl [label = "ioctl | 000000000000000000000000000000000010000" ] 
+tcsetpgrp -> ioctl 
+rank = same; ioctl ;
+}

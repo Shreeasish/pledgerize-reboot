@@ -1,0 +1,8 @@
+digraph compare {
+node [shape = record];
+rankdir = LR;
+compare [label = "compare | 000000000000000000000000000000000000000" ]
+strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
+compare -> strcmp 
+rank = same; strcmp ;
+}

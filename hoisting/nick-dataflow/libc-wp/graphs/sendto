@@ -1,0 +1,4 @@
+digraph _libc_sendto {
+node [shape = record];
+rankdir = LR;
+}

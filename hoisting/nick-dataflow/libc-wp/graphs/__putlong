@@ -1,0 +1,4 @@
+digraph __putlong {
+node [shape = record];
+rankdir = LR;
+}

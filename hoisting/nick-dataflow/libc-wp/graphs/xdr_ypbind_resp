@@ -1,0 +1,25 @@
+digraph _libc_xdr_ypbind_resp {
+node [shape = record];
+rankdir = LR;
+xdr_ypbind_resptype [label = "xdr_ypbind_resptype | 000000000000000000000000000000000000000" ]
+xdr_enum [label = "xdr_enum | 000000000000000000000000000000000000000" ] 
+xdr_ypbind_resptype -> xdr_enum 
+rank = same; xdr_enum ;
+xdr_ypbind_resp [label = "xdr_ypbind_resp | 000000000000000000000000000000000000000" ]
+xdr_ypbind_resptype [label = "xdr_ypbind_resptype | 000000000000000000000000000000000000000" ] 
+xdr_ypbind_resp -> xdr_ypbind_resptype 
+xdr_ypbind_resp [label = "xdr_ypbind_resp | 000000000000000000000000000000000000000" ]
+xdr_u_int [label = "xdr_u_int | 000000000000000000000000000000000000000" ] 
+xdr_ypbind_resp -> xdr_u_int 
+xdr_ypbind_binding [label = "xdr_ypbind_binding | 000000000000000000000000000000000000000" ]
+xdr_opaque [label = "xdr_opaque | 000000000000000000000000000000000000000" ] 
+xdr_ypbind_binding -> xdr_opaque 
+xdr_ypbind_binding [label = "xdr_ypbind_binding | 000000000000000000000000000000000000000" ]
+xdr_opaque [label = "xdr_opaque | 000000000000000000000000000000000000000" ] 
+xdr_ypbind_binding -> xdr_opaque 
+rank = same; xdr_opaque ; xdr_opaque ;
+xdr_ypbind_resp [label = "xdr_ypbind_resp | 000000000000000000000000000000000000000" ]
+xdr_ypbind_binding [label = "xdr_ypbind_binding | 000000000000000000000000000000000000000" ] 
+xdr_ypbind_resp -> xdr_ypbind_binding 
+rank = same; xdr_ypbind_resptype ; xdr_u_int ; xdr_ypbind_binding ;
+}

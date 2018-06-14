@@ -1,0 +1,4 @@
+digraph srandomdev {
+node [shape = record];
+rankdir = LR;
+}

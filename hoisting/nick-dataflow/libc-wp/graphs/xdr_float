@@ -1,0 +1,4 @@
+digraph xdr_float {
+node [shape = record];
+rankdir = LR;
+}

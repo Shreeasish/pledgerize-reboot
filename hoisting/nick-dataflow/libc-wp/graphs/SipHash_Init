@@ -1,0 +1,4 @@
+digraph _libc_SipHash_Init {
+node [shape = record];
+rankdir = LR;
+}

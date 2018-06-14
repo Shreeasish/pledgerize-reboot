@@ -1,0 +1,8 @@
+digraph _libc_strcoll {
+node [shape = record];
+rankdir = LR;
+strcoll [label = "strcoll | 000000000000000000000000000000000000000" ]
+strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
+strcoll -> strcmp 
+rank = same; strcmp ;
+}

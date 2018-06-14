@@ -1,0 +1,4 @@
+digraph _libc_fileno {
+node [shape = record];
+rankdir = LR;
+}

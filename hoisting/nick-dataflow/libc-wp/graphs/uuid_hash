@@ -1,0 +1,4 @@
+digraph uuid_hash {
+node [shape = record];
+rankdir = LR;
+}

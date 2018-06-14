@@ -1,0 +1,24 @@
+digraph _libc_pthread_self {
+node [shape = record];
+rankdir = LR;
+pthread_self [label = "pthread_self | 000000000000000000000000000000000010000" ]
+issetugid [label = "issetugid | 000000000000000000000000000000000010000" ] 
+pthread_self -> issetugid 
+pthread_self [label = "pthread_self | 000000000000000000000000000000000010000" ]
+getenv [label = "getenv | 000000000000000000000000000000000000000" ] 
+pthread_self -> getenv 
+strtol [label = "strtol | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+strtol -> __errno 
+strtol [label = "strtol | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+strtol -> __errno 
+strtol [label = "strtol | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+strtol -> __errno 
+rank = same; __errno ; __errno ; __errno ;
+pthread_self [label = "pthread_self | 000000000000000000000000000000000010000" ]
+strtol [label = "strtol | 000000000000000000000000000000000000000" ] 
+pthread_self -> strtol 
+rank = same; issetugid ; getenv ; strtol ;
+}

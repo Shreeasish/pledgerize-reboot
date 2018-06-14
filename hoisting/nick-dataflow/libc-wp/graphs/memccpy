@@ -1,0 +1,4 @@
+digraph _libc_memccpy {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,14 @@
+digraph tcsendbreak {
+node [shape = record];
+rankdir = LR;
+tcsendbreak [label = "tcsendbreak | 000000000000000000000000000000000010000" ]
+ioctl [label = "ioctl | 000000000000000000000000000000000010000" ] 
+tcsendbreak -> ioctl 
+tcsendbreak [label = "tcsendbreak | 000000000000000000000000000000000010000" ]
+nanosleep [label = "nanosleep | 000000000000000000000000000000000010000" ] 
+tcsendbreak -> nanosleep 
+tcsendbreak [label = "tcsendbreak | 000000000000000000000000000000000010000" ]
+ioctl [label = "ioctl | 000000000000000000000000000000000010000" ] 
+tcsendbreak -> ioctl 
+rank = same; ioctl ; nanosleep ; ioctl ;
+}

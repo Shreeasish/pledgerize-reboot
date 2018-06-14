@@ -1,0 +1,11 @@
+digraph towupper_l {
+node [shape = record];
+rankdir = LR;
+towupper_l [label = "towupper_l | 000000000000000000000000000000000000000" ]
+_wctrans_init [label = "_wctrans_init | 000000000000000000000000000000000000000" ] 
+towupper_l -> _wctrans_init 
+towupper_l [label = "towupper_l | 000000000000000000000000000000000000000" ]
+_towctrans_ext [label = "_towctrans_ext | 000000000000000000000000000000000000000" ] 
+towupper_l -> _towctrans_ext 
+rank = same; _wctrans_init ; _towctrans_ext ;
+}

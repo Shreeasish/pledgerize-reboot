@@ -1,0 +1,4 @@
+digraph inet_makeaddr {
+node [shape = record];
+rankdir = LR;
+}

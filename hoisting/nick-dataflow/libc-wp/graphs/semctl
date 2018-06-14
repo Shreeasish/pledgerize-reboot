@@ -1,0 +1,8 @@
+digraph semctl {
+node [shape = record];
+rankdir = LR;
+semctl [label = "semctl | 000000000000000000000000000000000000000" ]
+__semctl [label = "__semctl | 000000000000000000000000000000000000000" ] 
+semctl -> __semctl 
+rank = same; __semctl ;
+}

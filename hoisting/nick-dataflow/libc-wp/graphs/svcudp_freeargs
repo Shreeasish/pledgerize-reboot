@@ -1,0 +1,4 @@
+digraph svcudp_freeargs {
+node [shape = record];
+rankdir = LR;
+}

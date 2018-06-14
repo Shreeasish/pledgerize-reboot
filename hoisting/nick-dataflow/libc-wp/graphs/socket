@@ -1,0 +1,4 @@
+digraph _libc_socket {
+node [shape = record];
+rankdir = LR;
+}

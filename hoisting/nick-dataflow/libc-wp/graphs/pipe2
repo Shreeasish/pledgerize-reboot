@@ -1,0 +1,4 @@
+digraph _libc_pipe2 {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,36 @@
+digraph _citrus_utf8_ctype_mbsnrtowcs {
+node [shape = record];
+rankdir = LR;
+_citrus_utf8_ctype_mbsnrtowcs [label = "_citrus_utf8_ctype_mbsnrtowcs | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_mbsnrtowcs -> __errno 
+_citrus_utf8_ctype_mbrtowc [label = "_citrus_utf8_ctype_mbrtowc | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_mbrtowc -> __errno 
+_citrus_utf8_ctype_mbrtowc [label = "_citrus_utf8_ctype_mbrtowc | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_mbrtowc -> __errno 
+_citrus_utf8_ctype_mbrtowc [label = "_citrus_utf8_ctype_mbrtowc | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_mbrtowc -> __errno 
+_citrus_utf8_ctype_mbrtowc [label = "_citrus_utf8_ctype_mbrtowc | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_mbrtowc -> __errno 
+_citrus_utf8_ctype_mbrtowc [label = "_citrus_utf8_ctype_mbrtowc | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_mbrtowc -> __errno 
+_citrus_utf8_ctype_mbrtowc [label = "_citrus_utf8_ctype_mbrtowc | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_mbrtowc -> __errno 
+rank = same; __errno ; __errno ; __errno ; __errno ; __errno ; __errno ;
+_citrus_utf8_ctype_mbsnrtowcs [label = "_citrus_utf8_ctype_mbsnrtowcs | 000000000000000000000000000000000000000" ]
+_citrus_utf8_ctype_mbrtowc [label = "_citrus_utf8_ctype_mbrtowc | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_mbsnrtowcs -> _citrus_utf8_ctype_mbrtowc 
+_citrus_utf8_ctype_mbsnrtowcs [label = "_citrus_utf8_ctype_mbsnrtowcs | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_mbsnrtowcs -> __errno 
+_citrus_utf8_ctype_mbsnrtowcs [label = "_citrus_utf8_ctype_mbsnrtowcs | 000000000000000000000000000000000000000" ]
+_citrus_utf8_ctype_mbrtowc [label = "_citrus_utf8_ctype_mbrtowc | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_mbsnrtowcs -> _citrus_utf8_ctype_mbrtowc 
+rank = same; __errno ; _citrus_utf8_ctype_mbrtowc ; __errno ; _citrus_utf8_ctype_mbrtowc ;
+}

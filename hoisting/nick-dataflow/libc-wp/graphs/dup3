@@ -1,0 +1,4 @@
+digraph _libc_dup3 {
+node [shape = record];
+rankdir = LR;
+}

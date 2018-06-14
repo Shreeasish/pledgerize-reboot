@@ -1,0 +1,4 @@
+digraph _libc_ispunct {
+node [shape = record];
+rankdir = LR;
+}

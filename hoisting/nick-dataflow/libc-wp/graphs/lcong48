@@ -1,0 +1,4 @@
+digraph lcong48 {
+node [shape = record];
+rankdir = LR;
+}

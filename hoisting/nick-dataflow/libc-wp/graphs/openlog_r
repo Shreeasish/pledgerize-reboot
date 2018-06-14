@@ -1,0 +1,4 @@
+digraph _libc_openlog_r {
+node [shape = record];
+rankdir = LR;
+}

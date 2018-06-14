@@ -1,0 +1,8 @@
+digraph _libc_truncate {
+node [shape = record];
+rankdir = LR;
+truncate [label = "truncate | 000000000000000000000000000000000000000" ]
+__syscall [label = "__syscall | 000000000000000000000000000000000000000" ] 
+truncate -> __syscall 
+rank = same; __syscall ;
+}

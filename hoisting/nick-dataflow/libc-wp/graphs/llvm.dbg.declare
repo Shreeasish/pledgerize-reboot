@@ -1,0 +1,4 @@
+digraph llvm.dbg.declare {
+node [shape = record];
+rankdir = LR;
+}

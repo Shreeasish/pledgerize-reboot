@@ -1,0 +1,14 @@
+digraph _libc_strtol {
+node [shape = record];
+rankdir = LR;
+strtol [label = "strtol | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+strtol -> __errno 
+strtol [label = "strtol | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+strtol -> __errno 
+strtol [label = "strtol | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+strtol -> __errno 
+rank = same; __errno ; __errno ; __errno ;
+}

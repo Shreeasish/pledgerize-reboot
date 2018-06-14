@@ -1,0 +1,4 @@
+digraph _libc_getgid {
+node [shape = record];
+rankdir = LR;
+}

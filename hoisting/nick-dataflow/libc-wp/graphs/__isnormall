@@ -1,0 +1,4 @@
+digraph __isnormall {
+node [shape = record];
+rankdir = LR;
+}

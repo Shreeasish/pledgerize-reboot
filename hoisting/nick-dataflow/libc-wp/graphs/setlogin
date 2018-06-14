@@ -1,0 +1,4 @@
+digraph _libc_setlogin {
+node [shape = record];
+rankdir = LR;
+}

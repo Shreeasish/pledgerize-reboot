@@ -1,0 +1,11 @@
+digraph wcswcs {
+node [shape = record];
+rankdir = LR;
+wcswcs [label = "wcswcs | 000000000000000000000000000000000000000" ]
+wcslen [label = "wcslen | 000000000000000000000000000000000000000" ] 
+wcswcs -> wcslen 
+wcswcs [label = "wcswcs | 000000000000000000000000000000000000000" ]
+wcslen [label = "wcslen | 000000000000000000000000000000000000000" ] 
+wcswcs -> wcslen 
+rank = same; wcslen ; wcslen ;
+}

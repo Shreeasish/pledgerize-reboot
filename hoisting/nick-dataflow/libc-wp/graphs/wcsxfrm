@@ -1,0 +1,11 @@
+digraph _libc_wcsxfrm {
+node [shape = record];
+rankdir = LR;
+wcsxfrm [label = "wcsxfrm | 000000000000000000000000000000000000000" ]
+wcslen [label = "wcslen | 000000000000000000000000000000000000000" ] 
+wcsxfrm -> wcslen 
+wcsxfrm [label = "wcsxfrm | 000000000000000000000000000000000000000" ]
+wcslcpy [label = "wcslcpy | 000000000000000000000000000000000000000" ] 
+wcsxfrm -> wcslcpy 
+rank = same; wcslen ; wcslcpy ;
+}

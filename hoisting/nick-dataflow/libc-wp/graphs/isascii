@@ -1,0 +1,4 @@
+digraph _libc_isascii {
+node [shape = record];
+rankdir = LR;
+}

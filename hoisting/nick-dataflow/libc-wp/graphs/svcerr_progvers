@@ -1,0 +1,4 @@
+digraph _libc_svcerr_progvers {
+node [shape = record];
+rankdir = LR;
+}

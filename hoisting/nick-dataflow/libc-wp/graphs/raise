@@ -1,0 +1,8 @@
+digraph _libc_raise {
+node [shape = record];
+rankdir = LR;
+raise [label = "raise | 000000000000000000000000000000000000000" ]
+thrkill [label = "thrkill | 000000000000000000000000000000000000000" ] 
+raise -> thrkill 
+rank = same; thrkill ;
+}

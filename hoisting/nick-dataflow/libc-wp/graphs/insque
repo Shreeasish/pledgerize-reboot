@@ -1,0 +1,4 @@
+digraph insque {
+node [shape = record];
+rankdir = LR;
+}

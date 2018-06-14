@@ -1,0 +1,4 @@
+digraph toascii {
+node [shape = record];
+rankdir = LR;
+}

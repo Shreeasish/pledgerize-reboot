@@ -1,0 +1,4 @@
+digraph _libc_icdb_entries {
+node [shape = record];
+rankdir = LR;
+}

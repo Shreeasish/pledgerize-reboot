@@ -1,0 +1,11 @@
+digraph _fillnetent {
+node [shape = record];
+rankdir = LR;
+_fillnetent [label = "_fillnetent | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+_fillnetent -> strlcpy 
+_fillnetent [label = "_fillnetent | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+_fillnetent -> strlcpy 
+rank = same; strlcpy ; strlcpy ;
+}

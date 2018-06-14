@@ -1,0 +1,15 @@
+digraph twalk {
+node [shape = record];
+rankdir = LR;
+trecurse [label = "trecurse | 000000000000000000000000000000000000000" ]
+trecurse [label = "trecurse | 000000000000000000000000000000000000000" ] 
+trecurse -> trecurse 
+trecurse [label = "trecurse | 000000000000000000000000000000000000000" ]
+trecurse [label = "trecurse | 000000000000000000000000000000000000000" ] 
+trecurse -> trecurse 
+rank = same; trecurse ; trecurse ;
+twalk [label = "twalk | 000000000000000000000000000000000000000" ]
+trecurse [label = "trecurse | 000000000000000000000000000000000000000" ] 
+twalk -> trecurse 
+rank = same; trecurse ;
+}

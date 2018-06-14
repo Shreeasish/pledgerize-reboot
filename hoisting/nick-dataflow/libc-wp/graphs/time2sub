@@ -1,0 +1,4 @@
+digraph time2sub {
+node [shape = record];
+rankdir = LR;
+}

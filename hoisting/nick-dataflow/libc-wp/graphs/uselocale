@@ -1,0 +1,8 @@
+digraph uselocale {
+node [shape = record];
+rankdir = LR;
+uselocale [label = "uselocale | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+uselocale -> __errno 
+rank = same; __errno ;
+}

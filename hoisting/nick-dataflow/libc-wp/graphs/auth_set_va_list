@@ -1,0 +1,4 @@
+digraph _libc_auth_set_va_list {
+node [shape = record];
+rankdir = LR;
+}

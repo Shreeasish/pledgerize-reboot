@@ -1,0 +1,4 @@
+digraph _libc_isgraph {
+node [shape = record];
+rankdir = LR;
+}

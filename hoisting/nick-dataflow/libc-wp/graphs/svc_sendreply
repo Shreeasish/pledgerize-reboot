@@ -1,0 +1,4 @@
+digraph _libc_svc_sendreply {
+node [shape = record];
+rankdir = LR;
+}

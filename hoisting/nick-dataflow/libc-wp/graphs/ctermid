@@ -1,0 +1,8 @@
+digraph _libc_ctermid {
+node [shape = record];
+rankdir = LR;
+ctermid [label = "ctermid | 000000000000000000000000000000000000000" ]
+bcopy [label = "bcopy | 000000000000000000000000000000000000000" ] 
+ctermid -> bcopy 
+rank = same; bcopy ;
+}

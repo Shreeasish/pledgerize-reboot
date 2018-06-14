@@ -1,0 +1,4 @@
+digraph transtime {
+node [shape = record];
+rankdir = LR;
+}

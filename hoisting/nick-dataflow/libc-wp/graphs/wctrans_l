@@ -1,0 +1,14 @@
+digraph wctrans_l {
+node [shape = record];
+rankdir = LR;
+wctrans_l [label = "wctrans_l | 000000000000000000000000000000000000000" ]
+_wctrans_init [label = "_wctrans_init | 000000000000000000000000000000000000000" ] 
+wctrans_l -> _wctrans_init 
+wctrans_l [label = "wctrans_l | 000000000000000000000000000000000000000" ]
+strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
+wctrans_l -> strcmp 
+wctrans_l [label = "wctrans_l | 000000000000000000000000000000000000000" ]
+strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
+wctrans_l -> strcmp 
+rank = same; _wctrans_init ; strcmp ; strcmp ;
+}

@@ -1,0 +1,8 @@
+digraph tcgetsid {
+node [shape = record];
+rankdir = LR;
+tcgetsid [label = "tcgetsid | 000000000000000000000000000000000010000" ]
+ioctl [label = "ioctl | 000000000000000000000000000000000010000" ] 
+tcgetsid -> ioctl 
+rank = same; ioctl ;
+}

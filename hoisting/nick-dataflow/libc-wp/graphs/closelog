@@ -1,0 +1,8 @@
+digraph closelog {
+node [shape = record];
+rankdir = LR;
+closelog [label = "closelog | 000000000000000000000000000000000000000" ]
+closelog_r [label = "closelog_r | 000000000000000000000000000000000000000" ] 
+closelog -> closelog_r 
+rank = same; closelog_r ;
+}

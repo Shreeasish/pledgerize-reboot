@@ -1,0 +1,8 @@
+digraph svctcp_stat {
+node [shape = record];
+rankdir = LR;
+svctcp_stat [label = "svctcp_stat | 000000000000000000000000000000000000000" ]
+xdrrec_eof [label = "xdrrec_eof | 000000000000000000000000000000000000000" ] 
+svctcp_stat -> xdrrec_eof 
+rank = same; xdrrec_eof ;
+}

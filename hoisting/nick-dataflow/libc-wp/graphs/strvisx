@@ -1,0 +1,11 @@
+digraph strvisx {
+node [shape = record];
+rankdir = LR;
+strvisx [label = "strvisx | 000000000000000000000000000000000000000" ]
+vis [label = "vis | 000000000000000000000000000000000000000" ] 
+strvisx -> vis 
+strvisx [label = "strvisx | 000000000000000000000000000000000000000" ]
+vis [label = "vis | 000000000000000000000000000000000000000" ] 
+strvisx -> vis 
+rank = same; vis ; vis ;
+}

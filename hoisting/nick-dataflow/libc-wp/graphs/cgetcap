@@ -1,0 +1,4 @@
+digraph _libc_cgetcap {
+node [shape = record];
+rankdir = LR;
+}

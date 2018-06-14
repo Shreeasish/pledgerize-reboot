@@ -1,0 +1,4 @@
+digraph xdrmem_getbytes {
+node [shape = record];
+rankdir = LR;
+}

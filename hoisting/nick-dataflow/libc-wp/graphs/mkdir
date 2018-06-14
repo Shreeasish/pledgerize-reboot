@@ -1,0 +1,4 @@
+digraph _libc_mkdir {
+node [shape = record];
+rankdir = LR;
+}

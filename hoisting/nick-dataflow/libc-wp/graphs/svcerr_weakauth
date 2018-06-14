@@ -1,0 +1,4 @@
+digraph svcerr_weakauth {
+node [shape = record];
+rankdir = LR;
+}

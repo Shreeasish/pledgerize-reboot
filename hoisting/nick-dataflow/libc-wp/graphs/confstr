@@ -1,0 +1,20 @@
+digraph confstr {
+node [shape = record];
+rankdir = LR;
+confstr [label = "confstr | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+confstr -> strlcpy 
+confstr [label = "confstr | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+confstr -> strlcpy 
+confstr [label = "confstr | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+confstr -> strlcpy 
+confstr [label = "confstr | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+confstr -> strlcpy 
+confstr [label = "confstr | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+confstr -> __errno 
+rank = same; strlcpy ; strlcpy ; strlcpy ; strlcpy ; __errno ;
+}

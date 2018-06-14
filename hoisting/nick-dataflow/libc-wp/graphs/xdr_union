@@ -1,0 +1,4 @@
+digraph _libc_xdr_union {
+node [shape = record];
+rankdir = LR;
+}

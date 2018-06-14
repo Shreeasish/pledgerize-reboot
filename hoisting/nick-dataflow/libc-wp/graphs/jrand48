@@ -1,0 +1,8 @@
+digraph jrand48 {
+node [shape = record];
+rankdir = LR;
+jrand48 [label = "jrand48 | 000000000000000000000000000000000000000" ]
+__dorand48 [label = "__dorand48 | 000000000000000000000000000000000000000" ] 
+jrand48 -> __dorand48 
+rank = same; __dorand48 ;
+}

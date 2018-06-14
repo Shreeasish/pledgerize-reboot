@@ -1,0 +1,4 @@
+digraph _libc_iscntrl {
+node [shape = record];
+rankdir = LR;
+}

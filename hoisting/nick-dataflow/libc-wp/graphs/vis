@@ -1,0 +1,4 @@
+digraph _libc_vis {
+node [shape = record];
+rankdir = LR;
+}

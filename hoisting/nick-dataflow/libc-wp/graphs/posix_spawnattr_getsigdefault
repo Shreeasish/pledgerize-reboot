@@ -1,0 +1,4 @@
+digraph posix_spawnattr_getsigdefault {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,4 @@
+digraph inet6_opt_get_val {
+node [shape = record];
+rankdir = LR;
+}

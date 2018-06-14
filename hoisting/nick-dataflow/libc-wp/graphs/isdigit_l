@@ -1,0 +1,8 @@
+digraph isdigit_l {
+node [shape = record];
+rankdir = LR;
+isdigit_l [label = "isdigit_l | 000000000000000000000000000000000000000" ]
+isdigit [label = "isdigit | 000000000000000000000000000000000000000" ] 
+isdigit_l -> isdigit 
+rank = same; isdigit ;
+}

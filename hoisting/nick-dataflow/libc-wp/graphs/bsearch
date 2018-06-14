@@ -1,0 +1,4 @@
+digraph bsearch {
+node [shape = record];
+rankdir = LR;
+}

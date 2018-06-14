@@ -1,0 +1,8 @@
+digraph _libc_fts_set {
+node [shape = record];
+rankdir = LR;
+fts_set [label = "fts_set | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+fts_set -> __errno 
+rank = same; __errno ;
+}

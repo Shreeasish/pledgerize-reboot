@@ -1,0 +1,4 @@
+digraph _libc_getpriority {
+node [shape = record];
+rankdir = LR;
+}

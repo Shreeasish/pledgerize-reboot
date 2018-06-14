@@ -1,0 +1,8 @@
+digraph setprogname {
+node [shape = record];
+rankdir = LR;
+setprogname [label = "setprogname | 000000000000000000000000000000000000000" ]
+strrchr [label = "strrchr | 000000000000000000000000000000000000000" ] 
+setprogname -> strrchr 
+rank = same; strrchr ;
+}

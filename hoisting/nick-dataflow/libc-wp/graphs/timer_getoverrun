@@ -1,0 +1,8 @@
+digraph timer_getoverrun {
+node [shape = record];
+rankdir = LR;
+timer_getoverrun [label = "timer_getoverrun | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+timer_getoverrun -> __errno 
+rank = same; __errno ;
+}

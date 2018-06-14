@@ -1,0 +1,4 @@
+digraph _libc_sigemptyset {
+node [shape = record];
+rankdir = LR;
+}

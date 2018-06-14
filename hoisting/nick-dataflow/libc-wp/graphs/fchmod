@@ -1,0 +1,4 @@
+digraph _libc_fchmod {
+node [shape = record];
+rankdir = LR;
+}

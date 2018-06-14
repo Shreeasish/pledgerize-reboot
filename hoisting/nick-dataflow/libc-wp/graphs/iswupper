@@ -1,0 +1,11 @@
+digraph _libc_iswupper {
+node [shape = record];
+rankdir = LR;
+iswupper [label = "iswupper | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+iswupper -> _CurrentRuneLocale 
+iswupper [label = "iswupper | 000000000000000000000000000000000000000" ]
+___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
+iswupper -> ___runetype_mb 
+rank = same; _CurrentRuneLocale ; ___runetype_mb ;
+}

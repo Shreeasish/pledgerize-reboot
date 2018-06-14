@@ -1,0 +1,4 @@
+digraph _libc_recvfrom {
+node [shape = record];
+rankdir = LR;
+}

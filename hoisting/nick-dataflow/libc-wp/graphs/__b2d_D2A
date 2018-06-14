@@ -1,0 +1,4 @@
+digraph __b2d_D2A {
+node [shape = record];
+rankdir = LR;
+}

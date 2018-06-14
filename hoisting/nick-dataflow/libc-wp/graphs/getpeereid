@@ -1,0 +1,8 @@
+digraph getpeereid {
+node [shape = record];
+rankdir = LR;
+getpeereid [label = "getpeereid | 000000000000000000000000000000000010000" ]
+getsockopt [label = "getsockopt | 000000000000000000000000000000000010000" ] 
+getpeereid -> getsockopt 
+rank = same; getsockopt ;
+}

@@ -1,0 +1,4 @@
+digraph _libc___errno {
+node [shape = record];
+rankdir = LR;
+}

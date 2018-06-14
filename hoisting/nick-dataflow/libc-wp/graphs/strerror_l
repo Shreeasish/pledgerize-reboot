@@ -1,0 +1,18 @@
+digraph strerror_l {
+node [shape = record];
+rankdir = LR;
+strerror_r [label = "strerror_r | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+strerror_r -> strlcpy 
+strerror_r [label = "strerror_r | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+strerror_r -> strlcpy 
+strerror_r [label = "strerror_r | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+strerror_r -> __errno 
+rank = same; strlcpy ; strlcpy ; __errno ;
+strerror_l [label = "strerror_l | 000000000000000000000000000000000000000" ]
+strerror_r [label = "strerror_r | 000000000000000000000000000000000000000" ] 
+strerror_l -> strerror_r 
+rank = same; strerror_r ;
+}

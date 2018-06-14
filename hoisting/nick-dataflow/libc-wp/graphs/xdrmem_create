@@ -1,0 +1,4 @@
+digraph _libc_xdrmem_create {
+node [shape = record];
+rankdir = LR;
+}

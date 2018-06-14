@@ -1,0 +1,8 @@
+digraph timer_gettime {
+node [shape = record];
+rankdir = LR;
+timer_gettime [label = "timer_gettime | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+timer_gettime -> __errno 
+rank = same; __errno ;
+}

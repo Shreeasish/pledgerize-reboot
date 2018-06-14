@@ -1,0 +1,4 @@
+digraph inet6_rth_reverse {
+node [shape = record];
+rankdir = LR;
+}

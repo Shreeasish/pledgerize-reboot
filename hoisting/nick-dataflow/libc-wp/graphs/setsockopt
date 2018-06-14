@@ -1,0 +1,4 @@
+digraph _libc_setsockopt {
+node [shape = record];
+rankdir = LR;
+}

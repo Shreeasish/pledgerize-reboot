@@ -1,0 +1,4 @@
+digraph _libc_sendsyslog {
+node [shape = record];
+rankdir = LR;
+}

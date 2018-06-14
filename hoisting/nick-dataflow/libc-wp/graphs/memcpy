@@ -1,0 +1,50 @@
+digraph memcpy {
+node [shape = record];
+rankdir = LR;
+memcpy [label = "memcpy | 000000000000000000000000000000000010000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+memcpy -> strlcpy 
+strlcat [label = "strlcat | 000000000000000000000000000000000000000" ]
+strlen [label = "strlen | 000000000000000000000000000000000000000" ] 
+strlcat -> strlen 
+rank = same; strlen ;
+memcpy [label = "memcpy | 000000000000000000000000000000000010000" ]
+strlcat [label = "strlcat | 000000000000000000000000000000000000000" ] 
+memcpy -> strlcat 
+memcpy [label = "memcpy | 000000000000000000000000000000000010000" ]
+strlcat [label = "strlcat | 000000000000000000000000000000000000000" ] 
+memcpy -> strlcat 
+memcpy [label = "memcpy | 000000000000000000000000000000000010000" ]
+strlen [label = "strlen | 000000000000000000000000000000000000000" ] 
+memcpy -> strlen 
+memcpy [label = "memcpy | 000000000000000000000000000000000010000" ]
+sendsyslog [label = "sendsyslog | 000000000000000000000000000000000000000" ] 
+memcpy -> sendsyslog 
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+sigprocmask [label = "sigprocmask | 000000000000000000000000000000000010000" ] 
+abort -> sigprocmask 
+raise [label = "raise | 000000000000000000000000000000000000000" ]
+thrkill [label = "thrkill | 000000000000000000000000000000000000000" ] 
+raise -> thrkill 
+rank = same; thrkill ;
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+raise [label = "raise | 000000000000000000000000000000000000000" ] 
+abort -> raise 
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+sigaction [label = "sigaction | 000000000000000000000000000000000010000" ] 
+abort -> sigaction 
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+sigprocmask [label = "sigprocmask | 000000000000000000000000000000000010000" ] 
+abort -> sigprocmask 
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+raise [label = "raise | 000000000000000000000000000000000000000" ] 
+abort -> raise 
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+_exit [label = "_exit | 000000000000000000000000000000000000000" ] 
+abort -> _exit 
+rank = same; sigprocmask ; raise ; sigaction ; sigprocmask ; raise ; _exit ;
+memcpy [label = "memcpy | 000000000000000000000000000000000010000" ]
+abort [label = "abort | 000000000000000000000000000000000010000" ] 
+memcpy -> abort 
+rank = same; strlcpy ; strlcat ; strlcat ; strlen ; sendsyslog ; abort ;
+}

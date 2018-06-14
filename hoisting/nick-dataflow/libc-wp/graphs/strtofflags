@@ -1,0 +1,17 @@
+digraph strtofflags {
+node [shape = record];
+rankdir = LR;
+strtofflags [label = "strtofflags | 000000000000000000000000000000000000000" ]
+strsep [label = "strsep | 000000000000000000000000000000000000000" ] 
+strtofflags -> strsep 
+strtofflags [label = "strtofflags | 000000000000000000000000000000000000000" ]
+strsep [label = "strsep | 000000000000000000000000000000000000000" ] 
+strtofflags -> strsep 
+strtofflags [label = "strtofflags | 000000000000000000000000000000000000000" ]
+strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
+strtofflags -> strcmp 
+strtofflags [label = "strtofflags | 000000000000000000000000000000000000000" ]
+strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
+strtofflags -> strcmp 
+rank = same; strsep ; strsep ; strcmp ; strcmp ;
+}

@@ -1,0 +1,11 @@
+digraph tcflush {
+node [shape = record];
+rankdir = LR;
+tcflush [label = "tcflush | 000000000000000000000000000000000010000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+tcflush -> __errno 
+tcflush [label = "tcflush | 000000000000000000000000000000000010000" ]
+ioctl [label = "ioctl | 000000000000000000000000000000000010000" ] 
+tcflush -> ioctl 
+rank = same; __errno ; ioctl ;
+}

@@ -1,0 +1,21 @@
+digraph _libc_wcstoull {
+node [shape = record];
+rankdir = LR;
+wcstoull [label = "wcstoull | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+wcstoull -> __errno 
+iswspace [label = "iswspace | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+iswspace -> _CurrentRuneLocale 
+iswspace [label = "iswspace | 000000000000000000000000000000000000000" ]
+___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
+iswspace -> ___runetype_mb 
+rank = same; _CurrentRuneLocale ; ___runetype_mb ;
+wcstoull [label = "wcstoull | 000000000000000000000000000000000000000" ]
+iswspace [label = "iswspace | 000000000000000000000000000000000000000" ] 
+wcstoull -> iswspace 
+wcstoull [label = "wcstoull | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+wcstoull -> __errno 
+rank = same; __errno ; iswspace ; __errno ;
+}

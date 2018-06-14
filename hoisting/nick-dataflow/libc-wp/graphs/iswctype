@@ -1,0 +1,11 @@
+digraph iswctype {
+node [shape = record];
+rankdir = LR;
+iswctype [label = "iswctype | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+iswctype -> _CurrentRuneLocale 
+iswctype [label = "iswctype | 000000000000000000000000000000000000000" ]
+___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
+iswctype -> ___runetype_mb 
+rank = same; _CurrentRuneLocale ; ___runetype_mb ;
+}

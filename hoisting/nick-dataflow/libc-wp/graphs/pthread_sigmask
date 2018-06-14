@@ -1,0 +1,15 @@
+digraph pthread_sigmask {
+node [shape = record];
+rankdir = LR;
+sigprocmask [label = "sigprocmask | 000000000000000000000000000000000010000" ]
+sigprocmask [label = "sigprocmask | 000000000000000000000000000000000010000" ] 
+sigprocmask -> sigprocmask 
+rank = same; sigprocmask ;
+pthread_sigmask [label = "pthread_sigmask | 000000000000000000000000000000000010000" ]
+sigprocmask [label = "sigprocmask | 000000000000000000000000000000000010000" ] 
+pthread_sigmask -> sigprocmask 
+pthread_sigmask [label = "pthread_sigmask | 000000000000000000000000000000000010000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+pthread_sigmask -> __errno 
+rank = same; sigprocmask ; __errno ;
+}

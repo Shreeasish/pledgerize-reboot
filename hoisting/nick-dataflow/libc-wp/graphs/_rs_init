@@ -1,0 +1,44 @@
+digraph _rs_init {
+node [shape = record];
+rankdir = LR;
+mmap [label = "mmap | 000000000000000000000000000000000010000" ]
+__syscall [label = "__syscall | 000000000000000000000000000000000000000" ] 
+mmap -> __syscall 
+rank = same; __syscall ;
+_rs_init [label = "_rs_init | 000000000000000000000000000000000010000" ]
+mmap [label = "mmap | 000000000000000000000000000000000010000" ] 
+_rs_init -> mmap 
+_rs_init [label = "_rs_init | 000000000000000000000000000000000010000" ]
+minherit [label = "minherit | 000000000000000000000000000000000010000" ] 
+_rs_init -> minherit 
+_rs_init [label = "_rs_init | 000000000000000000000000000000000010000" ]
+munmap [label = "munmap | 000000000000000000000000000000000010000" ] 
+_rs_init -> munmap 
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+sigprocmask [label = "sigprocmask | 000000000000000000000000000000000010000" ] 
+abort -> sigprocmask 
+raise [label = "raise | 000000000000000000000000000000000000000" ]
+thrkill [label = "thrkill | 000000000000000000000000000000000000000" ] 
+raise -> thrkill 
+rank = same; thrkill ;
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+raise [label = "raise | 000000000000000000000000000000000000000" ] 
+abort -> raise 
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+sigaction [label = "sigaction | 000000000000000000000000000000000010000" ] 
+abort -> sigaction 
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+sigprocmask [label = "sigprocmask | 000000000000000000000000000000000010000" ] 
+abort -> sigprocmask 
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+raise [label = "raise | 000000000000000000000000000000000000000" ] 
+abort -> raise 
+abort [label = "abort | 000000000000000000000000000000000010000" ]
+_exit [label = "_exit | 000000000000000000000000000000000000000" ] 
+abort -> _exit 
+rank = same; sigprocmask ; raise ; sigaction ; sigprocmask ; raise ; _exit ;
+_rs_init [label = "_rs_init | 000000000000000000000000000000000010000" ]
+abort [label = "abort | 000000000000000000000000000000000010000" ] 
+_rs_init -> abort 
+rank = same; mmap ; minherit ; munmap ; abort ;
+}

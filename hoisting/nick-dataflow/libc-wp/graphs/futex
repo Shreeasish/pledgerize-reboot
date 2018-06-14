@@ -1,0 +1,4 @@
+digraph _libc_futex {
+node [shape = record];
+rankdir = LR;
+}

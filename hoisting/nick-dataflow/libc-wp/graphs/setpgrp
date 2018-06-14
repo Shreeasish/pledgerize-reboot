@@ -1,0 +1,8 @@
+digraph setpgrp {
+node [shape = record];
+rankdir = LR;
+setpgrp [label = "setpgrp | 000000000000000000000000010000000000000" ]
+setpgid [label = "setpgid | 000000000000000000000000010000000000000" ] 
+setpgrp -> setpgid 
+rank = same; setpgid ;
+}

@@ -1,0 +1,21 @@
+digraph svctcp_reply {
+node [shape = record];
+rankdir = LR;
+xdr_replymsg [label = "xdr_replymsg | 000000000000000000000000000000000000000" ]
+xdr_u_int32_t [label = "xdr_u_int32_t | 000000000000000000000000000000000000000" ] 
+xdr_replymsg -> xdr_u_int32_t 
+xdr_replymsg [label = "xdr_replymsg | 000000000000000000000000000000000000000" ]
+xdr_enum [label = "xdr_enum | 000000000000000000000000000000000000000" ] 
+xdr_replymsg -> xdr_enum 
+xdr_replymsg [label = "xdr_replymsg | 000000000000000000000000000000000000000" ]
+xdr_union [label = "xdr_union | 000000000000000000000000000000000000000" ] 
+xdr_replymsg -> xdr_union 
+rank = same; xdr_u_int32_t ; xdr_enum ; xdr_union ;
+svctcp_reply [label = "svctcp_reply | 000000000000000000000000000000000000000" ]
+xdr_replymsg [label = "xdr_replymsg | 000000000000000000000000000000000000000" ] 
+svctcp_reply -> xdr_replymsg 
+svctcp_reply [label = "svctcp_reply | 000000000000000000000000000000000000000" ]
+xdrrec_endofrecord [label = "xdrrec_endofrecord | 000000000000000000000000000000000000000" ] 
+svctcp_reply -> xdrrec_endofrecord 
+rank = same; xdr_replymsg ; xdrrec_endofrecord ;
+}

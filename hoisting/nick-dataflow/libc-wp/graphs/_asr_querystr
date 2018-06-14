@@ -1,0 +1,4 @@
+digraph _asr_querystr {
+node [shape = record];
+rankdir = LR;
+}

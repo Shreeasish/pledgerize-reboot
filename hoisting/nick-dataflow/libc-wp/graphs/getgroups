@@ -1,0 +1,4 @@
+digraph _libc_getgroups {
+node [shape = record];
+rankdir = LR;
+}

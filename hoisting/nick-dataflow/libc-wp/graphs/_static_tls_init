@@ -1,0 +1,4 @@
+digraph _static_tls_init {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,4 @@
+digraph _libc_wait4 {
+node [shape = record];
+rankdir = LR;
+}

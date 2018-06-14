@@ -1,0 +1,4 @@
+digraph _libc_tolower {
+node [shape = record];
+rankdir = LR;
+}

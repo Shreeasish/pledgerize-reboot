@@ -1,0 +1,11 @@
+digraph _libc_wcsstr {
+node [shape = record];
+rankdir = LR;
+wcsstr [label = "wcsstr | 000000000000000000000000000000000000000" ]
+wcslen [label = "wcslen | 000000000000000000000000000000000000000" ] 
+wcsstr -> wcslen 
+wcsstr [label = "wcsstr | 000000000000000000000000000000000000000" ]
+wcslen [label = "wcslen | 000000000000000000000000000000000000000" ] 
+wcsstr -> wcslen 
+rank = same; wcslen ; wcslen ;
+}

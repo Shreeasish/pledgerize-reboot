@@ -1,0 +1,4 @@
+digraph _libc_strlen {
+node [shape = record];
+rankdir = LR;
+}

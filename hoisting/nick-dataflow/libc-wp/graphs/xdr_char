@@ -1,0 +1,4 @@
+digraph xdr_char {
+node [shape = record];
+rankdir = LR;
+}

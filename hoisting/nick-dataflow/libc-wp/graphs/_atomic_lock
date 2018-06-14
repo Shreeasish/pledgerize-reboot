@@ -1,0 +1,4 @@
+digraph _atomic_lock {
+node [shape = record];
+rankdir = LR;
+}

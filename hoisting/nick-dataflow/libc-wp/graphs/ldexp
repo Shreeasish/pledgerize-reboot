@@ -1,0 +1,4 @@
+digraph _libc_ldexp {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,11 @@
+digraph _libc_auth_clrenv {
+node [shape = record];
+rankdir = LR;
+auth_clrenv [label = "auth_clrenv | 000000000000000000000000000000000000000" ]
+strncasecmp [label = "strncasecmp | 000000000000000000000000000000000000000" ] 
+auth_clrenv -> strncasecmp 
+auth_clrenv [label = "auth_clrenv | 000000000000000000000000000000000000000" ]
+strncasecmp [label = "strncasecmp | 000000000000000000000000000000000000000" ] 
+auth_clrenv -> strncasecmp 
+rank = same; strncasecmp ; strncasecmp ;
+}

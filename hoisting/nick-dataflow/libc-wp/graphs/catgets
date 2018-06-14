@@ -1,0 +1,8 @@
+digraph _libc_catgets {
+node [shape = record];
+rankdir = LR;
+catgets [label = "catgets | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+catgets -> __errno 
+rank = same; __errno ;
+}

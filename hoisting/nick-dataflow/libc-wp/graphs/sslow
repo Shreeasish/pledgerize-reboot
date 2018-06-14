@@ -1,0 +1,17 @@
+digraph sslow {
+node [shape = record];
+rankdir = LR;
+sslow [label = "sslow | 000000000000000000000000000000000000000" ]
+sstep [label = "sstep | 000000000000000000000000000000000000000" ] 
+sslow -> sstep 
+sslow [label = "sslow | 000000000000000000000000000000000000000" ]
+sstep [label = "sstep | 000000000000000000000000000000000000000" ] 
+sslow -> sstep 
+sslow [label = "sslow | 000000000000000000000000000000000000000" ]
+sstep [label = "sstep | 000000000000000000000000000000000000000" ] 
+sslow -> sstep 
+sslow [label = "sslow | 000000000000000000000000000000000000000" ]
+sstep [label = "sstep | 000000000000000000000000000000000000000" ] 
+sslow -> sstep 
+rank = same; sstep ; sstep ; sstep ; sstep ;
+}

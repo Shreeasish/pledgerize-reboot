@@ -1,0 +1,4 @@
+digraph pthread_condattr_getclock {
+node [shape = record];
+rankdir = LR;
+}

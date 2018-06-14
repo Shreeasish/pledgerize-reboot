@@ -1,0 +1,4 @@
+digraph freelocale {
+node [shape = record];
+rankdir = LR;
+}

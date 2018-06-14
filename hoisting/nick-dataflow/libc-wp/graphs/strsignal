@@ -1,0 +1,15 @@
+digraph _libc_strsignal {
+node [shape = record];
+rankdir = LR;
+__strsignal [label = "__strsignal | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+__strsignal -> strlcpy 
+__strsignal [label = "__strsignal | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+__strsignal -> strlcpy 
+rank = same; strlcpy ; strlcpy ;
+strsignal [label = "strsignal | 000000000000000000000000000000000000000" ]
+__strsignal [label = "__strsignal | 000000000000000000000000000000000000000" ] 
+strsignal -> __strsignal 
+rank = same; __strsignal ;
+}

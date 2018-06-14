@@ -1,0 +1,4 @@
+digraph _libc_select {
+node [shape = record];
+rankdir = LR;
+}

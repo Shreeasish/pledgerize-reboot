@@ -1,0 +1,4 @@
+digraph eofread {
+node [shape = record];
+rankdir = LR;
+}

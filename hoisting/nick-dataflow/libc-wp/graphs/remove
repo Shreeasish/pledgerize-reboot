@@ -1,0 +1,14 @@
+digraph _libc_remove {
+node [shape = record];
+rankdir = LR;
+remove [label = "remove | 000000000000000000000000000000000101110" ]
+lstat [label = "lstat | 000000000000000000000000000000000100110" ] 
+remove -> lstat 
+remove [label = "remove | 000000000000000000000000000000000101110" ]
+rmdir [label = "rmdir | 000000000000000000000000000000000001000" ] 
+remove -> rmdir 
+remove [label = "remove | 000000000000000000000000000000000101110" ]
+unlink [label = "unlink | 000000000000000000000000000000000101000" ] 
+remove -> unlink 
+rank = same; lstat ; rmdir ; unlink ;
+}

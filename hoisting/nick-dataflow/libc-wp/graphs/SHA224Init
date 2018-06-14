@@ -1,0 +1,4 @@
+digraph _libc_SHA224Init {
+node [shape = record];
+rankdir = LR;
+}

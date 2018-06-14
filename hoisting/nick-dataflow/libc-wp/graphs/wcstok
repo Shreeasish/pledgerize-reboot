@@ -1,0 +1,4 @@
+digraph wcstok {
+node [shape = record];
+rankdir = LR;
+}

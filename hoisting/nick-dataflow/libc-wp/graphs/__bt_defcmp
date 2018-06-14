@@ -1,0 +1,4 @@
+digraph __bt_defcmp {
+node [shape = record];
+rankdir = LR;
+}

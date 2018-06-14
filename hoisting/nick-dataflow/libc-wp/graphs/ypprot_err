@@ -1,0 +1,4 @@
+digraph _libc_ypprot_err {
+node [shape = record];
+rankdir = LR;
+}

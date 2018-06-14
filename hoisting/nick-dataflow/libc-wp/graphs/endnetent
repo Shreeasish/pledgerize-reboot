@@ -1,0 +1,4 @@
+digraph endnetent {
+node [shape = record];
+rankdir = LR;
+}

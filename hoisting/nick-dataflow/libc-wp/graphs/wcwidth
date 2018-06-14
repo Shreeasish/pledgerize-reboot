@@ -1,0 +1,17 @@
+digraph _libc_wcwidth {
+node [shape = record];
+rankdir = LR;
+wcwidth [label = "wcwidth | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+wcwidth -> _CurrentRuneLocale 
+wcwidth [label = "wcwidth | 000000000000000000000000000000000000000" ]
+___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
+wcwidth -> ___runetype_mb 
+wcwidth [label = "wcwidth | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+wcwidth -> _CurrentRuneLocale 
+wcwidth [label = "wcwidth | 000000000000000000000000000000000000000" ]
+___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
+wcwidth -> ___runetype_mb 
+rank = same; _CurrentRuneLocale ; ___runetype_mb ; _CurrentRuneLocale ; ___runetype_mb ;
+}

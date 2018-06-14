@@ -1,0 +1,11 @@
+digraph _libc_strtoumax {
+node [shape = record];
+rankdir = LR;
+strtoumax [label = "strtoumax | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+strtoumax -> __errno 
+strtoumax [label = "strtoumax | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+strtoumax -> __errno 
+rank = same; __errno ; __errno ;
+}

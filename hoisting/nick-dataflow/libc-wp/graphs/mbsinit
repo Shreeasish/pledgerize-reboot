@@ -1,0 +1,15 @@
+digraph _libc_mbsinit {
+node [shape = record];
+rankdir = LR;
+__mb_cur_max [label = "__mb_cur_max | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+__mb_cur_max -> _CurrentRuneLocale 
+rank = same; _CurrentRuneLocale ;
+mbsinit [label = "mbsinit | 000000000000000000000000000000000000000" ]
+__mb_cur_max [label = "__mb_cur_max | 000000000000000000000000000000000000000" ] 
+mbsinit -> __mb_cur_max 
+mbsinit [label = "mbsinit | 000000000000000000000000000000000000000" ]
+_citrus_utf8_ctype_mbsinit [label = "_citrus_utf8_ctype_mbsinit | 000000000000000000000000000000000000000" ] 
+mbsinit -> _citrus_utf8_ctype_mbsinit 
+rank = same; __mb_cur_max ; _citrus_utf8_ctype_mbsinit ;
+}

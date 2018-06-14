@@ -1,0 +1,4 @@
+digraph _libc_icdb_get {
+node [shape = record];
+rankdir = LR;
+}

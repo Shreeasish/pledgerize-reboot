@@ -1,0 +1,4 @@
+digraph _libc_bcopy {
+node [shape = record];
+rankdir = LR;
+}

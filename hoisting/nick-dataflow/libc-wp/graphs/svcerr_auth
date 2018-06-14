@@ -1,0 +1,4 @@
+digraph _libc_svcerr_auth {
+node [shape = record];
+rankdir = LR;
+}

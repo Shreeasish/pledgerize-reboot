@@ -13,6 +13,9 @@
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/IR/GlobalValue.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/Support/FileSystem.h"
+
+#include "fcntl.h"
 
 #include <vector>
 #include <bitset>
@@ -91,12 +94,11 @@ main(int argc, char** argv) {
     return -1;
   }
 
-  static auto printBitset = [](std::bitset<COUNT> bitv){
-    llvm::outs() << bitv.to_ulong() << ", ";
-    for(int i = 38; i>=0; i--){
-      llvm::outs() << bitv[i];
+  static auto printBitset = [](std::bitset<COUNT> bitv, llvm::raw_fd_ostream& outs){
+    for(int i = COUNT; i>=0; i--){
+      outs<< bitv[i];
     }
-    llvm::outs() << "\n";
+    outs.flush();
   };
   
   CallGraph callGraph;
@@ -213,41 +215,76 @@ main(int argc, char** argv) {
     llvm::outs().changeColor(raw_ostream::Colors::WHITE);
   };
 
-  for (auto [function, bitv] : funcPrivs) {
-    // if(function->getVisibility() ==
-    // llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
-    //   continue;
-    // }
-    if(function->isDeclaration()) {
-      continue;
-    }
-    llvm::outs() << stripFunctionName(function->getName()) << ", ";
-    printBitset(bitv);
-    // printFunctionLocation(function);
-    // printFunctionAttributes(function);
-  }
 
-  llvm::errs() << "\n  DFS Function Graph \n" ;
-  auto dfsviz = [&callGraph, &seenSet](llvm::Function* function,
-                                       auto& dfsviz) -> void {
+  // Bitset Prints here
+  // for (auto [function, bitv] : funcPrivs) {
+  //   // if(function->getVisibility() ==
+  //   // llvm::GlobalValue::VisibilityTypes::HiddenVisibility) {
+  //   //   continue;
+  //   // }
+  //   if(function->isDeclaration()) {
+  //     continue;
+  //   }
+  //   llvm::outs() << stripFunctionName(function->getName()) << ", ";
+  //   printBitset(bitv);
+  //   // printFunctionLocation(function);
+  //   // printFunctionAttributes(function);
+  // }
+
+  llvm::errs() << "\nDFS Function Graph\n" ;
+  auto dfsviz = [&stripFunctionName, &callGraph, &seenSet, &funcPrivs](llvm::Function* function, llvm::raw_fd_ostream& outs,
+                                       auto& dfsviz, auto& printBitset) -> void {
     if (!seenSet.insert(function).second) {
       return;
     }
     auto callees = callGraph[function];
+    if( callees.empty()){
+      return;
+    }
 
     for (auto* callee : callees) {
-      dfsviz(callee, dfsviz);
-      llvm::outs() << function->getName() << "->" << callee->getName() << "\n";
+      dfsviz(callee, outs, dfsviz, printBitset);
+
+      outs << stripFunctionName(function->getName()) << " [label = \"" << stripFunctionName(function->getName()) << " | ";
+      printBitset(funcPrivs[function], outs);
+      outs << "\" ]"
+           << "\n"
+           << stripFunctionName(callee->getName()) << " [label = \"" << stripFunctionName(callee->getName()) << " | ";
+      printBitset(funcPrivs[callee], outs);
+      // FIXME: Set Intersection of privs between caller and callee
+      // outs << " | " ;
+      // printBitset(funcPrivs[callee] & funcPrivs[function], outs);
+      outs << "\" ] \n";
+
+      outs << stripFunctionName(function->getName()) << " -> " << stripFunctionName(callee->getName()) << " \n";
+      outs.flush();
     }
+
+    outs.flush();
+    outs << "rank = same;";
+    for (auto* callee : callees) {
+      outs << " " << stripFunctionName(callee->getName()) << " ;"; 
+    }
+    outs << "\n" ;
   };
 
-  for (auto& [function, callees] : callGraph){
+  for (auto& [function, unused_callees ] : callGraph){
     seenSet.clear();
-    llvm::outs() << "digraph " << function->getName() << " {"<< "\n";
-    dfsviz(function, dfsviz);
-    llvm::outs() << "}\n" ; 
-  }
 
+    std::error_code EC;
+    auto fouts = raw_fd_ostream(
+        ("graphs/" + stripFunctionName(function->getName())).str(),
+        EC,
+        sys::fs::F_Text);
+
+    fouts << "digraph " << function->getName() << " {\n"
+          << "node [shape = record];\n"
+          << "rankdir = LR;\n";
+    dfsviz(function, fouts, dfsviz, printBitset);
+    fouts << "}\n" ; 
+
+    fouts.flush();
+  }
   return 0;
 }
 

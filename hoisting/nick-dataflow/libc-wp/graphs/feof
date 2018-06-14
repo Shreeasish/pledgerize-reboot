@@ -1,0 +1,4 @@
+digraph _libc_feof {
+node [shape = record];
+rankdir = LR;
+}

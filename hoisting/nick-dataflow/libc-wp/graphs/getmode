@@ -1,0 +1,4 @@
+digraph getmode {
+node [shape = record];
+rankdir = LR;
+}

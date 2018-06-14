@@ -1,0 +1,4 @@
+digraph _libc_inet6_rth_space {
+node [shape = record];
+rankdir = LR;
+}

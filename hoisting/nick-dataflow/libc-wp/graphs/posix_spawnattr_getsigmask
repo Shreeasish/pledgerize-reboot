@@ -1,0 +1,4 @@
+digraph posix_spawnattr_getsigmask {
+node [shape = record];
+rankdir = LR;
+}

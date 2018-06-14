@@ -1,0 +1,4 @@
+digraph _libc_wmemmove {
+node [shape = record];
+rankdir = LR;
+}

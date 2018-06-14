@@ -1,0 +1,4 @@
+digraph clnttcp_control {
+node [shape = record];
+rankdir = LR;
+}

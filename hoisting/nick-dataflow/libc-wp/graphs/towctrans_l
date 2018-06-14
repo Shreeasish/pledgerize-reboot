@@ -1,0 +1,15 @@
+digraph towctrans_l {
+node [shape = record];
+rankdir = LR;
+towctrans [label = "towctrans | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+towctrans -> __errno 
+towctrans [label = "towctrans | 000000000000000000000000000000000000000" ]
+_towctrans_ext [label = "_towctrans_ext | 000000000000000000000000000000000000000" ] 
+towctrans -> _towctrans_ext 
+rank = same; __errno ; _towctrans_ext ;
+towctrans_l [label = "towctrans_l | 000000000000000000000000000000000000000" ]
+towctrans [label = "towctrans | 000000000000000000000000000000000000000" ] 
+towctrans_l -> towctrans 
+rank = same; towctrans ;
+}

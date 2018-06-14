@@ -1,0 +1,4 @@
+digraph _libc_flock {
+node [shape = record];
+rankdir = LR;
+}

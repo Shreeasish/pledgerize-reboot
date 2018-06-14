@@ -1,0 +1,4 @@
+digraph _libc_ferror {
+node [shape = record];
+rankdir = LR;
+}

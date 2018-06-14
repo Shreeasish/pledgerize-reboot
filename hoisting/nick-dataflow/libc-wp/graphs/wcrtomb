@@ -1,0 +1,29 @@
+digraph _libc_wcrtomb {
+node [shape = record];
+rankdir = LR;
+__mb_cur_max [label = "__mb_cur_max | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+__mb_cur_max -> _CurrentRuneLocale 
+rank = same; _CurrentRuneLocale ;
+wcrtomb [label = "wcrtomb | 000000000000000000000000000000000000000" ]
+__mb_cur_max [label = "__mb_cur_max | 000000000000000000000000000000000000000" ] 
+wcrtomb -> __mb_cur_max 
+_citrus_none_ctype_wcrtomb [label = "_citrus_none_ctype_wcrtomb | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_citrus_none_ctype_wcrtomb -> __errno 
+rank = same; __errno ;
+wcrtomb [label = "wcrtomb | 000000000000000000000000000000000000000" ]
+_citrus_none_ctype_wcrtomb [label = "_citrus_none_ctype_wcrtomb | 000000000000000000000000000000000000000" ] 
+wcrtomb -> _citrus_none_ctype_wcrtomb 
+_citrus_utf8_ctype_wcrtomb [label = "_citrus_utf8_ctype_wcrtomb | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_wcrtomb -> __errno 
+_citrus_utf8_ctype_wcrtomb [label = "_citrus_utf8_ctype_wcrtomb | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+_citrus_utf8_ctype_wcrtomb -> __errno 
+rank = same; __errno ; __errno ;
+wcrtomb [label = "wcrtomb | 000000000000000000000000000000000000000" ]
+_citrus_utf8_ctype_wcrtomb [label = "_citrus_utf8_ctype_wcrtomb | 000000000000000000000000000000000000000" ] 
+wcrtomb -> _citrus_utf8_ctype_wcrtomb 
+rank = same; __mb_cur_max ; _citrus_none_ctype_wcrtomb ; _citrus_utf8_ctype_wcrtomb ;
+}

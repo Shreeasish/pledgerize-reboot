@@ -1,0 +1,4 @@
+digraph rendezvous_stat {
+node [shape = record];
+rankdir = LR;
+}

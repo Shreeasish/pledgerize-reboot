@@ -1,0 +1,4 @@
+digraph _libc_xdr_enum {
+node [shape = record];
+rankdir = LR;
+}

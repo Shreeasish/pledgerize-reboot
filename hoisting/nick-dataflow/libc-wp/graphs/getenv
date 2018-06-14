@@ -1,0 +1,4 @@
+digraph _libc_getenv {
+node [shape = record];
+rankdir = LR;
+}

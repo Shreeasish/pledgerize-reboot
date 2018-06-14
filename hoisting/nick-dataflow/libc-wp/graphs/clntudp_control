@@ -1,0 +1,4 @@
+digraph clntudp_control {
+node [shape = record];
+rankdir = LR;
+}

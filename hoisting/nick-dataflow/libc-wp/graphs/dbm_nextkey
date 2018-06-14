@@ -1,0 +1,4 @@
+digraph _libc_dbm_nextkey {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,4 @@
+digraph __reclaim_buf {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,4 @@
+digraph _libc_dbm_rdonly {
+node [shape = record];
+rankdir = LR;
+}

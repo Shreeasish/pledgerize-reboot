@@ -1,0 +1,8 @@
+digraph _libc_pread {
+node [shape = record];
+rankdir = LR;
+pread [label = "pread | 000000000000000000000000000000000010000" ]
+__syscall [label = "__syscall | 000000000000000000000000000000000000000" ] 
+pread -> __syscall 
+rank = same; __syscall ;
+}

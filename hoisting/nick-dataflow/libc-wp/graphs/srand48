@@ -1,0 +1,4 @@
+digraph srand48 {
+node [shape = record];
+rankdir = LR;
+}

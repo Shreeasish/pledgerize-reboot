@@ -1,0 +1,4 @@
+digraph _libc_wmemchr {
+node [shape = record];
+rankdir = LR;
+}

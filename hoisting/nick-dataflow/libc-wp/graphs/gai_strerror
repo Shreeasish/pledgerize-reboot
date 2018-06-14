@@ -1,0 +1,4 @@
+digraph _libc_gai_strerror {
+node [shape = record];
+rankdir = LR;
+}

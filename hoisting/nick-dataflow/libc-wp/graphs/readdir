@@ -1,0 +1,11 @@
+digraph _libc_readdir {
+node [shape = record];
+rankdir = LR;
+readdir [label = "readdir | 000000000000000000000000000000000000010" ]
+getdents [label = "getdents | 000000000000000000000000000000000000010" ] 
+readdir -> getdents 
+readdir [label = "readdir | 000000000000000000000000000000000000010" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+readdir -> __errno 
+rank = same; getdents ; __errno ;
+}

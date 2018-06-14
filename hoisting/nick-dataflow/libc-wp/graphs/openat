@@ -1,0 +1,4 @@
+digraph _libc_openat {
+node [shape = record];
+rankdir = LR;
+}

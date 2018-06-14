@@ -1,0 +1,8 @@
+digraph alarm {
+node [shape = record];
+rankdir = LR;
+alarm [label = "alarm | 000000000000000000000000000000000010000" ]
+setitimer [label = "setitimer | 000000000000000000000000000000000010000" ] 
+alarm -> setitimer 
+rank = same; setitimer ;
+}

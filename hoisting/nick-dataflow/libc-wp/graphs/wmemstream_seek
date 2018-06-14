@@ -1,0 +1,8 @@
+digraph wmemstream_seek {
+node [shape = record];
+rankdir = LR;
+wmemstream_seek [label = "wmemstream_seek | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+wmemstream_seek -> __errno 
+rank = same; __errno ;
+}

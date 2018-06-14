@@ -1,0 +1,4 @@
+digraph lsearch {
+node [shape = record];
+rankdir = LR;
+}

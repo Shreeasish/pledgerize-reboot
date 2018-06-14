@@ -1,0 +1,14 @@
+digraph _libc_unsetenv {
+node [shape = record];
+rankdir = LR;
+unsetenv [label = "unsetenv | 000000000000000000000000000000000000000" ]
+__findenv [label = "__findenv | 000000000000000000000000000000000000000" ] 
+unsetenv -> __findenv 
+unsetenv [label = "unsetenv | 000000000000000000000000000000000000000" ]
+__findenv [label = "__findenv | 000000000000000000000000000000000000000" ] 
+unsetenv -> __findenv 
+unsetenv [label = "unsetenv | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+unsetenv -> __errno 
+rank = same; __findenv ; __findenv ; __errno ;
+}

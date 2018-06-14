@@ -1,0 +1,8 @@
+digraph __swhatbuf {
+node [shape = record];
+rankdir = LR;
+__swhatbuf [label = "__swhatbuf | 000000000000000000000000000000000010000" ]
+fstat [label = "fstat | 000000000000000000000000000000000010000" ] 
+__swhatbuf -> fstat 
+rank = same; fstat ;
+}

@@ -1,0 +1,8 @@
+digraph _libc_xdr_ypbind_resptype {
+node [shape = record];
+rankdir = LR;
+xdr_ypbind_resptype [label = "xdr_ypbind_resptype | 000000000000000000000000000000000000000" ]
+xdr_enum [label = "xdr_enum | 000000000000000000000000000000000000000" ] 
+xdr_ypbind_resptype -> xdr_enum 
+rank = same; xdr_enum ;
+}

@@ -1,0 +1,4 @@
+digraph __signbit {
+node [shape = record];
+rankdir = LR;
+}

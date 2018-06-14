@@ -1,0 +1,4 @@
+digraph xdrmem_putlong_aligned {
+node [shape = record];
+rankdir = LR;
+}

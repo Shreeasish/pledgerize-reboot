@@ -1,0 +1,4 @@
+digraph __dbpanic {
+node [shape = record];
+rankdir = LR;
+}

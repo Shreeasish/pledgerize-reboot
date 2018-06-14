@@ -1,0 +1,4 @@
+digraph _citrus_utf8_ctype_mbsinit {
+node [shape = record];
+rankdir = LR;
+}

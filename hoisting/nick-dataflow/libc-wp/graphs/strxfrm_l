@@ -1,0 +1,15 @@
+digraph strxfrm_l {
+node [shape = record];
+rankdir = LR;
+strxfrm [label = "strxfrm | 000000000000000000000000000000000000000" ]
+strlen [label = "strlen | 000000000000000000000000000000000000000" ] 
+strxfrm -> strlen 
+strxfrm [label = "strxfrm | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+strxfrm -> strlcpy 
+rank = same; strlen ; strlcpy ;
+strxfrm_l [label = "strxfrm_l | 000000000000000000000000000000000000000" ]
+strxfrm [label = "strxfrm | 000000000000000000000000000000000000000" ] 
+strxfrm_l -> strxfrm 
+rank = same; strxfrm ;
+}

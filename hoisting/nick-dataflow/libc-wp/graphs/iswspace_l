@@ -1,0 +1,8 @@
+digraph iswspace_l {
+node [shape = record];
+rankdir = LR;
+iswspace_l [label = "iswspace_l | 000000000000000000000000000000000000000" ]
+___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
+iswspace_l -> ___runetype_mb 
+rank = same; ___runetype_mb ;
+}

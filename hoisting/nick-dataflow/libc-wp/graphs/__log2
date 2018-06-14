@@ -1,0 +1,4 @@
+digraph __log2 {
+node [shape = record];
+rankdir = LR;
+}

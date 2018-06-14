@@ -1,0 +1,17 @@
+digraph _libc_erand48 {
+node [shape = record];
+rankdir = LR;
+erand48 [label = "erand48 | 000000000000000000000000000000000000000" ]
+__dorand48 [label = "__dorand48 | 000000000000000000000000000000000000000" ] 
+erand48 -> __dorand48 
+erand48 [label = "erand48 | 000000000000000000000000000000000000000" ]
+ldexp [label = "ldexp | 000000000000000000000000000000000000000" ] 
+erand48 -> ldexp 
+erand48 [label = "erand48 | 000000000000000000000000000000000000000" ]
+ldexp [label = "ldexp | 000000000000000000000000000000000000000" ] 
+erand48 -> ldexp 
+erand48 [label = "erand48 | 000000000000000000000000000000000000000" ]
+ldexp [label = "ldexp | 000000000000000000000000000000000000000" ] 
+erand48 -> ldexp 
+rank = same; __dorand48 ; ldexp ; ldexp ; ldexp ;
+}

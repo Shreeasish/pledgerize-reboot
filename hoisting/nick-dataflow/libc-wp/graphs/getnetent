@@ -1,0 +1,4 @@
+digraph getnetent {
+node [shape = record];
+rankdir = LR;
+}

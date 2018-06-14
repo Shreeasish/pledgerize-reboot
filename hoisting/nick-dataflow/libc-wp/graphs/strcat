@@ -1,0 +1,4 @@
+digraph strcat {
+node [shape = record];
+rankdir = LR;
+}

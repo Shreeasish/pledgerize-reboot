@@ -1,0 +1,4 @@
+digraph _libc_dn_expand {
+node [shape = record];
+rankdir = LR;
+}

@@ -1,0 +1,4 @@
+digraph labs {
+node [shape = record];
+rankdir = LR;
+}

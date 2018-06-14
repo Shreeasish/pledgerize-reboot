@@ -1,0 +1,4 @@
+digraph __res_ownok {
+node [shape = record];
+rankdir = LR;
+}

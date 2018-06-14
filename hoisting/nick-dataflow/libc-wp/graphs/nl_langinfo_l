@@ -1,0 +1,12 @@
+digraph nl_langinfo_l {
+node [shape = record];
+rankdir = LR;
+nl_langinfo [label = "nl_langinfo | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+nl_langinfo -> _CurrentRuneLocale 
+rank = same; _CurrentRuneLocale ;
+nl_langinfo_l [label = "nl_langinfo_l | 000000000000000000000000000000000000000" ]
+nl_langinfo [label = "nl_langinfo | 000000000000000000000000000000000000000" ] 
+nl_langinfo_l -> nl_langinfo 
+rank = same; nl_langinfo ;
+}

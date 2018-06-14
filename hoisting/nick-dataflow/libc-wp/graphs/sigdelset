@@ -1,0 +1,8 @@
+digraph _libc_sigdelset {
+node [shape = record];
+rankdir = LR;
+sigdelset [label = "sigdelset | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+sigdelset -> __errno 
+rank = same; __errno ;
+}

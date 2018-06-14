@@ -1,0 +1,4 @@
+digraph _libc_closelog_r {
+node [shape = record];
+rankdir = LR;
+}

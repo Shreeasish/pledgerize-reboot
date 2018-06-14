@@ -1,0 +1,11 @@
+digraph _libc_towlower_l {
+node [shape = record];
+rankdir = LR;
+towlower_l [label = "towlower_l | 000000000000000000000000000000000000000" ]
+_wctrans_init [label = "_wctrans_init | 000000000000000000000000000000000000000" ] 
+towlower_l -> _wctrans_init 
+towlower_l [label = "towlower_l | 000000000000000000000000000000000000000" ]
+_towctrans_ext [label = "_towctrans_ext | 000000000000000000000000000000000000000" ] 
+towlower_l -> _towctrans_ext 
+rank = same; _wctrans_init ; _towctrans_ext ;
+}

@@ -1,0 +1,4 @@
+digraph __xdrrec_setnonblock {
+node [shape = record];
+rankdir = LR;
+}

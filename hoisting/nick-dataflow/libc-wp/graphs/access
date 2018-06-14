@@ -1,0 +1,4 @@
+digraph _libc_access {
+node [shape = record];
+rankdir = LR;
+}

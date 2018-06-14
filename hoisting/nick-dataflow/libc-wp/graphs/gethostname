@@ -1,0 +1,8 @@
+digraph _libc_gethostname {
+node [shape = record];
+rankdir = LR;
+gethostname [label = "gethostname | 000000000000000000000000000000000010000" ]
+sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
+gethostname -> sysctl 
+rank = same; sysctl ;
+}

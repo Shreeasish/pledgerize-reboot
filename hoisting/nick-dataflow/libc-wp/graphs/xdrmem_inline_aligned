@@ -1,0 +1,4 @@
+digraph xdrmem_inline_aligned {
+node [shape = record];
+rankdir = LR;
+}

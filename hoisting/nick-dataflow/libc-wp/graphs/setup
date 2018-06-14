@@ -1,0 +1,4 @@
+digraph setup {
+node [shape = record];
+rankdir = LR;
+}

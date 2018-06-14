@@ -1,0 +1,4 @@
+digraph _libc_telldir {
+node [shape = record];
+rankdir = LR;
+}

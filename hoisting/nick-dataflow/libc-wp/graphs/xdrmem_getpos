@@ -1,0 +1,4 @@
+digraph xdrmem_getpos {
+node [shape = record];
+rankdir = LR;
+}

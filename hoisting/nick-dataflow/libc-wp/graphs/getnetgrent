@@ -1,0 +1,4 @@
+digraph _libc_getnetgrent {
+node [shape = record];
+rankdir = LR;
+}

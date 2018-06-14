@@ -1,0 +1,4 @@
+digraph clnttcp_freeres {
+node [shape = record];
+rankdir = LR;
+}

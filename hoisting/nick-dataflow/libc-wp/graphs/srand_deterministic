@@ -1,0 +1,4 @@
+digraph srand_deterministic {
+node [shape = record];
+rankdir = LR;
+}

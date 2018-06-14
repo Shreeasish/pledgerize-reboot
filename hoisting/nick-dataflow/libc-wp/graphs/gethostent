@@ -1,0 +1,4 @@
+digraph gethostent {
+node [shape = record];
+rankdir = LR;
+}

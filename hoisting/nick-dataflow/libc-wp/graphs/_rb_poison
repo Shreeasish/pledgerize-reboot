@@ -1,0 +1,4 @@
+digraph _libc__rb_poison {
+node [shape = record];
+rankdir = LR;
+}

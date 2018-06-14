@@ -1,0 +1,8 @@
+digraph isblank_l {
+node [shape = record];
+rankdir = LR;
+isblank_l [label = "isblank_l | 000000000000000000000000000000000000000" ]
+isblank [label = "isblank | 000000000000000000000000000000000000000" ] 
+isblank_l -> isblank 
+rank = same; isblank ;
+}

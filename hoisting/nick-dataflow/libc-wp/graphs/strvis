@@ -1,0 +1,8 @@
+digraph _libc_strvis {
+node [shape = record];
+rankdir = LR;
+strvis [label = "strvis | 000000000000000000000000000000000000000" ]
+vis [label = "vis | 000000000000000000000000000000000000000" ] 
+strvis -> vis 
+rank = same; vis ;
+}

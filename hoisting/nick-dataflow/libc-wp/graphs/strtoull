@@ -1,0 +1,11 @@
+digraph _libc_strtoull {
+node [shape = record];
+rankdir = LR;
+strtoull [label = "strtoull | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+strtoull -> __errno 
+strtoull [label = "strtoull | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+strtoull -> __errno 
+rank = same; __errno ; __errno ;
+}

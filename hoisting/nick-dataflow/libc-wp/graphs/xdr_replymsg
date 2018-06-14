@@ -1,0 +1,14 @@
+digraph _libc_xdr_replymsg {
+node [shape = record];
+rankdir = LR;
+xdr_replymsg [label = "xdr_replymsg | 000000000000000000000000000000000000000" ]
+xdr_u_int32_t [label = "xdr_u_int32_t | 000000000000000000000000000000000000000" ] 
+xdr_replymsg -> xdr_u_int32_t 
+xdr_replymsg [label = "xdr_replymsg | 000000000000000000000000000000000000000" ]
+xdr_enum [label = "xdr_enum | 000000000000000000000000000000000000000" ] 
+xdr_replymsg -> xdr_enum 
+xdr_replymsg [label = "xdr_replymsg | 000000000000000000000000000000000000000" ]
+xdr_union [label = "xdr_union | 000000000000000000000000000000000000000" ] 
+xdr_replymsg -> xdr_union 
+rank = same; xdr_u_int32_t ; xdr_enum ; xdr_union ;
+}

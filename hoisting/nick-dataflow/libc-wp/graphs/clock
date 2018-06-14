@@ -1,0 +1,8 @@
+digraph clock {
+node [shape = record];
+rankdir = LR;
+clock [label = "clock | 000000000000000000000000000000000010000" ]
+getrusage [label = "getrusage | 000000000000000000000000000000000010000" ] 
+clock -> getrusage 
+rank = same; getrusage ;
+}

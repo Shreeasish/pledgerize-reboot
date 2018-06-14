@@ -1,0 +1,4 @@
+digraph _libc_xdr_u_int32_t {
+node [shape = record];
+rankdir = LR;
+}

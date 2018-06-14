@@ -1,0 +1,4 @@
+digraph fmemopen_read {
+node [shape = record];
+rankdir = LR;
+}

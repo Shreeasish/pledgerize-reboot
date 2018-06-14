@@ -1,0 +1,8 @@
+digraph fmemopen_seek {
+node [shape = record];
+rankdir = LR;
+fmemopen_seek [label = "fmemopen_seek | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+fmemopen_seek -> __errno 
+rank = same; __errno ;
+}

@@ -1,0 +1,21 @@
+digraph hostent_add_alias {
+node [shape = record];
+rankdir = LR;
+_asr_strdname [label = "_asr_strdname | 000000000000000000000000000000000000000" ]
+strlcpy [label = "strlcpy | 000000000000000000000000000000000000000" ] 
+_asr_strdname -> strlcpy 
+rank = same; strlcpy ;
+hostent_add_alias [label = "hostent_add_alias | 000000000000000000000000000000000000000" ]
+_asr_strdname [label = "_asr_strdname | 000000000000000000000000000000000000000" ] 
+hostent_add_alias -> _asr_strdname 
+hostent_add_alias [label = "hostent_add_alias | 000000000000000000000000000000000000000" ]
+strlen [label = "strlen | 000000000000000000000000000000000000000" ] 
+hostent_add_alias -> strlen 
+hostent_add_alias [label = "hostent_add_alias | 000000000000000000000000000000000000000" ]
+__res_hnok [label = "__res_hnok | 000000000000000000000000000000000000000" ] 
+hostent_add_alias -> __res_hnok 
+hostent_add_alias [label = "hostent_add_alias | 000000000000000000000000000000000000000" ]
+strlen [label = "strlen | 000000000000000000000000000000000000000" ] 
+hostent_add_alias -> strlen 
+rank = same; _asr_strdname ; strlen ; __res_hnok ; strlen ;
+}

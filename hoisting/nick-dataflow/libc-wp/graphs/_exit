@@ -1,0 +1,4 @@
+digraph _libc__exit {
+node [shape = record];
+rankdir = LR;
+}

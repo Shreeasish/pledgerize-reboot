@@ -1,0 +1,11 @@
+digraph iswpunct {
+node [shape = record];
+rankdir = LR;
+iswpunct [label = "iswpunct | 000000000000000000000000000000000000000" ]
+_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
+iswpunct -> _CurrentRuneLocale 
+iswpunct [label = "iswpunct | 000000000000000000000000000000000000000" ]
+___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
+iswpunct -> ___runetype_mb 
+rank = same; _CurrentRuneLocale ; ___runetype_mb ;
+}

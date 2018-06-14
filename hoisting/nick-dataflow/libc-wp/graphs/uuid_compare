@@ -1,0 +1,18 @@
+digraph uuid_compare {
+node [shape = record];
+rankdir = LR;
+uuid_is_nil [label = "uuid_is_nil | 000000000000000000000000000000000000000" ]
+memcmp [label = "memcmp | 000000000000000000000000000000000000000" ] 
+uuid_is_nil -> memcmp 
+rank = same; memcmp ;
+uuid_compare [label = "uuid_compare | 000000000000000000000000000000000000000" ]
+uuid_is_nil [label = "uuid_is_nil | 000000000000000000000000000000000000000" ] 
+uuid_compare -> uuid_is_nil 
+uuid_compare [label = "uuid_compare | 000000000000000000000000000000000000000" ]
+uuid_is_nil [label = "uuid_is_nil | 000000000000000000000000000000000000000" ] 
+uuid_compare -> uuid_is_nil 
+uuid_compare [label = "uuid_compare | 000000000000000000000000000000000000000" ]
+memcmp [label = "memcmp | 000000000000000000000000000000000000000" ] 
+uuid_compare -> memcmp 
+rank = same; uuid_is_nil ; uuid_is_nil ; memcmp ;
+}

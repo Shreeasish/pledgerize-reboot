@@ -1,0 +1,4 @@
+digraph _libc_cgetmatch {
+node [shape = record];
+rankdir = LR;
+}

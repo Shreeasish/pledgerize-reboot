@@ -1,0 +1,4 @@
+digraph _libc_timingsafe_bcmp {
+node [shape = record];
+rankdir = LR;
+}

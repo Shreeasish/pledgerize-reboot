@@ -1,0 +1,4 @@
+digraph _libc_getfsstat {
+node [shape = record];
+rankdir = LR;
+}

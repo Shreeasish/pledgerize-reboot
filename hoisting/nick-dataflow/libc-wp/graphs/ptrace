@@ -1,0 +1,11 @@
+digraph _libc_ptrace_wrap {
+node [shape = record];
+rankdir = LR;
+ptrace [label = "ptrace | 000000000000000000000000000000000000000" ]
+__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
+ptrace -> __errno 
+ptrace [label = "ptrace | 000000000000000000000000000000000000000" ]
+ptrace [label = "ptrace | 000000000000000000000000000000000000000" ] 
+ptrace -> ptrace 
+rank = same; __errno ; ptrace ;
+}

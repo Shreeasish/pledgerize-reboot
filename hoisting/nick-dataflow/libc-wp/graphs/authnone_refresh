@@ -1,0 +1,4 @@
+digraph authnone_refresh {
+node [shape = record];
+rankdir = LR;
+}
