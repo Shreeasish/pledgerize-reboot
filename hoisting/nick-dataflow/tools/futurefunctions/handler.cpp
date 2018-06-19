@@ -69,6 +69,7 @@ public:
   CheckTMPPATH(int ap) : PledgeCheckerBase(ap) {}
 
   // TODO: Correct tmppath logic -> RW not needed if in /tmp/
+
   FunctionsValue
   operator()(const llvm::CallSite cs,
              const Context& context,
@@ -129,11 +130,11 @@ getLibCHandlerMap(AnalysisPackage& package) {
   libCHandlers.emplace("isspace",FunctionPledgesBuilder(0).build());
   libCHandlers.emplace("localtime",FunctionPledgesBuilder(16).build());
   libCHandlers.emplace("printf",FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("snprintf",FunctionPledgesBuilder(0).build()); // According to manpage, works only the char * provided
-
-  
-
-
+  libCHandlers.emplace("snprintf",FunctionPledgesBuilder(16).build()); // According to manpage, works on the char * provided
+  libCHandlers.emplace("strptime",FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("strtol",FunctionPledgesBuilder(0).build());
+  libCHandlers.emplace("strtonum",FunctionPledgesBuilder(0).build());
+  libCHandlers.emplace("time",FunctionPledgesBuilder(16).build());
   
   // libCHandlers.emplace("__sclose", 16);
   // libCHandlers.emplace("__smakebuf", 16);

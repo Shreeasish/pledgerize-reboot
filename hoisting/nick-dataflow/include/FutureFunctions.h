@@ -41,7 +41,7 @@ public:
     PledgeCheckerBase(int ap) : argposition{ap} {}
     virtual ~PledgeCheckerBase(){}
     
-    virtual FunctionsValue operator()(llvm::CallSite, const Context& context, AnalysisPackage* package) = 0;
+    virtual FunctionsValue operator()(const llvm::CallSite, const Context& context, AnalysisPackage* package) = 0;
 
     int getArgPosition() {
       return argposition;
