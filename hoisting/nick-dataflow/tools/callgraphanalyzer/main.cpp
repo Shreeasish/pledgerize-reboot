@@ -94,8 +94,9 @@ main(int argc, char** argv) {
     return -1;
   }
 
+  // Verify one off error for count. Should be COUNT - 1 for range
   static auto printBitset = [](std::bitset<COUNT> bitv, llvm::raw_fd_ostream& outs){
-    for(int i = COUNT; i>=0; i--){
+    for(int i = COUNT - 1; i>=0; i--){
       outs<< bitv[i];
     }
     outs.flush();
@@ -199,12 +200,14 @@ main(int argc, char** argv) {
   }
 
 
+  [[maybe_unused]]
   auto printFunctionLocation = [](llvm::Function* function) {
     llvm::outs().changeColor(raw_ostream::Colors::GREEN);
     llvm::outs() << function->getSubprogram()->getFilename() << ":";
     llvm::outs() << function->getSubprogram()->getLine() << "\n";
   };
 
+  [[maybe_unused]]
   auto printFunctionAttributes = [](llvm::Function* function) {
     llvm::outs().changeColor(raw_ostream::Colors::GREEN);
     for (auto& attribute : function->getAttributes()) {

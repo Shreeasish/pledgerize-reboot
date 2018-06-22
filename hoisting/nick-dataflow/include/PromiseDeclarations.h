@@ -51,6 +51,6 @@ const llvm::StringRef PromiseNames[]{ //always added for uniformity
     "inet",    "flock", "unix",     "id",    "tape",      "getpw",   "proc",
     "settime", "fattr", "protexec", "tty",   "sendfd",    "recvfd",  "exec",
     "route",   "mcast", "vminfo",   "ps",    "disklabel", "pf",      "audio",
-    "dpath",   "drm",   "vmm",      "chown", "bpf",       "error"};
+    "dpath",   "drm",   "vmm",      "chown", "bpf",       "error"}; //FIXME:PLEDGE_USERSET, PLEDGE_STATLIE, PLEDGE_YPACTIVE, COUNT 
 
 #endif

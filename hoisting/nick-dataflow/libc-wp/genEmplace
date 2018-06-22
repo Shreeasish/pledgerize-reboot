@@ -57,9 +57,12 @@ if(len(krows) < 1):
     print("Function \'" + args.function[0] + "\' not found, skipping",file=sys.stderr)
     sys.exit()
 
-assert(len(krows) == 1)
-assert(len(mrows) == 1)
-
+try:
+    assert(len(krows) == 1)
+    assert(len(mrows) == 1)
+except AssertionError:
+    print("Function \'" + args.function[0] + "\' AssertionError, skipping",file=sys.stderr)
+    sys.exit()
 
 
 # libCHandlers.emplace("getopt",FunctionPledgesBuilder(16).build());
