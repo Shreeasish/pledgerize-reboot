@@ -5,12 +5,24 @@ cflow -i _s --level begin='' --level '0=    |' --level '1=    |' --level end0=''
 
 promise_value is used to hold the value for a particular promise -- stdio <--> 1<<6  -- From pledge.h -- Done
 
-syscall_bitset holds the bitset for each syscall -- open <--> 1<<4 | 1<<6 -- From kern_pledge.c
+syscall\_bitset holds the bitset for each syscall -- open <--> 1<<4 | 1<<6 -- From kern\_pledge.c
 
-promise names also needs to be added -- From kern_pledge.c -- Done
+promise names also needs to be added -- From kern\_pledge.c -- Done
 
-syscallmacro_syscall maps SYS_X to X -- -- from 
+syscallmacro\_syscall maps SYS\_X to X -- -- from 
 
+
+## ioctl flag information
+1. DTYPE\_SOCKET -- Used in kern\_pledge.c 
+Information about it available [here](https://books.google.ca/books?id=6H9AxyFd0v0C&pg=PT85&lpg=PT85&dq=DTYPE_SOCKET&source=bl&ots=b7iH8ubOhG&sig=ctuS9mddT-JD845d-kpvzsMjnC4&hl=en&sa=X&ved=0ahUKEwin37y13YPcAhVSCTQIHYn7BLsQ6AEILjAB#v=onepage&q=DTYPE_SOCKET&f=false)
+2. TIOCDRAIN    -- Used in termios/tcdrain.c
+No handle for TIOCDRAIN kern\_pledge.c
+3. TIOCGSID	-- [Used to get session ID for the tty](http://man7.org/linux/man-pages/man3/tcgetsid.3.html)
+No handle in kern\_pledge.c; similar to TIOCDRAIN
+4. TIOCSPGRP	-- tcsetpgrp.c
+Needs more than one privilege (kerni\_pledge.c:1127) - PLEDGE\_PROC and PLEDGE\_TTY
+5. PTMGET	-- posix\_pty.c
+Requires PLEDGE\_TTY and either of PLEDGE\_RPATH or PLEDGE\_WPATH. Conservatively requires all three. May handle later in the static analysis
 
 ==============================================
 

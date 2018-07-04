@@ -499,5 +499,22 @@ static SyscallBitsetMap syscallManMap{
     {"pf", std::bitset<COUNT>().set(PLEDGE_PF)},
     {"bpf", std::bitset<COUNT>().set(PLEDGE_BPF)},
 };
+  // Verify one off error for count. Should be COUNT - 1 for range
+static void
+printBitset(std::bitset<COUNT> bitv, llvm::raw_fd_ostream& outs) {
+  for (int i = COUNT - 1; i >= 0; i--) {
+    outs << bitv[i];
+  }
+  outs.flush();
+};
+
+static void
+printBitset(std::bitset<COUNT> bitv, llvm::raw_ostream& outs) {
+  for (int i = COUNT - 1; i >= 0; i--) {
+    outs << bitv[i];
+  }
+  outs.flush();
+};
+
 
 #endif

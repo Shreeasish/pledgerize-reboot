@@ -1,0 +1,10 @@
+libCHandlers.emplace("abs",FunctionPledgesBuilder(0).build());
+PLEDGE_DISKLABEL
+PLEDGE_PS
+PLEDGE_TTY
+PLEDGE_UNIX
+PLEDGE_DNS
+PLEDGE_TMPPATH
+PLEDGE_CPATH
+PLEDGE_WPATH
+Requires PLEDGE_TMPPATH, enter arg number
