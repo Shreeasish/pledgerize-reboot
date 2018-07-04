@@ -344,9 +344,6 @@ main(int argc, char** argv) {
     return functionName;
   };
 
-
-
-
   for (auto& caller : *module) {
     for (auto& bb : caller) {
       for (auto& i : bb) {
@@ -365,7 +362,6 @@ main(int argc, char** argv) {
       }
     }
   }
-        exit(0);
 
   llvm::DenseMap<llvm::Function*, llvm::DenseSet<Function*>> inverseCallGraph;
   for (auto& [caller, callees] : callGraph){
