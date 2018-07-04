@@ -106,9 +106,9 @@ getCalledFunction(llvm::CallSite cs) {
 
 
 
-template <typename FNameLambdaT>
+template <typename lambda>
 static void
-printFuncPrivMap(FuncPrivMap& funcPrivs, FNameLambdaT& stripFunctionName) {
+printFuncPrivMap(FuncPrivMap& funcPrivs, lambda& stripFunctionName) {
   for (auto [function, bitv] : funcPrivs) {
     if (function->isDeclaration()) {
       continue;
@@ -120,9 +120,9 @@ printFuncPrivMap(FuncPrivMap& funcPrivs, FNameLambdaT& stripFunctionName) {
   }
 }
 
-template <typename FNameLambdaT>
+template <typename lambda>
 static void
-writeCallGraphFiles(CallGraph& callGraph, FuncPrivMap& funcPrivs, FNameLambdaT stripFunctionName) {
+writeCallGraphFiles(CallGraph& callGraph, FuncPrivMap& funcPrivs, lambda stripFunctionName) {
   FunctionSet seenSet;
   llvm::errs() << "\ndfs function graph\n";
 
@@ -197,13 +197,13 @@ addPrivilege(FuncPrivMap& funcPrivs,
   auto functionName = stripFunctionName(function->getName());
   if (bitsetMap.count(functionName)) {
     if (functionName.equals("ioctl")) {
-      llvm::outs() << "\n" << functionName << "\n";
+      // llvm::outs() << "\n" << functionName << "\n";
       // llvm::outs() << "\n" <<  arg.
       auto* arg    = cs.getArgument(1);
       auto* argInt = llvm::dyn_cast<llvm::ConstantInt>(arg);
 
       if (argInt; auto argSExtValue = argInt->getSExtValue()) {
-        llvm::outs() << "argInt: " << argSExtValue << "\n";
+        // llvm::outs() << "argInt: " << argSExtValue << "\n";
 
         switch (argSExtValue) {
           // /home/ska196/src/lib/libc/stdlib/posix_pty.c 47
