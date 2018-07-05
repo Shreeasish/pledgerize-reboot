@@ -300,8 +300,9 @@ addPrivilege(FuncPrivMap& funcPrivs,
         }
       }
       // printCallSiteLocation(cs);
+    } else {
+      funcPrivs[function] |= bitsetMap[functionName];
     }
-    funcPrivs[function] |= bitsetMap[functionName];
   }
 };
 
