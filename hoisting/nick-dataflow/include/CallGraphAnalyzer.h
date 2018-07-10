@@ -93,7 +93,7 @@ syscallBitsetMap{
     {"fsync", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"setsockopt", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"getsockopt", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fcntl", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+    {"fcntl", std::bitset<COUNT>().set(PLEDGE_STDIO)}, // fcntl Intercepted in code, Commented out here
     {"close", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"dup", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"dup2", std::bitset<COUNT>().set(PLEDGE_STDIO)},
@@ -250,14 +250,14 @@ static SyscallBitsetMap syscallManMap{
     {"dup2", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"dup3", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"fchdir", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fcntl",
-     std::bitset<COUNT>().set(PLEDGE_FLOCK)
-         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fstat",
-     std::bitset<COUNT>().set(PLEDGE_RPATH)
-         | std::bitset<COUNT>().set(PLEDGE_TMPPATH)
-         | std::bitset<COUNT>().set(PLEDGE_WPATH)
-         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
+    // {"fcntl",
+    //  std::bitset<COUNT>().set(PLEDGE_FLOCK)
+    //      | std::bitset<COUNT>().set(PLEDGE_STDIO)},
+    // {"fstat",
+    //  std::bitset<COUNT>().set(PLEDGE_RPATH)
+    //      | std::bitset<COUNT>().set(PLEDGE_TMPPATH)
+    //      | std::bitset<COUNT>().set(PLEDGE_WPATH)
+    //      | std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"fsync", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"ftruncate", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"getdents", std::bitset<COUNT>().set(PLEDGE_STDIO)},
@@ -288,11 +288,13 @@ static SyscallBitsetMap syscallManMap{
     {"madvise", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"minherit", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"mmap",
+    //  std::bitset<COUNT>().set(0)},
      std::bitset<COUNT>().set(PLEDGE_PROTEXEC)
          | std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"mprotect",
-     std::bitset<COUNT>().set(PLEDGE_PROTEXEC)
-         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     std::bitset<COUNT>().set(0)},
+    //  std::bitset<COUNT>().set(PLEDGE_PROTEXEC)
+    //      | std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"mquery", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"munmap", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"nanosleep", std::bitset<COUNT>().set(PLEDGE_STDIO)},
@@ -439,8 +441,8 @@ static SyscallBitsetMap syscallManMap{
     {"utimensat", std::bitset<COUNT>().set(PLEDGE_FATTR)},
     {"futimens", std::bitset<COUNT>().set(PLEDGE_FATTR)},
     {"lchown", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    {"flock", std::bitset<COUNT>().set(PLEDGE_FLOCK)},
-    {"lockf", std::bitset<COUNT>().set(PLEDGE_FLOCK)},
+    {"flock", std::bitset<COUNT>().set(PLEDGE_FLOCK)}, 
+    {"lockf", std::bitset<COUNT>().set(PLEDGE_FLOCK)},    // lockf Was already here from before
     {"open", std::bitset<COUNT>().set(PLEDGE_FLOCK)},
     {"getpwnam", std::bitset<COUNT>().set(PLEDGE_GETPW)},
     {"getpwuid", std::bitset<COUNT>().set(PLEDGE_GETPW)},
@@ -484,8 +486,9 @@ static SyscallBitsetMap syscallManMap{
     {"adjtime", std::bitset<COUNT>().set(PLEDGE_SETTIME)},
     {"adjfreq", std::bitset<COUNT>().set(PLEDGE_SETTIME)},
     {"sysctl",
-     std::bitset<COUNT>().set(PLEDGE_PS)
-         | std::bitset<COUNT>().set(PLEDGE_VMINFO)},
+     std::bitset<COUNT>().set(0)},
+    //  std::bitset<COUNT>().set(PLEDGE_PS)
+    //      | std::bitset<COUNT>().set(PLEDGE_VMINFO)},
     {"setuid", std::bitset<COUNT>().set(PLEDGE_ID)},
     {"seteuid", std::bitset<COUNT>().set(PLEDGE_ID)},
     {"setreuid", std::bitset<COUNT>().set(PLEDGE_ID)},

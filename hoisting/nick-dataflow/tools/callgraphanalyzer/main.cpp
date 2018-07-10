@@ -186,122 +186,324 @@ writeCallGraphFiles(CallGraph& callGraph, FuncPrivMap& funcPrivs, lambda stripFu
   }
 }
 
+std::vector<int>
+getioctlCSPromises(llvm::CallSite& cs) {
+  auto* arg    = cs.getArgument(1);
+  std::vector<int> returnVec;
+
+  if (auto* argInt = llvm::dyn_cast<llvm::ConstantInt>(arg); argInt) {
+    auto argSExtValue = argInt->getSExtValue();
+    // llvm::outs() << "argInt: " << argSExtValue << "\n";
+
+    switch (argSExtValue) {
+      // /home/ska196/src/lib/libc/stdlib/posix_pty.c 47
+      case 1076392961: {  // PTMGET
+        // Requires PLEDGE_TTY and either of PLEDGE_RPATH or PLEDGE_WPATH
+        returnVec.push_back(PLEDGE_INET);
+        returnVec.push_back(PLEDGE_RPATH);
+        returnVec.push_back(PLEDGE_WPATH);
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/net/sockatmark.c 37
+      case 1074033415: {  // SIOCATMARK
+        returnVec.push_back(PLEDGE_INET);
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcdrain.c 42
+      case 536900702: {  // TIOCDRAIN
+        // Not handled in kern_pledge. Noted in Readme. No special pledges added
+        // Used to drain the tty socket. Probably not handled since the program
+        // will need tty before this anyway Does it fit in our model of
+        // privilege dropping?
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcdrain.c 42
+      // case 536900702:{
+      //   break;
+      // }
+
+      // /home/ska196/src/lib/libc/termios/tcflow.c 44
+      case 536900719: {  // TIOCSTOP
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcflow.c 46
+      case 536900718: {  // TIOCSTART
+        returnVec.push_back(PLEDGE_TTY);
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcflush.c 55
+      case 2147775504: {  // TIOCFLUSH
+        returnVec.push_back(PLEDGE_TTY);
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcgetattr.c 37
+      case 1076655123: {  // TIOCGETA
+        returnVec.push_back(PLEDGE_TTY);
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcgetpgrp.c 39
+      case 1074033783: {  // TIOCGPGRP
+        returnVec.push_back(PLEDGE_TTY);
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcgetsid.c 39
+      case 1074033763: {  // TIOCGSID
+        // Gets the session id to the currently connected tty terminal
+        // Similar to TIOCDRAIN
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcsendbreak.c 43
+      case 536900731: {  // TIOCSBRK
+        returnVec.push_back(PLEDGE_TTY);
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcsendbreak.c 46
+      case 536900730: {  // TIOCCBRK
+        returnVec.push_back(PLEDGE_TTY);
+        return returnVec;
+        break;
+      }
+
+      // All three are treated the same in kern_pledge.c:1147
+      // /home/ska196/src/lib/libc/termios/tcsetattr.c 47
+      case 2150396948: {  // TIOCSETA
+        returnVec.push_back(PLEDGE_TTY);
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcsetattr.c 49
+      case 2150396949: {  // TIOCSETAW
+        returnVec.push_back(PLEDGE_TTY);
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcsetattr.c 51
+      case 2150396950: {  // TIOCSETAF
+        returnVec.push_back(PLEDGE_TTY);
+        return returnVec;
+        break;
+      }
+      // /home/ska196/src/lib/libc/termios/tcsetpgrp.c 40
+      case 2147775606: {  // TIOCSPGRP
+        returnVec.push_back(PLEDGE_PROC);
+        returnVec.push_back(PLEDGE_TTY);
+        return returnVec;
+        break;
+      }
+      default: { return returnVec;}
+    }
+  }
+  else {
+    llvm::errs() << "\nioctl arg SExtValue error";
+    return returnVec;
+  }
+}
+
+std::vector<int>
+getfcntlCSPromises(llvm::CallSite& cs){
+  auto* arg    = cs.getArgument(1);
+  std::vector<int> returnVec;
+
+  if (auto* argInt = llvm::dyn_cast<llvm::ConstantInt>(arg); argInt) {
+    auto argSExtValue = argInt->getSExtValue();
+    // llvm::outs() << "\n"
+    //              << "FunctionName " << getCalledFunction(cs)->getName() << " argInt:" << argSExtValue
+    //              << "\n";
+    // printCallSiteLocation(cs);
+    switch (argSExtValue) {
+      //   fcntl_cancel argInt:3
+      case 3: {
+        // F_GETFL
+        // returnVec.push_back();
+        break;
+      }
+      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/stdio/fdopen.c //
+      // 58
+
+      // fcntl_cancel argInt:1
+      case 1: {
+        // F_GETFD
+        break;
+      }
+      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/stdio/fdopen.c //
+      // 81
+
+      // fcntl_cancel argInt:2
+      case 2: {
+        // F_SETFD
+        break;
+      }
+      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/stdio/fdopen.c //
+      // 82
+
+      // fcntl_cancel argInt:11
+      case 11: {
+        // F_ISATTY
+        break;
+      }
+      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/isatty.c // 37
+
+      // fcntl_cancel argInt:7
+      case 7: {  // Handle lockf.c seperately
+        // F_GETLK
+        returnVec.push_back(PLEDGE_FLOCK);
+        break;
+      }
+      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/lockf.c // 63
+
+      // fcntl_cancel argInt:6
+      case 6: {
+        // F_SETOWN
+        returnVec.push_back(PLEDGE_PROC);
+        break;
+      }
+      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/net/rcmd.c // 137
+
+      // fcntl argInt:9
+      case 9: {
+        // F_SETLKW
+        returnVec.push_back(PLEDGE_FLOCK);
+        break;
+      }
+      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/sys/w_fcntl.c // 49
+
+      default: {
+        llvm::errs() << "Default Reached on fcntl constant switch case";
+      }
+    }
+
+    // Same Flags Different CallSites
+    // fcntl_cancel argInt:3
+    // case 3: {
+    //   //F_GETFL
+    //   break;
+    // }
+    // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/opendir.c // 71
+
+    // fcntl_cancel argInt:2
+    // case 2: {
+    //   //F_SETFD
+    //   break;
+    // }
+    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/opendir.c //
+    // 86
+
+    // fcntl_cancel argInt:1
+    // case 1: {
+    //   // F_GETFD
+    //   break;
+    // }
+    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/popen.c // 103
+
+    // fcntl_cancel argInt:2
+    // case 2: {
+    //   // F_SETFD
+    //   break;
+    // }
+    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/popen.c // 105
+
+    // // fcntl_cancel argInt:1
+    // case 1: {
+    //   // F_GETFD
+    //   break;
+    // }
+    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/popen.c // 133
+
+    // fcntl_cancel argInt:2
+    // case 2: {
+    //   // F_SETFD
+    //   break;
+    // }
+    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/popen.c // 135
+
+    // fcntl_cancel argInt:1
+    // case 1: {
+    //   // F_GETFD
+    //   break;
+    // }
+    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/posix_spawn.c
+    // // 161
+
+    // // fcntl_cancel argInt:2
+    // case 2: {
+    //   //F_SETFD
+    //   break;
+    // }
+    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/posix_spawn.c
+    // // 165
+
+    // // fcntl_cancel argInt:2
+    // case 2: {
+    //   // F_SETFD
+    //   break;
+    // }
+    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/yp/yp_bind.c //
+    // 240
+  } else {
+    /* Non Constants are only induced by lockf.c. Assert for parent function
+     * name == lockf and insert flock privilege to be handled at upper level */
+
+    // llvm::outs() << "\n NonConstantInt " << cs->getParent()->getParent()->getName()
+    //              << " FunctionName " << getCalledFunction(cs)->getName()
+    //              << "\n";
+    // printCallSiteLocation(cs);
+
+    if( cs->getParent()->getParent()->getName().equals("lockf") ){
+      returnVec.push_back(PLEDGE_FLOCK);
+    }
+    else {
+      llvm::errs() << "\nAssert Failed: lockf assert failed\n";
+    }
+
+  }
+    return returnVec;
+}
+
+/* Accepts a CallSite and Bitset(funcPrivs) and appends privileges associated
+ * with the callsite to the calling function 
+ * WAS (before fcntl) appending the privilege to the callee at the callsite. Referred to in comments as C1 */
 template <typename lambda>
 void
 addPrivilege(FuncPrivMap& funcPrivs,
              lambda stripFunctionName,
-             llvm::Function* function,
-             llvm::Function& caller,
+             llvm::Function* callee, //Change to callee
+             llvm::Function* caller,
              llvm::CallSite& cs) {
   auto& bitsetMap = syscallManMap;
-  auto functionName = stripFunctionName(function->getName());
-  if (bitsetMap.count(functionName)) {
-    if (functionName.equals("ioctl")) {
-      // llvm::outs() << "\n" << functionName << "\n";
-      // llvm::outs() << "\n" <<  arg.
-      auto* arg    = cs.getArgument(1);
-      auto* argInt = llvm::dyn_cast<llvm::ConstantInt>(arg);
+  auto calleeName = stripFunctionName(callee->getName());
 
-      if (argInt; auto argSExtValue = argInt->getSExtValue()) {
-        // llvm::outs() << "argInt: " << argSExtValue << "\n";
+  // if(calleeName.contains("flock")) {
+  //   llvm::outs() << "Callee Name: " << callee->getName() << "\n";
+  //   llvm::outs() << "Caller Name: " << caller->getName() << "\n";
+  //   printCallSiteLocation(cs);
+  // }
 
-        switch (argSExtValue) {
-          // /home/ska196/src/lib/libc/stdlib/posix_pty.c 47
-          case 1076392961: { // PTMGET
-            // Requires PLEDGE_TTY and either of PLEDGE_RPATH or PLEDGE_WPATH
-            funcPrivs[function] |= 1 << PLEDGE_INET;
-            funcPrivs[function] |= 1 << PLEDGE_RPATH;
-            funcPrivs[function] |= 1 << PLEDGE_WPATH;
-            break;
-          }
-          // /home/ska196/src/lib/libc/net/sockatmark.c 37
-          case 1074033415: { // SIOCATMARK
-            funcPrivs[function] |= 1 << PLEDGE_INET;
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcdrain.c 42
-          case 536900702: { // TIOCDRAIN
-            // Not handled in kern_pledge. Noted in Readme. No special pledges added
-            // Used to drain the tty socket. Probably not handled since the program will need tty before this anyway
-            // Does it fit in our model of privilege dropping?
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcdrain.c 42
-          // case 536900702:{
-          //   break;
-          // }
-
-          // /home/ska196/src/lib/libc/termios/tcflow.c 44
-          case 536900719: { // TIOCSTOP
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcflow.c 46
-          case 536900718: { // TIOCSTART
-            funcPrivs[function] |= 1 << PLEDGE_TTY;
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcflush.c 55
-          case 2147775504: { // TIOCFLUSH
-            funcPrivs[function] |= 1 << PLEDGE_TTY;
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcgetattr.c 37
-          case 1076655123: { //TIOCGETA
-            funcPrivs[function] |= 1 << PLEDGE_TTY;
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcgetpgrp.c 39
-          case 1074033783: { // TIOCGPGRP
-            funcPrivs[function] |= 1 << PLEDGE_TTY;
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcgetsid.c 39
-          case 1074033763: { // TIOCGSID
-            // Gets the session id to the currently connected tty terminal
-            // Similar to TIOCDRAIN
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcsendbreak.c 43
-          case 536900731: {// TIOCSBRK
-            funcPrivs[function] |= 1 << PLEDGE_TTY;
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcsendbreak.c 46
-          case 536900730: {// TIOCCBRK
-            funcPrivs[function] |= 1 << PLEDGE_TTY;
-            break;
-          }
-
-          // All three are treated the same in kern_pledge.c:1147
-          // /home/ska196/src/lib/libc/termios/tcsetattr.c 47
-          case 2150396948: { // TIOCSETA
-            funcPrivs[function] |= 1 << PLEDGE_TTY;
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcsetattr.c 49
-          case 2150396949: { // TIOCSETAW
-            funcPrivs[function] |= 1 << PLEDGE_TTY;
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcsetattr.c 51
-          case 2150396950: { // TIOCSETAF
-            funcPrivs[function] |= 1 << PLEDGE_TTY;
-            break;
-          }
-          // /home/ska196/src/lib/libc/termios/tcsetpgrp.c 40
-          case 2147775606: {// TIOCSPGRP 
-            funcPrivs[function] |= 1 << PLEDGE_PROC;
-            funcPrivs[function] |= 1 << PLEDGE_TTY;
-            break;
-          }
-          default: {
-            break;
-          }
-        }
-      }
-      // printCallSiteLocation(cs);
-    } else {
-      funcPrivs[function] |= bitsetMap[functionName];
+  if (calleeName.equals("fcntl_cancel")) {
+    // Handle wrapper for fcntl only, flock is a simple seed, lockf is to be
+    // handled at upper level analysis
+    for (auto promise : getfcntlCSPromises(cs)){
+      funcPrivs[caller] |= 1 << promise; // C1
+    }
+  } else if (calleeName.equals("ioctl")) {
+    for (auto promise : getioctlCSPromises(cs))
+      funcPrivs[caller] |= 1 << promise; // C1
+  } else {
+    funcPrivs[caller] |= bitsetMap[calleeName]; // C1
+    if (calleeName.contains("flock")) {
+      llvm::errs() << "Callee Name: " << callee->getName() << "\n";
+      llvm::errs() << "Caller Name: " << caller->getName() << "\n";
+      printCallSiteLocation(cs);
+    printBitset(funcPrivs[callee], llvm::outs());
     }
   }
 };
@@ -346,6 +548,14 @@ main(int argc, char** argv) {
   };
 
   for (auto& caller : *module) {
+    /* fcntl (syscall) is only called from fcntl_cancel. Since I'm handling
+     * fcntl_cancel, I don't need to handle the calls to fcntl within
+     * fcntl_cancel. 
+     * TLDR: Skips fcntl wrapper */
+    if(caller.getName().equals("_libc_fcntl_cancel")){
+      continue;
+    }
+
     for (auto& bb : caller) {
       for (auto& i : bb) {
         // TODO: Function Pointer Resolver
@@ -359,7 +569,7 @@ main(int argc, char** argv) {
           continue;
         }
         addToMap(&caller,callee);
-        addPrivilege(funcPrivs, stripFunctionName, callee, caller, cs);
+        addPrivilege(funcPrivs, stripFunctionName, callee, &caller, cs);
       }
     }
   }

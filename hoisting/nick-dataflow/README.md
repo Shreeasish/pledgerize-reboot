@@ -5,7 +5,7 @@ cflow -i _s --level begin='' --level '0=    |' --level '1=    |' --level end0=''
 ```
 promise_value is used to hold the value for a particular promise -- stdio <--> 1<<6  -- From pledge.h -- Done
 
-syscall\_bitset holds the bitset for each syscall -- open <--> 1<<4 | 1<<6 -- From kern\_pledge.c
+		syscall\_bitset holds the bitset for each syscall -- open <--> 1<<4 | 1<<6 -- From kern\_pledge.c
 
 promise names also needs to be added -- From kern\_pledge.c -- Done
 
@@ -25,7 +25,7 @@ naive (sourced from man pages) Syscall-Promise Map for the functions `asprintf, 
 * The script finfo can be used to check for promise requirements for a function. Quick reference for using style
  `./finfo -k all-closures-stripped-man -m all-closures-stripped-ioctl fopen` (beware shebanged to use my conda setup)
 
-### ioctl flag information
+### `ioctl` Flag Information
 1. DTYPE\_SOCKET -- Used in kern\_pledge.c 
 Information about it available [here](https://books.google.ca/books?id=6H9AxyFd0v0C&pg=PT85&lpg=PT85&dq=DTYPE_SOCKET&source=bl&ots=b7iH8ubOhG&sig=ctuS9mddT-JD845d-kpvzsMjnC4&hl=en&sa=X&ved=0ahUKEwin37y13YPcAhVSCTQIHYn7BLsQ6AEILjAB#v=onepage&q=DTYPE_SOCKET&f=false)
 2. TIOCDRAIN    -- Used in termios/tcdrain.c
@@ -36,8 +36,22 @@ No handle in kern\_pledge.c; similar to TIOCDRAIN
 Needs more than one privilege (kerni\_pledge.c:1127) - PLEDGE\_PROC and PLEDGE\_TTY
 5. PTMGET	-- posix\_pty.c
 Requires PLEDGE\_TTY and either of PLEDGE\_RPATH or PLEDGE\_WPATH. Conservatively requires all three. May handle later in the static analysis
-==========================
 
+
+### `fcntl` Information
+1. F_SETLK, F_SETLKW, F_GETLK flags require `FLOCK` privileges
+2. The only libc function to use any of them is `lockf` (libc/gen/lockf.c)
+3. `lockf` itself seems not to be used anywhere in libc.
+4. VERIFY: `lockf` is mapped in the function/syscall-bitset map; left to be handled in higher level analysis.
+5. F_SETOWN     -- Requires `PROC`.  `net/rcmd.c:137:fcntl(s, F_SETOWN, pid);` 
+6. TODO: Cleanup fcntl handler (squash cases) 
+7. `fcntl` is mangled and wrapped inside libc 
+`libc_x` -> `_libc_fcntl_cancel` -> `fcntl` (actual syscall which is wrapped with the `HIDDEN(X)` macro) 
+
+### Additional Notes about PLEDGE_FLOCK
+1. `flock` (System Call) itself is only called twice inside libc, both from yp_dobind
+2. No special handling for the syscall itself
+----------------------
 
 These programs are demonstrations of how LLVM can be used for (very simple)
 static dataflow analyses (both inter- and intraprocedural). The presentation
