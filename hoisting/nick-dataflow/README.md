@@ -51,6 +51,12 @@ Requires PLEDGE\_TTY and either of PLEDGE\_RPATH or PLEDGE\_WPATH. Conservativel
 ### Additional Notes about PLEDGE_FLOCK
 1. `flock` (System Call) itself is only called twice inside libc, both from yp_dobind
 2. No special handling for the syscall itself
+
+### PLEDGE_PROTEXEC
+1. Allows the use of `PROT_EXEC` flag with `mmap` and `mprotect`
+2. `PROT_EXEC` has no uses inside libc. Verified with `ag 'PROT_EXEC'` and CallgraphAnalyzer
+3. Required privileges changed for `mmap` and `mprotect` in CallGraphAnalyzer.h. (Set to `PLEDGE_STDIO` only)
+
 ----------------------
 
 These programs are demonstrations of how LLVM can be used for (very simple)

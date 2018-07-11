@@ -253,11 +253,11 @@ static SyscallBitsetMap syscallManMap{
     // {"fcntl",
     //  std::bitset<COUNT>().set(PLEDGE_FLOCK)
     //      | std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    // {"fstat",
-    //  std::bitset<COUNT>().set(PLEDGE_RPATH)
-    //      | std::bitset<COUNT>().set(PLEDGE_TMPPATH)
-    //      | std::bitset<COUNT>().set(PLEDGE_WPATH)
-    //      | std::bitset<COUNT>().set(PLEDGE_STDIO)},
+    {"fstat",
+     std::bitset<COUNT>().set(PLEDGE_RPATH)
+         | std::bitset<COUNT>().set(PLEDGE_TMPPATH)
+         | std::bitset<COUNT>().set(PLEDGE_WPATH)
+         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"fsync", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"ftruncate", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"getdents", std::bitset<COUNT>().set(PLEDGE_STDIO)},
@@ -288,13 +288,11 @@ static SyscallBitsetMap syscallManMap{
     {"madvise", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"minherit", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"mmap",
-    //  std::bitset<COUNT>().set(0)},
-     std::bitset<COUNT>().set(PLEDGE_PROTEXEC)
-         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
+    //  std::bitset<COUNT>().set(PLEDGE_PROTEXEC) /* mmap does not need PLEDGE_PROTEXEC inside libc */
+          std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"mprotect",
-     std::bitset<COUNT>().set(0)},
-    //  std::bitset<COUNT>().set(PLEDGE_PROTEXEC)
-    //      | std::bitset<COUNT>().set(PLEDGE_STDIO)},
+    //  std::bitset<COUNT>().set(PLEDGE_PROTEXEC) /* mprotect does not need PLEDGE_PROTEXEC inside libc */
+          std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"mquery", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"munmap", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"nanosleep", std::bitset<COUNT>().set(PLEDGE_STDIO)},
@@ -486,9 +484,9 @@ static SyscallBitsetMap syscallManMap{
     {"adjtime", std::bitset<COUNT>().set(PLEDGE_SETTIME)},
     {"adjfreq", std::bitset<COUNT>().set(PLEDGE_SETTIME)},
     {"sysctl",
-     std::bitset<COUNT>().set(0)},
-    //  std::bitset<COUNT>().set(PLEDGE_PS)
-    //      | std::bitset<COUNT>().set(PLEDGE_VMINFO)},
+    //  std::bitset<COUNT>().set(0)},
+     std::bitset<COUNT>().set(PLEDGE_PS)
+         | std::bitset<COUNT>().set(PLEDGE_VMINFO)},
     {"setuid", std::bitset<COUNT>().set(PLEDGE_ID)},
     {"seteuid", std::bitset<COUNT>().set(PLEDGE_ID)},
     {"setreuid", std::bitset<COUNT>().set(PLEDGE_ID)},

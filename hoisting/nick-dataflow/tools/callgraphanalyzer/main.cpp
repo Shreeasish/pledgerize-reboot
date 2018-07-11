@@ -52,14 +52,19 @@ using FuncPrivMap =
 
 using FunctionSet = llvm::DenseSet<llvm::Function *>;
 
-static cl::OptionCategory futureFunctionsCategory{"Graph analyzer options"};
+static cl::OptionCategory callgraphAnalyzerCategory{"Graph analyzer options"};
 
 static cl::opt<string> inPath{cl::Positional,
                               cl::desc{"<Module to analyze>"},
                               cl::value_desc{"bitcode filename"},
                               cl::init(""),
                               cl::Required,
-                              cl::cat{futureFunctionsCategory}};
+                              cl::cat{callgraphAnalyzerCategory}};
+
+static cl::opt<bool> exitOpt{"x",
+                             cl::desc{"<Exit after building callgraph (default false)>"},
+                             cl::init(false),
+                             cl::cat{callgraphAnalyzerCategory}};
 
 static llvm::Function*
 getCalledFunction(llvm::CallSite cs) {
@@ -88,7 +93,7 @@ getCalledFunction(llvm::CallSite cs) {
       unsigned Line  = Loc->getLine();
       StringRef File = Loc->getFilename();
       StringRef Dir  = Loc->getDirectory();
-      llvm::outs() << Dir << " "<< File << "\n";
+      llvm::outs() << Dir << " "<< File << ":";
       llvm::outs() << Line << "\n";
     }
   };
@@ -476,35 +481,30 @@ template <typename lambda>
 void
 addPrivilege(FuncPrivMap& funcPrivs,
              lambda stripFunctionName,
-             llvm::Function* callee, //Change to callee
+             llvm::Function* callee,  // Change to callee
              llvm::Function* caller,
              llvm::CallSite& cs) {
   auto& bitsetMap = syscallManMap;
   auto calleeName = stripFunctionName(callee->getName());
 
-  // if(calleeName.contains("flock")) {
-  //   llvm::outs() << "Callee Name: " << callee->getName() << "\n";
-  //   llvm::outs() << "Caller Name: " << caller->getName() << "\n";
+  // if(calleeName.contains("mmap")) {
+  //   // llvm::outs() << "Callee Name: " << callee->getName() << "\n";
+  //   llvm::outs() << "Caller Name: " << caller->getName() << "\t";
   //   printCallSiteLocation(cs);
   // }
 
   if (calleeName.equals("fcntl_cancel")) {
     // Handle wrapper for fcntl only, flock is a simple seed, lockf is to be
     // handled at upper level analysis
-    for (auto promise : getfcntlCSPromises(cs)){
-      funcPrivs[caller] |= 1 << promise; // C1
+    for (auto promise : getfcntlCSPromises(cs)) {
+      funcPrivs[caller] |= 1 << promise;  // C1
     }
   } else if (calleeName.equals("ioctl")) {
-    for (auto promise : getioctlCSPromises(cs))
-      funcPrivs[caller] |= 1 << promise; // C1
-  } else {
-    funcPrivs[caller] |= bitsetMap[calleeName]; // C1
-    if (calleeName.contains("flock")) {
-      llvm::errs() << "Callee Name: " << callee->getName() << "\n";
-      llvm::errs() << "Caller Name: " << caller->getName() << "\n";
-      printCallSiteLocation(cs);
-    printBitset(funcPrivs[callee], llvm::outs());
+    for (auto promise : getioctlCSPromises(cs)) {
+      funcPrivs[caller] |= 1 << promise;  // C1
     }
+  } else {
+    funcPrivs[caller] |= bitsetMap[calleeName];  // C1
   }
 };
 
@@ -516,7 +516,7 @@ main(int argc, char** argv) {
   sys::PrintStackTraceOnErrorSignal(argv[0]);
   llvm::PrettyStackTraceProgram X(argc, argv);//libc function called xdr_wrap exists
   llvm_shutdown_obj shutdown;
-  cl::HideUnrelatedOptions(futureFunctionsCategory);
+  cl::HideUnrelatedOptions(callgraphAnalyzerCategory);
   cl::ParseCommandLineOptions(argc, argv);
 
   // Construct an IR file from the filename passed on the command line.
@@ -573,6 +573,13 @@ main(int argc, char** argv) {
       }
     }
   }
+
+  if(exitOpt.getValue()){
+    llvm::outs().flush();
+    llvm::errs().flush();
+    exit(0);
+  }
+  
 
   llvm::DenseMap<llvm::Function*, llvm::DenseSet<Function*>> inverseCallGraph;
   for (auto& [caller, callees] : callGraph){
