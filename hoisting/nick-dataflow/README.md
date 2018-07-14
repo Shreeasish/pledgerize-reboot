@@ -38,7 +38,7 @@ Needs more than one privilege (kerni\_pledge.c:1127) - PLEDGE\_PROC and PLEDGE\_
 Requires PLEDGE\_TTY and either of PLEDGE\_RPATH or PLEDGE\_WPATH. Conservatively requires all three. May handle later in the static analysis
 
 
-### `fcntl` Information
+### `fcntl` notes
 1. F_SETLK, F_SETLKW, F_GETLK flags require `FLOCK` privileges
 2. The only libc function to use any of them is `lockf` (libc/gen/lockf.c)
 3. `lockf` itself seems not to be used anywhere in libc.
@@ -52,11 +52,19 @@ Requires PLEDGE\_TTY and either of PLEDGE\_RPATH or PLEDGE\_WPATH. Conservativel
 1. `flock` (System Call) itself is only called twice inside libc, both from yp_dobind
 2. No special handling for the syscall itself
 
-### PLEDGE_PROTEXEC
+### PLEDGE_PROTEXEC notes
 1. Allows the use of `PROT_EXEC` flag with `mmap` and `mprotect`
 2. `PROT_EXEC` has no uses inside libc. Verified with `ag 'PROT_EXEC'` and CallgraphAnalyzer
 3. Required privileges changed for `mmap` and `mprotect` in CallGraphAnalyzer.h. (Set to `PLEDGE_STDIO` only)
 
+### `sysctl` notes
+1. Call locations for `sysctl` can be found in sysctl-loc
+2. Aside from a call from getifaddr, sysctl requires no privileges inside libc
+3. getifaddr seems to be in a catchall in kern_pledge.c (line 830)
+4. TODO: Find privilege needed for getifaddr.
+5. `sysconf` holds several calls to sysctl in a switch case style. 
+`sysconf` itself however is called only once in libc and does not require any privileges
+6. TODO: Change the seed for sysctl in CallgraphAnalyzer.h
 ----------------------
 
 These programs are demonstrations of how LLVM can be used for (very simple)

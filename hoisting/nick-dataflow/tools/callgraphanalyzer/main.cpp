@@ -315,7 +315,24 @@ getioctlCSPromises(llvm::CallSite& cs) {
 }
 
 std::vector<int>
-getfcntlCSPromises(llvm::CallSite& cs){
+getsysctlCSPromises(llvm::CallSite& cs) {
+  std::vector<int> returnVec;
+
+    // llvm::outs() << "\n"
+    //              << "FunctionName " << getCalledFunction(cs)->getName() 
+    //              << "\n";
+    // printCallSiteLocation(cs);
+
+    if ( cs->getParent()->getParent()->getName().equals("_libc_getifaddrs" )){
+      returnVec.push_back(PLEDGE_ROUTE); /* Promise requirement for _libc_getifaddrs set to PLEDGE_ROUTE for now */
+      return returnVec;
+    }
+  return returnVec;
+}
+
+
+std::vector<int>
+getfcntlCSPromises(llvm::CallSite& cs) {
   auto* arg    = cs.getArgument(1);
   std::vector<int> returnVec;
 
@@ -487,13 +504,19 @@ addPrivilege(FuncPrivMap& funcPrivs,
   auto& bitsetMap = syscallManMap;
   auto calleeName = stripFunctionName(callee->getName());
 
-  // if(calleeName.contains("mmap")) {
-  //   // llvm::outs() << "Callee Name: " << callee->getName() << "\n";
-  //   llvm::outs() << "Caller Name: " << caller->getName() << "\t";
-  //   printCallSiteLocation(cs);
-  // }
+  if(calleeName.contains("gethostid")) {
+    llvm::outs() << "Callee Name: " << callee->getName() << "\n";
+    llvm::outs() << "Caller Name: " << caller->getName() << "\n";
+    printCallSiteLocation(cs);
+  }
 
-  if (calleeName.equals("fcntl_cancel")) {
+  if (calleeName.equals("sysctl")) {
+    for (auto promise : getsysctlCSPromises(cs)) {
+      funcPrivs[caller] |= 1 << promise;  // C1
+    }
+  }
+
+  else if (calleeName.equals("fcntl_cancel")) {
     // Handle wrapper for fcntl only, flock is a simple seed, lockf is to be
     // handled at upper level analysis
     for (auto promise : getfcntlCSPromises(cs)) {
@@ -551,10 +574,13 @@ main(int argc, char** argv) {
     /* fcntl (syscall) is only called from fcntl_cancel. Since I'm handling
      * fcntl_cancel, I don't need to handle the calls to fcntl within
      * fcntl_cancel. 
-     * TLDR: Skips fcntl wrapper */
-    if(caller.getName().equals("_libc_fcntl_cancel")){
-      continue;
-    }
+     * TLDR: Skips calls within fcntl wrapper */
+    if (caller.getName().equals("_libc_fcntl_cancel")) { continue; }
+
+    /* sysconf has several calls to sysctl within a switch case.
+     * sysconf has a single use inside libc (getdtablesize)
+     * which doesn't need any privileges */
+    if (caller.getName().equals("_libc_sysconf")) { continue; }
 
     for (auto& bb : caller) {
       for (auto& i : bb) {
