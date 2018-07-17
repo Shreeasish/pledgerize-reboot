@@ -61,10 +61,10 @@ Requires PLEDGE\_TTY and either of PLEDGE\_RPATH or PLEDGE\_WPATH. Conservativel
 1. Call locations for `sysctl` can be found in sysctl-loc
 2. Aside from a call from getifaddr, sysctl requires no privileges inside libc
 3. getifaddr seems to be in a catchall in kern_pledge.c (line 830)
-4. TODO: Find privilege needed for getifaddr.
+4. The sysctl call inside `getifaddr` is allowed with any of `PLEDGE_ROUTE | PLEDGE_INET | PLEDGE_DNS`. Verified on testbench for OpenBSD.
 5. `sysconf` holds several calls to sysctl in a switch case style. 
 `sysconf` itself however is called only once in libc and does not require any privileges
-6. TODO: Change the seed for sysctl in CallgraphAnalyzer.h
+7. TODO: Document handwritten notes for sysctl
 ----------------------
 
 These programs are demonstrations of how LLVM can be used for (very simple)

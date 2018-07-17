@@ -318,13 +318,13 @@ std::vector<int>
 getsysctlCSPromises(llvm::CallSite& cs) {
   std::vector<int> returnVec;
 
-    // llvm::outs() << "\n"
-    //              << "FunctionName " << getCalledFunction(cs)->getName() 
-    //              << "\n";
-    // printCallSiteLocation(cs);
-
     if ( cs->getParent()->getParent()->getName().equals("_libc_getifaddrs" )){
-      returnVec.push_back(PLEDGE_ROUTE); /* Promise requirement for _libc_getifaddrs set to PLEDGE_ROUTE for now */
+    llvm::outs() << "\n"
+                 << "FunctionName " << getCalledFunction(cs)->getName() 
+                 << "\n";
+    printCallSiteLocation(cs);
+
+      returnVec.push_back(PLEDGE_SPCL_SYSCTL); /* Promise requirement for _libc_getifaddrs set to PLEDGE_ROUTE for now */
       return returnVec;
     }
   return returnVec;
@@ -504,23 +504,22 @@ addPrivilege(FuncPrivMap& funcPrivs,
   auto& bitsetMap = syscallManMap;
   auto calleeName = stripFunctionName(callee->getName());
 
-  if(calleeName.contains("gethostid")) {
-    llvm::outs() << "Callee Name: " << callee->getName() << "\n";
-    llvm::outs() << "Caller Name: " << caller->getName() << "\n";
-    printCallSiteLocation(cs);
-  }
+  // if(calleeName.contains("gethostid")) {
+  //   llvm::outs() << "Callee Name: " << callee->getName() << "\n";
+  //   llvm::outs() << "Caller Name: " << caller->getName() << "\n";
+  //   printCallSiteLocation(cs);
+  // }
 
   if (calleeName.equals("sysctl")) {
     for (auto promise : getsysctlCSPromises(cs)) {
-      funcPrivs[caller] |= 1 << promise;  // C1
+      // funcPrivs[caller] |= 1 << promise;  // C1 // Causes an overflow error 
+      funcPrivs[caller].set(promise);  // C1
     }
-  }
-
-  else if (calleeName.equals("fcntl_cancel")) {
+  } else if (calleeName.equals("fcntl_cancel")) {
     // Handle wrapper for fcntl only, flock is a simple seed, lockf is to be
     // handled at upper level analysis
     for (auto promise : getfcntlCSPromises(cs)) {
-      funcPrivs[caller] |= 1 << promise;  // C1
+      funcPrivs[caller].set(promise);  // C1
     }
   } else if (calleeName.equals("ioctl")) {
     for (auto promise : getioctlCSPromises(cs)) {

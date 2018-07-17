@@ -484,9 +484,9 @@ static SyscallBitsetMap syscallManMap{
     {"adjtime", std::bitset<COUNT>().set(PLEDGE_SETTIME)},
     {"adjfreq", std::bitset<COUNT>().set(PLEDGE_SETTIME)},
     {"sysctl",
-    //  std::bitset<COUNT>().set(0)},
-     std::bitset<COUNT>().set(PLEDGE_PS)
-         | std::bitset<COUNT>().set(PLEDGE_VMINFO)},
+     std::bitset<COUNT>().set(0)}, // Sysctl is handled on a per flag basis in the system
+    //  std::bitset<COUNT>().set(PLEDGE_PS)
+    //      | std::bitset<COUNT>().set(PLEDGE_VMINFO)},
     {"setuid", std::bitset<COUNT>().set(PLEDGE_ID)},
     {"seteuid", std::bitset<COUNT>().set(PLEDGE_ID)},
     {"setreuid", std::bitset<COUNT>().set(PLEDGE_ID)},
