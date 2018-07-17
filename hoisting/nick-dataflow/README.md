@@ -65,6 +65,12 @@ Requires PLEDGE\_TTY and either of PLEDGE\_RPATH or PLEDGE\_WPATH. Conservativel
 5. `sysconf` holds several calls to sysctl in a switch case style. 
 `sysconf` itself however is called only once in libc and does not require any privileges
 7. TODO: Document handwritten notes for sysctl
+
+### `fstat` notes
+1. fstat belongs to the family of stat, fstat, and lstat.
+2. fstat itself does not require any privileges, the privileges are checked beforehand when the file descripter is obtained.
+3. Verified on OpenBSD with READONLY privileges for open. Need to verify it for Write.
+4. Impact of stat and lstat seems to be low within libc (explosion seems to be caused by fstat only).
 ----------------------
 
 These programs are demonstrations of how LLVM can be used for (very simple)
