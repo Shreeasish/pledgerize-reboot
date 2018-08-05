@@ -201,8 +201,8 @@ getioctlCSPromises(llvm::CallSite& cs) {
     // llvm::outs() << "argInt: " << argSExtValue << "\n";
 
     switch (argSExtValue) {
-      // /home/ska196/src/lib/libc/stdlib/posix_pty.c 47
       case 1076392961: {  // PTMGET
+      // /home/ska196/src/lib/libc/stdlib/posix_pty.c 47
         // Requires PLEDGE_TTY and either of PLEDGE_RPATH or PLEDGE_WPATH
         returnVec.push_back(PLEDGE_INET);
         returnVec.push_back(PLEDGE_RPATH);
@@ -319,12 +319,8 @@ getsysctlCSPromises(llvm::CallSite& cs) {
   std::vector<int> returnVec;
 
     if ( cs->getParent()->getParent()->getName().equals("_libc_getifaddrs" )){
-    // llvm::outs() << "\n"
-    //              << "FunctionName " << getCalledFunction(cs)->getName() 
-    //              << "\n";
-    // printCallSiteLocation(cs);
-
-      returnVec.push_back(PLEDGE_SPCL_SYSCTL); /* Promise requirement for _libc_getifaddrs set to PLEDGE_ROUTE for now */
+      /* Promise requirement for _libc_getifaddrs set to PLEDGE_ROUTE for now */
+      returnVec.push_back(PLEDGE_SPCL_SYSCTL);
       return returnVec;
     }
   return returnVec;
@@ -338,193 +334,208 @@ getfcntlCSPromises(llvm::CallSite& cs) {
 
   if (auto* argInt = llvm::dyn_cast<llvm::ConstantInt>(arg); argInt) {
     auto argSExtValue = argInt->getSExtValue();
-    // llvm::outs() << "\n"
-    //              << "FunctionName " << getCalledFunction(cs)->getName() << " argInt:" << argSExtValue
-    //              << "\n";
-    // printCallSiteLocation(cs);
     switch (argSExtValue) {
-      //   fcntl_cancel argInt:3
-      case 3: {
-        // F_GETFL
-        // returnVec.push_back();
-        break;
-      }
-      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/stdio/fdopen.c //
-      // 58
 
+      case 3:
+      // fcntl_cancel argInt:3
+      // F_GETFL
+      // returnVec.push_back();
+      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/stdio/fdopen.c 58
+      case 1:
       // fcntl_cancel argInt:1
-      case 1: {
-        // F_GETFD
-        break;
-      }
-      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/stdio/fdopen.c //
-      // 81
-
+      // F_GETFD
+      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/stdio/fdopen.c  81
+      case 2:
       // fcntl_cancel argInt:2
-      case 2: {
-        // F_SETFD
-        break;
-      }
-      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/stdio/fdopen.c //
-      // 82
-
+      // F_SETFD
+      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/stdio/fdopen.c  82 
+      case 11:
       // fcntl_cancel argInt:11
-      case 11: {
-        // F_ISATTY
+      // F_ISATTY
+      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/isatty.c  37
         break;
-      }
-      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/isatty.c // 37
 
-      // fcntl_cancel argInt:7
-      case 7: {  // Handle lockf.c seperately
-        // F_GETLK
+      case 7: {  // Handle lockf.c seperately  F_GETLK  fcntl_cancel argInt:7
         returnVec.push_back(PLEDGE_FLOCK);
         break;
-      }
-      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/lockf.c // 63
-
-      // fcntl_cancel argInt:6
-      case 6: {
-        // F_SETOWN
+      } // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/lockf.c  63
+      case 6: { // fcntl_cancel argInt:6  F_SETOWN
         returnVec.push_back(PLEDGE_PROC);
         break;
-      }
-      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/net/rcmd.c // 137
-
-      // fcntl argInt:9
-      case 9: {
-        // F_SETLKW
+      } // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/net/rcmd.c  137
+      case 9: {  // fcntl argInt:9  F_SETLKW
         returnVec.push_back(PLEDGE_FLOCK);
         break;
-      }
-      // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/sys/w_fcntl.c // 49
+      } // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/sys/w_fcntl.c  49 
 
       default: {
         llvm::errs() << "Default Reached on fcntl constant switch case";
       }
     }
 
-    // Same Flags Different CallSites
-    // fcntl_cancel argInt:3
-    // case 3: {
-    //   //F_GETFL
-    //   break;
-    // }
-    // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/opendir.c // 71
-
-    // fcntl_cancel argInt:2
-    // case 2: {
-    //   //F_SETFD
-    //   break;
-    // }
-    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/opendir.c //
-    // 86
-
-    // fcntl_cancel argInt:1
-    // case 1: {
-    //   // F_GETFD
-    //   break;
-    // }
-    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/popen.c // 103
-
-    // fcntl_cancel argInt:2
-    // case 2: {
-    //   // F_SETFD
-    //   break;
-    // }
-    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/popen.c // 105
-
-    // // fcntl_cancel argInt:1
-    // case 1: {
-    //   // F_GETFD
-    //   break;
-    // }
-    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/popen.c // 133
-
-    // fcntl_cancel argInt:2
-    // case 2: {
-    //   // F_SETFD
-    //   break;
-    // }
-    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/popen.c // 135
-
-    // fcntl_cancel argInt:1
-    // case 1: {
-    //   // F_GETFD
-    //   break;
-    // }
-    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/posix_spawn.c
-    // // 161
-
-    // // fcntl_cancel argInt:2
-    // case 2: {
-    //   //F_SETFD
-    //   break;
-    // }
-    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/gen/posix_spawn.c
-    // // 165
-
-    // // fcntl_cancel argInt:2
-    // case 2: {
-    //   // F_SETFD
-    //   break;
-    // }
-    // // /home/ska196/src/lib/libc /home/ska196/src/lib/libc/yp/yp_bind.c //
-    // 240
   } else {
     /* Non Constants are only induced by lockf.c. Assert for parent function
      * name == lockf and insert flock privilege to be handled at upper level */
-
-    // llvm::outs() << "\n NonConstantInt " << cs->getParent()->getParent()->getName()
-    //              << " FunctionName " << getCalledFunction(cs)->getName()
-    //              << "\n";
-    // printCallSiteLocation(cs);
-
-    if( cs->getParent()->getParent()->getName().equals("lockf") ){
+    if (cs->getParent()->getParent()->getName().equals("lockf")) {
       returnVec.push_back(PLEDGE_FLOCK);
-    }
-    else {
+    } else {
       llvm::errs() << "\nAssert Failed: lockf assert failed\n";
     }
+  } return returnVec;
+}
 
-  }
-    return returnVec;
+
+std::vector<int>
+getopenCSPromises(llvm::CallSite& cs) {
+
+  std::vector<int> returnVec;
+    if (auto* arg = llvm::dyn_cast_or_null<ConstantInt>(cs.getArgument(1));
+        arg) {
+      auto argValue = arg->getSExtValue();
+      // llvm::outs() << "Argument Value:" << argValue << "\n";
+
+      auto* caller = cs.getParent()->getParent(); 
+      if (caller->getName().equals("daemon")){
+        // llvm::outs() << caller->getName() << "\n";
+        return returnVec;
+      }
+      if (caller->getName().equals("_libc_readpassphrase")){
+        // llvm::outs() << caller->getName() << "\n";
+        returnVec.push_back(PLEDGE_TTY);
+        return returnVec;
+      }
+      
+
+      switch (argValue) {
+        case 0:  // O_RDONLY
+        {
+          returnVec.push_back(PLEDGE_RPATH);
+          break;
+        }
+        case 2:  // O_RDWR
+        {
+          returnVec.push_back(PLEDGE_RPATH);
+          returnVec.push_back(PLEDGE_WPATH);
+          break;
+        }
+        case 65536: // O_RDONLY|O_CLOEXEC
+        {
+          returnVec.push_back(PLEDGE_RPATH);
+          break;
+        }
+        case 196608:  // O_RDONLY|O_DIRECTORY|O_CLOEXEC
+        {
+          returnVec.push_back(PLEDGE_RPATH);
+          break;
+        }
+        case 1537: // O_WRONLY|O_CREAT|O_TRUNC
+        {
+          returnVec.push_back(PLEDGE_WPATH);
+          returnVec.push_back(PLEDGE_CPATH);
+          break;
+        }
+      }
+    }
+  return returnVec;
 }
 
 /* Accepts a CallSite and Bitset(funcPrivs) and appends privileges associated
  * with the callsite to the calling function 
  * WAS (before fcntl) appending the privilege to the callee at the callsite. Referred to in comments as C1 */
+
+static llvm::ConstantDataArray*
+getUnderlyingData(llvm::Value* value) {
+  if (auto* c = llvm::dyn_cast<llvm::ConstantExpr>(value)) {
+    value = c->getAsInstruction();
+  }
+  auto* gep = llvm::dyn_cast<llvm::GetElementPtrInst>(value);
+  if (!gep) {
+    return nullptr;
+  }
+  auto* global = llvm::dyn_cast<llvm::GlobalVariable>(gep->getPointerOperand());
+  if (!global) {
+    return nullptr;
+  }
+  auto* init = global->getInitializer();
+  return llvm::dyn_cast_or_null<llvm::ConstantDataArray>(init);
+}
+
 template <typename lambda>
 void
 addPrivilege(FuncPrivMap& funcPrivs,
              lambda stripFunctionName,
-             llvm::Function* callee,  // Change to callee
+             llvm::Function* callee,  
              llvm::Function* caller,
              llvm::CallSite& cs) {
   auto& bitsetMap = syscallManMap;
   auto calleeName = stripFunctionName(callee->getName());
 
-  // if(calleeName.contains("fstat")) {
+  [[maybe_unused]]
+  auto callerName = stripFunctionName(caller->getName());
+
+  // if (calleeName.contains("openat")) { 
   //   llvm::outs() << "Callee Name: " << callee->getName() << "\n";
-  //   llvm::outs() << "Caller Name: " << caller->getName() << "\n";
+  //   // llvm::outs() << "Caller Name: " << caller->getName() << "\n";
   //   printCallSiteLocation(cs);
   // }
 
-  if (calleeName.equals("sysctl")) {
+  if (calleeName.contains("fopen")) {
+    // All uses of fopen within libc are readonly ("re")
+    if (callerName.equals("getgrouplist")) {
+      funcPrivs[caller].set(PLEDGE_GETPW);
+      return;
+    }
+    if (callerName.equals("setttyent")) {
+      funcPrivs[caller].set(PLEDGE_TTY);
+      return;
+    }
+    if (callerName.equals("_getgrent_yp")) {
+      funcPrivs[caller].set(PLEDGE_GETPW);
+      return;
+    }
+    funcPrivs[caller].set(PLEDGE_RPATH);
+
+  } else if (calleeName.contains("mktemp_internal")) {
+    funcPrivs[caller].set(PLEDGE_TMPPATH);
+
+  } else if (calleeName.equals("dbopen")) {
+    if (callerName.equals("__initdb")) {
+      funcPrivs[caller].set(PLEDGE_GETPW);
+
+    }
+    // dbopen uses exclusively uses O_RDONLY within libc
+    funcPrivs[caller].set(PLEDGE_RPATH);
+
+  } else if (calleeName.equals("stat") && callerName.equals("asr_check_reload")) {
+    funcPrivs[caller].set(PLEDGE_DNS).set(PLEDGE_STDIO);
+
+  } else if (calleeName.equals("readlink") && callerName.equals("malloc_init")) {
+    funcPrivs[caller].set(PLEDGE_STDIO);
+
+  } else if (calleeName.equals("sysctl")) {
     for (auto promise : getsysctlCSPromises(cs)) {
-      // funcPrivs[caller] |= 1 << promise;  // C1 // Causes an overflow error 
       funcPrivs[caller].set(promise);  // C1
     }
+
+  } else if (calleeName.equals("open_cancel")) {
+    // Handler for OpenBSD Wrapper for open sys_call
+    for (auto promise : getopenCSPromises(cs)) {
+      funcPrivs[caller].set(promise);  // C1
+    }
+
   } else if (calleeName.equals("fcntl_cancel")) {
-    // Handle wrapper for fcntl only, flock is a simple seed, lockf is to be
-    // handled at upper level analysis
+    // Handle wrapper for fcntl only, flock is
+    // a simple seed, lockf is to be // handled
+    // at upper level analysis
     for (auto promise : getfcntlCSPromises(cs)) {
       funcPrivs[caller].set(promise);  // C1
     }
+
   } else if (calleeName.equals("ioctl")) {
     for (auto promise : getioctlCSPromises(cs)) {
       funcPrivs[caller].set(promise);  // C1
     }
+
   } else {
     funcPrivs[caller] |= bitsetMap[calleeName];  // C1
   }
@@ -580,6 +591,12 @@ main(int argc, char** argv) {
      * sysconf has a single use inside libc (getdtablesize)
      * which doesn't need any privileges */
     if (caller.getName().equals("_libc_sysconf")) { continue; }
+
+    if (caller.getName().equals("mktemp_internal")) {continue; } // Skipped so it doesn't pick up the open inside it
+    
+    if (caller.getName().equals("_libc_open_cancel")) { continue; }
+
+    // if (caller.getName().equals("__libc_freopen"))
 
     for (auto& bb : caller) {
       for (auto& i : bb) {
