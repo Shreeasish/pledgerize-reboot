@@ -473,11 +473,18 @@ addPrivilege(FuncPrivMap& funcPrivs,
   [[maybe_unused]]
   auto callerName = stripFunctionName(caller->getName());
 
-  // if (calleeName.contains("openat")) { 
-  //   llvm::outs() << "Callee Name: " << callee->getName() << "\n";
-  //   // llvm::outs() << "Caller Name: " << caller->getName() << "\n";
-  //   printCallSiteLocation(cs);
-  // }
+  if (calleeName.contains("send")) { 
+    llvm::outs() << "Callee Name: " << callee->getName() << "\n";
+    llvm::outs() << "Caller Name: " << caller->getName() << "\n";
+    printCallSiteLocation(cs);
+  }
+
+  if (calleeName.contains("readlink")){
+    if (callerName.contains("malloc")){
+    // llvm::outs() << callerName << "\n";
+      return;
+    }
+  }
 
   if (calleeName.contains("fopen")) {
     // All uses of fopen within libc are readonly ("re")
@@ -508,9 +515,6 @@ addPrivilege(FuncPrivMap& funcPrivs,
 
   } else if (calleeName.equals("stat") && callerName.equals("asr_check_reload")) {
     funcPrivs[caller].set(PLEDGE_DNS).set(PLEDGE_STDIO);
-
-  } else if (calleeName.equals("readlink") && callerName.equals("malloc_init")) {
-    funcPrivs[caller].set(PLEDGE_STDIO);
 
   } else if (calleeName.equals("sysctl")) {
     for (auto promise : getsysctlCSPromises(cs)) {

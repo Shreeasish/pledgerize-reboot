@@ -30,7 +30,6 @@ def display(commit_dict, file_name):
 
     keys = [key for key in commit_dict]
 
-    # for i in range(len(keys)): BEACUSE PYTHON..
     i = 0
     while i < len(commit_dict):
         print("\nNew Key\n")

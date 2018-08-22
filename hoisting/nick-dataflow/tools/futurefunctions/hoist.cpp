@@ -83,6 +83,44 @@ setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, con
   }
 }
 
+using ValueVector      = std::vector<llvm::Value*>;
+using InstructionValue = std::pair<ValueVector, PromiseBitset>;
+using InstructionState = analysis::AbstractState<InstructionValue>;
+
+class InstructionTransfer {
+  
+public:
+  void
+  operator()(llvm::Value& v, InstructionState& state, const Context& context) {
+    if ( auto* branchInst = llvm::dyn_cast_or_null<llvm::BranchInst>(&v) ; branchInst 
+         && branchInst->isConditional()) {
+      state[nullptr].first.push_back(branchInst);
+      // llvm::errs() << "\n TransferCondition: " << *branchInst << "\n";
+
+    } else if ( llvm::CallSite callsite{&v} ; callsite
+         && getCalledFunction(callsite))   {
+      setRequiredPrivileges(state[nullptr].second, callsite , context);
+    }
+  }
+private:
+  bool
+  isRewritable(BranchInst*){
+    // Stub
+    return true;
+  }
+};
+
+class InstructionMeet : public analysis::Meet<InstructionValue, InstructionMeet> {
+public:
+  InstructionValue
+  meetPair(InstructionValue& s1, InstructionValue& s2) const {
+    // return s1 | s2;
+    s1.second |= s2.second;
+    s1.first.insert(s1.first.end(), s2.first.begin(), s2.first.end());
+    return s1;
+  }
+};
+
 
 class FunctionsMeet : public analysis::Meet<FunctionsValue, FunctionsMeet> {
 public:
@@ -323,7 +361,7 @@ public:
   }
 
   IndirectCallResolver resolver;
-  std::deque<ConditionSummary> storage;
+  std::deque<ConditionSummary> storage; //ska: Why use a deque? Avoid array resizing
   llvm::DenseMap<const llvm::Function*,ConditionSummary*> summaries;
 };
 
@@ -372,10 +410,10 @@ ConditionTree::build(llvm::Module& m, Pred& shouldGuard, GetPosts& getPosts) {
             auto* successor = terminator->getSuccessor(position);
             auto* summary = extractSummaries(successor, newPost, extractSummaries);
             if (summary) {
-              newBranch.edges.push_back({ position, summary});
+              newBranch.edges.push_back({ position, summary}); //ska: Why not use a pair here?
             }
           }
-          bb = newPost;
+          bb = newPost; 
           if (!newBranch.edges.empty()) {
             events.push_back(ConditionSummary::CallOrBranch{newBranch});
           }
@@ -387,12 +425,12 @@ ConditionTree::build(llvm::Module& m, Pred& shouldGuard, GetPosts& getPosts) {
       }
 
       if (!events.empty()) {
-        ConditionSummary summary{std::move(events)};
+        ConditionSummary summary{std::move(events)}; //ska: Moved events from outside the tree into tree field
         tree.storage.push_back(summary);
-        return &tree.storage.back();
+        return &tree.storage.back(); //ska: Why the last element?
       }
 
-      seen.erase(bb);
+      seen.erase(bb); //ska: Ensures no recursion in the current stack. [Prove]
       return nullptr;
     };
     tree.summaries[&fun] = extractSummaries(&fun.getEntryBlock(),
@@ -473,7 +511,7 @@ buildHoistedConditions(ConditionTree& tree,
                        llvm::DenseMap<llvm::Value*, FunctionsValue> promises,
                        CanHoist& canHoist) {
   llvm::DenseMap<llvm::Value*,bool> hoistable;
-  auto isHoistable = [&hoistable,&canHoist] (llvm::Value* condition) {
+  auto isHoistable = [&hoistable,&canHoist] (llvm::Value* condition) { //ska: probably should rename this
     if (!condition) {
       return true;
     } else if (auto found = hoistable.find(condition); found != hoistable.end()) {
@@ -494,6 +532,7 @@ buildHoistedConditions(ConditionTree& tree,
     }
     for (auto& event : summary->events) {
       if (event.isBranch && !isHoistable(event.as.branch.condition)) {
+        // ska: Prunes out the conditions which cannot be hoisted.
         event.as.branch.condition = nullptr;
       }
     }
@@ -583,7 +622,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     }
   }
 
-  llvm::DenseMap<llvm::Function*, bool> usesPromises;
+  llvm::DenseMap<llvm::Function*, bool> usesPromises; 
   for (auto* node : llvm::post_order(cg.getExternalCallingNode())) {
     auto* function = node->getFunction();
     if (!function) {
@@ -591,11 +630,13 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     }
     usesPromises[function] =
       std::any_of(node->begin(), node->end(), [&usesPromises] (auto& record) {
-      auto found = usesPromises.find(record.second->getFunction());
+      auto found = usesPromises.find(record.second->getFunction()); 
+
       return found == usesPromises.end() || found->second;
     });
   }
 
+  //ska: returns true iff the instruction is a callsite and the callee requires a promise
   auto shouldCapture =
     [&usesPromises, &unifiedResults, &resolver] (llvm::Instruction* i) {
     llvm::CallSite cs{i};
@@ -634,13 +675,14 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
         }
 
         bool isSafe = false;
-        if (isa<Constant>(current)
-            || isa<CmpInst>(current)
-            || isa<BinaryOperator>(current)
-            || isa<UnaryInstruction>(current)
+        /* ska:
+         * Read as is safe to hoist? */
+        if (isa<Constant>(current) || isa<CmpInst>(current)
+            || isa<BinaryOperator>(current) || isa<UnaryInstruction>(current)
             || isa<Argument>(current)) {
           if (auto* user = dyn_cast<User>(current)) {
-            toVisit.insert(toVisit.end(), user->op_begin(), user->op_end());
+            toVisit.insert(toVisit.end(), user->op_begin(), user->op_end()); 
+            // ska: adds all the users of `current`. Def-use chain
           }
           isSafe = true;
 
@@ -652,7 +694,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
                      ce && ce->getOpcode() == Instruction::GetElementPtr) {
             pointer = ce->getOperand(0);
           }
-          isSafe = isa<GlobalVariable>(pointer);
+          isSafe = isa<GlobalVariable>(pointer); //ska: Why is the Global Variable checked through a GEP?
         }
 
         if (!isSafe) {
@@ -670,7 +712,41 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   buildHoistedConditions(tree, mainFunction, unifiedResults, canHoist);
 
   tree.dump(llvm::outs());
+  
+  using ConditionAnalysis = analysis::DataflowAnalysis<InstructionValue, InstructionTransfer, InstructionMeet, analysis::Backward>;
+  ConditionAnalysis conditionAnalysis{m, mainFunction};
 
+  auto instructionResults = conditionAnalysis.computeDataflow();
+  // TODO: Add pledge dropping along the promise frontier
+  // llvm::DenseMap<llvm::Value*, InstructionValue> unifiedResults;
+
+  auto printBranchType = [](llvm::Value* value){
+    if(auto branchInst = llvm::dyn_cast<llvm::BranchInst>(value);
+            branchInst && !branchInst->isConditional() ){
+              llvm::errs() << " Unconditional " ;
+    }
+  };
+
+  for (auto& [instructionContext, instructionContextResults] :
+       instructionResults) {
+    for (auto& [function, functionResults] : instructionContextResults) {
+      for (auto& bb : *function){
+        for (auto& i : bb){
+           auto  instructionStates = functionResults[&i];
+            llvm::errs() << "\nLocation: " << i ;
+            printBranchType(&i);
+            llvm::errs() << "\n" ;
+            llvm::errs() << "AbstractState: ";
+            for (auto* condition : instructionStates[nullptr].first) {
+              llvm::errs() << *condition << "\t";
+            }
+            llvm::errs() << "\nbitset"
+                         << instructionStates[nullptr].second.to_ulong()
+                         << "\n";
+        }
+      }
+    }
+  }
   return false;
 }
 
@@ -719,4 +795,12 @@ main(int argc, char** argv) {
 
   return 0;
 }
+
+
+
+/// Hacky Stuff
+/// Clean Later
+
+
+
 
