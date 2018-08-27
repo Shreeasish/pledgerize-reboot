@@ -23,7 +23,6 @@
 // STL libraries
 #include <vector>
 #include <bitset>
-#include <memory>
 #include <string>
 #include <iostream>
 #include <variant>

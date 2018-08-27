@@ -113,7 +113,7 @@ template <typename AbstractValue>
 using DataflowResult =
   llvm::DenseMap<llvm::Value*, AbstractState<AbstractValue>>;
 
-
+// ska: Abstract State Comparison
 template <typename AbstractValue>
 bool
 operator==(const AbstractState<AbstractValue>& s1,

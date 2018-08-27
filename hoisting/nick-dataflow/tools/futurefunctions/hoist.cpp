@@ -29,6 +29,7 @@
 #include "FutureFunctions.h"
 #include "IndirectCallResolver.h"
 #include "TaintAnalysis.h"
+#include "PromiseTree.h"
 
 using namespace llvm;
 
@@ -52,74 +53,21 @@ static cl::opt<string> inPath{cl::Positional,
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
 
 
-static const llvm::Function *
-getCalledFunction(const llvm::CallSite cs) {
-  if (!cs.getInstruction()) {
-    return nullptr;
-  }
-
-  const llvm::Value *called = cs.getCalledValue()->stripPointerCasts();
-
-  if (called->getName().contains("llvm.dbg")) {
-    return nullptr;
-  }
-
-  return llvm::dyn_cast<llvm::Function>(called);
-}
-
-
 static void
 setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, const Context& context) { 
+  auto fun = cs.getCalledFunction();
+  if(!fun){
+    return;
+  }
   
-  auto functionName = getCalledFunction(cs)->getName().str();
-
+  auto functionName = fun->getName().str();
   auto found = libCHandlers.find(functionName);
-  
   if(found != libCHandlers.end()){   
     //Use the context of the current callsite
     auto promisesBitset = found->second.getPromisesBitset(cs, context);
     requiredPrivileges |= promisesBitset;
-    // requiredPrivileges |= 0;
   }
 }
-
-using ValueVector      = std::vector<llvm::Value*>;
-using InstructionValue = std::pair<ValueVector, PromiseBitset>;
-using InstructionState = analysis::AbstractState<InstructionValue>;
-
-class InstructionTransfer {
-  
-public:
-  void
-  operator()(llvm::Value& v, InstructionState& state, const Context& context) {
-    if ( auto* branchInst = llvm::dyn_cast_or_null<llvm::BranchInst>(&v) ; branchInst 
-         && branchInst->isConditional()) {
-      state[nullptr].first.push_back(branchInst);
-      // llvm::errs() << "\n TransferCondition: " << *branchInst << "\n";
-
-    } else if ( llvm::CallSite callsite{&v} ; callsite
-         && getCalledFunction(callsite))   {
-      setRequiredPrivileges(state[nullptr].second, callsite , context);
-    }
-  }
-private:
-  bool
-  isRewritable(BranchInst*){
-    // Stub
-    return true;
-  }
-};
-
-class InstructionMeet : public analysis::Meet<InstructionValue, InstructionMeet> {
-public:
-  InstructionValue
-  meetPair(InstructionValue& s1, InstructionValue& s2) const {
-    // return s1 | s2;
-    s1.second |= s2.second;
-    s1.first.insert(s1.first.end(), s2.first.begin(), s2.first.end());
-    return s1;
-  }
-};
 
 
 class FunctionsMeet : public analysis::Meet<FunctionsValue, FunctionsMeet> {
@@ -157,6 +105,50 @@ public:
   }
 };
 
+
+// ska: clean
+using InstructionValue = SharedPromiseTree;
+using InstructionState  = analysis::AbstractState<InstructionValue>;
+using InstructionResult = analysis::DataflowResult<InstructionValue>;
+using Context = std::array<llvm::Instruction*, 2ul>;
+
+class InstructionMeet : public analysis::Meet<InstructionValue, InstructionMeet> {
+public:
+  InstructionValue
+  meetPair(InstructionValue& s1, InstructionValue& s2) const {
+    if(s1.getTempBranch() != s2.getTempBranch()){
+      llvm::errs() << "\n Call the ghostbusters" ;
+      return s1;
+    }
+    return InstructionValue{s1,s2};
+  }
+};
+
+class InstructionTransfer {
+  
+public:
+  void
+  operator()(llvm::Value& v, InstructionState& state, const Context& context) {
+    PromiseBitset bitset;
+
+    auto* inst = llvm::dyn_cast<llvm::Instruction>(&v);
+    CallSite cs{inst};
+    if (cs) {
+      setRequiredPrivileges(bitset, cs, context );
+      llvm::outs () << "Fromtransfer" << state[nullptr].getPointer().get();
+      state[nullptr] |= bitset;
+      return;
+    }
+
+    BranchInst branchInst{inst};
+    if(branchInst){
+      // The bitset should be added by the dataflow api
+      // using the =operator overload
+      state[nullptr].insertTemporary(&inst);
+      return;
+    }
+  }
+};
 
 template <typename OutIterator>
 static void
@@ -575,12 +567,8 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 
   AnalysisPackage package;
   package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
-  // Get the library handler map here
   libCHandlers = getLibCHandlerMap(package);
-
   auto results = analysis.computeDataflow();
-
-  // TODO: Add pledge dropping along the promise frontier
 
   llvm::DenseMap<llvm::Value*, FunctionsValue> unifiedResults;
   for (auto& [context, contextResults] : results) {
@@ -661,7 +649,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 
   auto tree = ConditionTree::build(m, shouldCapture, getPosts);
 
-  tree.dump(llvm::outs());
+  // tree.dump(llvm::outs());
 
   auto canHoist = [this] (llvm::Value* condition) {
     if (auto* branch = llvm::dyn_cast<BranchInst>(condition)) {
@@ -711,42 +699,22 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   };
   buildHoistedConditions(tree, mainFunction, unifiedResults, canHoist);
 
-  tree.dump(llvm::outs());
-  
+  // tree.dump(llvm::outs());
+
+
   using ConditionAnalysis = analysis::DataflowAnalysis<InstructionValue, InstructionTransfer, InstructionMeet, analysis::Backward>;
-  ConditionAnalysis conditionAnalysis{m, mainFunction};
+  ConditionAnalysis conditionanalysis{m, mainFunction};
+  auto instructionResults = conditionanalysis.computeDataflow();
 
-  auto instructionResults = conditionAnalysis.computeDataflow();
-  // TODO: Add pledge dropping along the promise frontier
-  // llvm::DenseMap<llvm::Value*, InstructionValue> unifiedResults;
-
-  auto printBranchType = [](llvm::Value* value){
-    if(auto branchInst = llvm::dyn_cast<llvm::BranchInst>(value);
-            branchInst && !branchInst->isConditional() ){
-              llvm::errs() << " Unconditional " ;
-    }
-  };
-
-  for (auto& [instructionContext, instructionContextResults] :
-       instructionResults) {
-    for (auto& [function, functionResults] : instructionContextResults) {
-      for (auto& bb : *function){
-        for (auto& i : bb){
-           auto  instructionStates = functionResults[&i];
-            llvm::errs() << "\nLocation: " << i ;
-            printBranchType(&i);
-            llvm::errs() << "\n" ;
-            llvm::errs() << "AbstractState: ";
-            for (auto* condition : instructionStates[nullptr].first) {
-              llvm::errs() << *condition << "\t";
-            }
-            llvm::errs() << "\nbitset"
-                         << instructionStates[nullptr].second.to_ulong()
-                         << "\n";
-        }
+  for (auto& [icontext, icontextResults] : instructionResults){
+    for(auto& [function, functionsResults] : icontextResults){
+      for(auto& [location, istate] : functionsResults){
       }
     }
   }
+
+
+
   return false;
 }
 
@@ -769,7 +737,6 @@ instrumentPromiseTree(llvm::Module& m) {
 
 int
 main(int argc, char** argv) {
-
 
   // This boilerplate provides convenient stack traces and clean LLVM exit
   // handling. It also initializes the built in support for convenient
@@ -795,12 +762,3 @@ main(int argc, char** argv) {
 
   return 0;
 }
-
-
-
-/// Hacky Stuff
-/// Clean Later
-
-
-
-
