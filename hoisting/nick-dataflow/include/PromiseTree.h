@@ -35,6 +35,8 @@ using std::queue;
 
 using namespace llvm;
 
+//TODO: Move functions outside classes
+
 static llvm::Function*
 getCalledFunction(llvm::CallSite cs) {
   if (!cs.getInstruction()) {
@@ -89,7 +91,7 @@ struct PromiseSummary {
   dump(llvm::raw_ostream& out) {
     out << this << "[label=\"";
     if(branch.condition) {
-
+      out << *branch.condition;
     }
     else {
       out << "None" ;
@@ -124,7 +126,6 @@ public:
     PromiseSummary* newRoot = 
       new PromiseSummary{*( lhsTree->getRootPromise() )|*( rhsTree->getRootPromise() )};
     newRoot->id = 600;
-    newRoot->branch.condition = lhsTree->tempBranchInst ;
     newRoot->branch.edges.push_back(PromiseSummary::Edge{0,&lhsTree->getRootNode()});
     newRoot->branch.edges.push_back(PromiseSummary::Edge{1,&rhsTree->getRootNode()});
     setRootNode(newRoot);
@@ -155,6 +156,16 @@ public:
   setRootNode(PromiseSummary* newRoot){
     this->root = newRoot;
   }
+
+//  llvm::BranchInst* 
+//    getTempBranch() const{
+//      return this->tempBranchInst;
+//    }
+
+//  void
+//  setTempBranch(llvm::BranchInst* branchInst){
+//    this->tempBranchInst = branchInst;
+//  }
 
   bool
   operator==(PromiseTree other) const{
@@ -217,15 +228,14 @@ public:
 
 private:
   PromiseSummary* root;
-  // If I keep a pointer to the branch inst would it create a problem?
-  llvm::BranchInst* tempBranchInst = nullptr; 
+  //llvm::BranchInst* tempBranchInst = nullptr; 
 };
 
 class SharedPromiseTree {
 public:
   //Constructors
   SharedPromiseTree()
-  : promiseTreePtr{std::make_shared<PromiseTree>(PromiseTree())}
+    : promiseTreePtr{std::make_shared<PromiseTree>(PromiseTree())}
     {}
 
   SharedPromiseTree(PromiseTree* other)
@@ -238,7 +248,7 @@ public:
 
   SharedPromiseTree(SharedPromiseTree& s1, SharedPromiseTree& s2){
     PromiseTree newPTree{&*(s1.getPointer()), &*(s2.getPointer())};
-    this->promiseTreePtr = std::make_shared<PromiseTree>(newPtree);
+    this->promiseTreePtr = std::make_shared<PromiseTree>(newPTree);
   }
 
   
@@ -267,26 +277,26 @@ public:
     return &(this->getRootNode()->promises);
   }
 
-  SharedPromiseTree
-  insert(llvm::BranchInst* branchInst, size_t position=0) {
-    promiseTreePtr->insert(branchInst, position);
-    return *this;
-  }
+//  SharedPromiseTree
+//  insert(llvm::BranchInst* branchInst, size_t position=0) {
+//    promiseTreePtr->insert(branchInst, position);
+//    return *this;
+//  }
 
   /* Should be used at the transfer function to add 
    * promises to the root node
    *  and add the branchinst to temp pointer the meet op
    *  should add in the edges */
-  PromiseSummary*
-  insertTemporary(llvm::BranchInst* branchInst){
-    this->getRootNode()->tempBranchInst = branchInst;
-    return this->getRootNode();
-  }
+//  SharedPromiseTree&
+//  insertTemporary(llvm::BranchInst* branchInst){
+//    this->getPointer()->setTempBranch(branchInst);
+//    return *this;
+//  }
 
-  llvm::BranchInst*
-  getTempBranch(){
-    return this->getRootNode()->tempBranchInst;
-  }
+//  llvm::BranchInst*
+//  getTempBranch() const {
+//    return this->getPointer()->getTempBranch();
+//  }
 
   PromiseSummary*
   getBranch(llvm::BranchInst* incomingBranch) const {
@@ -330,7 +340,6 @@ public:
     }
     out << "}\n" ;
   }
-
 
 private:
   std::shared_ptr<PromiseTree> promiseTreePtr;

@@ -1,0 +1,37 @@
+[
+{
+  "directory": "/home/shreeasish/pledgerize-reboot/hoisting/build-dataflow/tools/futurefunctions",
+  "command": "/home/shreeasish/llvm/6.0/bin/clang++    -I/home/shreeasish/llvm/6.0/include -I/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/include   -std=c++17 -fno-rtti -Wall -g   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/hoist.dir/hoist.cpp.o -c /home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/hoist.cpp",
+  "file": "/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/hoist.cpp"
+},
+{
+  "directory": "/home/shreeasish/pledgerize-reboot/hoisting/build-dataflow/tools/futurefunctions",
+  "command": "/home/shreeasish/llvm/6.0/bin/clang++    -I/home/shreeasish/llvm/6.0/include -I/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/include   -std=c++17 -fno-rtti -Wall -g   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/hoist.dir/handler.cpp.o -c /home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/handler.cpp",
+  "file": "/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/handler.cpp"
+},
+{
+  "directory": "/home/shreeasish/pledgerize-reboot/hoisting/build-dataflow/tools/futurefunctions",
+  "command": "/home/shreeasish/llvm/6.0/bin/clang++    -I/home/shreeasish/llvm/6.0/include -I/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/include   -std=c++17 -fno-rtti -Wall -g   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/hoist.dir/taintAnalysis.cpp.o -c /home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/taintAnalysis.cpp",
+  "file": "/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/taintAnalysis.cpp"
+},
+{
+  "directory": "/home/shreeasish/pledgerize-reboot/hoisting/build-dataflow/tools/futurefunctions",
+  "command": "/home/shreeasish/llvm/6.0/bin/clang++    -I/home/shreeasish/llvm/6.0/include -I/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/include   -std=c++17 -fno-rtti -Wall -g   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/futurefunctions.dir/main.cpp.o -c /home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/main.cpp",
+  "file": "/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/main.cpp"
+},
+{
+  "directory": "/home/shreeasish/pledgerize-reboot/hoisting/build-dataflow/tools/futurefunctions",
+  "command": "/home/shreeasish/llvm/6.0/bin/clang++    -I/home/shreeasish/llvm/6.0/include -I/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/include   -std=c++17 -fno-rtti -Wall -g   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/futurefunctions.dir/handler.cpp.o -c /home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/handler.cpp",
+  "file": "/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/handler.cpp"
+},
+{
+  "directory": "/home/shreeasish/pledgerize-reboot/hoisting/build-dataflow/tools/futurefunctions",
+  "command": "/home/shreeasish/llvm/6.0/bin/clang++    -I/home/shreeasish/llvm/6.0/include -I/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/include   -std=c++17 -fno-rtti -Wall -g   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/futurefunctions.dir/taintAnalysis.cpp.o -c /home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/taintAnalysis.cpp",
+  "file": "/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/futurefunctions/taintAnalysis.cpp"
+},
+{
+  "directory": "/home/shreeasish/pledgerize-reboot/hoisting/build-dataflow/tools/callgraphanalyzer",
+  "command": "/home/shreeasish/llvm/6.0/bin/clang++    -I/home/shreeasish/llvm/6.0/include -I/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/include   -std=c++17 -fno-rtti -Wall -g   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/callgraphanalyzer.dir/main.cpp.o -c /home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/callgraphanalyzer/main.cpp",
+  "file": "/home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/tools/callgraphanalyzer/main.cpp"
+}
+]

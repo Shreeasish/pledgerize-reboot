@@ -25,7 +25,7 @@
 #include <iostream>
 #include <variant>
 
-#include "DataflowAnalysis.h"
+#include "CustomDataflowAnalysis.h"
 #include "FutureFunctions.h"
 #include "IndirectCallResolver.h"
 #include "TaintAnalysis.h"
@@ -73,7 +73,7 @@ setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, con
 class FunctionsMeet : public analysis::Meet<FunctionsValue, FunctionsMeet> {
 public:
   FunctionsValue
-  meetPair(FunctionsValue& s1, FunctionsValue& s2) const {
+  meetPair(FunctionsValue& s1, FunctionsValue& s2, const llvm::Value*, const llvm::Value*) const {
     return s1 | s2;
   }
 };
@@ -115,12 +115,30 @@ using Context = std::array<llvm::Instruction*, 2ul>;
 class InstructionMeet : public analysis::Meet<InstructionValue, InstructionMeet> {
 public:
   InstructionValue
-  meetPair(InstructionValue& s1, InstructionValue& s2) const {
-    if(s1.getTempBranch() != s2.getTempBranch()){
-      llvm::errs() << "\n Call the ghostbusters" ;
-      return s1;
-    }
-    return InstructionValue{s1,s2};
+  meetPair(InstructionValue& s1, InstructionValue& s2, const llvm::Value* location1, const llvm::Value* location2) const {
+    llvm::outs() << "\nWe meet again " ; 
+//    if(!s2.getTempBranch()){
+//      llvm::outs() << "\n s2 does not exist"; 
+//      return s1;
+//    }
+//    llvm::outs() << "\n s2 dump" << *s2.getTempBranch() ;
+//    if(!s1.getTempBranch()){
+//      llvm::outs() << "\n s1 does not exist"; 
+//      return s1;
+//    }
+//
+//    llvm::outs() << "s1 dump" << *s1.getTempBranch() ;
+//
+//    llvm::outs() << "\n meet" ;
+//    if(s1.getTempBranch() == s2.getTempBranch()){
+//      return InstructionValue{s1,s2};
+//    }
+
+    return s1;
+    //if(){
+    //  llvm::errs() << "\n Call the ghostbusters" ;
+    //  return s1;
+    //}
   }
 };
 
@@ -135,18 +153,10 @@ public:
     CallSite cs{inst};
     if (cs) {
       setRequiredPrivileges(bitset, cs, context );
-      llvm::outs () << "Fromtransfer" << state[nullptr].getPointer().get();
       state[nullptr] |= bitset;
       return;
     }
-
-    BranchInst branchInst{inst};
-    if(branchInst){
-      // The bitset should be added by the dataflow api
-      // using the =operator overload
-      state[nullptr].insertTemporary(&inst);
-      return;
-    }
+ 
   }
 };
 
@@ -709,6 +719,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   for (auto& [icontext, icontextResults] : instructionResults){
     for(auto& [function, functionsResults] : icontextResults){
       for(auto& [location, istate] : functionsResults){
+        istate[nullptr].dump(llvm::outs());
       }
     }
   }
