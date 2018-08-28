@@ -147,8 +147,8 @@ getIncomingState(DataflowResult<AbstractValue>& result, llvm::Instruction& i) {
 template <typename AbstractValue>
 class Transfer {
 public:
-  template <typename Context> 
-  void 
+  template <typename Context>
+  void
   operator()(llvm::Value& v, AbstractState<AbstractValue>& s, const Context& ) {
     llvm_unreachable("unimplemented transfer");
   }
@@ -162,18 +162,36 @@ public:
 template <typename AbstractValue, typename SubClass>
 class Meet {
 public:
-  // ska: Variadic Impl
   AbstractValue
-  operator()(llvm::ArrayRef<AbstractValue> values, const llvm::Value* location1, const llvm::Value* location2) {
+  operator()(llvm::ArrayRef<AbstractValue> values) {
     return std::accumulate(values.begin(), values.end(),
       AbstractValue(),
-      [this, location1, location2] (auto v1, auto v2) {
-        return this->asSubClass().meetPair(v1, v2, location1, location2);
+      [this] (auto v1, auto v2) {
+        return this->asSubClass().meetPair(v1, v2);
       });
   }
 
   AbstractValue
-  meetPair(AbstractValue& v1, AbstractValue& v2, const llvm::Value* location1, const llvm::Value* location2) const {
+  meetPair(AbstractValue& v1, AbstractValue& v2) const {
+    llvm_unreachable("unimplemented meet");
+  }
+
+  AbstractValue
+  operator()(llvm::ArrayRef<AbstractValue> values,
+             llvm::Value* location1,
+             llvm::Value* location2) {
+    return std::accumulate(values.begin(), values.end(),
+      AbstractValue(),
+      [this, location1, location2] (auto v1, auto v2) {
+        return this->asSubClass().meetPairCustomized(v1, v2, location1, location2);
+      });
+  }
+
+  AbstractValue
+  meetPairCustomized(AbstractValue& v1,
+                     AbstractValue& v2,
+                     llvm::Value* location1,
+                     llvm::Value* location2 ) const {
     llvm_unreachable("unimplemented meet");
   }
 
@@ -217,9 +235,7 @@ public:
   static auto getPredecessors(llvm::BasicBlock& bb) {
     return llvm::predecessors(&bb);
   }
-  static bool shouldMeetPHI() { return true; 
-  }
-
+  static bool shouldMeetPHI() { return true; }
   template <class State, class Transfer, class Meet, class Context>
   static bool prepareSummaryState(llvm::CallSite cs,
                                   llvm::Function* callee,
@@ -238,10 +254,7 @@ public:
         passedAbstract = state.find(passedConcrete);
       }
       auto& arg     = summaryState[&functionArg];
-      // ska: Meet at callsite -> send the callsite.
-      // if cs -> add promises to root.
-      // functionArg could be null
-      auto newState = meet({passedAbstract->second, arg}, cs.getInstruction(), functionArg);
+      auto newState = meet({passedAbstract->second, arg});
       needsUpdate |= !(newState == arg);
       arg = newState;
       ++index;
@@ -292,7 +305,7 @@ public:
       if (auto* ret = llvm::dyn_cast<llvm::ReturnInst>(bb.getTerminator());
           ret && ret->getReturnValue()) {
         auto& retState = summaryState[ret->getReturnValue()];
-        auto newState = meet({passedAbstract.second, retState}, passedConcrete, ret->getReturnValue());
+        auto newState = meet({passedAbstract.second, retState});
         needsUpdate |= !(newState == retState);
         retState = newState;
       }
@@ -407,9 +420,7 @@ public:
 
       if (auto* key = Direction::getFunctionValueKey(*bb)) {
         auto* summary = getSummaryKey(f);
-        // ska: Merge on a function level?
-        // Not sure what's happening here. Handle as corner case
-        results[&f][summary] = meet({results[&f][summary], state[key]}, &f, key);
+        results[&f][summary] = meet({results[&f][summary], state[key]});
       }
     }
 
@@ -496,8 +507,6 @@ private:
       // implicitly meeting with bottom.
       auto [found, newlyAdded] = destination.insert(valueStatePair);
       if (!newlyAdded) {
-        // ska: Trap merge? Send the instructions anyway and compare
-        // assuming The arguments are states (location, absvalue)
         found->second = meet({found->second, valueStatePair.second}, found->first, valueStatePair.first);
       }
     }
@@ -526,11 +535,7 @@ private:
         transfer(*value.get(), state, context);
         found = state.find(value.get());
       }
-      auto* passAsValue = llvm::dyn_cast<llvm::Value>(&phi);
-
-      // ska: add in the phi instruction and the incoming value
-      // phi inherits from instruction so it should work
-      phiValue = meet({phiValue, found->second}, passAsValue, value);
+      phiValue = meet({phiValue, found->second});
     }
     return phiValue;
   }

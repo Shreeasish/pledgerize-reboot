@@ -47,22 +47,22 @@ static cl::opt<string> inPath{cl::Positional,
                               cl::init(""),
                               cl::Required,
                               cl::cat{futureFunctionsCategory}};
-                              
+
 
 //LibC map here
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
 
 
 static void
-setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, const Context& context) { 
+setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, const Context& context) {
   auto fun = cs.getCalledFunction();
   if(!fun){
     return;
   }
-  
+
   auto functionName = fun->getName().str();
   auto found = libCHandlers.find(functionName);
-  if(found != libCHandlers.end()){   
+  if(found != libCHandlers.end()){
     //Use the context of the current callsite
     auto promisesBitset = found->second.getPromisesBitset(cs, context);
     requiredPrivileges |= promisesBitset;
@@ -73,18 +73,22 @@ setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, con
 class FunctionsMeet : public analysis::Meet<FunctionsValue, FunctionsMeet> {
 public:
   FunctionsValue
-  meetPair(FunctionsValue& s1, FunctionsValue& s2, const llvm::Value*, const llvm::Value*) const {
+  meetPair(FunctionsValue& s1, FunctionsValue& s2) const {
+    return s1 | s2;
+  }
+  FunctionsValue
+  meetPairCustomized(FunctionsValue& s1, FunctionsValue& s2, llvm::Value*, llvm::Value*) const {
     return s1 | s2;
   }
 };
 
 
 class FunctionsTransfer {
-  
+
 public:
   void
   operator()(llvm::Value& v, FunctionsState& state, const Context& context) {
-    
+
     const CallSite cs{&v};
     const auto* fun = getCalledFunction(cs);
 
@@ -95,7 +99,7 @@ public:
 
     // FunctionsValue requiredPrivileges{};
     setRequiredPrivileges(state[nullptr], cs, context);
- 
+
     auto [found, inserted] = functionIDs.insert({fun, functions.size()});
     if (inserted) {
       functions.push_back(fun);
@@ -115,35 +119,25 @@ using Context = std::array<llvm::Instruction*, 2ul>;
 class InstructionMeet : public analysis::Meet<InstructionValue, InstructionMeet> {
 public:
   InstructionValue
-  meetPair(InstructionValue& s1, InstructionValue& s2, const llvm::Value* location1, const llvm::Value* location2) const {
-    llvm::outs() << "\nWe meet again " ; 
-//    if(!s2.getTempBranch()){
-//      llvm::outs() << "\n s2 does not exist"; 
-//      return s1;
-//    }
-//    llvm::outs() << "\n s2 dump" << *s2.getTempBranch() ;
-//    if(!s1.getTempBranch()){
-//      llvm::outs() << "\n s1 does not exist"; 
-//      return s1;
-//    }
-//
-//    llvm::outs() << "s1 dump" << *s1.getTempBranch() ;
-//
-//    llvm::outs() << "\n meet" ;
-//    if(s1.getTempBranch() == s2.getTempBranch()){
-//      return InstructionValue{s1,s2};
-//    }
-
+  meetPair(InstructionValue& s1, InstructionValue& s2) const {
+    llvm::outs() << "\nWe meet again " ;
     return s1;
-    //if(){
-    //  llvm::errs() << "\n Call the ghostbusters" ;
-    //  return s1;
-    //}
+  }
+
+  InstructionValue
+  meetPairCustomized(InstructionValue& s1, InstructionValue& s2,
+                     llvm::Value * location1, llvm::Value * location2) const {
+    llvm::outs() << "\nWe meet again part 2" ;
+
+    if(location1){llvm::outs() << *location1 ;}
+    if(location2){llvm::outs() << *location2 ;}
+
+    return s1|s2;
   }
 };
 
 class InstructionTransfer {
-  
+
 public:
   void
   operator()(llvm::Value& v, InstructionState& state, const Context& context) {
@@ -156,7 +150,7 @@ public:
       state[nullptr] |= bitset;
       return;
     }
- 
+
   }
 };
 
@@ -202,8 +196,8 @@ printFollowers(llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> fol
     auto* called = getCalledFunction(llvm::CallSite{callsite});
     llvm::outs().changeColor(raw_ostream::Colors::YELLOW);
     llvm::outs() << "After call to \"" << called->getName() << "\" ";
-    
-    
+
+
     // for (auto id : after) {
     //   llvm::outs() << " " << functions[id]->getName();
     // }
@@ -415,7 +409,7 @@ ConditionTree::build(llvm::Module& m, Pred& shouldGuard, GetPosts& getPosts) {
               newBranch.edges.push_back({ position, summary}); //ska: Why not use a pair here?
             }
           }
-          bb = newPost; 
+          bb = newPost;
           if (!newBranch.edges.empty()) {
             events.push_back(ConditionSummary::CallOrBranch{newBranch});
           }
@@ -490,7 +484,7 @@ ConditionTree::dump(llvm::raw_ostream& out) const {
         // The event was a branch to children
         for (auto& edge : event.as.branch.edges) {
           atNode(edge.child, atNode);
-        }        
+        }
       }
     }
   };
@@ -528,7 +522,7 @@ buildHoistedConditions(ConditionTree& tree,
     for (auto& event : summary->events) {
       if (event.isBranch) {
         for (auto& edge : event.as.branch.edges) {
-          prune(edge.child, prune);          
+          prune(edge.child, prune);
         }
       }
     }
@@ -620,7 +614,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     }
   }
 
-  llvm::DenseMap<llvm::Function*, bool> usesPromises; 
+  llvm::DenseMap<llvm::Function*, bool> usesPromises;
   for (auto* node : llvm::post_order(cg.getExternalCallingNode())) {
     auto* function = node->getFunction();
     if (!function) {
@@ -628,7 +622,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     }
     usesPromises[function] =
       std::any_of(node->begin(), node->end(), [&usesPromises] (auto& record) {
-      auto found = usesPromises.find(record.second->getFunction()); 
+      auto found = usesPromises.find(record.second->getFunction());
 
       return found == usesPromises.end() || found->second;
     });
@@ -679,7 +673,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
             || isa<BinaryOperator>(current) || isa<UnaryInstruction>(current)
             || isa<Argument>(current)) {
           if (auto* user = dyn_cast<User>(current)) {
-            toVisit.insert(toVisit.end(), user->op_begin(), user->op_end()); 
+            toVisit.insert(toVisit.end(), user->op_begin(), user->op_end());
             // ska: adds all the users of `current`. Def-use chain
           }
           isSafe = true;
@@ -768,7 +762,7 @@ main(int argc, char** argv) {
     err.print(argv[0], errs());
     return -1;
   }
-  
+
   instrumentPromiseTree(*module);
 
   return 0;
