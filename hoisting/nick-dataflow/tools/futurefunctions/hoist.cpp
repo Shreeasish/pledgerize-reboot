@@ -120,16 +120,20 @@ class InstructionMeet : public analysis::Meet<InstructionValue, InstructionMeet>
 public:
   InstructionValue
   meetPair(InstructionValue& s1, InstructionValue& s2) const {
-    // General merge 
+    // General merge
     return s1|s2;
   }
 
   InstructionValue
   meetPairCustomized(InstructionValue& s1, InstructionValue& s2,
                      llvm::Value* location1, llvm::Value* location2,
-                     llvm::Value* destination ) const { 
-    // location1 seem to be the destination
-    return s2;
+                     llvm::Value* destination ) const {
+    // location1 seems to be the destination
+    if(auto* destBranch = llvm::dyn_cast<llvm::BranchInst>(destination); destBranch){
+      return SharedPromiseTree{}.mergeAtMeet(s1,s2,destBranch);
+    }
+    llvm::outs() << "\nDestination: unknown\n" ;
+    return s1|s2; // Default Merge as fallback
   }
 };
 
