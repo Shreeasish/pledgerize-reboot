@@ -77,7 +77,7 @@ public:
     return s1 | s2;
   }
   FunctionsValue
-  meetPairCustomized(FunctionsValue& s1, FunctionsValue& s2, llvm::Value*, llvm::Value*) const {
+  meetPairCustomized(FunctionsValue& s1, FunctionsValue& s2, llvm::Value*, llvm::Value*, llvm::Value*) const {
     return s1 | s2;
   }
 };
@@ -120,19 +120,16 @@ class InstructionMeet : public analysis::Meet<InstructionValue, InstructionMeet>
 public:
   InstructionValue
   meetPair(InstructionValue& s1, InstructionValue& s2) const {
-    llvm::outs() << "\nWe meet again " ;
-    return s1;
+    // General merge 
+    return s1|s2;
   }
 
   InstructionValue
   meetPairCustomized(InstructionValue& s1, InstructionValue& s2,
-                     llvm::Value * location1, llvm::Value * location2) const {
-    llvm::outs() << "\nWe meet again part 2" ;
-
-    if(location1){llvm::outs() << *location1 ;}
-    if(location2){llvm::outs() << *location2 ;}
-
-    return s1|s2;
+                     llvm::Value* location1, llvm::Value* location2,
+                     llvm::Value* destination ) const { 
+    // location1 seem to be the destination
+    return s2;
   }
 };
 
@@ -150,7 +147,6 @@ public:
       state[nullptr] |= bitset;
       return;
     }
-
   }
 };
 

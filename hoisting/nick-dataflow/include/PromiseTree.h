@@ -78,16 +78,16 @@ struct PromiseSummary {
   //     isNatal{true}
   //     {}
 
-  // PromiseSummary(llvm::BranchInst* newCondition)
-  //   : branch{newCondition, {}}
-  //     {}
+  PromiseSummary(llvm::BranchInst* newCondition)
+     : branch{newCondition, {}}
+       {}
 
   ~PromiseSummary(){
     llvm::errs() << "kill myself";
     llvm::errs() << id;
   }
 
-  void 
+  void
   dump(llvm::raw_ostream& out) {
     out << this << "[label=\"";
     if(branch.condition) {
@@ -99,12 +99,12 @@ struct PromiseSummary {
     out << "\"];\n";
 
     out << this << "->" << &promises << "\n";
-    out << &promises 
-        << "[shape=\"box\",label=\"" 
+    out << &promises
+        << "[shape=\"box\",label=\""
         << promises.to_ullong()
         << "\"];\n";
 
-    for (auto edge : branch.edges) { 
+    for (auto edge : branch.edges) {
       out << this << "->" << edge.child << "\n" ;
     }
   }
@@ -112,18 +112,18 @@ struct PromiseSummary {
 
 class PromiseTree {
 public:
-  PromiseTree() { 
+  PromiseTree() {
     root = new PromiseSummary{PromiseBitset{0}};
     root->id = 999;
     }
-  
+
   PromiseTree(PromiseBitset incomingBitset) {
     root = new PromiseSummary{incomingBitset};
     root->id = 999;
   }
 
   PromiseTree(PromiseTree* lhsTree, PromiseTree* rhsTree){
-    PromiseSummary* newRoot = 
+    PromiseSummary* newRoot =
       new PromiseSummary{*( lhsTree->getRootPromise() )|*( rhsTree->getRootPromise() )};
     newRoot->id = 600;
     newRoot->branch.edges.push_back(PromiseSummary::Edge{0,&lhsTree->getRootNode()});
@@ -157,7 +157,7 @@ public:
     this->root = newRoot;
   }
 
-//  llvm::BranchInst* 
+//  llvm::BranchInst*
 //    getTempBranch() const{
 //      return this->tempBranchInst;
 //    }
@@ -175,17 +175,19 @@ public:
     return true;
   }
 
-//  PromiseTree&
-//  insert(llvm::BranchInst* branchInst, int position = 0) {
-//    auto* newNode = new PromiseSummary{branchInst};
-//    newNode->dump(llvm::errs());
-//    newNode->id = 3;
-//    newNode->branch.edges.push_back({position, &this->getRootNode()});
-//    llvm::errs() << "\n Successful Insert\n" ;
-//    this->root = newNode;
-//    return *this;
-//  }
-  
+  PromiseTree&
+  insert(llvm::BranchInst* branchInst) {
+    this->getRootNode().branch.condition = branchInst;
+    return *this;
+  }
+
+  PromiseTree&
+  insert(PromiseTree* ptree, size_t position){
+    this->getRootNode().branch.edges.push_back( {position, &ptree->getRootNode()} );
+    return *this;
+  }
+
+
 
   template <typename Lambda>
   PromiseTree&
@@ -208,7 +210,7 @@ public:
   find(Matcher& matcher) {
     std::queue<PromiseSummary*> bfsQueue;
     std::set<PromiseSummary*>   seenSet;
-    
+
     auto bfs = [&bfsQueue, &matcher, &seenSet](PromiseSummary* node, auto& bfs) -> PromiseSummary* {
       bfsQueue.pop();
       if(!node || !seenSet.insert(node).second){
@@ -228,7 +230,7 @@ public:
 
 private:
   PromiseSummary* root;
-  //llvm::BranchInst* tempBranchInst = nullptr; 
+  //llvm::BranchInst* tempBranchInst = nullptr;
 };
 
 class SharedPromiseTree {
@@ -241,7 +243,7 @@ public:
   SharedPromiseTree(PromiseTree* other)
     : promiseTreePtr{other}
     {}
-  
+
   SharedPromiseTree(PromiseBitset incomingBitset)
     : promiseTreePtr{std::make_shared<PromiseTree>(PromiseTree{incomingBitset})}
     {}
@@ -251,7 +253,7 @@ public:
     this->promiseTreePtr = std::make_shared<PromiseTree>(newPTree);
   }
 
-  
+
   std::shared_ptr<PromiseTree>
   getPointer() const {
     return promiseTreePtr;
@@ -267,7 +269,7 @@ public:
     return promiseTreePtr->find(matcher);
   }
 
-  PromiseSummary* 
+  PromiseSummary*
   getRootNode() const {
     return &(promiseTreePtr->getRootNode());
   }
@@ -277,26 +279,12 @@ public:
     return &(this->getRootNode()->promises);
   }
 
-//  SharedPromiseTree
-//  insert(llvm::BranchInst* branchInst, size_t position=0) {
-//    promiseTreePtr->insert(branchInst, position);
-//    return *this;
-//  }
-
-  /* Should be used at the transfer function to add 
-   * promises to the root node
-   *  and add the branchinst to temp pointer the meet op
-   *  should add in the edges */
-//  SharedPromiseTree&
-//  insertTemporary(llvm::BranchInst* branchInst){
-//    this->getPointer()->setTempBranch(branchInst);
-//    return *this;
-//  }
-
-//  llvm::BranchInst*
-//  getTempBranch() const {
-//    return this->getPointer()->getTempBranch();
-//  }
+  void
+  setRootPromise(PromiseBitset* incomingBitset){
+    auto* rootPromise = this->getRootPromise();
+    (*rootPromise)|= *incomingBitset;
+    return;
+  }
 
   PromiseSummary*
   getBranch(llvm::BranchInst* incomingBranch) const {
@@ -305,6 +293,13 @@ public:
       return foundBranch;
     }
     return nullptr;
+  }
+
+  SharedPromiseTree
+  mergeAtMeet(SharedPromiseTree& leftTree, SharedPromiseTree& rightTree, llvm::BranchInst* condition){
+    SharedPromiseTree newSharedPromiseTree{};
+    newSharedPromiseTree.getPointer()->insert(condition).insert(leftTree.promiseTreePtr.get(),0).insert(rightTree.promiseTreePtr.get(),1);
+    return newSharedPromiseTree;
   }
 
   // Operators
@@ -323,6 +318,11 @@ public:
     *(this->getRootPromise()) |= bitset;
   }
 
+  SharedPromiseTree
+  operator|(SharedPromiseTree& rightTree){
+    this->setRootPromise(rightTree.getRootPromise());
+    return *this;
+  }
 
   //Printers
   void

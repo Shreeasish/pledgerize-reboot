@@ -1,4 +1,3 @@
-
 #ifndef DATAFLOW_ANALYSIS_H
 #define DATAFLOW_ANALYSIS_H
 
@@ -179,11 +178,12 @@ public:
   AbstractValue
   operator()(llvm::ArrayRef<AbstractValue> values,
              llvm::Value* location1,
-             llvm::Value* location2) {
+             llvm::Value* location2,
+             llvm::Value* destination) {
     return std::accumulate(values.begin(), values.end(),
       AbstractValue(),
-      [this, location1, location2] (auto v1, auto v2) {
-        return this->asSubClass().meetPairCustomized(v1, v2, location1, location2);
+      [this, location1, location2, destination] (auto v1, auto v2) {
+        return this->asSubClass().meetPairCustomized(v1, v2, location1, location2, destination);
       });
   }
 
@@ -191,7 +191,8 @@ public:
   meetPairCustomized(AbstractValue& v1,
                      AbstractValue& v2,
                      llvm::Value* location1,
-                     llvm::Value* location2 ) const {
+                     llvm::Value* location2, 
+                     llvm::Value* destination ) const {
     llvm_unreachable("unimplemented meet");
   }
 
@@ -507,7 +508,22 @@ private:
       // implicitly meeting with bottom.
       auto [found, newlyAdded] = destination.insert(valueStatePair);
       if (!newlyAdded) {
-        found->second = meet({found->second, valueStatePair.second}, found->first, valueStatePair.first);
+        found->second = meet({found->second, valueStatePair.second});
+      }
+    }
+  }
+
+
+  // ska: Customized
+  void
+  mergeInState(State& destination, const State& toMerge, llvm::Value* condition) {
+    for (auto& valueStatePair : toMerge) {
+      // If an incoming Value has an AbstractValue in the already merged
+      // state, meet it with the new one. Otherwise, copy the new value over,
+      // implicitly meeting with bottom.
+      auto [found, newlyAdded] = destination.insert(valueStatePair);
+      if (!newlyAdded) {
+        found->second = meet({found->second, valueStatePair.second}, found->first, valueStatePair.first, condition);
       }
     }
   }
@@ -521,7 +537,8 @@ private:
       if (results.end() == predecessorFacts) {
         continue;
       }
-      mergeInState(mergedState, predecessorFacts->second);
+      auto* condition = bb->getTerminator();
+      mergeInState(mergedState, predecessorFacts->second, condition);
     }
     return mergedState;
   }

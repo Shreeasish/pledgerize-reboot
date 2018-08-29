@@ -147,8 +147,8 @@ getIncomingState(DataflowResult<AbstractValue>& result, llvm::Instruction& i) {
 template <typename AbstractValue>
 class Transfer {
 public:
-  template <typename Context> 
-  void 
+  template <typename Context>
+  void
   operator()(llvm::Value& v, AbstractState<AbstractValue>& s, const Context& ) {
     llvm_unreachable("unimplemented transfer");
   }
