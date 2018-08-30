@@ -1,0 +1,1476 @@
+At log.c line 143:
+After call to "vlog" 
+At slaacd.c line 383:
+After call to "fork" stdio proc exec 
+At slaacd.c line 394:
+After call to "fatal" 
+At slaacd.c line 416:
+After call to "fatal" 
+At slaacd.c line 415:
+After call to "execvp" stdio exec 
+At slaacd.c line 389:
+After call to "close" stdio 
+At slaacd.c line 385:
+After call to "fatal" 
+At slaacd.c line 393:
+After call to "dup2" stdio exec 
+At slaacd.c line 399:
+After call to "fatalx" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 73:
+After call to "vlog" 
+At slaacd.c line 149:
+After call to "fprintf" stdio 
+At slaacd.c line 151:
+After call to "exit" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 73:
+After call to "vlog" 
+At slaacd.c line 633:
+After call to "imsg_compose" 
+At slaacd.c line 623:
+After call to "event_set" 
+At slaacd.c line 622:
+After call to "event_del" 
+At slaacd.c line 624:
+After call to "event_add" 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At control.c line 68:
+After call to "close" stdio 
+At control.c line 75:
+After call to "close" stdio 
+At control.c line 81:
+After call to "chmod" rpath cpath stdio fattr 
+At control.c line 73:
+After call to "bind" rpath cpath stdio dns inet unix fattr PLEDGE_SPCL_SYSCTL 
+At control.c line 76:
+After call to "umask" stdio 
+At control.c line 79:
+After call to "umask" rpath cpath stdio fattr 
+At control.c line 74:
+After call to "log_warn" stdio 
+At control.c line 84:
+After call to "unlink" cpath 
+At control.c line 55:
+After call to "socket" rpath cpath stdio dns inet unix fattr PLEDGE_SPCL_SYSCTL 
+At control.c line 66:
+After call to "__errno" rpath cpath stdio dns inet unix fattr PLEDGE_SPCL_SYSCTL 
+At control.c line 63:
+After call to "strlcpy" rpath cpath stdio dns inet unix fattr PLEDGE_SPCL_SYSCTL 
+At control.c line 72:
+After call to "umask" rpath cpath stdio dns inet unix fattr PLEDGE_SPCL_SYSCTL 
+At control.c line 83:
+After call to "close" cpath stdio 
+At control.c line 82:
+After call to "log_warn" cpath stdio 
+At control.c line 57:
+After call to "log_warn" 
+At control.c line 67:
+After call to "log_warn" stdio 
+At control.c line 65:
+After call to "unlink" rpath cpath stdio dns inet unix fattr PLEDGE_SPCL_SYSCTL 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 112:
+After call to "asprintf" stdio 
+At log.c line 119:
+After call to "free" stdio 
+At log.c line 113:
+After call to "strerror" stdio 
+At log.c line 118:
+After call to "vlog" stdio 
+At log.c line 104:
+After call to "__errno" stdio 
+At log.c line 116:
+After call to "logit" 
+At log.c line 108:
+After call to "logit" 
+At log.c line 124:
+After call to "__errno" 
+At log.c line 116:
+After call to "strerror" 
+At log.c line 108:
+After call to "strerror" 
+At log.c line 115:
+After call to "vlog" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At control.c line 116:
+After call to "log_warn" 
+At control.c line 113:
+After call to "event_del" cpath 
+At control.c line 114:
+After call to "event_del" cpath 
+At control.c line 115:
+After call to "unlink" cpath 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 143:
+After call to "vlog" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At engine.c line 296:
+After call to "log_setverbose" rpath cpath stdio tmppath dns inet flock unix id getpw mcast 
+At engine.c line 295:
+After call to "log_init" rpath cpath stdio tmppath dns inet flock unix id getpw mcast 
+At engine.c line 298:
+After call to "getpwnam" rpath cpath stdio tmppath dns inet flock unix id getpw mcast 
+At engine.c line 308:
+After call to "log_procinit" stdio id 
+At engine.c line 321:
+After call to "event_set" stdio 
+At engine.c line 332:
+After call to "imsg_init" 
+At engine.c line 304:
+After call to "fatal" 
+At engine.c line 315:
+After call to "pledge" stdio 
+At engine.c line 318:
+After call to "event_init" stdio 
+At engine.c line 316:
+After call to "fatal" 
+At engine.c line 307:
+After call to "setproctitle" stdio id 
+At engine.c line 330:
+After call to "fatal" 
+At engine.c line 301:
+After call to "chroot" rpath stdio id 
+At engine.c line 345:
+After call to "engine_shutdown" 
+At engine.c line 326:
+After call to "signal" stdio 
+At engine.c line 325:
+After call to "signal" stdio 
+At engine.c line 302:
+After call to "fatal" 
+At engine.c line 339:
+After call to "event_add" 
+At engine.c line 313:
+After call to "fatal" 
+At engine.c line 343:
+After call to "event_dispatch" 
+At engine.c line 303:
+After call to "chdir" rpath stdio id 
+At engine.c line 329:
+After call to "malloc" stdio 
+At engine.c line 312:
+After call to "setresuid" stdio id 
+At engine.c line 322:
+After call to "event_set" stdio 
+At engine.c line 310:
+After call to "setgroups" stdio id 
+At engine.c line 299:
+After call to "fatal" 
+At engine.c line 324:
+After call to "event_add" stdio 
+At engine.c line 323:
+After call to "event_add" stdio 
+At engine.c line 311:
+After call to "setresgid" stdio id 
+At engine.c line 337:
+After call to "event_set" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 112:
+After call to "asprintf" stdio 
+At log.c line 119:
+After call to "free" stdio 
+At log.c line 113:
+After call to "strerror" stdio 
+At log.c line 118:
+After call to "vlog" stdio 
+At log.c line 104:
+After call to "__errno" stdio 
+At log.c line 116:
+After call to "logit" 
+At log.c line 108:
+After call to "logit" 
+At log.c line 124:
+After call to "__errno" 
+At log.c line 116:
+After call to "strerror" 
+At log.c line 108:
+After call to "strerror" 
+At log.c line 115:
+After call to "vlog" 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At slaacd.c line 149:
+After call to "fprintf" stdio 
+At slaacd.c line 151:
+After call to "exit" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At slaacd.c line 633:
+After call to "imsg_compose" 
+At slaacd.c line 623:
+After call to "event_set" 
+At slaacd.c line 622:
+After call to "event_del" 
+At slaacd.c line 624:
+After call to "event_add" 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At slaacd.c line 231:
+After call to "socketpair" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 264:
+After call to "fatal" 
+At slaacd.c line 233:
+After call to "fatal" 
+At slaacd.c line 296:
+After call to "fatal" 
+At slaacd.c line 236:
+After call to "start_child" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 305:
+After call to "socket" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 265:
+After call to "imsg_init" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 180:
+After call to "getopt" rpath cpath stdio tmppath dns inet flock unix getpw proc mcast PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 303:
+After call to "fatal" 
+At slaacd.c line 238:
+After call to "start_child" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 646:
+After call to "socketpair" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 301:
+After call to "setsockopt" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 653:
+After call to "imsg_flush" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 267:
+After call to "imsg_init" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 243:
+After call to "log_procinit" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 306:
+After call to "fatal" 
+At slaacd.c line 650:
+After call to "imsg_compose" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 245:
+After call to "socket" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 247:
+After call to "fatal" 
+At slaacd.c line 310:
+After call to "setsockopt" stdio 
+At slaacd.c line 249:
+After call to "event_init" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 654:
+After call to "imsg_compose" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 213:
+After call to "geteuid" rpath cpath stdio tmppath dns inet flock unix getpw proc mcast PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 272:
+After call to "event_set" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 316:
+After call to "fatalx" 
+At slaacd.c line 210:
+After call to "frontend" rpath cpath stdio tmppath dns inet flock unix getpw proc mcast PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 284:
+After call to "socket" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 252:
+After call to "event_set" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 214:
+After call to "errx" stdio 
+At slaacd.c line 325:
+After call to "main_imsg_compose_frontend_fd" 
+At slaacd.c line 253:
+After call to "event_set" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 327:
+After call to "main_imsg_compose_frontend_fd" 
+At slaacd.c line 217:
+After call to "getpwnam" rpath cpath stdio tmppath dns inet flock unix getpw proc mcast PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 657:
+After call to "imsg_flush" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 208:
+After call to "engine" rpath cpath stdio tmppath dns inet flock unix getpw proc mcast PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 282:
+After call to "fatal" 
+At slaacd.c line 330:
+After call to "main_imsg_compose_frontend_fd" 
+At slaacd.c line 312:
+After call to "fatal" 
+At slaacd.c line 254:
+After call to "event_set" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 174:
+After call to "log_setverbose" rpath cpath stdio tmppath dns inet flock unix getpw proc mcast PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 205:
+After call to "usage" 
+At slaacd.c line 218:
+After call to "errx" stdio 
+At slaacd.c line 287:
+After call to "socket" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 315:
+After call to "control_init" 
+At slaacd.c line 220:
+After call to "log_init" rpath stdio dns inet unix proc PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 255:
+After call to "event_add" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 274:
+After call to "event_add" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 285:
+After call to "fatal" 
+At slaacd.c line 221:
+After call to "log_setverbose" rpath stdio dns inet unix proc PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 173:
+After call to "log_init" rpath cpath stdio tmppath dns inet flock unix getpw proc mcast PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 290:
+After call to "setsockopt" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 277:
+After call to "event_set" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 224:
+After call to "daemon" rpath stdio dns inet unix proc PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 256:
+After call to "event_add" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 258:
+After call to "signal" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 226:
+After call to "log_info" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 262:
+After call to "malloc" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 288:
+After call to "fatal" 
+At slaacd.c line 257:
+After call to "event_add" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 228:
+After call to "socketpair" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 198:
+After call to "usage" 
+At slaacd.c line 294:
+After call to "setsockopt" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 335:
+After call to "event_dispatch" 
+At slaacd.c line 337:
+After call to "main_shutdown" 
+At slaacd.c line 333:
+After call to "main_imsg_compose_frontend" 
+At slaacd.c line 230:
+After call to "fatal" 
+At slaacd.c line 292:
+After call to "fatal" 
+At slaacd.c line 279:
+After call to "event_add" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At slaacd.c line 263:
+After call to "malloc" stdio dns inet unix PLEDGE_SPCL_SYSCTL 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At engine.c line 352:
+After call to "msgbuf_clear" stdio 
+At engine.c line 361:
+After call to "exit" 
+At engine.c line 355:
+After call to "close" stdio 
+At engine.c line 353:
+After call to "close" stdio 
+At engine.c line 360:
+After call to "log_info" 
+At engine.c line 358:
+After call to "free" stdio 
+At engine.c line 354:
+After call to "msgbuf_clear" stdio 
+At engine.c line 357:
+After call to "free" stdio 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 133:
+After call to "vlog" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 196:
+After call to "vfatalc" 
+At log.c line 198:
+After call to "exit" 
+At log.c line 45:
+After call to "tzset" rpath stdio 
+At log.c line 43:
+After call to "openlog" rpath stdio 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At frontend.c line 166:
+After call to "malloc" stdio 
+At frontend.c line 137:
+After call to "chdir" rpath stdio dns inet unix id PLEDGE_SPCL_SYSCTL 
+At frontend.c line 162:
+After call to "signal" stdio 
+At frontend.c line 141:
+After call to "setproctitle" stdio dns inet unix id PLEDGE_SPCL_SYSCTL 
+At frontend.c line 161:
+After call to "event_add" stdio 
+At frontend.c line 163:
+After call to "signal" stdio 
+At frontend.c line 138:
+After call to "fatal" 
+At frontend.c line 193:
+After call to "fatal" 
+At frontend.c line 168:
+After call to "imsg_init" stdio 
+At frontend.c line 205:
+After call to "inet_pton" 
+At frontend.c line 144:
+After call to "socket" stdio dns inet unix id PLEDGE_SPCL_SYSCTL 
+At frontend.c line 167:
+After call to "fatal" 
+At frontend.c line 142:
+After call to "log_procinit" stdio dns inet unix id PLEDGE_SPCL_SYSCTL 
+At frontend.c line 206:
+After call to "fatal" 
+At frontend.c line 145:
+After call to "fatal" 
+At frontend.c line 239:
+After call to "frontend_shutdown" 
+At frontend.c line 237:
+After call to "event_dispatch" 
+At frontend.c line 171:
+After call to "event_set" stdio 
+At frontend.c line 147:
+After call to "setgroups" stdio id 
+At frontend.c line 148:
+After call to "setresgid" stdio id 
+At frontend.c line 149:
+After call to "setresuid" stdio id 
+At frontend.c line 177:
+After call to "malloc" stdio 
+At frontend.c line 173:
+After call to "event_add" stdio 
+At frontend.c line 125:
+After call to "log_init" rpath cpath stdio tmppath dns inet flock unix id getpw mcast PLEDGE_SPCL_SYSCTL 
+At frontend.c line 153:
+After call to "fatal" 
+At frontend.c line 155:
+After call to "event_init" stdio 
+At frontend.c line 150:
+After call to "fatal" 
+At frontend.c line 178:
+After call to "fatal" 
+At frontend.c line 132:
+After call to "getpwnam" rpath cpath stdio tmppath dns inet flock unix id getpw mcast PLEDGE_SPCL_SYSCTL 
+At frontend.c line 152:
+After call to "pledge" stdio 
+At frontend.c line 126:
+After call to "log_setverbose" rpath cpath stdio tmppath dns inet flock unix id getpw mcast PLEDGE_SPCL_SYSCTL 
+At frontend.c line 158:
+After call to "event_set" stdio 
+At frontend.c line 133:
+After call to "fatal" 
+At frontend.c line 160:
+After call to "event_add" stdio 
+At frontend.c line 135:
+After call to "chroot" rpath stdio dns inet unix id PLEDGE_SPCL_SYSCTL 
+At frontend.c line 136:
+After call to "fatal" 
+At frontend.c line 192:
+After call to "malloc" stdio 
+At frontend.c line 159:
+After call to "event_set" stdio 
+At log.c line 112:
+After call to "asprintf" stdio 
+At log.c line 119:
+After call to "free" stdio 
+At log.c line 113:
+After call to "strerror" stdio 
+At log.c line 118:
+After call to "vlog" stdio 
+At log.c line 104:
+After call to "__errno" stdio 
+At log.c line 116:
+After call to "logit" 
+At log.c line 108:
+After call to "logit" 
+At log.c line 124:
+After call to "__errno" 
+At log.c line 116:
+After call to "strerror" 
+At log.c line 108:
+After call to "strerror" 
+At log.c line 115:
+After call to "vlog" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At slaacd.c line 383:
+After call to "fork" stdio proc exec 
+At slaacd.c line 394:
+After call to "fatal" 
+At slaacd.c line 416:
+After call to "fatal" 
+At slaacd.c line 415:
+After call to "execvp" stdio exec 
+At slaacd.c line 389:
+After call to "close" stdio 
+At slaacd.c line 385:
+After call to "fatal" 
+At slaacd.c line 393:
+After call to "dup2" stdio exec 
+At slaacd.c line 399:
+After call to "fatalx" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At slaacd.c line 633:
+After call to "imsg_compose" 
+At slaacd.c line 623:
+After call to "event_set" 
+At slaacd.c line 622:
+After call to "event_del" 
+At slaacd.c line 624:
+After call to "event_add" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 154:
+After call to "vlog" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At slaacd.c line 348:
+After call to "msgbuf_clear" stdio 
+At slaacd.c line 358:
+After call to "fatal" 
+At slaacd.c line 363:
+After call to "__errno" stdio 
+At slaacd.c line 355:
+After call to "wait" stdio 
+At slaacd.c line 357:
+After call to "__errno" stdio 
+At slaacd.c line 353:
+After call to "log_debug" stdio 
+At slaacd.c line 372:
+After call to "log_info" 
+At slaacd.c line 349:
+After call to "close" stdio 
+At slaacd.c line 360:
+After call to "log_warnx" stdio 
+At slaacd.c line 373:
+After call to "exit" 
+At slaacd.c line 357:
+After call to "__errno" stdio 
+At slaacd.c line 350:
+After call to "msgbuf_clear" stdio 
+At slaacd.c line 366:
+After call to "free" stdio 
+At slaacd.c line 369:
+After call to "control_cleanup" 
+At slaacd.c line 351:
+After call to "close" stdio 
+At slaacd.c line 365:
+After call to "free" stdio 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 143:
+After call to "vlog" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At slaacd.c line 633:
+After call to "imsg_compose" 
+At slaacd.c line 624:
+After call to "event_add" 
+At slaacd.c line 623:
+After call to "event_set" 
+At slaacd.c line 622:
+After call to "event_del" 
+At log.c line 112:
+After call to "asprintf" stdio 
+At log.c line 119:
+After call to "free" stdio 
+At log.c line 113:
+After call to "strerror" stdio 
+At log.c line 118:
+After call to "vlog" stdio 
+At log.c line 104:
+After call to "__errno" stdio 
+At log.c line 116:
+After call to "logit" 
+At log.c line 108:
+After call to "logit" 
+At log.c line 124:
+After call to "__errno" 
+At log.c line 116:
+After call to "strerror" 
+At log.c line 108:
+After call to "strerror" 
+At log.c line 115:
+After call to "vlog" 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 196:
+After call to "vfatalc" 
+At log.c line 198:
+After call to "exit" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 196:
+After call to "vfatalc" 
+At log.c line 198:
+After call to "exit" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 45:
+After call to "tzset" rpath stdio 
+At log.c line 43:
+After call to "openlog" rpath stdio 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 45:
+After call to "tzset" rpath stdio 
+At log.c line 43:
+After call to "openlog" rpath stdio 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 89:
+After call to "vfprintf" stdio 
+At log.c line 92:
+After call to "fflush" 
+At log.c line 90:
+After call to "free" stdio 
+At log.c line 85:
+After call to "asprintf" stdio 
+At log.c line 96:
+After call to "__errno" 
+At log.c line 81:
+After call to "__errno" stdio 
+At log.c line 87:
+After call to "fputc" stdio 
+At log.c line 94:
+After call to "vsyslog" stdio 
+At log.c line 86:
+After call to "vfprintf" stdio 
+At log.c line 73:
+After call to "vlog" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 45:
+After call to "tzset" rpath stdio 
+At log.c line 43:
+After call to "openlog" rpath stdio 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At frontend.c line 254:
+After call to "free" stdio 
+At frontend.c line 247:
+After call to "msgbuf_clear" stdio 
+At frontend.c line 250:
+After call to "msgbuf_clear" stdio 
+At frontend.c line 253:
+After call to "free" stdio 
+At frontend.c line 248:
+After call to "close" stdio 
+At frontend.c line 251:
+After call to "close" stdio 
+At frontend.c line 257:
+After call to "exit" 
+At frontend.c line 256:
+After call to "log_info" 
+At frontend.c line 246:
+After call to "msgbuf_write" stdio 
+At frontend.c line 249:
+After call to "msgbuf_write" stdio 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 185:
+After call to "__errno" 
+At log.c line 187:
+After call to "exit" 
+At log.c line 185:
+After call to "vfatalc" 
+At log.c line 143:
+After call to "vlog" 
+At log.c line 173:
+After call to "logit" 
+At log.c line 166:
+After call to "vsnprintf" stdio 
+At log.c line 176:
+After call to "logit" 
+At log.c line 174:
+After call to "strerror" 
+At log.c line 112:
+After call to "asprintf" stdio 
+At log.c line 119:
+After call to "free" stdio 
+At log.c line 113:
+After call to "strerror" stdio 
+At log.c line 118:
+After call to "vlog" stdio 
+At log.c line 104:
+After call to "__errno" stdio 
+At log.c line 116:
+After call to "logit" 
+At log.c line 108:
+After call to "logit" 
+At log.c line 124:
+After call to "__errno" 
+At log.c line 116:
+After call to "strerror" 
+At log.c line 108:
+After call to "strerror" 
+At log.c line 115:
+After call to "vlog" 
