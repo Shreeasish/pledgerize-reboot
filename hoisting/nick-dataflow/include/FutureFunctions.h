@@ -23,6 +23,7 @@
 #include "DataflowAnalysis.h"
 #include "TaintAnalysis.h"
 #include "PromiseDeclarations.h"
+#include "CallGraphAnalyzer.h"
 
 using PromiseBitset    = std::bitset<COUNT>;
 using FunctionsValue  = PromiseBitset;
@@ -49,7 +50,7 @@ public:
     }
 private:
     int argposition;
-}; // end PledgeCheckerBase
+};
 
 
 using PledgeCheckerBaseUPtr  = std::unique_ptr<PledgeCheckerBase>;
@@ -66,17 +67,10 @@ public:
                                            : promisesBitset{bitString},
                                              analysisPackage{package},
                                              analysisVector{std::move(avector)} {}
-                                           
-  // FunctionPledges(PledgeCheckerBaseUPtr&& hf) : handlerFunctor{std::move(hf)} {}
 
   FunctionsValue
   getPromisesBitset(const llvm::CallSite& cs, const Context& context) {
-    // if (handlerFunctor != nullptr) {
-    //   return (*handlerFunctor)(cs, context, analysisPackage);
-    // } else {
-    //   return promisesBitset;
-    // }
-    for (auto const& checker : analysisVector) {
+   for (auto const& checker : analysisVector) {
       promisesBitset |= (*checker)(cs, context, analysisPackage);
     }
     return promisesBitset;
@@ -85,10 +79,8 @@ public:
 private:
   AnalysisVector analysisVector;
   FunctionsValue promisesBitset;
-  // Pointers left here
   AnalysisPackage* analysisPackage;
-  // PledgeCheckerBaseUPtr handlerFunctor;
-}; // end FunctionPledges
+};
 
 
 class FunctionPledgesBuilder {
@@ -111,10 +103,12 @@ private:
   AnalysisVector analysisVector;
   AnalysisPackage* analysisPackage;
   FunctionsValue promisesBitset;
-}; // end FunctionPledgeBuilder
+}; 
 
 
 std::unordered_map<std::string, FunctionPledges>
 getLibCHandlerMap(AnalysisPackage& package);
+
+
 
 #endif

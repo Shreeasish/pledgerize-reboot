@@ -89,23 +89,26 @@ struct PromiseSummary {
 
   void
   dump(llvm::raw_ostream& out) {
-    out << this << "[label=\"";
+    out << "  n" << this << "[label=\"";
     if(branch.condition) {
-      out << *branch.condition;
+      out << "  n" << *branch.condition;
     }
     else {
       out << "None" ;
     }
     out << "\"];\n";
 
-    out << this << "->" << &promises << "\n";
-    out << &promises
+    out << "  n" << this << "->n" << &promises 
+        << ";\n";
+
+    out << "  n" << &promises
         << "[shape=\"box\",label=\""
         << promises.to_ullong()
         << "\"];\n";
 
     for (auto edge : branch.edges) {
-      out << this << "->" << edge.child << "\n" ;
+      out << "  n" << this << "->n" << edge.child
+          << ";\n";
     }
   }
 };
@@ -187,7 +190,23 @@ public:
     return *this;
   }
 
+//  PromiseTree&  // ska: fix this later
+//  insert(llvm::ArrayRef<ArrayRef<PromiseSummary::Edge>> incomingEdges){
+//    std::accumulate(incomingEdges.begin(), incomingEdges.end(),
+//       *this,
+//       [this] (auto& tree, auto edge) {
+//          tree.getRootNode().branch.edges.push_back(edge);
+//          return *this;
+//       });
+//    return *this;
+//  }
 
+  PromiseTree&
+  insert(PromiseSummary::Edge ledge, PromiseSummary::Edge redge){
+    this->getRootNode().branch.edges.push_back(ledge);
+    this->getRootNode().branch.edges.push_back(redge);
+    return *this;
+  }
 
   template <typename Lambda>
   PromiseTree&
@@ -298,9 +317,14 @@ public:
   SharedPromiseTree
   mergeAtMeet(SharedPromiseTree& leftTree, SharedPromiseTree& rightTree, llvm::BranchInst* condition){
     SharedPromiseTree newSharedPromiseTree{};
-    newSharedPromiseTree.getPointer()->insert(condition).insert(leftTree.promiseTreePtr.get(),0).insert(rightTree.promiseTreePtr.get(),1);
-    return newSharedPromiseTree;
+    newSharedPromiseTree.getPointer()
+                        ->insert(condition)
+                        .insert({ 0, leftTree.getRootNode()},
+                                { 1, rightTree.getRootNode()});
+
+    return newSharedPromiseTree.restructurePromises();
   }
+
 
   // Operators
   bool
@@ -310,7 +334,7 @@ public:
 
   void
   operator=(SharedPromiseTree other) {
-    this->promiseTreePtr = other.getPointer();
+    this->promiseTreePtr = std::make_shared<PromiseTree>(*other.promiseTreePtr);
   }
 
   void
@@ -326,8 +350,23 @@ public:
 
   //Printers
   void
-  dump(llvm::raw_ostream& out) const{
-    out << "digraph{\n" ;
+  dump(llvm::raw_ostream& out, llvm::Value* location ) const{
+    out << "  n" <<  location
+        << "[label=\"" ;
+
+    if(location){
+      out << *location << "\"];\n" ;
+
+      out << "  n" << location
+          << "->n"  << this->getRootNode()
+          << ";\n" ;
+    } else {
+      out << "unknown" << "\"];\n" ;
+
+      out << "  n" << location
+          << "->"  << this->getRootNode()
+          << ";\n" ;
+    }
     auto printer = [&out](PromiseSummary* node) {
       if (node) {
         node->dump(out);
@@ -338,11 +377,31 @@ public:
         promiseTreePtr->traverseDo(printer);
       }
     }
-    out << "}\n" ;
   }
 
 private:
   std::shared_ptr<PromiseTree> promiseTreePtr;
+
+  SharedPromiseTree&
+  restructurePromises(){
+    auto* rootNode = this->getRootNode();
+    
+    PromiseBitset commonPromises{};
+    commonPromises.flip();
+    for(auto edge : rootNode->branch.edges){
+      commonPromises &= edge.child->promises;
+    }
+    rootNode->promises = commonPromises;
+
+    commonPromises.flip();
+    auto subtractFromPromise = [commonPromises](PromiseSummary* node) {
+      node->promises &= commonPromises;
+    };
+
+    this->promiseTreePtr->traverseDo(subtractFromPromise);
+    return *this;
+  }
+
 };
 
 #endif

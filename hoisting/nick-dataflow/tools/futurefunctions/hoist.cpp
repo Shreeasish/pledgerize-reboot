@@ -713,8 +713,9 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   for (auto& [icontext, icontextResults] : instructionResults){
     for(auto& [function, functionsResults] : icontextResults){
       for(auto& [location, istate] : functionsResults){
-        istate[nullptr].dump(llvm::outs());
-      }
+          llvm::outs() << "digraph{\n" ;
+          istate[nullptr].dump(llvm::outs(), location);
+          llvm::outs() << "\n}\n" ;}
     }
   }
 

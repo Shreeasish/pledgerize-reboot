@@ -64,30 +64,7 @@ getCalledFunction(llvm::CallSite cs) {
 //   };
 // };
 
-class CheckTMPPATH : public PledgeCheckerBase {
-public:
-  CheckTMPPATH(int ap) : PledgeCheckerBase(ap) {}
 
-  // TODO: Correct tmppath logic -> RW not needed if in /tmp/
-
-  FunctionsValue
-  operator()(const llvm::CallSite cs,
-             const Context& context,
-             AnalysisPackage* analysisPackage) override {
-    auto& contextResults  = analysisPackage->tmppathResults[context];
-    auto* instr           = cs.getInstruction();
-    auto& functionResults = contextResults[instr->getFunction()];
-    auto state            = analysis::getIncomingState(functionResults, *instr);
-    auto arg              = cs.getArgument(getArgPosition());
-    auto isTmp            = state[arg];
-
-    if (isTmp.test(0)) {
-      return 1 << (PLEDGE_TMPPATH);
-    }
-
-    return 0;
-  };
-};
 
 class CheckMCAST : public PledgeCheckerBase {
 public:
@@ -112,19 +89,12 @@ std::unordered_map<std::string, FunctionPledges>
 getLibCHandlerMap(AnalysisPackage& package) {
   std::unordered_map<std::string, FunctionPledges> libCHandlers;
 
-  libCHandlers.emplace("fread",
-                       FunctionPledgesBuilder(16, &package)
-                           .add(std::make_unique<CheckTMPPATH>(3))
-                           .build());
-  libCHandlers.emplace(
-      "setsockopt",
-      FunctionPledgesBuilder(16).add(std::make_unique<CheckMCAST>(2)).build());
+  libCHandlers.emplace("fread", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace( "setsockopt", FunctionPledgesBuilder(16).add(std::make_unique<CheckMCAST>(2)).build());
   libCHandlers.emplace("err", FunctionPledgesBuilder(16).build()); //Should only use stderr
   libCHandlers.emplace("errx",FunctionPledgesBuilder(16).build()); //Like err, also exits the program 
   libCHandlers.emplace("exit",FunctionPledgesBuilder(0).build());  //Program can always exit
-  libCHandlers.emplace(
-      "fprintf",
-      FunctionPledgesBuilder(16).add(std::make_unique<CheckTMPPATH>(0)).build()); //Check the first argument(file pointer) for tmppath
+  libCHandlers.emplace( "fprintf", FunctionPledgesBuilder(16).build()); //Check the first argument(file pointer) for tmppath
   libCHandlers.emplace("getopt",FunctionPledgesBuilder(16).build());
   libCHandlers.emplace("isdigit",FunctionPledgesBuilder(0).build());
   libCHandlers.emplace("isspace",FunctionPledgesBuilder(0).build());
@@ -135,6 +105,34 @@ getLibCHandlerMap(AnalysisPackage& package) {
   libCHandlers.emplace("strtol",FunctionPledgesBuilder(0).build());
   libCHandlers.emplace("strtonum",FunctionPledgesBuilder(0).build());
   libCHandlers.emplace("time",FunctionPledgesBuilder(16).build());
+  
+  libCHandlers.emplace("asprintf", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("daemon", FunctionPledgesBuilder(8210).build());
+  libCHandlers.emplace("__errno", FunctionPledgesBuilder(0).build());
+  libCHandlers.emplace("errx", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("execvp", FunctionPledgesBuilder(1048592).build());
+  libCHandlers.emplace("exit", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("fflush", FunctionPledgesBuilder(0).build());
+  libCHandlers.emplace("fork", FunctionPledgesBuilder(8208).build());
+  libCHandlers.emplace("fprintf", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("fputc", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("free", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("getopt", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("getpwnam", FunctionPledgesBuilder(4199418).build());
+  libCHandlers.emplace("inet_pton", FunctionPledgesBuilder(0).build());
+  libCHandlers.emplace("malloc", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("openlog", FunctionPledgesBuilder(0).build());
+  libCHandlers.emplace("setproctitle", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("signal", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("strerror", FunctionPledgesBuilder(0).build());
+  libCHandlers.emplace("strlcpy", FunctionPledgesBuilder(0).build());
+  libCHandlers.emplace("tzset", FunctionPledgesBuilder(18).build());
+  libCHandlers.emplace("vfprintf", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("vsnprintf", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("vsyslog", FunctionPledgesBuilder(16).build());
+  libCHandlers.emplace("wait", FunctionPledgesBuilder(16).build());
+
+  // PULL the remaining emplaces from the CallgraphAnalyzer.h
   
   // libCHandlers.emplace("__sclose", 16);
   // libCHandlers.emplace("__smakebuf", 16);

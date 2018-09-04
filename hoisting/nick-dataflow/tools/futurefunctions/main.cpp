@@ -38,7 +38,7 @@ static cl::opt<string> inPath{cl::Positional,
                               cl::init(""),
                               cl::Required,
                               cl::cat{futureFunctionsCategory}};
-                              
+
 
 //LibC map here
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
@@ -49,30 +49,27 @@ getCalledFunction(const llvm::CallSite cs) {
   if (!cs.getInstruction()) {
     return nullptr;
   }
-
   const llvm::Value *called = cs.getCalledValue()->stripPointerCasts();
-
-  if (called->getName().contains("llvm.dbg")) {
+  if (called->getName().contains("llvm")) {
     return nullptr;
   }
-
+  //llvm::errs() << called->getName() << "\n";
   return llvm::dyn_cast<llvm::Function>(called);
 }
 
 
 static void
-setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, const Context& context) { 
-  
+setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, const Context& context) {
   auto functionName = getCalledFunction(cs)->getName().str();
-
   auto found = libCHandlers.find(functionName);
-  
-  if(found != libCHandlers.end()){   
-    //Use the context of the current callsite
-    auto promisesBitset = found->second.getPromisesBitset(cs, context);
 
+  if (found != libCHandlers.end()){
+    auto promisesBitset = found->second.getPromisesBitset(cs, context);
     requiredPrivileges |= promisesBitset;
-    // requiredPrivileges |= 0;
+  } else if(syscallBitsetMap.count(functionName)){
+    requiredPrivileges |= syscallBitsetMap[functionName];
+  } else {
+    return;
   }
 }
 
@@ -87,11 +84,10 @@ public:
 
 
 class FunctionsTransfer {
-  
 public:
   void
   operator()(llvm::Value& v, FunctionsState& state, const Context& context) {
-    
+
     const CallSite cs{&v};
     const auto* fun = getCalledFunction(cs);
 
@@ -102,13 +98,10 @@ public:
 
     // FunctionsValue requiredPrivileges{};
     setRequiredPrivileges(state[nullptr], cs, context);
- 
     auto [found, inserted] = functionIDs.insert({fun, functions.size()});
     if (inserted) {
       functions.push_back(fun);
     }
-
-    // state[nullptr].set(found->second);
   }
 };
 
@@ -141,24 +134,20 @@ printLineNumber(llvm::raw_ostream& out, llvm::Instruction& inst) {
         << ":\n";
   } else {
     out << "At an unknown location:\n";
-  }  
+  }
 }
 
 
 static void
 printFollowers(llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> followers) {
   for (auto& [callsite, after] : followers) {
-    llvm::outs().changeColor(raw_ostream::Colors::RED);
+    //llvm::outs().changeColor(raw_ostream::Colors::RED);
     printLineNumber(llvm::outs(), *callsite);
 
     auto* called = getCalledFunction(llvm::CallSite{callsite});
-    llvm::outs().changeColor(raw_ostream::Colors::YELLOW);
+    //llvm::outs().changeColor(raw_ostream::Colors::YELLOW);
     llvm::outs() << "After call to \"" << called->getName() << "\" ";
-    
-    
-    // for (auto id : after) {
-    //   llvm::outs() << " " << functions[id]->getName();
-    // }
+
 
     for (int i = 0; i < COUNT ; i++) {
       if(after[i]){
@@ -169,10 +158,10 @@ printFollowers(llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> fol
   }
 
   if (followers.empty()) {
-    llvm::outs().changeColor(raw_ostream::Colors::GREEN);
+    //llvm::outs().changeColor(raw_ostream::Colors::GREEN);
     llvm::outs() << "No followers collected\n";
   }
-  llvm::outs().resetColor();
+  //llvm::outs().resetColor();
 }
 
 
@@ -197,7 +186,7 @@ main(int argc, char** argv) {
     err.print(argv[0], errs());
     return -1;
   }
-  
+
   auto* mainFunction = module->getFunction("main");
   if (!mainFunction) {
     llvm::report_fatal_error("Unable to find main function.");
@@ -221,11 +210,21 @@ main(int argc, char** argv) {
   for (auto& [context, contextResults] : results) {
     for (auto& [function, functionResults] : contextResults) {
       collectFollowers(functionResults, std::back_inserter(followers));
+      for(auto& [location, state] : functionResults){
+        auto* inst = llvm::dyn_cast<llvm::Instruction>(location);
+        if(!inst){
+          continue;
+        }
+        printLineNumber(llvm::outs(), *inst);
+        for (int i = 0; i < COUNT ; i++) {
+          if(state[nullptr][i]){
+            llvm::outs() << PromiseNames[i] << " ";
+          }
+        }
+        llvm::outs() << "\n";
+      }
     }
   }
-
-  printFollowers(followers);
-
-  return 0;
-}
-
+    printFollowers(followers);
+    return 0;
+  }
