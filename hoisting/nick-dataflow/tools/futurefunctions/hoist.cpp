@@ -138,11 +138,6 @@ public:
     llvm::errs() << "\nlocation2 dump\n" ;
     s2.dump(llvm::errs(), location2);
 
-    if(s1 == s2) {
-      llvm::errs() << "\n Same values\n" ;
-      return s1;
-    }
-    
     if(auto* destBranch = llvm::dyn_cast<llvm::BranchInst>(destination); destBranch) {
       return SharedPromiseTree{}.mergeAtMeet(s1, s2, destBranch);
     }
