@@ -98,7 +98,7 @@ struct PromiseSummary {
     }
     out << "\"];\n";
 
-    out << "  n" << this << "->n" << &promises 
+    out << "  n" << this << "->n" << &promises
         << ";\n";
 
     out << "  n" << &promises
@@ -117,12 +117,14 @@ class PromiseTree {
 public:
   PromiseTree() {
     root = new PromiseSummary{PromiseBitset{0}};
-    root->id = 999;
     }
 
   PromiseTree(PromiseBitset incomingBitset) {
     root = new PromiseSummary{incomingBitset};
-    root->id = 999;
+  }
+
+  PromiseTree(PromiseSummary* node){
+    root = node;
   }
 
   PromiseTree(PromiseTree* lhsTree, PromiseTree* rhsTree){
@@ -163,7 +165,7 @@ public:
 //  llvm::BranchInst*
 //    getTempBranch() const{
 //      return this->tempBranchInst;
-//    }
+//  }
 
 //  void
 //  setTempBranch(llvm::BranchInst* branchInst){
@@ -179,10 +181,8 @@ public:
   }
 
   PromiseTree&
-  insert(llvm::BranchInst* branchInst) {
-    this->getRootNode().branch.condition = branchInst;
-    return *this;
-  }
+  setRootBranch(llvm::BranchInst* branchInst);
+
 
   PromiseTree&
   insert(PromiseTree* ptree, size_t position){
@@ -214,15 +214,16 @@ public:
     auto dfs = [&action] (PromiseSummary* node, auto& dfs) -> void {
       if(!node) {return;}
       //Recursion
+      action(node);
       for (auto& edge : node->branch.edges) {
         dfs(edge.child, dfs);
       }
-      action(node);
     };
     dfs(root,dfs);
 
     return *this;
   };
+
 
   template <typename Matcher>
   PromiseSummary*
@@ -263,15 +264,21 @@ public:
     : promiseTreePtr{other}
     {}
 
+  SharedPromiseTree(PromiseSummary* node)
+    : promiseTreePtr{std::make_shared<PromiseTree>(PromiseTree(node))}
+    {}
+
   SharedPromiseTree(PromiseBitset incomingBitset)
     : promiseTreePtr{std::make_shared<PromiseTree>(PromiseTree{incomingBitset})}
     {}
 
-  SharedPromiseTree(SharedPromiseTree& s1, SharedPromiseTree& s2){
-    PromiseTree newPTree{&*(s1.getPointer()), &*(s2.getPointer())};
-    this->promiseTreePtr = std::make_shared<PromiseTree>(newPTree);
-  }
+//  SharedPromiseTree(SharedPromiseTree& s1, SharedPromiseTree& s2){
+//    PromiseTree newPTree{&*(s1.getPointer()), &*(s2.getPointer())};
+//    this->promiseTreePtr = std::make_shared<PromiseTree>(newPTree);
+//  }
 
+  SharedPromiseTree
+  mergeAtMeet(SharedPromiseTree& leftTree, SharedPromiseTree& rightTree, llvm::BranchInst* condition);
 
   std::shared_ptr<PromiseTree>
   getPointer() const {
@@ -279,14 +286,6 @@ public:
   }
 
   //Methods
-  PromiseSummary*
-  findBranch(llvm::BranchInst* branchInst) const {
-    auto matcher = [branchInst](PromiseSummary* PromiseSummary) {
-      return PromiseSummary->branch.condition == branchInst;
-    };
-
-    return promiseTreePtr->find(matcher);
-  }
 
   PromiseSummary*
   getRootNode() const {
@@ -306,30 +305,19 @@ public:
   }
 
   PromiseSummary*
-  getBranch(llvm::BranchInst* incomingBranch) const {
-    // if it exists return the node
-    if (auto* foundBranch = findBranch(incomingBranch)) {
-      return foundBranch;
-    }
-    return nullptr;
-  }
-
-  SharedPromiseTree
-  mergeAtMeet(SharedPromiseTree& leftTree, SharedPromiseTree& rightTree, llvm::BranchInst* condition){
-    SharedPromiseTree newSharedPromiseTree{};
-    newSharedPromiseTree.getPointer()
-                        ->insert(condition)
-                        .insert({ 0, leftTree.getRootNode()},
-                                { 1, rightTree.getRootNode()});
-
-    return newSharedPromiseTree.restructurePromises();
-  }
-
+  getOrInsertConditionNode(llvm::BranchInst* branchInst);
 
   // Operators
   bool
   operator==( SharedPromiseTree other) const {
-    return this->promiseTreePtr->getRootPromise() == other.getRootPromise();
+    bool result;
+     if ( !(this->getRootNode() == other.getRootNode())){
+        llvm::errs() << "\n Lvl2 check\n" ;
+        result = this->getRootNode()->branch.condition == other.getRootNode()->branch.condition && this->getRootNode()->branch.condition != nullptr;
+     } else result = true;
+
+    llvm::errs() << "\nBoolean :" << result;
+    return result;
   }
 
   void
@@ -372,10 +360,8 @@ public:
         node->dump(out);
       }
     };
-    if(promiseTreePtr){
-      if (promiseTreePtr) {
-        promiseTreePtr->traverseDo(printer);
-      }
+    if (promiseTreePtr) {
+      promiseTreePtr->traverseDo(printer);
     }
   }
 
@@ -385,7 +371,7 @@ private:
   SharedPromiseTree&
   restructurePromises(){
     auto* rootNode = this->getRootNode();
-    
+
     PromiseBitset commonPromises{};
     commonPromises.flip();
     for(auto edge : rootNode->branch.edges){
@@ -403,5 +389,51 @@ private:
   }
 
 };
+
+
+PromiseTree&
+PromiseTree::setRootBranch(llvm::BranchInst* branchInst) {
+  this->getRootNode().branch.condition = branchInst;
+  return *this;
+}
+
+
+PromiseSummary*
+SharedPromiseTree::getOrInsertConditionNode(llvm::BranchInst* brInst) {
+  if (!brInst) {
+    llvm::errs() << "Inserting nullptr as conditional" ; //llvm::unreachable?
+    return nullptr;
+  }
+
+  PromiseSummary* foundNode = nullptr;
+  auto checkBranch = [&foundNode, &brInst]( PromiseSummary* node) -> void {
+    if (brInst == node->branch.condition) {
+      foundNode = node;
+      return;
+    }
+  };
+  this->promiseTreePtr->traverseDo(checkBranch);
+
+  if (!foundNode) {
+    return new PromiseSummary{brInst};
+  }
+  return foundNode;
+}
+
+
+SharedPromiseTree
+SharedPromiseTree::mergeAtMeet(SharedPromiseTree& leftTree, SharedPromiseTree& rightTree, llvm::BranchInst* condition) {
+  //    this->getPointer()
+  //        ->insert(condition)
+  //         .insert({ 0,  leftTree.getRootNode()},
+  //                 { 1, rightTree.getRootNode()});
+
+  auto* conditionNode = leftTree.getOrInsertConditionNode(condition);
+  conditionNode->branch.edges.push_back({ 0, leftTree.getRootNode()});
+  conditionNode->branch.edges.push_back({ 1, rightTree.getRootNode()});
+
+  return SharedPromiseTree{conditionNode}.restructurePromises();
+}
+
 
 #endif

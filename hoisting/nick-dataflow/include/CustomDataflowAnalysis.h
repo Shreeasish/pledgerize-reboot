@@ -569,7 +569,6 @@ private:
   }
 };
 
-
 } // end namespace
 
 

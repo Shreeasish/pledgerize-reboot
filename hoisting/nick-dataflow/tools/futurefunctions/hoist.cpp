@@ -128,9 +128,23 @@ public:
   meetPairCustomized(InstructionValue& s1, InstructionValue& s2,
                      llvm::Value* location1, llvm::Value* location2,
                      llvm::Value* destination ) const {
-    // location1 seems to be the destination
-    if(auto* destBranch = llvm::dyn_cast<llvm::BranchInst>(destination); destBranch){
-      return SharedPromiseTree{}.mergeAtMeet(s1,s2,destBranch);
+
+    llvm::errs() << "\nCondition\n" ;
+    llvm::errs() << *destination;
+    
+    llvm::errs() << "\nlocation1 dump\n" ;
+    s1.dump(llvm::errs(), location1);
+
+    llvm::errs() << "\nlocation2 dump\n" ;
+    s2.dump(llvm::errs(), location2);
+
+    if(s1 == s2) {
+      llvm::errs() << "\n Same values\n" ;
+      return s1;
+    }
+    
+    if(auto* destBranch = llvm::dyn_cast<llvm::BranchInst>(destination); destBranch) {
+      return SharedPromiseTree{}.mergeAtMeet(s1, s2, destBranch);
     }
     llvm::outs() << "\nDestination: unknown\n" ;
     return s1|s2; // Default Merge as fallback
@@ -715,7 +729,8 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
       for(auto& [location, istate] : functionsResults){
           llvm::outs() << "digraph{\n" ;
           istate[nullptr].dump(llvm::outs(), location);
-          llvm::outs() << "\n}\n" ;}
+          llvm::outs() << "\n}\n" ;
+      }
     }
   }
 
