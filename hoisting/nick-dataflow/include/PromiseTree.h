@@ -288,7 +288,7 @@ public:
   }
 
   void
-  setRootPromise(PromiseBitset* incomingBitset){
+  addToRootPromise(PromiseBitset* incomingBitset){
     auto* rootPromise = this->getRootPromise();
     (*rootPromise)|= *incomingBitset;
     return;
@@ -315,7 +315,7 @@ public:
 
   SharedPromiseTree
   operator|(SharedPromiseTree& rightTree){
-    this->setRootPromise(rightTree.getRootPromise());
+    this->addToRootPromise(rightTree.getRootPromise());
     return *this;
   }
 

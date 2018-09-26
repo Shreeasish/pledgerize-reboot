@@ -129,15 +129,6 @@ public:
                      llvm::Value* location1, llvm::Value* location2,
                      llvm::Value* destination ) const {
 
-    llvm::errs() << "\nCondition\n" ;
-    llvm::errs() << *destination;
-    
-    llvm::errs() << "\nlocation1 dump\n" ;
-    s1.dump(llvm::errs(), location1);
-
-    llvm::errs() << "\nlocation2 dump\n" ;
-    s2.dump(llvm::errs(), location2);
-
     if(auto* destBranch = llvm::dyn_cast<llvm::BranchInst>(destination); destBranch) {
       return SharedPromiseTree{}.mergeAtMeet(s1, s2, destBranch);
     }
@@ -152,12 +143,18 @@ public:
   void
   operator()(llvm::Value& v, InstructionState& state, const Context& context) {
     PromiseBitset bitset;
+    
+    llvm::errs() << "\n Dumping from Transfer\n" ;
+    state[nullptr].dump(llvm::errs(), nullptr);
 
     auto* inst = llvm::dyn_cast<llvm::Instruction>(&v);
     CallSite cs{inst};
     if (cs) {
       setRequiredPrivileges(bitset, cs, context );
+      state[nullptr]  = SharedPromiseTree{bitset};
       state[nullptr] |= bitset;
+      llvm::errs() << "\n Dumping after callsit\n" ;
+      state[nullptr].dump(llvm::errs(), nullptr);
       return;
     }
   }
