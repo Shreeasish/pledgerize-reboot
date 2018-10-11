@@ -1,2 +1,3 @@
 add_subdirectory(futurefunctions)
 add_subdirectory(callgraphanalyzer)
+add_subdirectory(hoist)
