@@ -55,7 +55,7 @@ std::unordered_map<std::string, FunctionPledges> libCHandlers;
 
 
 static void
-setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, const Context& context) {
+setRequiredPrivileges(Privileges requiredPrivileges, llvm::CallSite cs, const Context& context) {
   auto fun = cs.getCalledFunction();
   if(!fun){
     return;
@@ -70,45 +70,88 @@ setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, con
   }
 }
 
+size_t Generator::exprCounter = 0;
+std::deque<ExprNode*> Generator::slab;
+llvm::DenseMap<llvm::Value*, ExprID> Generator::leafTable;
+llvm::DenseMap<ExprKey, ExprID> Generator::exprTable;        
 
-class FunctionsMeet : public analysis::Meet<FunctionsValue, FunctionsMeet> {
+using DisjunctionValue  = Disjunction;
+using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
+using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
+
+class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet> {
 public:
-  FunctionsValue
-  meetPair(FunctionsValue& s1, FunctionsValue& s2) const {
-    return s1 | s2;
+  DisjunctionValue
+  meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
+    return s1 + s2;
   }
-  FunctionsValue
-  meetPairCustomized(FunctionsValue& s1, FunctionsValue& s2, llvm::Value*, llvm::Value*, llvm::Value*) const {
-    return s1 | s2;
+
+  DisjunctionValue
+  meetPairCustomized(DisjunctionValue& s1, DisjunctionValue& s2,
+      llvm::Value* value1, llvm::Value* value2, llvm::Value* value3) const {
+
+    auto valuePrint = [](llvm::Value* value) -> void {
+      if (value) {
+        llvm::outs() << *value;
+      }
+      else {
+        llvm::outs() << value;
+      }
+    };
+
+    auto printall = [&value1,&value2,&value3,&valuePrint]() {
+      llvm::outs() << "\n Print Value At Meet";
+      llvm::outs() << "\nvalue1 "; valuePrint(value1);
+      llvm::outs() << "\nvalue2 "; valuePrint(value2);
+      llvm::outs() << "\nvalue3 "; valuePrint(value3);
+    };
+    
+    return s1 + s2;
   }
 };
 
 
-class FunctionsTransfer {
+class DisjunctionTransfer {
+
+private:
+  void
+  handleBinaryInstruction(llvm::Value* value, DisjunctionState& state) {
+    auto* bi = llvm::dyn_cast<llvm::BinaryOperator>(value);
+    if (!bi) {
+      return;
+    }
+
+    auto newExpr = Generator::GetOrCreateExprID(bi);
+    // do work with newExpr
+  }
 
 public:
   void
-  operator()(llvm::Value& v, FunctionsState& state, const Context& context) {
-
+  operator()(llvm::Value& v, DisjunctionState& state, const Context& context) {
+    handleBinaryInstruction(&v, state);
+    
     const CallSite cs{&v};
     const auto* fun = getCalledFunction(cs);
-
     // Pretend that indirect calls & non calls don't exist for this analysis
     if (!fun) {
       return;
     }
 
+    
+
     // FunctionsValue requiredPrivileges{};
-    setRequiredPrivileges(state[nullptr], cs, context);
+    Privileges newPrivileges;
+    setRequiredPrivileges(newPrivileges, cs, context);
 
-    auto [found, inserted] = functionIDs.insert({fun, functions.size()});
-    if (inserted) {
-      functions.push_back(fun);
-    }
+    Disjunct vacuousConjunct{Privileges{16}}; // Generate a vacuously true expr
+    auto temp = Disjunction{vacuousConjunct};
+    state[nullptr] = temp;
 
-    // state[nullptr].set(found->second);
+    //Rewrites
   }
 };
+
+
 
 
 static void
@@ -145,9 +188,9 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     llvm::report_fatal_error("Unable to find main function.");
   }
 
-  using Value    = FunctionsValue;
-  using Transfer = FunctionsTransfer;
-  using Meet     = FunctionsMeet;
+  using Value    = Disjunction;
+  using Transfer = DisjunctionTransfer;
+  using Meet     = DisjunctionMeet;
   using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, analysis::Backward>;
   Analysis analysis{m, mainFunction};
 
@@ -155,8 +198,6 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
   libCHandlers = getLibCHandlerMap(package);
   auto results = analysis.computeDataflow();
-
-
 
   return false;
 }
