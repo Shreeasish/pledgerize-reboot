@@ -123,6 +123,7 @@ private:
 
     auto newExpr = Generator::GetOrCreateExprID(bi);
     // do work with newExpr
+    return;
   }
 
 public:
@@ -143,8 +144,8 @@ public:
     Privileges newPrivileges;
     setRequiredPrivileges(newPrivileges, cs, context);
 
-    Disjunct vacuousConjunct{Privileges{16}}; // Generate a vacuously true expr
-    auto temp = Disjunction{vacuousConjunct};
+    Disjunct vacuousConjunct{ }; // Generate a vacuously true expr
+    auto temp = Disjunction{ };
     state[nullptr] = temp;
 
     //Rewrites

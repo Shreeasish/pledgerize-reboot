@@ -22,24 +22,25 @@ using std::queue;
 
 using namespace llvm;
 
-using Privileges   = std::bitset<COUNT>;
-using ExprID       = size_t;
-using ExprKey      = std::tuple<ExprID, llvm::Instruction::BinaryOps, ExprID>;
+using Privileges    = std::bitset<COUNT>;
+using ExprID        = size_t;
+using LLVMBinaryOps = llvm::Instruction::BinaryOps;
+using ExprKey       = std::tuple<ExprID, LLVMBinaryOps, ExprID>;
 
 // template specialization for ExprKey
 template<>
 struct DenseMapInfo<ExprKey> {
 
   static inline ExprKey getEmptyKey() {
-    return {ExprID(-1), llvm::Instruction::BinaryOps(0), ExprID(-1)};
+    return {ExprID(-1), LLVMBinaryOps(0), ExprID(-1)};
   }
 
   static inline ExprKey getTombstoneKey() {
-    return {ExprID(-2), llvm::Instruction::BinaryOps(0), ExprID(-2)};
+    return {ExprID(-2), LLVMBinaryOps(0), ExprID(-2)};
   }
 
   static unsigned getHashValue(const ExprKey& exprKey) {
-    size_t asArray[] = {std::get<0>(exprKey), std::get<1>(exprKey), std::get<2>(exprKey)};
+    ExprID asArray[] = {std::get<0>(exprKey), std::get<1>(exprKey), std::get<2>(exprKey)};
     return llvm::hash_combine_range(std::begin(asArray), std::end(asArray));
   }
 
@@ -62,15 +63,15 @@ getCalledFunction(llvm::CallSite cs) {
 // Expression Trees
 class ExprNode {
 protected:
-  const size_t id;
+  const ExprID id;
 
 public:
-  ExprNode (size_t id)
+  ExprNode (ExprID id)
     : id{id} { };
 
   bool operator==(ExprNode) const;
 
-  size_t
+  ExprID
   getId () const {
     return id;
   }
@@ -82,7 +83,7 @@ class ConstantExprNode : public ExprNode {
   const llvm::Constant* constant;
 
 public:
-  ConstantExprNode (size_t id, llvm::Constant* constant)
+  ConstantExprNode (ExprID id, llvm::Constant* constant)
     : ExprNode{id},
       constant{constant} { }
 };
@@ -91,7 +92,7 @@ class ValueExprNode : public ExprNode {
   const llvm::Value* value;
 
 public:
-  ValueExprNode (size_t id, llvm::Value* value)
+  ValueExprNode (ExprID id, llvm::Value* value)
     : ExprNode{id},
       value{value} { }
 };
@@ -99,49 +100,40 @@ public:
 class BinaryExprNode : public ExprNode {
   const ExprID lhs;
   const ExprID rhs;
-  const llvm::Instruction::BinaryOps binOp; // 'Operator' is reserved by llvm
-
-private:
-  //const llvm::BinaryOperator* binOperator;
+  const LLVMBinaryOps binOp; // 'Operator' is reserved by llvm
 
 public:
-  BinaryExprNode (size_t id, ExprID lhs, ExprID rhs, llvm::Instruction::BinaryOps binOperator)
+  BinaryExprNode (ExprID id, ExprID lhs, ExprID rhs, LLVMBinaryOps binOperator)
     : ExprNode{id},
       lhs{lhs}, rhs{rhs},
       binOp{binOperator} { }
 };
-
+using ConjunctIDs = std::vector<ExprID>; //Should this be at the top?
 
 class Disjunct { // Or a Conjunction
-  std::vector<size_t> conjunctIDs; // Conjuncts = Exprs
-  Privileges privileges;
+  ConjunctIDs conjunctIDs; // Conjuncts = Exprs
 
 public:
   Disjunct() = default;
 
-  Disjunct(size_t exprID, Privileges privileges)
-    : conjunctIDs{exprID},
-      privileges{privileges} { }
-
-  Disjunct(Privileges privileges)
-    : privileges{privileges} { }
+  explicit Disjunct (ExprID exprID)
+    : conjunctIDs{exprID} { }
 
   void operator=(Disjunct);
   void print() const;
 };
+using Disjuncts = std::vector<Disjunct>;
 
 // Class for handling the abstract state.
 // Contains a vector of vectors of conjunctions/disjuncts
 class Disjunction {
-  std::vector<Disjunct> disjuncts; // Vector of conjunctions
+  Disjuncts disjuncts; // Vector of conjunctions
 
 public:
   Disjunction() = default;
 
-  Disjunction(Disjunct disjunct) {
-    disjuncts.push_back(disjunct);
-    llvm::outs() << "Constructed";
-  }
+  explicit Disjunction (Disjuncts otherDisjuncts)
+    : disjuncts{otherDisjuncts} { }
 
   //Operator Overloads
   void operator=(Disjunction);
@@ -174,7 +166,6 @@ Disjunct::print() const {
   for (auto id : conjunctIDs) {
     llvm::outs() << id << "-";
   }
-  llvm::outs() << privileges.to_ulong() << "\n" ;
 
   return;
 }
@@ -193,10 +184,10 @@ Disjunction::operator==(Disjunction other) const {
 
 Disjunction
 Disjunction::operator+(Disjunction other) {
-  this->disjuncts
-    .insert(this->disjuncts.begin(), other.disjuncts.begin(), other.disjuncts.end());
-  // TODO: Prune Away
-  return *this;
+  Disjuncts tempDisjuncts{this->disjuncts};
+  tempDisjuncts.
+    insert(tempDisjuncts.end(), other.disjuncts.begin(), other.disjuncts.begin());
+  return Disjunction{tempDisjuncts};
 }
 
 void
