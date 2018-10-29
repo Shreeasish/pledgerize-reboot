@@ -53,6 +53,11 @@ static cl::opt<string> inPath{cl::Positional,
 //LibC map here
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
 
+using DisjunctionValue  = Disjunction;
+using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
+using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
+
+std::unique_ptr<Generator> generator;
 
 static void
 setRequiredPrivileges(Privileges requiredPrivileges, llvm::CallSite cs, const Context& context) {
@@ -70,14 +75,6 @@ setRequiredPrivileges(Privileges requiredPrivileges, llvm::CallSite cs, const Co
   }
 }
 
-size_t Generator::exprCounter = 0;
-std::deque<ExprNode*> Generator::slab;
-llvm::DenseMap<llvm::Value*, ExprID> Generator::leafTable;
-llvm::DenseMap<ExprKey, ExprID> Generator::exprTable;
-
-using DisjunctionValue  = Disjunction;
-using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
-using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
 class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet> {
 public:
@@ -121,7 +118,7 @@ private:
       return;
     }
 
-    auto newExpr = Generator::GetOrCreateExprID(bOp);
+    auto newExpr = generator->GetOrCreateExprID(bOp);
     // do work with newExpr
     return;
   }
@@ -144,7 +141,7 @@ public:
     }
 
     Disjunct vacuousDisjunct{};
-    vacuousDisjunct.addConjunct(Generator::GetOrCreateVacuousExprID());
+    vacuousDisjunct.addConjunct(generator->GetOrCreateVacuousExprID());
     state[nullptr].addDisjunct(vacuousDisjunct);
     //Rewrites
   }
@@ -184,7 +181,8 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   if (!mainFunction) {
     llvm::report_fatal_error("Unable to find main function.");
   }
-
+  
+  generator = make_unique<Generator>(Generator{});
   using Value    = Disjunction;
   using Transfer = DisjunctionTransfer;
   using Meet     = DisjunctionMeet;
@@ -195,6 +193,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
   libCHandlers = getLibCHandlerMap(package);
   auto results = analysis.computeDataflow();
+
 
   return false;
 }

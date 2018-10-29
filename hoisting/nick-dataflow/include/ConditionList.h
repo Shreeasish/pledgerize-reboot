@@ -83,7 +83,7 @@ class ConstantExprNode : public ExprNode {
   const llvm::Constant*& constant;
 
 public:
-  ConstantExprNode (ExprID id, const llvm::Constant*& constant)
+  ConstantExprNode (ExprID id, const llvm::Constant* constant)
     : ExprNode{id},
       constant{constant} { }
 };
@@ -92,7 +92,7 @@ class ValueExprNode : public ExprNode {
   const llvm::Value* value;
 
 public:
-  ValueExprNode (ExprID id, const llvm::Value*& value)
+  ValueExprNode (ExprID id, const llvm::Value* value)
     : ExprNode{id},
       value{value} { }
 };

@@ -9,14 +9,13 @@
 // using ExprIDPair = std::pair<ExprID,ExprID>;
 
 class Generator {
-  static ExprID exprCounter;
-  static std::deque<ExprNode*> slab;
-  static llvm::DenseMap<llvm::Value*, ExprID> leafTable;
-  static llvm::DenseMap<ExprKey, ExprID> exprTable;
+  ExprID exprCounter;
+  std::deque<ExprNode*> slab;
+  llvm::DenseMap<llvm::Value*, ExprID> leafTable;
+  llvm::DenseMap<ExprKey, ExprID> exprTable;
 
 private:
-
-  static ExprID
+  ExprID
   GenerateVacuousExprID() {
     assert(exprCounter == 0);
     auto vacuousExprNode = new ConstantExprNode{exprCounter, nullptr};
@@ -25,7 +24,7 @@ private:
     return exprCounter;
   }
 
-  static ExprID // Templatize
+  ExprID // Templatize
   GenerateConstantExprID(llvm::Constant* constant) {
     assert(constant != nullptr);
     assert(!llvm::isa<llvm::Constant>(constant));
@@ -39,7 +38,7 @@ private:
     return exprCounter;
   }
 
-  static ExprID
+  ExprID
   GenerateValueExprID(llvm::Value* value) {
     llvm::errs() << "\nGenerating a value node\n";
 //  assert(not value is not a nullpointer);
@@ -52,7 +51,7 @@ private:
 
 //  static ValueExprNode* GenerateValueExprNode(llvm::Instruction* branch) { }
 
-  static ExprID
+  ExprID
   GenerateBinaryExprID(llvm::BinaryOperator* binOperator) {
     llvm::errs() << "\nGenerating new binary expression with id = " << ++exprCounter;
     auto* lhs = binOperator->getOperand(0);
@@ -72,7 +71,7 @@ private:
   }
 
 public:
-  static ExprID //Handle BinaryInstrucions
+  ExprID //Handle BinaryInstrucions
   GetOrCreateExprID(llvm::BinaryOperator* binOperator) {
     assert(binOperator != nullptr);
     auto* lhs = binOperator->getOperand(0);
@@ -91,7 +90,7 @@ public:
     return GenerateBinaryExprID(binOperator);
   }
 
-  static ExprID
+  ExprID
   GetOrCreateExprID(llvm::Value* value) {
     assert(value != nullptr);
 
@@ -105,7 +104,7 @@ public:
     return GenerateValueExprID(value);
   }
 
-  static ExprID
+  ExprID
   GetOrCreateVacuousExprID() {
     if (auto vacuousExprPair = leafTable.find(nullptr);
         vacuousExprPair != leafTable.end()){
