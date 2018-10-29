@@ -32,13 +32,13 @@ private:
 
     llvm::errs() << "\nGenerating constant for\n";
     llvm::errs() << *constant;
-    
+
     auto* newConstantExprNode = new ConstantExprNode(++exprCounter, constant);
     slab.push_back(newConstantExprNode);
     leafTable.insert({constant, exprCounter});
     return exprCounter;
   }
-  
+
   static ExprID
   GenerateValueExprID(llvm::Value* value) {
     llvm::errs() << "\nGenerating a value node\n";
@@ -64,7 +64,7 @@ private:
     auto rhsID = GetOrCreateExprID(rhs);
     ExprKey key{lhsID, binOperator->getOpcode(), rhsID};
 
-    auto* newBinaryExprNode 
+    auto* newBinaryExprNode
       = new BinaryExprNode(++exprCounter, lhsID, rhsID, binOperator->getOpcode());
     slab.push_back(newBinaryExprNode);
     exprTable.insert({key, exprCounter});
@@ -94,7 +94,7 @@ public:
   static ExprID
   GetOrCreateExprID(llvm::Value* value) {
     assert(value != nullptr);
-    
+
     // Get Constant or Value for leaf
     if (auto found = leafTable.find(value); found != leafTable.end()) {
       return found->second;

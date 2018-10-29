@@ -69,7 +69,7 @@ public:
   ExprNode (ExprID id)
     : id{id} { };
 
-  bool operator==(ExprNode) const;
+  bool operator==(const ExprNode&) const;
 
   ExprID
   getId () const {
@@ -80,10 +80,10 @@ public:
 };
 
 class ConstantExprNode : public ExprNode {
-  const llvm::Constant* constant;
+  const llvm::Constant*& constant;
 
 public:
-  ConstantExprNode (ExprID id, llvm::Constant* constant)
+  ConstantExprNode (ExprID id, const llvm::Constant*& constant)
     : ExprNode{id},
       constant{constant} { }
 };
@@ -92,7 +92,7 @@ class ValueExprNode : public ExprNode {
   const llvm::Value* value;
 
 public:
-  ValueExprNode (ExprID id, llvm::Value* value)
+  ValueExprNode (ExprID id, const llvm::Value*& value)
     : ExprNode{id},
       value{value} { }
 };
@@ -100,7 +100,7 @@ public:
 class BinaryExprNode : public ExprNode {
   const ExprID lhs;
   const ExprID rhs;
-  const LLVMBinaryOps binOp; 
+  const LLVMBinaryOps binOp;
   // 'Operator' is reserved by llvm
 
 public:
@@ -111,13 +111,12 @@ public:
 };
 using ConjunctIDs = std::vector<ExprID>; //Should this be at the top?
 
-
 class Disjunct { // Or a Conjunction
 private:
   ConjunctIDs conjunctIDs; // Conjuncts = Exprs
 public:
   Disjunct() = default;
-  
+
   // Operator Overloads
   void operator=(Disjunct);
   // Member Functions
@@ -131,7 +130,7 @@ using Disjuncts = std::vector<Disjunct>;
 class Disjunction {
   // Vector of conjunctions
 private:
-  Disjuncts disjuncts; 
+  Disjuncts disjuncts;
 
 public:
   Disjunction() = default;
@@ -141,9 +140,9 @@ public:
 
   //Operator Overloads
   void operator=(Disjunction);
-  bool operator==(Disjunction) const;
+  bool operator==(const Disjunction&) const;
   //Member Functions
-  Disjunction operator+(const Disjunction&) const;
+  Disjunction operator+(Disjunction) const;
   Disjunction addDisjunct(Disjunct);
   void print() const;
 };
@@ -152,7 +151,7 @@ public:
 
 // ExprNodeClass
 bool
-ExprNode::operator==(ExprNode other) const {
+ExprNode::operator==(const ExprNode& other) const {
   return this->id == other.id;
 }
 
@@ -192,13 +191,13 @@ Disjunction::operator=(Disjunction other) {
 }
 
 bool
-Disjunction::operator==(Disjunction other) const {
-  //TODO: Fix 
+Disjunction::operator==(const Disjunction& other) const {
+  //TODO: Fix
   return false;
 }
 
 Disjunction
-Disjunction::operator+(const Disjunction& other) const {
+Disjunction::operator+(Disjunction other) const {
   Disjuncts tempDisjuncts{this->disjuncts};
   tempDisjuncts.
     insert(tempDisjuncts.end(), other.disjuncts.begin(), other.disjuncts.begin());
