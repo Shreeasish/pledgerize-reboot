@@ -24,7 +24,7 @@ using namespace llvm;
 
 using Privileges    = std::bitset<COUNT>;
 using ExprID        = size_t;
-using LLVMBinaryOps = llvm::Instruction::BinaryOps;
+using LLVMBinaryOps = llvm::Instruction::BinaryOps; // NOT llvm::BinaryOperator
 using ExprKey       = std::tuple<ExprID, LLVMBinaryOps, ExprID>;
 
 // template specialization for ExprKey
@@ -100,7 +100,8 @@ public:
 class BinaryExprNode : public ExprNode {
   const ExprID lhs;
   const ExprID rhs;
-  const LLVMBinaryOps binOp; // 'Operator' is reserved by llvm
+  const LLVMBinaryOps binOp; 
+  // 'Operator' is reserved by llvm
 
 public:
   BinaryExprNode (ExprID id, ExprID lhs, ExprID rhs, LLVMBinaryOps binOperator)
@@ -110,24 +111,27 @@ public:
 };
 using ConjunctIDs = std::vector<ExprID>; //Should this be at the top?
 
-class Disjunct { // Or a Conjunction
-  ConjunctIDs conjunctIDs; // Conjuncts = Exprs
 
+class Disjunct { // Or a Conjunction
+private:
+  ConjunctIDs conjunctIDs; // Conjuncts = Exprs
 public:
   Disjunct() = default;
-
-  explicit Disjunct (ExprID exprID)
-    : conjunctIDs{exprID} { }
-
+  
+  // Operator Overloads
   void operator=(Disjunct);
+  // Member Functions
   void print() const;
+  void addConjunct(ExprID);
 };
 using Disjuncts = std::vector<Disjunct>;
 
 // Class for handling the abstract state.
 // Contains a vector of vectors of conjunctions/disjuncts
 class Disjunction {
-  Disjuncts disjuncts; // Vector of conjunctions
+  // Vector of conjunctions
+private:
+  Disjuncts disjuncts; 
 
 public:
   Disjunction() = default;
@@ -138,16 +142,15 @@ public:
   //Operator Overloads
   void operator=(Disjunction);
   bool operator==(Disjunction) const;
-
-  Disjunction operator+(Disjunction);
-
+  //Member Functions
+  Disjunction operator+(const Disjunction&) const;
+  Disjunction addDisjunct(Disjunct);
   void print() const;
 };
 
 // Method Definitions // ------------------ //
 
 // ExprNodeClass
-
 bool
 ExprNode::operator==(ExprNode other) const {
   return this->id == other.id;
@@ -161,16 +164,27 @@ Disjunct::operator=(Disjunct other) {
 }
 
 void
+Disjunct::addConjunct(ExprID exprID) {
+  this->conjunctIDs.push_back(exprID);
+  return;
+}
+
+void
 Disjunct::print() const {
   llvm::outs() << "\n" ;
   for (auto id : conjunctIDs) {
     llvm::outs() << id << "-";
   }
-
   return;
 }
 
 // Disjunction Class
+Disjunction
+Disjunction::addDisjunct(Disjunct newDisjunct) {
+  this->disjuncts.push_back(newDisjunct);
+  return *this;
+}
+
 void
 Disjunction::operator=(Disjunction other) {
   this->disjuncts = other.disjuncts;
@@ -179,11 +193,12 @@ Disjunction::operator=(Disjunction other) {
 
 bool
 Disjunction::operator==(Disjunction other) const {
+  //TODO: Fix 
   return false;
 }
 
 Disjunction
-Disjunction::operator+(Disjunction other) {
+Disjunction::operator+(const Disjunction& other) const {
   Disjuncts tempDisjuncts{this->disjuncts};
   tempDisjuncts.
     insert(tempDisjuncts.end(), other.disjuncts.begin(), other.disjuncts.begin());

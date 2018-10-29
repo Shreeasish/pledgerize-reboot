@@ -73,7 +73,7 @@ setRequiredPrivileges(Privileges requiredPrivileges, llvm::CallSite cs, const Co
 size_t Generator::exprCounter = 0;
 std::deque<ExprNode*> Generator::slab;
 llvm::DenseMap<llvm::Value*, ExprID> Generator::leafTable;
-llvm::DenseMap<ExprKey, ExprID> Generator::exprTable;        
+llvm::DenseMap<ExprKey, ExprID> Generator::exprTable;
 
 using DisjunctionValue  = Disjunction;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
@@ -105,7 +105,7 @@ public:
       llvm::outs() << "\nvalue2 "; valuePrint(value2);
       llvm::outs() << "\nvalue3 "; valuePrint(value3);
     };
-    
+
     return s1 + s2;
   }
 };
@@ -115,13 +115,13 @@ class DisjunctionTransfer {
 
 private:
   void
-  handleBinaryInstruction(llvm::Value* value, DisjunctionState& state) {
-    auto* bi = llvm::dyn_cast<llvm::BinaryOperator>(value);
-    if (!bi) {
+  handleBinaryOperator(llvm::Value* value, DisjunctionState& state) {
+    auto* bOp = llvm::dyn_cast<llvm::BinaryOperator>(value);
+    if (!bOp) {
       return;
     }
 
-    auto newExpr = Generator::GetOrCreateExprID(bi);
+    auto newExpr = Generator::GetOrCreateExprID(bOp);
     // do work with newExpr
     return;
   }
@@ -129,30 +129,26 @@ private:
 public:
   void
   operator()(llvm::Value& v, DisjunctionState& state, const Context& context) {
-    handleBinaryInstruction(&v, state);
-    
+    handleBinaryOperator(&v, state);
+
     const CallSite cs{&v};
     const auto* fun = getCalledFunction(cs);
     // Pretend that indirect calls & non calls don't exist for this analysis
     if (!fun) {
       return;
     }
-
-    
-
-    // FunctionsValue requiredPrivileges{};
     Privileges newPrivileges;
     setRequiredPrivileges(newPrivileges, cs, context);
+    if (newPrivileges != 16) {
+      return;
+    }
 
-    Disjunct vacuousConjunct{ }; // Generate a vacuously true expr
-    auto temp = Disjunction{ };
-    state[nullptr] = temp;
-
+    Disjunct vacuousDisjunct{};
+    vacuousDisjunct.addConjunct(Generator::GetOrCreateVacuousExprID());
+    state[nullptr].addDisjunct(vacuousDisjunct);
     //Rewrites
   }
 };
-
-
 
 
 static void
