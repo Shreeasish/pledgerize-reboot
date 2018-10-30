@@ -38,8 +38,6 @@ using namespace llvm;
 using std::string;
 using std::unique_ptr;
 
-
-
 static cl::OptionCategory futureFunctionsCategory{"future functions options"};
 
 static cl::opt<string> inPath{cl::Positional,
@@ -141,7 +139,7 @@ public:
     }
 
     Disjunct vacuousDisjunct{};
-    vacuousDisjunct.addConjunct(generator->GetOrCreateVacuousExprID());
+    vacuousDisjunct.addConjunct(generator->GetVacuousExprID());
     state[nullptr].addDisjunct(vacuousDisjunct);
     //Rewrites
   }

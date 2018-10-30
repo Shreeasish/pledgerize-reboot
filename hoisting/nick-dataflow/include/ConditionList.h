@@ -76,7 +76,7 @@ public:
     return id;
   }
 
-  virtual ~ExprNode() {}
+  virtual ~ExprNode() { }
 };
 
 class ConstantExprNode : public ExprNode {
@@ -86,6 +86,8 @@ public:
   ConstantExprNode (ExprID id, const llvm::Constant* constant)
     : ExprNode{id},
       constant{constant} { }
+
+  ~ConstantExprNode() = default;
 };
 
 class ValueExprNode : public ExprNode {
@@ -95,6 +97,8 @@ public:
   ValueExprNode (ExprID id, const llvm::Value* value)
     : ExprNode{id},
       value{value} { }
+
+  ~ValueExprNode() = default;
 };
 
 class BinaryExprNode : public ExprNode {
@@ -108,6 +112,8 @@ public:
     : ExprNode{id},
       lhs{lhs}, rhs{rhs},
       binOp{binOperator} { }
+
+  ~BinaryExprNode() = default;
 };
 using ConjunctIDs = std::vector<ExprID>; //Should this be at the top?
 

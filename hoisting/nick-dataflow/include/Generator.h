@@ -9,21 +9,14 @@
 // using ExprIDPair = std::pair<ExprID,ExprID>;
 
 class Generator {
-  ExprID exprCounter;
-  std::deque<ExprNode*> slab;
+  ExprID exprCounter = 0;
+  std::deque<ConstantExprNode> constantSlab;
+  std::deque<ValueExprNode> valueSlab;
+  std::deque<BinaryExprNode> binarySlab;
   llvm::DenseMap<llvm::Value*, ExprID> leafTable;
   llvm::DenseMap<ExprKey, ExprID> exprTable;
 
 private:
-  ExprID
-  GenerateVacuousExprID() {
-    assert(exprCounter == 0);
-    auto vacuousExprNode = new ConstantExprNode{exprCounter, nullptr};
-    slab.push_back(vacuousExprNode);
-    leafTable.insert({nullptr, exprCounter});
-    return exprCounter;
-  }
-
   ExprID // Templatize
   GenerateConstantExprID(llvm::Constant* constant) {
     assert(constant != nullptr);
@@ -32,8 +25,7 @@ private:
     llvm::errs() << "\nGenerating constant for\n";
     llvm::errs() << *constant;
 
-    auto* newConstantExprNode = new ConstantExprNode(++exprCounter, constant);
-    slab.push_back(newConstantExprNode);
+    constantSlab.emplace_back(ConstantExprNode{++exprCounter, constant});
     leafTable.insert({constant, exprCounter});
     return exprCounter;
   }
@@ -43,13 +35,10 @@ private:
     llvm::errs() << "\nGenerating a value node\n";
 //  assert(not value is not a nullpointer);
 
-    auto* newValueExprNode = new ValueExprNode(++exprCounter, value);
-    slab.push_back(newValueExprNode);
+    valueSlab.emplace_back(ValueExprNode{++exprCounter, value});
     leafTable.insert({value, exprCounter});
     return exprCounter;
   }
-
-//  static ValueExprNode* GenerateValueExprNode(llvm::Instruction* branch) { }
 
   ExprID
   GenerateBinaryExprID(llvm::BinaryOperator* binOperator) {
@@ -62,15 +51,19 @@ private:
     auto lhsID = GetOrCreateExprID(lhs);
     auto rhsID = GetOrCreateExprID(rhs);
     ExprKey key{lhsID, binOperator->getOpcode(), rhsID};
-
-    auto* newBinaryExprNode
-      = new BinaryExprNode(++exprCounter, lhsID, rhsID, binOperator->getOpcode());
-    slab.push_back(newBinaryExprNode);
+    binarySlab.emplace_back(BinaryExprNode{++exprCounter, lhsID, rhsID, binOperator->getOpcode()});
     exprTable.insert({key, exprCounter});
     return exprCounter;
   }
 
 public:
+  Generator()
+   : exprCounter{0} {
+    assert(exprCounter == 0);
+    constantSlab.emplace_back(ConstantExprNode{exprCounter, nullptr});
+    leafTable.insert({nullptr, exprCounter});
+  }
+
   ExprID //Handle BinaryInstrucions
   GetOrCreateExprID(llvm::BinaryOperator* binOperator) {
     assert(binOperator != nullptr);
@@ -105,12 +98,8 @@ public:
   }
 
   ExprID
-  GetOrCreateVacuousExprID() {
-    if (auto vacuousExprPair = leafTable.find(nullptr);
-        vacuousExprPair != leafTable.end()){
-      return vacuousExprPair->second;
-    }
-    return GenerateVacuousExprID();
+  GetVacuousExprID() {
+    return 0;
   }
 };
 
