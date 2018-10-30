@@ -19,31 +19,41 @@ class Generator {
 private:
   ExprID // Templatize
   GenerateConstantExprID(llvm::Constant* constant) {
+    const auto old = exprCounter;
+
     assert(constant != nullptr);
     assert(llvm::isa<llvm::Constant>(constant));
 
     llvm::errs() << "\nGenerating constant for\n";
     llvm::errs() << *constant;
 
-    constantSlab.emplace_back(ConstantExprNode{++exprCounter, constant});
-    leafTable.insert({constant, exprCounter});
+    constantSlab.emplace_back(ConstantExprNode{constant});
+    leafTable.insert({constant, ++exprCounter});
+
+    assert(old == exprCounter+1);
     return exprCounter;
   }
 
+
   ExprID
   GenerateValueExprID(llvm::Value* value) {
+    const auto old = exprCounter;
     llvm::errs() << "\nGenerating a value node\n";
 
     if (value != nullptr) llvm::errs() << *value;
 //  assert(not value is not a nullpointer);
 
-    valueSlab.emplace_back(ValueExprNode{++exprCounter, value});
-    leafTable.insert({value, exprCounter});
+    valueSlab.emplace_back(ValueExprNode{value});
+    leafTable.insert({value, ++exprCounter});
+
+    assert(old == exprCounter+1);
     return exprCounter;
   }
 
   ExprID
   GenerateBinaryExprID(llvm::BinaryOperator* binOperator) {
+    const auto old = exprCounter;
+
     llvm::errs() << "\nGenerating new binary expression with id = " << ++exprCounter;
     auto* lhs = binOperator->getOperand(0);
     auto* rhs = binOperator->getOperand(1);
@@ -53,15 +63,17 @@ private:
     auto lhsID = GetOrCreateExprID(lhs);
     auto rhsID = GetOrCreateExprID(rhs);
     ExprKey key{lhsID, binOperator->getOpcode(), rhsID};
-    binarySlab.emplace_back(BinaryExprNode{++exprCounter, lhsID, rhsID, binOperator->getOpcode()});
-    exprTable.insert({key, exprCounter});
+    binarySlab.emplace_back(BinaryExprNode{lhsID, rhsID, binOperator->getOpcode()});
+    exprTable.insert({key, ++exprCounter});
+
+    assert(old == exprCounter+1);
     return exprCounter;
   }
 
 public:
   Generator()
    : exprCounter{0} {
-    constantSlab.emplace_back(ConstantExprNode{exprCounter, nullptr});
+    constantSlab.emplace_back(ConstantExprNode{nullptr});
     leafTable.insert({nullptr, exprCounter});
   }
 
@@ -70,10 +82,6 @@ public:
     assert(binOperator != nullptr);
     auto* lhs = binOperator->getOperand(0);
     auto* rhs = binOperator->getOperand(1);
-
-//    llvm::errs() << *lhs << "\n";
-//    llvm::errs() << *rhs << "\n";
-
     auto lhsID = GetOrCreateExprID(lhs);
     auto rhsID = GetOrCreateExprID(rhs);
     ExprKey key{lhsID, binOperator->getOpcode(), rhsID};

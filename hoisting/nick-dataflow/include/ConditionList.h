@@ -14,11 +14,12 @@
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/raw_ostream.h"
 
+#include <algorithm>
 #include <memory>
 #include <queue>
 
-using std::shared_ptr;
 using std::queue;
+using std::shared_ptr;
 
 using namespace llvm;
 
@@ -30,7 +31,6 @@ using ExprKey       = std::tuple<ExprID, LLVMBinaryOps, ExprID>;
 // template specialization for ExprKey
 template<>
 struct DenseMapInfo<ExprKey> {
-
   static inline ExprKey getEmptyKey() {
     return {ExprID(-1), LLVMBinaryOps(0), ExprID(-1)};
   }
@@ -60,60 +60,31 @@ getCalledFunction(llvm::CallSite cs) {
   return llvm::dyn_cast<llvm::Function>(called);
 }
 
-// Expression Trees
-class ExprNode {
-protected:
-  const ExprID id;
 
-public:
-  ExprNode (ExprID id)
-    : id{id} { };
-
-  bool operator==(const ExprNode&) const;
-
-  ExprID
-  getId () const {
-    return id;
-  }
-
-  virtual ~ExprNode() { }
-};
-
-class ConstantExprNode : public ExprNode {
+class ConstantExprNode {
   const llvm::Constant* constant;
-
 public:
-  ConstantExprNode (ExprID id, const llvm::Constant* constant)
-    : ExprNode{id},
-      constant{constant} { }
-
-  ~ConstantExprNode() = default;
+  ConstantExprNode (const llvm::Constant* constant)
+    : constant{constant} { }
 };
 
-class ValueExprNode : public ExprNode {
+class ValueExprNode {
   const llvm::Value* value;
-
 public:
-  ValueExprNode (ExprID id, const llvm::Value* value)
-    : ExprNode{id},
-      value{value} { }
-
-  ~ValueExprNode() = default;
+  ValueExprNode (const llvm::Value* value)
+    : value{value} { }
 };
 
-class BinaryExprNode : public ExprNode {
+class BinaryExprNode {
   const ExprID lhs;
   const ExprID rhs;
   const LLVMBinaryOps binOp;
   // 'Operator' is reserved by llvm
 
 public:
-  BinaryExprNode (ExprID id, ExprID lhs, ExprID rhs, LLVMBinaryOps binOperator)
-    : ExprNode{id},
-      lhs{lhs}, rhs{rhs},
+  BinaryExprNode (ExprID lhs, ExprID rhs, LLVMBinaryOps binOperator)
+    : lhs{lhs}, rhs{rhs},
       binOp{binOperator} { }
-
-  ~BinaryExprNode() = default;
 };
 using ConjunctIDs = std::vector<ExprID>; //Should this be at the top?
 
@@ -123,11 +94,18 @@ private:
 public:
   Disjunct() = default;
 
-  // Operator Overloads
+  bool operator==(const Disjunct& other) const;
   void operator=(Disjunct);
-  // Member Functions
+
   void print() const;
   void addConjunct(ExprID);
+  
+  bool
+  operator<(const Disjunct& other) const {
+    return std::lexicographical_compare (
+                   this->conjunctIDs.cbegin(), this->conjunctIDs.cend(),
+                   other.conjunctIDs.cbegin(), other.conjunctIDs.cend());
+  }
 };
 using Disjuncts = std::vector<Disjunct>;
 
@@ -153,20 +131,18 @@ public:
   void print() const;
 };
 
-// Method Definitions // ------------------ //
-
-// ExprNodeClass
-bool
-ExprNode::operator==(const ExprNode& other) const {
-  return this->id == other.id;
+//------------------- Method Definitions -------------------//
+bool 
+Disjunct::operator==(const Disjunct& other) const {
+  return conjunctIDs == other.conjunctIDs;
 }
 
-// Disjunct Class
 void
 Disjunct::operator=(Disjunct other) {
   this->conjunctIDs = other.conjunctIDs;
   return;
 }
+
 
 void
 Disjunct::addConjunct(ExprID exprID) {
@@ -183,7 +159,6 @@ Disjunct::print() const {
   return;
 }
 
-// Disjunction Class
 Disjunction
 Disjunction::addDisjunct(Disjunct newDisjunct) {
   this->disjuncts.push_back(newDisjunct);
@@ -198,8 +173,7 @@ Disjunction::operator=(Disjunction other) {
 
 bool
 Disjunction::operator==(const Disjunction& other) const {
-  //TODO: Fix
-  return false;
+  return this->disjuncts == other.disjuncts;
 }
 
 Disjunction
@@ -218,6 +192,5 @@ Disjunction::print() const {
   }
   return;
 }
-
 
 #endif
