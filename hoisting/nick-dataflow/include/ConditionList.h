@@ -143,10 +143,21 @@ Disjunct::operator=(Disjunct other) {
   return;
 }
 
-
+//Invariant: The conjunctions will be sorted
 void
 Disjunct::addConjunct(ExprID exprID) {
-  this->conjunctIDs.push_back(exprID);
+  auto binary_insert = [](auto conjunctIDs, auto first, auto last, auto exprID) {
+    first = std::lower_bound(first, last, exprID);
+    if (first == last) {
+      conjunctIDs.push_back(exprID);
+      return;
+    }
+    if (*first == exprID) return;
+    conjunctIDs.insert(first - 1, exprID);
+    return;
+  };
+
+  binary_insert(conjunctIDs, conjunctIDs.begin(), conjunctIDs.end(), exprID);
   return;
 }
 
