@@ -80,7 +80,7 @@ public:
 };
 
 class ConstantExprNode : public ExprNode {
-  const llvm::Constant*& constant;
+  const llvm::Constant* constant;
 
 public:
   ConstantExprNode (ExprID id, const llvm::Constant* constant)

@@ -20,7 +20,7 @@ private:
   ExprID // Templatize
   GenerateConstantExprID(llvm::Constant* constant) {
     assert(constant != nullptr);
-    assert(!llvm::isa<llvm::Constant>(constant));
+    assert(llvm::isa<llvm::Constant>(constant));
 
     llvm::errs() << "\nGenerating constant for\n";
     llvm::errs() << *constant;
@@ -33,6 +33,8 @@ private:
   ExprID
   GenerateValueExprID(llvm::Value* value) {
     llvm::errs() << "\nGenerating a value node\n";
+
+    if (value != nullptr) llvm::errs() << *value;
 //  assert(not value is not a nullpointer);
 
     valueSlab.emplace_back(ValueExprNode{++exprCounter, value});
@@ -59,7 +61,6 @@ private:
 public:
   Generator()
    : exprCounter{0} {
-    assert(exprCounter == 0);
     constantSlab.emplace_back(ConstantExprNode{exprCounter, nullptr});
     leafTable.insert({nullptr, exprCounter});
   }
@@ -70,8 +71,8 @@ public:
     auto* lhs = binOperator->getOperand(0);
     auto* rhs = binOperator->getOperand(1);
 
-    llvm::errs() << *lhs << "\n";
-    llvm::errs() << *rhs << "\n";
+//    llvm::errs() << *lhs << "\n";
+//    llvm::errs() << *rhs << "\n";
 
     auto lhsID = GetOrCreateExprID(lhs);
     auto rhsID = GetOrCreateExprID(rhs);
