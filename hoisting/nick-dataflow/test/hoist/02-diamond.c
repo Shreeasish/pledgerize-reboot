@@ -1,7 +1,8 @@
 #include<stdio.h>
 
 int main() {
-  int x = 2;
+  int x;
+  scanf("%d", &x);
 
   if(x%2){
     printf("\nFrom if block");

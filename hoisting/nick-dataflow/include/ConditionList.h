@@ -80,7 +80,6 @@ class BinaryExprNode {
   const ExprID rhs;
   const LLVMBinaryOps binOp;
   // 'Operator' is reserved by llvm
-
 public:
   BinaryExprNode (ExprID lhs, ExprID rhs, LLVMBinaryOps binOperator)
     : lhs{lhs}, rhs{rhs},
@@ -127,8 +126,12 @@ public:
   bool operator==(const Disjunction&) const;
   //Member Functions
   Disjunction operator+(Disjunction) const;
-  Disjunction addDisjunct(Disjunct);
+  void addDisjunction(const Disjunction&);
+  void addConjunct(const ExprID exprID);
+  void addDisjunct(const Disjunct&);
+  // Helpers
   void print() const;
+  bool empty() const;
 };
 
 //------------------- Method Definitions -------------------//
@@ -145,8 +148,8 @@ Disjunct::operator=(Disjunct other) {
 
 //Invariant: The conjunctions will be sorted
 void
-Disjunct::addConjunct(ExprID exprID) {
-  auto binary_insert = [](auto conjunctIDs, auto first, auto last, auto exprID) {
+Disjunct::addConjunct(const ExprID exprID) {
+  auto binary_insert = [ ](auto conjunctIDs, auto first, auto last, auto exprID) {
     first = std::lower_bound(first, last, exprID);
     if (first == last) {
       conjunctIDs.push_back(exprID);
@@ -170,12 +173,6 @@ Disjunct::print() const {
   return;
 }
 
-Disjunction
-Disjunction::addDisjunct(Disjunct newDisjunct) {
-  this->disjuncts.push_back(newDisjunct);
-  return *this;
-}
-
 void
 Disjunction::operator=(Disjunction other) {
   this->disjuncts = other.disjuncts;
@@ -184,6 +181,7 @@ Disjunction::operator=(Disjunction other) {
 
 bool
 Disjunction::operator==(const Disjunction& other) const {
+  llvm::errs() << "\n Evaluated True";
   return this->disjuncts == other.disjuncts;
 }
 
@@ -193,6 +191,36 @@ Disjunction::operator+(Disjunction other) const {
   tempDisjuncts.
     insert(tempDisjuncts.end(), other.disjuncts.begin(), other.disjuncts.begin());
   return Disjunction{tempDisjuncts};
+}
+
+
+void
+Disjunction::addConjunct(const ExprID exprID) {
+  for (auto disjunct : disjuncts) {
+    disjunct.addConjunct(exprID);
+  }
+  return;
+}
+
+void 
+Disjunction::addDisjunct(const Disjunct& disjunct) {
+  disjuncts.push_back(disjunct); //TODO: Insert into order
+  return;
+}
+
+void
+Disjunction::addDisjunction(const Disjunction& other) {
+  Disjuncts newDisjuncts{ };
+  std::merge(disjuncts.begin(),         disjuncts.end(),
+       other.disjuncts.begin(), other.disjuncts.begin(),
+       newDisjuncts.begin()); // TODO: Fix Duplication
+  disjuncts = newDisjuncts;
+  return;
+}
+
+bool
+Disjunction::empty() const { 
+  return disjuncts.empty();
 }
 
 void

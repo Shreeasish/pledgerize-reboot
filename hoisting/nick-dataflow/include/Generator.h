@@ -30,7 +30,7 @@ private:
     constantSlab.emplace_back(ConstantExprNode{constant});
     leafTable.insert({constant, ++exprCounter});
 
-    assert(old == exprCounter+1);
+    assert(exprCounter == old+1);
     return exprCounter;
   }
 
@@ -46,7 +46,7 @@ private:
     valueSlab.emplace_back(ValueExprNode{value});
     leafTable.insert({value, ++exprCounter});
 
-    assert(old == exprCounter+1);
+    assert(exprCounter == old+1);
     return exprCounter;
   }
 
@@ -54,7 +54,7 @@ private:
   GenerateBinaryExprID(llvm::BinaryOperator* binOperator) {
     const auto old = exprCounter;
 
-    llvm::errs() << "\nGenerating new binary expression with id = " << ++exprCounter;
+    llvm::errs() << "\nGenerating new binary expression with id = " << exprCounter;
     auto* lhs = binOperator->getOperand(0);
     auto* rhs = binOperator->getOperand(1);
     llvm::errs() << *lhs << "\n";
@@ -66,7 +66,7 @@ private:
     binarySlab.emplace_back(BinaryExprNode{lhsID, rhsID, binOperator->getOpcode()});
     exprTable.insert({key, ++exprCounter});
 
-    assert(old == exprCounter+1);
+    assert(exprCounter == old+1);
     return exprCounter;
   }
 
@@ -75,6 +75,12 @@ public:
    : exprCounter{0} {
     constantSlab.emplace_back(ConstantExprNode{nullptr});
     leafTable.insert({nullptr, exprCounter});
+  }
+  
+  // Eliminate accidental calls to GetOrCreateExprID(llvm::Instruction*)
+  ExprID
+  GetOrCreateExprID(llvm::Instruction inst) {
+    assert(false &&  "Generator::GetOrCreateExprID(llvm::Instruction*) called");
   }
 
   ExprID //Handle BinaryInstrucions

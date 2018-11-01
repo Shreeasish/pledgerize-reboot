@@ -78,13 +78,14 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
+    llvm::errs() << "Simple Meet Pair Called";
     return s1 + s2;
   }
 
   DisjunctionValue
-  meetPairCustomized(DisjunctionValue& s1, DisjunctionValue& s2,
+  meetPairCustomized(DisjunctionValue& s1, DisjunctionValue& s2, //TODO: Branch Awareness
       llvm::Value* value1, llvm::Value* value2, llvm::Value* value3) const {
-
+    llvm::errs() << "\n Meet Op";
     auto valuePrint = [](llvm::Value* value) -> void {
       if (value) {
         llvm::outs() << *value;
@@ -93,21 +94,48 @@ public:
         llvm::outs() << value;
       }
     };
-
     auto printall = [&value1,&value2,&value3,&valuePrint]() {
       llvm::outs() << "\n Print Value At Meet";
       llvm::outs() << "\nvalue1 "; valuePrint(value1);
       llvm::outs() << "\nvalue2 "; valuePrint(value2);
       llvm::outs() << "\nvalue3 "; valuePrint(value3);
     };
+    // BinaryExpr dispatcher
+    auto asBinaryExpr = [](llvm::BranchInst* branch) -> ExprID { //TODO: Handle Negation
+      auto* condition = llvm::dyn_cast<BinaryOperator>(branch->getCondition());
+      if (condition) { 
+        return generator->GetOrCreateExprID(condition); 
+      }
+      else {
+        llvm::outs() << *(branch->getCondition());
+        assert(false && "Condition is not a binaryOp"); 
+      }
+    };
 
+    assert(value1 == nullptr && "value1 in meet is not a nullptr");
+    assert(value2 == nullptr && "value2 in meet is not a nullptr");
+    auto* branch   = llvm::dyn_cast<BranchInst>(value3); //TODO: Switch Cases?
+    assert(branch != nullptr && "Branch is a nullptr");
+    
+    if (branch->isUnconditional()) {
+      return s1 + s2;
+    }
+
+    if ( s1.empty() && s2.empty()) {
+      return DisjunctionValue{ }; // New disjunction at every inst
+    }
+    if (!s1.empty()) {
+      s1.addConjunct(asBinaryExpr(branch));
+    }
+    if (!s2.empty()) {
+      s2.addConjunct(asBinaryExpr(branch));
+    }
     return s1 + s2;
   }
 };
 
 
 class DisjunctionTransfer {
-
 private:
   void
   handleBinaryOperator(llvm::Value* value, DisjunctionState& state) {
@@ -124,24 +152,30 @@ private:
 public:
   void
   operator()(llvm::Value& v, DisjunctionState& state, const Context& context) {
-    handleBinaryOperator(&v, state);
-
     const CallSite cs{&v};
     const auto* fun = getCalledFunction(cs);
     // Pretend that indirect calls & non calls don't exist for this analysis
     if (!fun) {
       return;
     }
-    Privileges newPrivileges;
-    setRequiredPrivileges(newPrivileges, cs, context);
-    if (newPrivileges != 16) {
-      return;
-    }
 
-    Disjunct vacuousDisjunct{};
-    vacuousDisjunct.addConjunct(generator->GetVacuousExprID());
-    state[nullptr].addDisjunct(vacuousDisjunct);
-    //Rewrites
+/* setting privileges don't seem to be working for now */
+//    Privileges newPrivileges;
+//    setRequiredPrivileges(newPrivileges, cs, context);
+//    if (newPrivileges != 16) {
+//      llvm::errs() << "\nFunction name" << fun->getName()
+//                   << " " << newPrivileges.to_ulong();
+//      return;
+//    }
+
+    auto asDisjunct = [](ExprID conjunct) -> Disjunct {
+      auto d = Disjunct{};
+      d.addConjunct(conjunct);
+      return d;
+    };
+
+    auto vacExpr = generator->GetVacuousExprID();
+    state[nullptr].addDisjunct(asDisjunct(vacExpr));
   }
 };
 
