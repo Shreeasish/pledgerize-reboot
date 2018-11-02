@@ -78,7 +78,7 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    llvm::errs() << "\n Simple Meet Pair Called \n";
+    llvm::errs() << "\n Simple Meet Op\n";
     return Disjunction::unionDisjunctions(s1,s2);
   }
 
@@ -125,7 +125,6 @@ public:
     if (branch->isUnconditional()) {
       return s1 + s2;
     }
-
     if ( s1.empty() && s2.empty()) {
       return DisjunctionValue{ }; // New disjunction at every inst
     }
@@ -135,7 +134,8 @@ public:
     if (!s2.empty()) {
       s2.addConjunct(asBinaryExpr(branch));
     }
-    return s1 + s2;
+
+    return Disjunction::unionDisjunctions(s1,s2);
   }
 };
 
@@ -164,7 +164,7 @@ public:
       return;
     }
 
-/* setting privileges don't seem to be working for now */
+// /* setting privileges don't seem to be working for now */
 //    Privileges newPrivileges;
 //    setRequiredPrivileges(newPrivileges, cs, context);
 //    if (newPrivileges != 16) {

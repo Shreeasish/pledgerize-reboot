@@ -136,7 +136,6 @@ public:
   bool operator==(const Disjunction&) const;
   //Member Functions
   Disjunction operator+(Disjunction) const;
-  void addDisjunction(const Disjunction&);
   void addConjunct(const ExprID exprID);
   void addDisjunct(const Disjunct&);
   // Helpers
@@ -227,18 +226,12 @@ Disjunction::addConjunct(const ExprID exprID) {
   return;
 }
 
+//Do I need this?
 void
 Disjunction::addDisjunct(const Disjunct& disjunct) {
   disjuncts.push_back(disjunct); //TODO: Insert into order
   return;
 }
-
-
-void
-Disjunction::addDisjunction(const Disjunction& other) {
-  assert(false && "Calling Placeholder");
-}
-
 
 bool
 Disjunction::empty() const {
