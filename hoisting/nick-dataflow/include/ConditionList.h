@@ -135,7 +135,6 @@ public:
   void operator=(Disjunction);
   bool operator==(const Disjunction&) const;
   //Member Functions
-  Disjunction operator+(Disjunction) const;
   void addConjunct(const ExprID exprID);
   void addDisjunct(const Disjunct&);
   // Helpers
@@ -208,15 +207,6 @@ Disjunction::operator==(const Disjunction& other) const {
   llvm::errs() << "\n Evaluated True";
   return this->disjuncts == other.disjuncts;
 }
-
-Disjunction
-Disjunction::operator+(Disjunction other) const {
-  Disjuncts tempDisjuncts{this->disjuncts};
-  tempDisjuncts.
-    insert(tempDisjuncts.end(), other.disjuncts.begin(), other.disjuncts.begin());
-  return Disjunction{tempDisjuncts};
-}
-
 
 void
 Disjunction::addConjunct(const ExprID exprID) {

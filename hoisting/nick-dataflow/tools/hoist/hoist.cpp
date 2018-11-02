@@ -123,7 +123,7 @@ public:
     assert(branch != nullptr && "Branch is a nullptr");
 
     if (branch->isUnconditional()) {
-      return s1 + s2;
+      return Disjunction::unionDisjunctions(s1,s2);
     }
     if ( s1.empty() && s2.empty()) {
       return DisjunctionValue{ }; // New disjunction at every inst
