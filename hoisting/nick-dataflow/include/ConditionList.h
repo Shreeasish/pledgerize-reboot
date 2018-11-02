@@ -23,24 +23,28 @@ using std::shared_ptr;
 
 using namespace llvm;
 
-using Privileges    = std::bitset<COUNT>;
-using ExprID        = size_t;
-using LLVMBinaryOps = llvm::Instruction::BinaryOps; // NOT llvm::BinaryOperator
-using ExprKey       = std::tuple<ExprID, LLVMBinaryOps, ExprID>;
+
+using Privileges = std::bitset<COUNT>;
+using ExprID     = size_t;
+using OpKey      = int;
+using ExprKey    = std::tuple<ExprID, OpKey, ExprID>;
 
 // template specialization for ExprKey
 template<>
 struct DenseMapInfo<ExprKey> {
   static inline ExprKey getEmptyKey() {
-    return {ExprID(-1), LLVMBinaryOps(0), ExprID(-1)};
+    return {ExprID(-1), OpKey(0), ExprID(-1)};
   }
 
   static inline ExprKey getTombstoneKey() {
-    return {ExprID(-2), LLVMBinaryOps(0), ExprID(-2)};
+    return {ExprID(-2), OpKey(0), ExprID(-2)};
   }
 
   static unsigned getHashValue(const ExprKey& exprKey) {
-    ExprID asArray[] = {std::get<0>(exprKey), std::get<1>(exprKey), std::get<2>(exprKey)};
+    int lhsAsInt     = std::get<0>(exprKey);
+    int opCodeAsInt  = std::get<1>(exprKey);
+    int rhsAsInt     = std::get<2>(exprKey);
+    int asArray[] = {lhsAsInt, opCodeAsInt, rhsAsInt};
     return llvm::hash_combine_range(std::begin(asArray), std::end(asArray));
   }
 
@@ -59,13 +63,20 @@ getCalledFunction(llvm::CallSite cs) {
 
   return llvm::dyn_cast<llvm::Function>(called);
 }
-
-
 class ConstantExprNode {
   const llvm::Constant* constant;
 public:
   ConstantExprNode (const llvm::Constant* constant)
     : constant{constant} { }
+};
+
+class ExprOp {
+public:
+  const OpKey opCode;
+  ExprOp() = default;
+
+  explicit ExprOp(int opCode)
+    : opCode{opCode} { }
 };
 
 class ValueExprNode {
@@ -77,13 +88,12 @@ public:
 
 class BinaryExprNode {
   const ExprID lhs;
+  const ExprOp op;
   const ExprID rhs;
-  const LLVMBinaryOps binOp;
-  // 'Operator' is reserved by llvm
 public:
-  BinaryExprNode (ExprID lhs, ExprID rhs, LLVMBinaryOps binOperator)
-    : lhs{lhs}, rhs{rhs},
-      binOp{binOperator} { }
+  BinaryExprNode (ExprID lhs, OpKey op, ExprID rhs)
+    : lhs{lhs}, op{op},
+      rhs{rhs} { }
 };
 using ConjunctIDs = std::vector<ExprID>; //Should this be at the top?
 
@@ -98,7 +108,7 @@ public:
 
   void print() const;
   void addConjunct(ExprID);
-  
+
   bool
   operator<(const Disjunct& other) const {
     return std::lexicographical_compare (
@@ -132,10 +142,25 @@ public:
   // Helpers
   void print() const;
   bool empty() const;
+
+  static Disjunction 
+  unionDisjunctions(const Disjunction& lhs, const Disjunction& rhs) {
+    //Invariant: Disjuncts are sets
+    Disjunction asDisjunction;
+
+    auto& dest_disjunct = asDisjunction.disjuncts;
+    auto& disjuncts1    = lhs.disjuncts;
+    auto& disjuncts2    = rhs.disjuncts;
+
+    std::set_union(disjuncts1.begin(), disjuncts1.end(),
+        disjuncts2.begin(), disjuncts2.end(),
+        std::back_inserter(dest_disjunct));
+    return asDisjunction;
+  }
 };
 
 //------------------- Method Definitions -------------------//
-bool 
+bool
 Disjunct::operator==(const Disjunct& other) const {
   return conjunctIDs == other.conjunctIDs;
 }
@@ -202,24 +227,21 @@ Disjunction::addConjunct(const ExprID exprID) {
   return;
 }
 
-void 
+void
 Disjunction::addDisjunct(const Disjunct& disjunct) {
   disjuncts.push_back(disjunct); //TODO: Insert into order
   return;
 }
 
+
 void
 Disjunction::addDisjunction(const Disjunction& other) {
-  Disjuncts newDisjuncts{ };
-  std::merge(disjuncts.begin(),         disjuncts.end(),
-       other.disjuncts.begin(), other.disjuncts.begin(),
-       newDisjuncts.begin()); // TODO: Fix Duplication
-  disjuncts = newDisjuncts;
-  return;
+  assert(false && "Calling Placeholder");
 }
 
+
 bool
-Disjunction::empty() const { 
+Disjunction::empty() const {
   return disjuncts.empty();
 }
 

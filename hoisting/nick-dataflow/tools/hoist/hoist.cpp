@@ -78,45 +78,50 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    llvm::errs() << "Simple Meet Pair Called";
-    return s1 + s2;
+    llvm::errs() << "\n Simple Meet Pair Called \n";
+    return Disjunction::unionDisjunctions(s1,s2);
   }
 
   DisjunctionValue
   meetPairCustomized(DisjunctionValue& s1, DisjunctionValue& s2, //TODO: Branch Awareness
       llvm::Value* value1, llvm::Value* value2, llvm::Value* value3) const {
-    llvm::errs() << "\n Meet Op";
+    llvm::errs() << "\n Meet Op \n";
     auto valuePrint = [](llvm::Value* value) -> void {
       if (value) {
-        llvm::outs() << *value;
+        llvm::errs() << *value;
       }
       else {
-        llvm::outs() << value;
+        llvm::errs() << value;
       }
     };
     auto printall = [&value1,&value2,&value3,&valuePrint]() {
-      llvm::outs() << "\n Print Value At Meet";
-      llvm::outs() << "\nvalue1 "; valuePrint(value1);
-      llvm::outs() << "\nvalue2 "; valuePrint(value2);
-      llvm::outs() << "\nvalue3 "; valuePrint(value3);
+      llvm::errs() << "\n Print Value At Meet";
+      llvm::errs() << "\nvalue1 "; valuePrint(value1);
+      llvm::errs() << "\nvalue2 "; valuePrint(value2);
+      llvm::errs() << "\nvalue3 "; valuePrint(value3);
     };
     // BinaryExpr dispatcher
     auto asBinaryExpr = [](llvm::BranchInst* branch) -> ExprID { //TODO: Handle Negation
-      auto* condition = llvm::dyn_cast<BinaryOperator>(branch->getCondition());
-      if (condition) { 
-        return generator->GetOrCreateExprID(condition); 
+      auto* binOp = llvm::dyn_cast<BinaryOperator>(branch->getCondition());
+      if (binOp) {
+        return generator->GetOrCreateExprID(binOp);
       }
-      else {
-        llvm::outs() << *(branch->getCondition());
-        assert(false && "Condition is not a binaryOp"); 
+      auto* cmpInst = llvm::dyn_cast<llvm::CmpInst>(branch->getCondition());
+      if (cmpInst) {
+        return generator->GetOrCreateExprID(cmpInst);
       }
+      if (!cmpInst) { //change to last on the list
+        llvm::errs() << *(branch->getCondition());
+        assert(false && "condition not handled");
+      }
+      return 0;
     };
 
     assert(value1 == nullptr && "value1 in meet is not a nullptr");
     assert(value2 == nullptr && "value2 in meet is not a nullptr");
     auto* branch   = llvm::dyn_cast<BranchInst>(value3); //TODO: Switch Cases?
     assert(branch != nullptr && "Branch is a nullptr");
-    
+
     if (branch->isUnconditional()) {
       return s1 + s2;
     }
@@ -213,7 +218,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   if (!mainFunction) {
     llvm::report_fatal_error("Unable to find main function.");
   }
-  
+
   generator = make_unique<Generator>(Generator{});
   using Value    = Disjunction;
   using Transfer = DisjunctionTransfer;
@@ -271,6 +276,5 @@ main(int argc, char** argv) {
   }
 
   instrumentPromiseTree(*module);
-
   return 0;
 }

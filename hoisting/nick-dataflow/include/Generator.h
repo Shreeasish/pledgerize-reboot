@@ -4,9 +4,6 @@
 #include "ConditionList.h"
 
 //size_t to exprID?
-//
-
-// using ExprIDPair = std::pair<ExprID,ExprID>;
 
 class Generator {
   ExprID exprCounter = 0;
@@ -41,8 +38,6 @@ private:
     llvm::errs() << "\nGenerating a value node\n";
 
     if (value != nullptr) llvm::errs() << *value;
-//  assert(not value is not a nullpointer);
-
     valueSlab.emplace_back(ValueExprNode{value});
     leafTable.insert({value, ++exprCounter});
 
@@ -51,22 +46,9 @@ private:
   }
 
   ExprID
-  GenerateBinaryExprID(llvm::BinaryOperator* binOperator) {
-    const auto old = exprCounter;
-
-    llvm::errs() << "\nGenerating new binary expression with id = " << exprCounter;
-    auto* lhs = binOperator->getOperand(0);
-    auto* rhs = binOperator->getOperand(1);
-    llvm::errs() << *lhs << "\n";
-    llvm::errs() << *rhs << "\n";
-
-    auto lhsID = GetOrCreateExprID(lhs);
-    auto rhsID = GetOrCreateExprID(rhs);
-    ExprKey key{lhsID, binOperator->getOpcode(), rhsID};
-    binarySlab.emplace_back(BinaryExprNode{lhsID, rhsID, binOperator->getOpcode()});
+  GenerateBinaryExprID(ExprKey key) {
+    binarySlab.emplace_back(BinaryExprNode{std::get<0>(key), std::get<1>(key), std::get<2>(key)});
     exprTable.insert({key, ++exprCounter});
-
-    assert(exprCounter == old+1);
     return exprCounter;
   }
 
@@ -83,7 +65,7 @@ public:
     assert(false &&  "Generator::GetOrCreateExprID(llvm::Instruction*) called");
   }
 
-  ExprID //Handle BinaryInstrucions
+  ExprID //Handle BinaryOperator
   GetOrCreateExprID(llvm::BinaryOperator* binOperator) {
     assert(binOperator != nullptr);
     auto* lhs = binOperator->getOperand(0);
@@ -95,7 +77,22 @@ public:
     if (auto found = exprTable.find(key); found != exprTable.end()) {
       return found->second;
     }
-    return GenerateBinaryExprID(binOperator);
+    return GenerateBinaryExprID(key);
+  }
+
+  ExprID //Handle CmpInst
+  GetOrCreateExprID(llvm::CmpInst* cmpInst) {
+    assert(cmpInst != nullptr);
+    auto* lhs = cmpInst->getOperand(0);
+    auto* rhs = cmpInst->getOperand(1);
+    auto lhsID = GetOrCreateExprID(lhs);
+    auto rhsID = GetOrCreateExprID(rhs);
+    ExprKey key{lhsID, cmpInst->getOpcode(), rhsID};
+
+    if (auto found = exprTable.find(key); found != exprTable.end()) {
+      return found->second;
+    }
+    return GenerateBinaryExprID(key);
   }
 
   ExprID
