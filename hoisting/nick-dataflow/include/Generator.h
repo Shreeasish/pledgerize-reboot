@@ -24,8 +24,9 @@ private:
     llvm::errs() << "\nGenerating constant for\n";
     llvm::errs() << *constant;
 
-    constantSlab.emplace_back(ConstantExprNode{constant});
-    leafTable.insert({constant, ++exprCounter});
+    constantSlab.emplace_back(constant);
+    exprCounter++;
+    leafTable.insert({constant, exprCounter});
 
     assert(exprCounter == old+1);
     return exprCounter;
@@ -38,8 +39,9 @@ private:
     llvm::errs() << "\nGenerating a value node\n";
 
     if (value != nullptr) llvm::errs() << *value;
-    valueSlab.emplace_back(ValueExprNode{value});
-    leafTable.insert({value, ++exprCounter});
+    valueSlab.emplace_back(value);
+    exprCounter++;
+    leafTable.insert({value, exprCounter});
 
     assert(exprCounter == old+1);
     return exprCounter;
@@ -52,36 +54,8 @@ private:
     return exprCounter;
   }
 
-public:
-  Generator()
-   : exprCounter{0} {
-    constantSlab.emplace_back(ConstantExprNode{nullptr});
-    leafTable.insert({nullptr, exprCounter});
-  }
-  
-  // Eliminate accidental calls to GetOrCreateExprID(llvm::Instruction*)
-  ExprID
-  GetOrCreateExprID(llvm::Instruction inst) {
-    assert(false &&  "Generator::GetOrCreateExprID(llvm::Instruction*) called");
-  }
-
-  ExprID //Handle BinaryOperator
-  GetOrCreateExprID(llvm::BinaryOperator* binOperator) {
-    assert(binOperator != nullptr);
-    auto* lhs = binOperator->getOperand(0);
-    auto* rhs = binOperator->getOperand(1);
-    auto lhsID = GetOrCreateExprID(lhs);
-    auto rhsID = GetOrCreateExprID(rhs);
-    ExprKey key{lhsID, binOperator->getOpcode(), rhsID};
-
-    if (auto found = exprTable.find(key); found != exprTable.end()) {
-      return found->second;
-    }
-    return GenerateBinaryExprID(key);
-  }
-
   ExprID //Handle CmpInst
-  GetOrCreateExprID(llvm::CmpInst* cmpInst) {
+  GetOrCreateExprID(llvm::Instruction* cmpInst) {
     assert(cmpInst != nullptr);
     auto* lhs = cmpInst->getOperand(0);
     auto* rhs = cmpInst->getOperand(1);
@@ -93,6 +67,45 @@ public:
       return found->second;
     }
     return GenerateBinaryExprID(key);
+  }
+
+public:
+  Generator()
+   : exprCounter{0} {
+    constantSlab.emplace_back(ConstantExprNode{nullptr});
+    leafTable.insert({nullptr, exprCounter});
+  }
+  
+  ExprID //Handle BinaryOperator
+  GetOrCreateExprID(llvm::BinaryOperator* binOperator) {
+    return GetOrCreateExprID(llvm::dyn_cast<llvm::Instruction>(binOperator));
+//    assert(binOperator != nullptr);
+//    auto* lhs = binOperator->getOperand(0);
+//    auto* rhs = binOperator->getOperand(1);
+//    auto lhsID = GetOrCreateExprID(lhs);
+//    auto rhsID = GetOrCreateExprID(rhs);
+//    ExprKey key{lhsID, binOperator->getOpcode(), rhsID};
+//
+//    if (auto found = exprTable.find(key); found != exprTable.end()) {
+//      return found->second;
+//    }
+//    return GenerateBinaryExprID(key);
+  }
+
+  ExprID //Handle CmpInst
+  GetOrCreateExprID(llvm::CmpInst* cmpInst) {
+    return GetOrCreateExprID(llvm::dyn_cast<llvm::Instruction>(cmpInst));
+//    assert(cmpInst != nullptr);
+//    auto* lhs = cmpInst->getOperand(0);
+//    auto* rhs = cmpInst->getOperand(1);
+//    auto lhsID = GetOrCreateExprID(lhs);
+//    auto rhsID = GetOrCreateExprID(rhs);
+//    ExprKey key{lhsID, cmpInst->getOpcode(), rhsID};
+//
+//    if (auto found = exprTable.find(key); found != exprTable.end()) {
+//      return found->second;
+//    }
+//    return GenerateBinaryExprID(key);
   }
 
   ExprID

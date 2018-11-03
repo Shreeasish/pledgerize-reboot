@@ -15,17 +15,11 @@
 #include "llvm/Support/raw_ostream.h"
 
 #include <algorithm>
-#include <memory>
-#include <queue>
-
-using std::queue;
-using std::shared_ptr;
 
 using namespace llvm;
 
-
 using Privileges = std::bitset<COUNT>;
-using ExprID     = size_t;
+using ExprID     = int;
 using OpKey      = int;
 using ExprKey    = std::tuple<ExprID, OpKey, ExprID>;
 
@@ -86,6 +80,7 @@ public:
     : value{value} { }
 };
 
+
 class BinaryExprNode {
   const ExprID lhs;
   const ExprOp op;
@@ -95,7 +90,31 @@ public:
     : lhs{lhs}, op{op},
       rhs{rhs} { }
 };
-using ConjunctIDs = std::vector<ExprID>; //Should this be at the top?
+
+class Conjunct {
+public:
+  ExprID exprID;
+  bool notNegated;
+
+  Conjunct(ExprID exprID, bool notNegated) //explicit?
+    : exprID{exprID},
+      notNegated{notNegated} { }
+
+  bool operator==(const Conjunct& other) const {
+    return exprID == other.exprID 
+      && notNegated == other.exprID;
+  }
+  
+  bool operator<(const Conjunct& other) const {
+    return exprID < other.exprID;
+  }
+
+  void operator=(const Conjunct& other) {
+    exprID     = other.exprID;
+    notNegated = other.notNegated;
+  }
+};
+using ConjunctIDs = std::vector<Conjunct>;
 
 class Disjunct { // Or a Conjunction
 private:
@@ -107,7 +126,7 @@ public:
   void operator=(Disjunct);
 
   void print() const;
-  void addConjunct(ExprID);
+  void addConjunct(const Conjunct& conjunct);
 
   bool
   operator<(const Disjunct& other) const {
@@ -121,27 +140,25 @@ using Disjuncts = std::vector<Disjunct>;
 // Class for handling the abstract state.
 // Contains a vector of vectors of conjunctions/disjuncts
 class Disjunction {
-  // Vector of conjunctions
+// Vector of conjunctions
 private:
   Disjuncts disjuncts;
-
 public:
   Disjunction() = default;
 
   explicit Disjunction (Disjuncts otherDisjuncts)
     : disjuncts{otherDisjuncts} { }
-
   //Operator Overloads
   void operator=(Disjunction);
   bool operator==(const Disjunction&) const;
   //Member Functions
-  void addConjunct(const ExprID exprID);
+  void addConjunct(const Conjunct&);
   void addDisjunct(const Disjunct&);
   // Helpers
   void print() const;
   bool empty() const;
 
-  static Disjunction 
+  static Disjunction
   unionDisjunctions(const Disjunction& lhs, const Disjunction& rhs) {
     //Invariant: Disjuncts are sets
     Disjunction asDisjunction;
@@ -157,7 +174,7 @@ public:
   }
 };
 
-//------------------- Method Definitions -------------------//
+//---------------Method Definitions----------------//
 bool
 Disjunct::operator==(const Disjunct& other) const {
   return conjunctIDs == other.conjunctIDs;
@@ -171,27 +188,27 @@ Disjunct::operator=(Disjunct other) {
 
 //Invariant: The conjunctions will be sorted
 void
-Disjunct::addConjunct(const ExprID exprID) {
-  auto binary_insert = [ ](auto conjunctIDs, auto first, auto last, auto exprID) {
-    first = std::lower_bound(first, last, exprID);
+Disjunct::addConjunct(const Conjunct& conjunct) {
+  auto binary_insert = [ ](auto conjunctIDs, auto first, auto last, auto conjunct) {
+    first = std::lower_bound(first, last, conjunct);
     if (first == last) {
-      conjunctIDs.push_back(exprID);
+      conjunctIDs.push_back(conjunct); // TODO: This makes a copy?
       return;
     }
-    if (*first == exprID) return;
-    conjunctIDs.insert(first - 1, exprID);
+    if (*first == conjunct) return;
+    conjunctIDs.insert(first - 1, conjunct);
     return;
   };
 
-  binary_insert(conjunctIDs, conjunctIDs.begin(), conjunctIDs.end(), exprID);
+  binary_insert(conjunctIDs, conjunctIDs.begin(), conjunctIDs.end(), conjunct);
   return;
 }
 
 void
 Disjunct::print() const {
   llvm::outs() << "\n" ;
-  for (auto id : conjunctIDs) {
-    llvm::outs() << id << "-";
+  for (auto conjunct : conjunctIDs) {
+    llvm::outs() << conjunct.exprID << "-";
   }
   return;
 }
@@ -209,9 +226,9 @@ Disjunction::operator==(const Disjunction& other) const {
 }
 
 void
-Disjunction::addConjunct(const ExprID exprID) {
+Disjunction::addConjunct(const Conjunct& conjunct) {
   for (auto disjunct : disjuncts) {
-    disjunct.addConjunct(exprID);
+    disjunct.addConjunct(conjunct);
   }
   return;
 }

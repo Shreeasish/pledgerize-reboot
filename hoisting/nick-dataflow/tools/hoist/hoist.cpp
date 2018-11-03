@@ -101,7 +101,7 @@ public:
       llvm::errs() << "\nvalue3 "; valuePrint(value3);
     };
     // BinaryExpr dispatcher
-    auto asBinaryExpr = [](llvm::BranchInst* branch) -> ExprID { //TODO: Handle Negation
+    auto asBinaryExpr = [](llvm::BranchInst* branch) -> ExprID {
       auto* binOp = llvm::dyn_cast<BinaryOperator>(branch->getCondition());
       if (binOp) {
         return generator->GetOrCreateExprID(binOp);
@@ -129,10 +129,10 @@ public:
       return DisjunctionValue{ }; // New disjunction at every inst
     }
     if (!s1.empty()) {
-      s1.addConjunct(asBinaryExpr(branch));
+      s1.addConjunct({asBinaryExpr(branch), true});
     }
     if (!s2.empty()) {
-      s2.addConjunct(asBinaryExpr(branch));
+      s2.addConjunct({asBinaryExpr(branch), true});
     }
 
     return Disjunction::unionDisjunctions(s1,s2);
@@ -173,14 +173,14 @@ public:
 //      return;
 //    }
 
-    auto asDisjunct = [](ExprID conjunct) -> Disjunct {
+    auto asDisjunct = [](const Conjunct& conjunct) -> Disjunct {
       auto d = Disjunct{};
       d.addConjunct(conjunct);
       return d;
     };
 
     auto vacExpr = generator->GetVacuousExprID();
-    state[nullptr].addDisjunct(asDisjunct(vacExpr));
+    state[nullptr].addDisjunct(asDisjunct({vacExpr,true}));
   }
 };
 
