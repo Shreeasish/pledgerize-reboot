@@ -177,22 +177,20 @@ public:
 
   AbstractValue
   operator()(llvm::ArrayRef<AbstractValue> values,
-             llvm::Value* location1,
-             llvm::Value* location2,
-             llvm::Value* destination) {
+             llvm::Value* destination,
+             llvm::Value* branchInst) {
     return std::accumulate(values.begin(), values.end(),
       AbstractValue(),
-      [this, location1, location2, destination] (auto v1, auto v2) {
-        return this->asSubClass().meetPairCustomized(v1, v2, location1, location2, destination);
+      [this, branchInst, destination] (auto v1, auto v2) {
+        return this->asSubClass().meetPairCustomized(v1, v2, destination, branchInst);
       });
   }
 
   AbstractValue
   meetPairCustomized(AbstractValue& v1,
                      AbstractValue& v2,
-                     llvm::Value* location1,
-                     llvm::Value* location2, 
-                     llvm::Value* destination ) const {
+                     llvm::Value* destination,
+                     llvm::Value* branchInst ) const {
     llvm_unreachable("unimplemented meet");
   }
 
@@ -516,20 +514,30 @@ private:
 
   // ska: Customized
   void
-  mergeInState(State& destination, const State& toMerge, llvm::Value* condition) {
+  mergeInState(State& destinationState, const State& toMerge, llvm::Value* destination, llvm::Value* branchInst) {
     for (auto& valueStatePair : toMerge) {
       // If an incoming Value has an AbstractValue in the already merged
       // state, meet it with the new one. Otherwise, copy the new value over,
       // implicitly meeting with bottom.
-      auto [found, newlyAdded] = destination.insert(valueStatePair);
+      auto [found, newlyAdded] = destinationState.insert(valueStatePair);
       if (!newlyAdded) {
-        found->second = meet({found->second, valueStatePair.second}, found->first, valueStatePair.first, condition);
+        found->second = 
+          meet({found->second, valueStatePair.second}, destination, branchInst);
       }
     }
   }
 
   State
   mergeStateFromPredecessors(llvm::BasicBlock* bb, FunctionResults& results) {
+    auto valuePrint = [](llvm::Value* value) -> void {
+      if (value) {
+        llvm::errs() << "\nInside Dataflow Analysis" << *value;
+      }
+      else {
+        llvm::errs() << "\nInside Dataflow Analysis" << value;
+      }
+    };
+
     State mergedState = State{};
     mergeInState(mergedState, results[bb]);
     for (auto* p : Direction::getPredecessors(*bb)) {
@@ -537,8 +545,9 @@ private:
       if (results.end() == predecessorFacts) {
         continue;
       }
-      auto* condition = bb->getTerminator();
-      mergeInState(mergedState, predecessorFacts->second, condition);
+      llvm::errs() << "Destinatin From Dataflow" << *p;
+      auto* branchInst = bb->getTerminator();
+      mergeInState(mergedState, predecessorFacts->second, p, branchInst);
     }
     return mergedState;
   }

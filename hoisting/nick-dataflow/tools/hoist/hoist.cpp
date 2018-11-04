@@ -84,7 +84,8 @@ public:
 
   DisjunctionValue
   meetPairCustomized(DisjunctionValue& s1, DisjunctionValue& s2, //TODO: Branch Awareness
-      llvm::Value* value1, llvm::Value* value2, llvm::Value* value3) const {
+      llvm::Value* destination, llvm::Value* branchAsValue) const {
+
     llvm::errs() << "\n Meet Op \n";
     auto valuePrint = [](llvm::Value* value) -> void {
       if (value) {
@@ -94,11 +95,10 @@ public:
         llvm::errs() << value;
       }
     };
-    auto printall = [&value1,&value2,&value3,&valuePrint]() {
+    auto printAll = [&branchAsValue, &destination, &valuePrint]() {
       llvm::errs() << "\n Print Value At Meet";
-      llvm::errs() << "\nvalue1 "; valuePrint(value1);
-      llvm::errs() << "\nvalue2 "; valuePrint(value2);
-      llvm::errs() << "\nvalue3 "; valuePrint(value3);
+      llvm::errs() << "\nBranch "; valuePrint(branchAsValue);
+      llvm::errs() << "\nDestination "; valuePrint(destination);
     };
     // BinaryExpr dispatcher
     auto asBinaryExpr = [](llvm::BranchInst* branch) -> ExprID {
@@ -117,22 +117,22 @@ public:
       return 0;
     };
 
-    assert(value1 == nullptr && "value1 in meet is not a nullptr");
-    assert(value2 == nullptr && "value2 in meet is not a nullptr");
-    auto* branch   = llvm::dyn_cast<BranchInst>(value3); //TODO: Switch Cases?
-    assert(branch != nullptr && "Branch is a nullptr");
+    assert(branchAsValue   != nullptr && "value1 in meet is a nullptr");
+    assert(destination != nullptr && "value2 in meet is a nullptr");
+    auto* branchInst   = llvm::dyn_cast<BranchInst>(branchAsValue); //TODO: Switch Cases?
+    printAll();
 
-    if (branch->isUnconditional()) {
+    if (branchInst->isUnconditional()) {
       return Disjunction::unionDisjunctions(s1,s2);
     }
     if ( s1.empty() && s2.empty()) {
       return DisjunctionValue{ }; // New disjunction at every inst
     }
     if (!s1.empty()) {
-      s1.addConjunct({asBinaryExpr(branch), true});
+      s1.addConjunct({asBinaryExpr(branchInst), true});
     }
     if (!s2.empty()) {
-      s2.addConjunct({asBinaryExpr(branch), true});
+      s2.addConjunct({asBinaryExpr(branchInst), true});
     }
 
     return Disjunction::unionDisjunctions(s1,s2);
