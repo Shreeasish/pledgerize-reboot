@@ -515,29 +515,24 @@ private:
   // ska: Customized
   void
   mergeInState(State& destinationState, const State& toMerge, llvm::Value* destination, llvm::Value* branchInst) {
-    for (auto& valueStatePair : toMerge) {
+    for (auto& valueStatePair : toMerge) { // ska: Do I need this?
       // If an incoming Value has an AbstractValue in the already merged
       // state, meet it with the new one. Otherwise, copy the new value over,
       // implicitly meeting with bottom.
+
+      // ska: Implicit Meets are problematic for edge ops. Made explicit
+      //      Meets are designed to meet with bottom
       auto [found, newlyAdded] = destinationState.insert(valueStatePair);
-      if (!newlyAdded) {
-        found->second = 
-          meet({found->second, valueStatePair.second}, destination, branchInst);
-      }
+      
+      //if (!newlyAdded) {
+      found->second 
+          = meet({found->second, valueStatePair.second}, destination, branchInst);
+      //}
     }
   }
 
   State
   mergeStateFromPredecessors(llvm::BasicBlock* bb, FunctionResults& results) {
-    auto valuePrint = [](llvm::Value* value) -> void {
-      if (value) {
-        llvm::errs() << "\nInside Dataflow Analysis" << *value;
-      }
-      else {
-        llvm::errs() << "\nInside Dataflow Analysis" << value;
-      }
-    };
-
     State mergedState = State{};
     mergeInState(mergedState, results[bb]);
     for (auto* p : Direction::getPredecessors(*bb)) {
@@ -545,7 +540,6 @@ private:
       if (results.end() == predecessorFacts) {
         continue;
       }
-      llvm::errs() << "Destinatin From Dataflow" << *p;
       auto* branchInst = bb->getTerminator();
       mergeInState(mergedState, predecessorFacts->second, p, branchInst);
     }

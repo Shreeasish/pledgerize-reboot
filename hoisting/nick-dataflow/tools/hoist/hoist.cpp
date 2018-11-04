@@ -118,21 +118,28 @@ public:
     };
 
     assert(branchAsValue   != nullptr && "value1 in meet is a nullptr");
-    assert(destination != nullptr && "value2 in meet is a nullptr");
-    auto* branchInst   = llvm::dyn_cast<BranchInst>(branchAsValue); //TODO: Switch Cases?
-    printAll();
+    assert(destination     != nullptr && "value2 in meet is a nullptr");
+
+    auto* branchInst        = llvm::dyn_cast<BranchInst>(branchAsValue); //TODO: Switch Cases?
+    auto destAsBool = [&branchInst](auto* dest) -> bool {
+      // Operand 2 is the destination taken when the condition is evaluated
+      // to be true. The compare below returns true if the destination is
+      // that destination
+      return dest == branchInst->getOperand(2);
+    };
 
     if (branchInst->isUnconditional()) {
       return Disjunction::unionDisjunctions(s1,s2);
     }
+
     if ( s1.empty() && s2.empty()) {
       return DisjunctionValue{ }; // New disjunction at every inst
     }
     if (!s1.empty()) {
-      s1.addConjunct({asBinaryExpr(branchInst), true});
+      s1.addConjunct({asBinaryExpr(branchInst), destAsBool(destination)});
     }
     if (!s2.empty()) {
-      s2.addConjunct({asBinaryExpr(branchInst), true});
+      s2.addConjunct({asBinaryExpr(branchInst), destAsBool(destination)});
     }
 
     return Disjunction::unionDisjunctions(s1,s2);
