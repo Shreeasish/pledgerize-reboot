@@ -126,7 +126,8 @@ public:
   void operator=(Disjunct);
 
   void print() const;
-  void addConjunct(const Conjunct& conjunct);
+  void addConjunct(const Conjunct&);
+  bool findConjunct(const Conjunct&) const;
 
   bool
   operator<(const Disjunct& other) const {
@@ -152,8 +153,9 @@ public:
   void operator=(Disjunction);
   bool operator==(const Disjunction&) const;
   //Member Functions
-  void addConjunct(const Conjunct&);
+  void applyConjunct(const Conjunct&);
   void addDisjunct(const Disjunct&);
+  bool findConjunct(const Conjunct&) const;
   // Helpers
   void print() const;
   bool empty() const;
@@ -192,7 +194,7 @@ Disjunct::addConjunct(const Conjunct& conjunct) {
   auto binary_insert = [ ](auto conjunctIDs, auto first, auto last, auto conjunct) {
     first = std::lower_bound(first, last, conjunct);
     if (first == last) {
-      conjunctIDs.push_back(conjunct); // TODO: This makes a copy?
+      conjunctIDs.push_back(conjunct);
       return;
     }
     if (*first == conjunct) return;
@@ -202,6 +204,11 @@ Disjunct::addConjunct(const Conjunct& conjunct) {
 
   binary_insert(conjunctIDs, conjunctIDs.begin(), conjunctIDs.end(), conjunct);
   return;
+}
+
+bool
+Disjunct::findConjunct(const Conjunct& conjunct) const {
+  return std::binary_search(conjunctIDs.begin(), conjunctIDs.end(), conjunct);
 }
 
 void
@@ -226,7 +233,7 @@ Disjunction::operator==(const Disjunction& other) const {
 }
 
 void
-Disjunction::addConjunct(const Conjunct& conjunct) {
+Disjunction::applyConjunct(const Conjunct& conjunct) {
   for (auto disjunct : disjuncts) {
     disjunct.addConjunct(conjunct);
   }
@@ -238,6 +245,16 @@ void
 Disjunction::addDisjunct(const Disjunct& disjunct) {
   disjuncts.push_back(disjunct); //TODO: Insert into order
   return;
+}
+
+bool
+Disjunction::findConjunct(const Conjunct& conjunct) const {
+  for ( auto& disjunct : disjuncts) {
+    if (disjunct.findConjunct(conjunct)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool

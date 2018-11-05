@@ -85,7 +85,7 @@ public:
 
 class DisjunctionEdgeTransformer {
 public:
-  Disjunction 
+  Disjunction
   operator()(const Disjunction& toMerge, llvm::Value* branchAsValue, llvm::Value* destination) {
     auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchAsValue);
 
@@ -109,7 +109,7 @@ public:
     };
     auto edgeOp = [&branchInst, &asBinaryExpr, &destAsBool, destination] (Disjunction destState) {
       Disjunction local{destState};
-      local.addConjunct({asBinaryExpr(branchInst), destAsBool(destination)});
+      local.applyConjunct({asBinaryExpr(branchInst), destAsBool(destination)});
       return local;
     };
 
@@ -120,36 +120,12 @@ public:
 
 class DisjunctionTransfer {
 private:
-  void
-  handleBinaryOperator(llvm::Value* value, DisjunctionState& state) {
-    auto* bOp = llvm::dyn_cast<llvm::BinaryOperator>(value);
-    if (!bOp) {
-      return;
-    }
-
-    auto newExpr = generator->GetOrCreateExprID(bOp);
-    // do work with newExpr
-    return;
-  }
-
-public:
-  void
-  operator()(llvm::Value& v, DisjunctionState& state, const Context& context) {
-    const CallSite cs{&v};
+  bool
+  handleCallSite(const llvm::CallSite& cs, DisjunctionState& state, const Context& context) {
     const auto* fun = getCalledFunction(cs);
-    // Pretend that indirect calls & non calls don't exist for this analysis
     if (!fun) {
-      return;
+      return false;
     }
-
-// /* setting privileges don't seem to be working for now */
-//    Privileges newPrivileges;
-//    setRequiredPrivileges(newPrivileges, cs, context);
-//    if (newPrivileges != 16) {
-//      llvm::errs() << "\nFunction name" << fun->getName()
-//                   << " " << newPrivileges.to_ulong();
-//      return;
-//    }
 
     auto asDisjunct = [](const Conjunct& conjunct) -> Disjunct {
       auto d = Disjunct{};
@@ -159,6 +135,37 @@ public:
 
     auto vacExpr = generator->GetVacuousExprID();
     state[nullptr].addDisjunct(asDisjunct({vacExpr,true}));
+    return true;
+  }
+
+  bool
+  handleBinaryOperator(const llvm::Value* value, const DisjunctionState& state) {
+    auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(value);
+    if (!binOp) {
+      return false;
+    }
+    auto exprID = generator->GetOrCreateExprID(binOp);
+    return true;
+  }
+public:
+  void
+  operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    auto asVacuousDisjunct = [](auto exprID){
+      Disjunct vacuousDisjunct{ };
+      vacuousDisjunct.addConjunct({exprID, true});
+      return vacuousDisjunct;
+    };
+
+    if (handleCallSite(llvm::CallSite{&value}, state, context)) {return;}
+
+    // Invariant: The values we care about will always be in the leaf table
+    if (!generator->isUsed(&value)) {
+      return;
+    }
+    if (handleBinaryOperator(&value, state)) {return;}
+
+    // Base Case when nothing works.
+    state[nullptr].addDisjunct(asVacuousDisjunct(generator->GetVacuousExprID()));
   }
 };
 

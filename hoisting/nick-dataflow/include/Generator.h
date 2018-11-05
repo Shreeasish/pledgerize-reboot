@@ -10,12 +10,12 @@ class Generator {
   std::deque<ConstantExprNode> constantSlab;
   std::deque<ValueExprNode> valueSlab;
   std::deque<BinaryExprNode> binarySlab;
-  llvm::DenseMap<llvm::Value*, ExprID> leafTable;
+  llvm::DenseMap<const llvm::Value*, ExprID> leafTable;
   llvm::DenseMap<ExprKey, ExprID> exprTable;
 
 private:
   ExprID // Templatize
-  GenerateConstantExprID(llvm::Constant* constant) {
+  GenerateConstantExprID(const llvm::Constant* constant) {
     const auto old = exprCounter;
 
     assert(constant != nullptr);
@@ -34,7 +34,7 @@ private:
 
 
   ExprID
-  GenerateValueExprID(llvm::Value* value) {
+  GenerateValueExprID(const llvm::Value* value) {
     const auto old = exprCounter;
     llvm::errs() << "\nGenerating a value node\n";
 
@@ -55,7 +55,7 @@ private:
   }
 
   ExprID //Handle CmpInst
-  GetOrCreateExprID(llvm::Instruction* cmpInst) {
+  GetOrCreateExprID(const llvm::Instruction* cmpInst) {
     assert(cmpInst != nullptr);
     auto* lhs = cmpInst->getOperand(0);
     auto* rhs = cmpInst->getOperand(1);
@@ -75,41 +75,19 @@ public:
     constantSlab.emplace_back(ConstantExprNode{nullptr});
     leafTable.insert({nullptr, exprCounter});
   }
-  
+
   ExprID //Handle BinaryOperator
-  GetOrCreateExprID(llvm::BinaryOperator* binOperator) {
+  GetOrCreateExprID(const llvm::BinaryOperator* binOperator) {
     return GetOrCreateExprID(llvm::dyn_cast<llvm::Instruction>(binOperator));
-//    assert(binOperator != nullptr);
-//    auto* lhs = binOperator->getOperand(0);
-//    auto* rhs = binOperator->getOperand(1);
-//    auto lhsID = GetOrCreateExprID(lhs);
-//    auto rhsID = GetOrCreateExprID(rhs);
-//    ExprKey key{lhsID, binOperator->getOpcode(), rhsID};
-//
-//    if (auto found = exprTable.find(key); found != exprTable.end()) {
-//      return found->second;
-//    }
-//    return GenerateBinaryExprID(key);
   }
 
   ExprID //Handle CmpInst
-  GetOrCreateExprID(llvm::CmpInst* cmpInst) {
+  GetOrCreateExprID(const llvm::CmpInst* cmpInst) {
     return GetOrCreateExprID(llvm::dyn_cast<llvm::Instruction>(cmpInst));
-//    assert(cmpInst != nullptr);
-//    auto* lhs = cmpInst->getOperand(0);
-//    auto* rhs = cmpInst->getOperand(1);
-//    auto lhsID = GetOrCreateExprID(lhs);
-//    auto rhsID = GetOrCreateExprID(rhs);
-//    ExprKey key{lhsID, cmpInst->getOpcode(), rhsID};
-//
-//    if (auto found = exprTable.find(key); found != exprTable.end()) {
-//      return found->second;
-//    }
-//    return GenerateBinaryExprID(key);
   }
 
   ExprID
-  GetOrCreateExprID(llvm::Value* value) {
+  GetOrCreateExprID(const llvm::Value* value) {
     assert(value != nullptr);
 
     // Get Constant or Value for leaf
@@ -123,8 +101,13 @@ public:
   }
 
   ExprID
-  GetVacuousExprID() {
+  inline GetVacuousExprID() {
     return 0;
+  }
+
+  bool
+  isUsed(const llvm::Value* value) const {
+    return leafTable.count(value) > 0;
   }
 };
 
