@@ -15,7 +15,6 @@
 
 namespace llvm {
 
-
 template<unsigned long Size>
 struct DenseMapInfo<std::array<llvm::Instruction*, Size>> {
   using Context = std::array<llvm::Instruction*, Size>;
@@ -175,25 +174,6 @@ public:
     llvm_unreachable("unimplemented meet");
   }
 
-  AbstractValue
-  operator()(llvm::ArrayRef<AbstractValue> values,
-             llvm::Value* destination,
-             llvm::Value* branchInst) {
-    return std::accumulate(values.begin(), values.end(),
-      AbstractValue(),
-      [this, branchInst, destination] (auto v1, auto v2) {
-        return this->asSubClass().meetPairCustomized(v1, v2, destination, branchInst);
-      });
-  }
-
-  AbstractValue
-  meetPairCustomized(AbstractValue& v1,
-                     AbstractValue& v2,
-                     llvm::Value* destination,
-                     llvm::Value* branchInst ) const {
-    llvm_unreachable("unimplemented meet");
-  }
-
   void print(llvm::raw_ostream& out, AbstractValue& value) { }
   void printState(llvm::raw_ostream& out, AbstractState<AbstractValue>& state) {
     out << "DUMP ";
@@ -317,6 +297,7 @@ public:
 template <typename AbstractValue,
           typename Transfer,
           typename Meet,
+          typename EdgeTransformer,
           typename Direction=Forward,
           unsigned long ContextSize=2ul>
 class DataflowAnalysis {
@@ -514,20 +495,18 @@ private:
 
   // ska: Customized
   void
-  mergeInState(State& destinationState, const State& toMerge, llvm::Value* destination, llvm::Value* branchInst) {
-    for (auto& valueStatePair : toMerge) { // ska: Do I need this?
+  mergeInState(State& destinationState, const State& toMerge, llvm::Value* destination, llvm::Value* branchAsValue) {
+    EdgeTransformer edgeTransformer;
+    for (auto& valueStatePair : toMerge) {
       // If an incoming Value has an AbstractValue in the already merged
       // state, meet it with the new one. Otherwise, copy the new value over,
       // implicitly meeting with bottom.
-
-      // ska: Implicit Meets are problematic for edge ops. Made explicit
-      //      Meets are designed to meet with bottom
-      auto [found, newlyAdded] = destinationState.insert(valueStatePair);
-      
-      //if (!newlyAdded) {
+      auto temp = edgeTransformer(valueStatePair.second, branchAsValue, destination);
+      auto [found, newlyAdded] = destinationState.insert({nullptr,temp});
+      if (!newlyAdded) {
       found->second 
-          = meet({found->second, valueStatePair.second}, destination, branchInst);
-      //}
+          = meet({found->second, valueStatePair.second});
+      }
     }
   }
 

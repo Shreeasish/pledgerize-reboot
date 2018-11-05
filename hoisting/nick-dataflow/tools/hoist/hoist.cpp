@@ -81,68 +81,39 @@ public:
     llvm::errs() << "\n Simple Meet Op\n";
     return Disjunction::unionDisjunctions(s1,s2);
   }
+};
 
-  DisjunctionValue
-  meetPairCustomized(DisjunctionValue& s1, DisjunctionValue& s2, //TODO: Branch Awareness
-      llvm::Value* destination, llvm::Value* branchAsValue) const {
+class DisjunctionEdgeTransformer {
+public:
+  Disjunction 
+  operator()(const Disjunction& toMerge, llvm::Value* branchAsValue, llvm::Value* destination) {
+    auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchAsValue);
 
-    llvm::errs() << "\n Meet Op \n";
-    auto valuePrint = [](llvm::Value* value) -> void {
-      if (value) {
-        llvm::errs() << *value;
-      }
-      else {
-        llvm::errs() << value;
-      }
-    };
-    auto printAll = [&branchAsValue, &destination, &valuePrint]() {
-      llvm::errs() << "\n Print Value At Meet";
-      llvm::errs() << "\nBranch "; valuePrint(branchAsValue);
-      llvm::errs() << "\nDestination "; valuePrint(destination);
-    };
-    // BinaryExpr dispatcher
-    auto asBinaryExpr = [](llvm::BranchInst* branch) -> ExprID {
-      auto* binOp = llvm::dyn_cast<BinaryOperator>(branch->getCondition());
+    auto asBinaryExpr = [](llvm::BranchInst* branchAsValue) -> ExprID {
+      auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(branchAsValue->getCondition());
       if (binOp) {
         return generator->GetOrCreateExprID(binOp);
       }
-      auto* cmpInst = llvm::dyn_cast<llvm::CmpInst>(branch->getCondition());
+      auto* cmpInst = llvm::dyn_cast<llvm::CmpInst>(branchAsValue->getCondition());
       if (cmpInst) {
         return generator->GetOrCreateExprID(cmpInst);
       }
       if (!cmpInst) { //change to last on the list
-        llvm::errs() << *(branch->getCondition());
+        llvm::errs() << *(branchAsValue->getCondition());
         assert(false && "condition not handled");
       }
       return 0;
     };
-
-    assert(branchAsValue   != nullptr && "value1 in meet is a nullptr");
-    assert(destination     != nullptr && "value2 in meet is a nullptr");
-
-    auto* branchInst        = llvm::dyn_cast<BranchInst>(branchAsValue); //TODO: Switch Cases?
-    auto destAsBool = [&branchInst](auto* dest) -> bool {
-      // Operand 2 is the destination taken when the condition is evaluated
-      // to be true. The compare below returns true if the destination is
-      // that destination
-      return dest == branchInst->getOperand(2);
+    auto destAsBool = [&branchInst](auto* destination) -> bool {
+      return destination == branchInst->getOperand(2);
+    };
+    auto edgeOp = [&branchInst, &asBinaryExpr, &destAsBool, destination] (Disjunction destState) {
+      Disjunction local{destState};
+      local.addConjunct({asBinaryExpr(branchInst), destAsBool(destination)});
+      return local;
     };
 
-    if (branchInst->isUnconditional()) {
-      return Disjunction::unionDisjunctions(s1,s2);
-    }
-
-    if ( s1.empty() && s2.empty()) {
-      return DisjunctionValue{ }; // New disjunction at every inst
-    }
-    if (!s1.empty()) {
-      s1.addConjunct({asBinaryExpr(branchInst), destAsBool(destination)});
-    }
-    if (!s2.empty()) {
-      s2.addConjunct({asBinaryExpr(branchInst), destAsBool(destination)});
-    }
-
-    return Disjunction::unionDisjunctions(s1,s2);
+    return edgeOp(toMerge);
   }
 };
 
@@ -230,7 +201,8 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   using Value    = Disjunction;
   using Transfer = DisjunctionTransfer;
   using Meet     = DisjunctionMeet;
-  using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, analysis::Backward>;
+  using EdgeTransformer = DisjunctionEdgeTransformer;
+  using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, EdgeTransformer, analysis::Backward>;
   Analysis analysis{m, mainFunction};
 
   AnalysisPackage package;
