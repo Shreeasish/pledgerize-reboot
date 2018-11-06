@@ -139,33 +139,37 @@ private:
   }
 
   bool
-  handleBinaryOperator(const llvm::Value* value, const DisjunctionState& state) {
+  handleBinaryOperator(const llvm::Value* value, DisjunctionState& state) {
     auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(value);
     if (!binOp) {
       return false;
     }
-    auto exprID = generator->GetOrCreateExprID(binOp);
+    auto oldExprID = generator->GetOrCreateExprID(value);
+    auto exprID    = generator->GetOrCreateExprID(binOp);
+    if (oldExprID == exprID) {
+      return true;
+    }
+
+    //local change in state
+    state[nullptr].findAndReplace(oldExprID, exprID); 
     return true;
   }
 public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
-    auto asVacuousDisjunct = [](auto exprID){
-      Disjunct vacuousDisjunct{ };
-      vacuousDisjunct.addConjunct({exprID, true});
-      return vacuousDisjunct;
-    };
-
-    if (handleCallSite(llvm::CallSite{&value}, state, context)) {return;}
-
-    // Invariant: The values we care about will always be in the leaf table
-    if (!generator->isUsed(&value)) {
+    if (handleCallSite(llvm::CallSite{&value}, state, context)) {
       return;
     }
-    if (handleBinaryOperator(&value, state)) {return;}
 
-    // Base Case when nothing works.
-    state[nullptr].addDisjunct(asVacuousDisjunct(generator->GetVacuousExprID()));
+    if (!generator->isUsed(&value)) { //Global Check
+      return;
+    }
+    if (handleBinaryOperator(&value, state)) {
+      return;
+    }
+    
+    auto oldExprID = generator->GetOrCreateExprID(&value);
+    state[nullptr].findAndReplace(oldExprID, 0); //Set to True
   }
 };
 

@@ -105,7 +105,7 @@ public:
     return 0;
   }
 
-  bool
+  bool //Generator should not check in the state itself
   isUsed(const llvm::Value* value) const {
     return leafTable.count(value) > 0;
   }

@@ -109,12 +109,22 @@ public:
     return exprID < other.exprID;
   }
 
+  bool operator==(const ExprID other) const {
+    return exprID == other;
+  }
+  
+  bool operator<(const ExprID other) const {
+    return exprID < other;
+  }
+
   void operator=(const Conjunct& other) {
     exprID     = other.exprID;
     notNegated = other.notNegated;
   }
 };
 using ConjunctIDs = std::vector<Conjunct>;
+
+
 
 class Disjunct { // Or a Conjunction
 private:
@@ -127,7 +137,10 @@ public:
 
   void print() const;
   void addConjunct(const Conjunct&);
-  bool findConjunct(const Conjunct&) const;
+  bool findExprID(const ExprID&) const;
+
+  bool
+  findAndReplace(const ExprID target, ExprID newID);
 
   bool
   operator<(const Disjunct& other) const {
@@ -155,7 +168,8 @@ public:
   //Member Functions
   void applyConjunct(const Conjunct&);
   void addDisjunct(const Disjunct&);
-  bool findConjunct(const Conjunct&) const;
+  bool findExprID(const ExprID&) const;
+  void findAndReplace(const ExprID, const ExprID);
   // Helpers
   void print() const;
   bool empty() const;
@@ -207,8 +221,31 @@ Disjunct::addConjunct(const Conjunct& conjunct) {
 }
 
 bool
-Disjunct::findConjunct(const Conjunct& conjunct) const {
-  return std::binary_search(conjunctIDs.begin(), conjunctIDs.end(), conjunct);
+Disjunct::findExprID(const ExprID& target) const {
+  auto position 
+    = std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
+        [](const Conjunct& conjunct, const ExprID& target) -> bool {
+          return conjunct.exprID < target;
+        });
+  if ( position != conjunctIDs.end() && position->exprID == target) {
+    return true;
+  }
+}
+
+bool
+Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
+  llvm::errs() << "\nreplacing conjunctID ConditionList.h:216\n";
+
+  auto position = std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
+        [](Conjunct conjunct, ExprID target) -> bool {
+          return conjunct.exprID < target;
+        });
+  if ( position != conjunctIDs.end() && position->exprID == target) {
+    Conjunct asConjunct({newID, position->notNegated});
+    *position = asConjunct;
+    return true; //might be useful later
+  }
+  return false;
 }
 
 void
@@ -248,13 +285,20 @@ Disjunction::addDisjunct(const Disjunct& disjunct) {
 }
 
 bool
-Disjunction::findConjunct(const Conjunct& conjunct) const {
-  for ( auto& disjunct : disjuncts) {
-    if (disjunct.findConjunct(conjunct)) {
+Disjunction::findExprID(const ExprID& exprID) const {
+  for (auto& disjunct : disjuncts) {
+    if (disjunct.findExprID(exprID)) {
       return true;
     }
   }
   return false;
+}
+
+void
+Disjunction::findAndReplace(const ExprID target, const ExprID replacement) {
+  for (auto& disjunct : disjuncts) {
+    disjunct.findAndReplace(target, replacement);
+  }
 }
 
 bool
