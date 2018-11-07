@@ -505,7 +505,7 @@ private:
       auto [found, newlyAdded] = destinationState.insert({nullptr,temp});
       if (!newlyAdded) {
       found->second 
-          = meet({found->second, valueStatePair.second});
+          = meet({found->second, temp});
       }
     }
   }

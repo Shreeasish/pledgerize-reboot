@@ -106,7 +106,14 @@ public:
   }
   
   bool operator<(const Conjunct& other) const {
-    return exprID < other.exprID;
+    if (exprID < other.exprID) {
+      return true;
+    }
+
+    if (exprID == other.exprID) {
+      return !(notNegated < other.notNegated);
+    }
+    return false;
   }
 
   bool operator==(const ExprID other) const {
@@ -120,6 +127,14 @@ public:
   void operator=(const Conjunct& other) {
     exprID     = other.exprID;
     notNegated = other.notNegated;
+  }
+
+  void print() const {
+    if (!notNegated) {
+    llvm::outs() << "!";
+    }
+    llvm::outs() << exprID;
+    return;
   }
 };
 using ConjunctIDs = std::vector<Conjunct>;
@@ -147,6 +162,7 @@ public:
     return std::lexicographical_compare (
                    this->conjunctIDs.cbegin(), this->conjunctIDs.cend(),
                    other.conjunctIDs.cbegin(), other.conjunctIDs.cend());
+
   }
 };
 using Disjuncts = std::vector<Disjunct>;
@@ -182,10 +198,9 @@ public:
     auto& dest_disjunct = asDisjunction.disjuncts;
     auto& disjuncts1    = lhs.disjuncts;
     auto& disjuncts2    = rhs.disjuncts;
-
     std::set_union(disjuncts1.begin(), disjuncts1.end(),
-        disjuncts2.begin(), disjuncts2.end(),
-        std::back_inserter(dest_disjunct));
+                   disjuncts2.begin(), disjuncts2.end(),
+                   std::back_inserter(dest_disjunct));
     return asDisjunction;
   }
 };
@@ -205,13 +220,15 @@ Disjunct::operator=(Disjunct other) {
 //Invariant: The conjunctions will be sorted
 void
 Disjunct::addConjunct(const Conjunct& conjunct) {
-  auto binary_insert = [ ](auto conjunctIDs, auto first, auto last, auto conjunct) {
+  auto binary_insert = [](auto& conjunctIDs, auto first, auto last, auto& conjunct) {
     first = std::lower_bound(first, last, conjunct);
     if (first == last) {
       conjunctIDs.push_back(conjunct);
       return;
     }
-    if (*first == conjunct) return;
+    if (*first == conjunct) { 
+      return; 
+    }
     conjunctIDs.insert(first - 1, conjunct);
     return;
   };
@@ -230,12 +247,11 @@ Disjunct::findExprID(const ExprID& target) const {
   if ( position != conjunctIDs.end() && position->exprID == target) {
     return true;
   }
+  return false;
 }
 
 bool
 Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
-  llvm::errs() << "\nreplacing conjunctID ConditionList.h:216\n";
-
   auto position = std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
         [](Conjunct conjunct, ExprID target) -> bool {
           return conjunct.exprID < target;
@@ -250,9 +266,10 @@ Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
 
 void
 Disjunct::print() const {
-  llvm::outs() << "\n" ;
   for (auto conjunct : conjunctIDs) {
-    llvm::outs() << conjunct.exprID << "-";
+    llvm::outs() << "(";
+    conjunct.print();
+    llvm::outs() << ") ";
   }
   return;
 }
@@ -265,13 +282,12 @@ Disjunction::operator=(Disjunction other) {
 
 bool
 Disjunction::operator==(const Disjunction& other) const {
-  llvm::errs() << "\n Evaluated True";
   return this->disjuncts == other.disjuncts;
 }
 
 void
 Disjunction::applyConjunct(const Conjunct& conjunct) {
-  for (auto disjunct : disjuncts) {
+  for (auto& disjunct : disjuncts) {
     disjunct.addConjunct(conjunct);
   }
   return;
@@ -280,6 +296,7 @@ Disjunction::applyConjunct(const Conjunct& conjunct) {
 //Do I need this?
 void
 Disjunction::addDisjunct(const Disjunct& disjunct) {
+  disjunct.print();
   disjuncts.push_back(disjunct); //TODO: Insert into order
   return;
 }
@@ -308,7 +325,7 @@ Disjunction::empty() const {
 
 void
 Disjunction::print() const {
-  for (auto disjunct : disjuncts) {
+  for (auto& disjunct : disjuncts) {
     llvm::outs() << "\n";
     disjunct.print();
   }

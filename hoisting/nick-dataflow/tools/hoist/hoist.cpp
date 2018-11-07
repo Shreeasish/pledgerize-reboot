@@ -60,7 +60,7 @@ std::unique_ptr<Generator> generator;
 static void
 setRequiredPrivileges(Privileges requiredPrivileges, llvm::CallSite cs, const Context& context) {
   auto fun = cs.getCalledFunction();
-  if(!fun){
+  if (!fun) {
     return;
   }
 
@@ -78,7 +78,6 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    llvm::errs() << "\n Simple Meet Op\n";
     return Disjunction::unionDisjunctions(s1,s2);
   }
 };
@@ -89,7 +88,7 @@ public:
   operator()(const Disjunction& toMerge, llvm::Value* branchAsValue, llvm::Value* destination) {
     auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchAsValue);
 
-    auto asBinaryExpr = [](llvm::BranchInst* branchAsValue) -> ExprID {
+    auto asBinaryExprID = [](llvm::BranchInst* branchAsValue) -> ExprID {
       auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(branchAsValue->getCondition());
       if (binOp) {
         return generator->GetOrCreateExprID(binOp);
@@ -107,9 +106,9 @@ public:
     auto destAsBool = [&branchInst](auto* destination) -> bool {
       return destination == branchInst->getOperand(2);
     };
-    auto edgeOp = [&branchInst, &asBinaryExpr, &destAsBool, destination] (Disjunction destState) {
+    auto edgeOp = [&branchInst, &asBinaryExprID, &destAsBool, destination] (Disjunction destState) {
       Disjunction local{destState};
-      local.applyConjunct({asBinaryExpr(branchInst), destAsBool(destination)});
+      local.applyConjunct({asBinaryExprID(branchInst), destAsBool(destination)});
       return local;
     };
 
@@ -127,7 +126,7 @@ private:
       return false;
     }
 
-    auto asDisjunct = [](const Conjunct& conjunct) -> Disjunct {
+    auto asDisjunct = [](Conjunct conjunct) -> Disjunct {
       auto d = Disjunct{};
       d.addConjunct(conjunct);
       return d;
@@ -135,11 +134,13 @@ private:
 
     auto vacExpr = generator->GetVacuousExprID();
     state[nullptr].addDisjunct(asDisjunct({vacExpr,true}));
+
     return true;
   }
 
   bool
   handleBinaryOperator(const llvm::Value* value, DisjunctionState& state) {
+
     auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(value);
     if (!binOp) {
       return false;
@@ -157,6 +158,12 @@ private:
 public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    llvm::errs() << "\nDebugging";
+    if (state.count(nullptr)) {
+      state[nullptr].print();
+    }
+    llvm::errs() << "\nDebugging End\n" ;
+
     if (handleCallSite(llvm::CallSite{&value}, state, context)) {
       return;
     }
@@ -167,9 +174,9 @@ public:
     if (handleBinaryOperator(&value, state)) {
       return;
     }
-    
     auto oldExprID = generator->GetOrCreateExprID(&value);
     state[nullptr].findAndReplace(oldExprID, 0); //Set to True
+
   }
 };
 
