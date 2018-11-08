@@ -19,8 +19,9 @@
 using namespace llvm;
 
 using Privileges = std::bitset<COUNT>;
-using ExprID     = int;
-using OpKey      = int;
+using ExprID     = int16_t;  // Deterministic size
+using OpKey      = int16_t;  // Cannot be unsigned
+constexpr int typeSize  = 16;
 using ExprKey    = std::tuple<ExprID, OpKey, ExprID>;
 
 // template specialization for ExprKey
@@ -35,10 +36,10 @@ struct DenseMapInfo<ExprKey> {
   }
 
   static unsigned getHashValue(const ExprKey& exprKey) {
-    int lhsAsInt     = std::get<0>(exprKey);
-    int opCodeAsInt  = std::get<1>(exprKey);
-    int rhsAsInt     = std::get<2>(exprKey);
-    int asArray[] = {lhsAsInt, opCodeAsInt, rhsAsInt};
+    int16_t lhsAsInt     = std::get<0>(exprKey);
+    int16_t opCodeAsInt  = std::get<1>(exprKey);
+    int16_t rhsAsInt     = std::get<2>(exprKey);
+    int16_t asArray[] = {lhsAsInt, opCodeAsInt, rhsAsInt};
     return llvm::hash_combine_range(std::begin(asArray), std::end(asArray));
   }
 
@@ -69,7 +70,7 @@ public:
   const OpKey opCode;
   ExprOp() = default;
 
-  explicit ExprOp(int opCode)
+  explicit ExprOp(OpKey opCode)
     : opCode{opCode} { }
 };
 
@@ -95,7 +96,7 @@ class Conjunct {
 public:
   ExprID exprID;
   bool notNegated;
-
+  
   Conjunct(ExprID exprID, bool notNegated) //explicit?
     : exprID{exprID},
       notNegated{notNegated} { }
@@ -131,13 +132,14 @@ public:
 
   void print() const {
     if (!notNegated) {
-    llvm::outs() << "!";
+      llvm::outs() << "!";
     }
     llvm::outs() << exprID;
     return;
   }
 };
 using ConjunctIDs = std::vector<Conjunct>;
+//Rename to conjuncts
 
 
 
@@ -252,6 +254,9 @@ Disjunct::findExprID(const ExprID& target) const {
 
 bool
 Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
+  llvm::errs() << "\n---------------------------------------";
+  llvm::errs() << "\nReplacing " << target << "with" << newID;
+  llvm::errs() << "\n---------------------------------------";
   auto position = std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
         [](Conjunct conjunct, ExprID target) -> bool {
           return conjunct.exprID < target;
@@ -263,6 +268,7 @@ Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
   }
   return false;
 }
+
 
 void
 Disjunct::print() const {
@@ -293,13 +299,15 @@ Disjunction::applyConjunct(const Conjunct& conjunct) {
   return;
 }
 
-//Do I need this?
+
+//TODO: Required before dropping to Trees
 void
 Disjunction::addDisjunct(const Disjunct& disjunct) {
   disjunct.print();
-  disjuncts.push_back(disjunct); //TODO: Insert into order
+  disjuncts.push_back(disjunct); //TODO: Insert disjuncts into a disjunction in order
   return;
 }
+
 
 bool
 Disjunction::findExprID(const ExprID& exprID) const {

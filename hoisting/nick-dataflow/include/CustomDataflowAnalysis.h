@@ -504,7 +504,7 @@ private:
       auto temp = edgeTransformer(valueStatePair.second, branchAsValue, destination);
       auto [found, newlyAdded] = destinationState.insert({nullptr,temp});
       if (!newlyAdded) {
-      found->second 
+      found->second
           = meet({found->second, temp});
       }
     }

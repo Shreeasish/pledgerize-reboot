@@ -25,12 +25,14 @@
 #include <iostream>
 #include <variant>
 
+
 #include "CustomDataflowAnalysis.h"
 #include "FutureFunctions.h"
 #include "IndirectCallResolver.h"
 #include "TaintAnalysis.h"
 #include "ConditionList.h"
 #include "Generator.h"
+
 
 using namespace llvm;
 
@@ -82,36 +84,44 @@ public:
   }
 };
 
+
 class DisjunctionEdgeTransformer {
 public:
   Disjunction
   operator()(const Disjunction& toMerge, llvm::Value* branchAsValue, llvm::Value* destination) {
-    auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchAsValue);
-
-    auto asBinaryExprID = [](llvm::BranchInst* branchAsValue) -> ExprID {
-      auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(branchAsValue->getCondition());
-      if (binOp) {
+    auto asBinaryExprID = [](llvm::Value* branchCondition) -> ExprID {
+      auto* binOp
+        = llvm::dyn_cast<llvm::BinaryOperator>(branchCondition);
+      if (binOp) { // Does this actually happen?
         return generator->GetOrCreateExprID(binOp);
       }
-      auto* cmpInst = llvm::dyn_cast<llvm::CmpInst>(branchAsValue->getCondition());
-      if (cmpInst) {
+
+      auto* cmpInst
+        = llvm::dyn_cast<llvm::CmpInst>(branchCondition);
+      if ( cmpInst) {
         return generator->GetOrCreateExprID(cmpInst);
       }
       if (!cmpInst) { //change to last on the list
-        llvm::errs() << *(branchAsValue->getCondition());
+        llvm::errs() << *branchCondition;
         assert(false && "condition not handled");
       }
+
       return 0;
     };
+
+    auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchAsValue);
     auto destAsBool = [&branchInst](auto* destination) -> bool {
       return destination == branchInst->getOperand(2);
     };
     auto edgeOp = [&branchInst, &asBinaryExprID, &destAsBool, destination] (Disjunction destState) {
+      auto* branchCondition = branchInst->getCondition();
+      llvm::errs() << "\n-------------branchCondition------------\n"
+                   << *branchCondition << "||" << asBinaryExprID(branchCondition)
+                   << "\n-------------branchCondition------------\n";
       Disjunction local{destState};
-      local.applyConjunct({asBinaryExprID(branchInst), destAsBool(destination)});
+      local.applyConjunct({asBinaryExprID(branchCondition), destAsBool(destination)});
       return local;
     };
-
     return edgeOp(toMerge);
   }
 };
@@ -140,21 +150,26 @@ private:
 
   bool
   handleBinaryOperator(const llvm::Value* value, DisjunctionState& state) {
-
     auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(value);
     if (!binOp) {
       return false;
     }
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto exprID    = generator->GetOrCreateExprID(binOp);
+    llvm::errs() << "\n ---------------------------- \n";
+    llvm::errs() << "\noldValue" << oldExprID;
+    llvm::errs() << "\nValue" << exprID;
+    llvm::errs() << "\n ---------------------------- \n";
     if (oldExprID == exprID) {
       return true;
     }
 
-    //local change in state
-    state[nullptr].findAndReplace(oldExprID, exprID); 
+    // Find all conjuncts which use oldExprID
+    
+    //state[nullptr].deepFindAndReplaceAll(oldExprID, exprID);
     return true;
   }
+
 public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
