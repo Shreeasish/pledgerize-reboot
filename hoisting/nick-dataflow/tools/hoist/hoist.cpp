@@ -113,13 +113,6 @@ public:
     };
     auto edgeOp = [&branchInst, &asBinaryExprID, &destAsBool, destination] (Disjunction destState) {
       auto* branchCondition = branchInst->getCondition();
-      llvm::errs() << "\n-------------branchCondition------------\n";
-      auto test =  asBinaryExprID(branchCondition);
-      auto test2 = asBinaryExprID(branchCondition);
-      llvm::errs() << *branchCondition 
-                   << "\n Generating ID for test \n" 
-                   << test << "test2" << test2
-                   << "\n-------------branchCondition------------\n";
       Disjunction local{destState};
       local.applyConjunct({asBinaryExprID(branchCondition), destAsBool(destination)});
       return local;
@@ -160,6 +153,7 @@ private:
     auto exprID    = generator->GetOrCreateExprID(binOp);
     llvm::errs() << "\n ---------------------------- \n";
     llvm::errs() << "\nold Value"    << oldExprID;
+    llvm::errs() << "\nold Value"    << *value;
     llvm::errs() << "\nnew Value"    << exprID;
     llvm::errs() << "\nnew Value"    << generator->GetOrCreateExprID(binOp);
     llvm::errs() << "\nllvm::value " << *value;

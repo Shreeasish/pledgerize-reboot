@@ -15,12 +15,12 @@ public:
          binaryExprCounter  { reservedBExprBits() },
          constantExprCounter{ reservedCExprBits() } {
       constantSlab.emplace_back(ConstantExprNode{nullptr});
-      leafTable.insert({nullptr, constantExprCounter});
+      leafTable.insert({nullptr, 0});
     }
 
   ExprID
   GetOrCreateExprID(ExprKey key) {
-    if( auto found = exprTable.find(key); found != exprTable.end()){
+    if (auto found = exprTable.find(key); found != exprTable.end()){
       return found->second;
     }
     return GenerateBinaryExprID(key);
@@ -59,7 +59,7 @@ public:
   // TODO: Establish whether only binaryExprs are needed
   inline int 
   GetExprType(const ExprID exprID) const {
-    return exprID & (reservedCExprBits() >> (typeSize - 2));
+    return exprID >> (typeSize - 3); // Assumption: Signbit will not be set
   }
 
   // Getters for backingstore
@@ -97,6 +97,8 @@ public:
   rewrite(const Disjunction& disjunction, const ExprID oldExprID, const ExprID newExprID) {
     //TODO: Make Node types enum
     auto isBinaryExprID = [this](const ExprID exprID) -> bool {
+      llvm::errs() << "\nexprID"   << exprID;
+      llvm::errs() << "\nexprtype" << GetExprType(exprID);
       return GetExprType(exprID) == 2;
     };
 
@@ -165,10 +167,7 @@ private:
 
   ExprID // Templatize
   GenerateConstantExprID(const llvm::Constant* constant) {
-    const auto old = constantExprCounter;
-
     assert(constant != nullptr);
-    assert(llvm::isa<llvm::Constant>(constant));
 
     constantSlab.emplace_back(constant);
     constantExprCounter++;
@@ -178,24 +177,19 @@ private:
     llvm::errs() << "\n" << constantExprCounter;
 
     leafTable.insert({constant, constantExprCounter});
-    assert(constantExprCounter == old+1);
     return constantExprCounter;
   }
 
   ExprID
   GenerateValueExprID(const llvm::Value* value) {
-    const auto old = valueExprCounter;
     valueSlab.emplace_back(value);
     valueExprCounter++;
     leafTable.insert({value, valueExprCounter});
 
     llvm::errs() << "\nGenerating a value node for\n";
-    if (value != nullptr) {
-      llvm::errs() << *value;
-      llvm::errs() << "\n" << valueExprCounter;
-    }
+    llvm::errs() << *value;
+    llvm::errs() << "\n" << valueExprCounter;
 
-    assert(valueExprCounter == old + 1);
     return valueExprCounter;
   }
 
