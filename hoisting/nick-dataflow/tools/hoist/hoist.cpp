@@ -50,14 +50,13 @@ static cl::opt<string> inPath{cl::Positional,
                               cl::cat{futureFunctionsCategory}};
 
 
-//LibC map here
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
+std::unique_ptr<Generator> generator;
 
 using DisjunctionValue  = Disjunction;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
-std::unique_ptr<Generator> generator;
 
 static void
 setRequiredPrivileges(Privileges requiredPrivileges, llvm::CallSite cs, const Context& context) {
@@ -68,7 +67,7 @@ setRequiredPrivileges(Privileges requiredPrivileges, llvm::CallSite cs, const Co
 
   auto functionName = fun->getName().str();
   auto found = libCHandlers.find(functionName);
-  if(found != libCHandlers.end()){
+  if(found != libCHandlers.end()) {
     //Use the context of the current callsite
     auto promisesBitset = found->second.getPromisesBitset(cs, context);
     requiredPrivileges |= promisesBitset;
@@ -89,23 +88,22 @@ class DisjunctionEdgeTransformer {
 public:
   Disjunction
   operator()(const Disjunction& toMerge, llvm::Value* branchAsValue, llvm::Value* destination) {
+
     auto asBinaryExprID = [](llvm::Value* branchCondition) -> ExprID {
       auto* binOp
         = llvm::dyn_cast<llvm::BinaryOperator>(branchCondition);
       if (binOp) { // Does this actually happen?
         return generator->GetOrCreateExprID(binOp);
       }
-
       auto* cmpInst
         = llvm::dyn_cast<llvm::CmpInst>(branchCondition);
-      if ( cmpInst) {
+      if (cmpInst) {
         return generator->GetOrCreateExprID(cmpInst);
       }
       if (!cmpInst) { //change to last on the list
         llvm::errs() << *branchCondition;
         assert(false && "condition not handled");
       }
-
       return 0;
     };
 
@@ -115,8 +113,12 @@ public:
     };
     auto edgeOp = [&branchInst, &asBinaryExprID, &destAsBool, destination] (Disjunction destState) {
       auto* branchCondition = branchInst->getCondition();
-      llvm::errs() << "\n-------------branchCondition------------\n"
-                   << *branchCondition << "||" << asBinaryExprID(branchCondition)
+      llvm::errs() << "\n-------------branchCondition------------\n";
+      auto test =  asBinaryExprID(branchCondition);
+      auto test2 = asBinaryExprID(branchCondition);
+      llvm::errs() << *branchCondition 
+                   << "\n Generating ID for test \n" 
+                   << test << "test2" << test2
                    << "\n-------------branchCondition------------\n";
       Disjunction local{destState};
       local.applyConjunct({asBinaryExprID(branchCondition), destAsBool(destination)});
@@ -157,41 +159,35 @@ private:
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto exprID    = generator->GetOrCreateExprID(binOp);
     llvm::errs() << "\n ---------------------------- \n";
-    llvm::errs() << "\noldValue" << oldExprID;
-    llvm::errs() << "\nValue" << exprID;
+    llvm::errs() << "\nold Value"    << oldExprID;
+    llvm::errs() << "\nnew Value"    << exprID;
+    llvm::errs() << "\nnew Value"    << generator->GetOrCreateExprID(binOp);
+    llvm::errs() << "\nllvm::value " << *value;
     llvm::errs() << "\n ---------------------------- \n";
     if (oldExprID == exprID) {
       return true;
     }
-
-    // Find all conjuncts which use oldExprID
-    
-    //state[nullptr].deepFindAndReplaceAll(oldExprID, exprID);
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
     return true;
   }
 
 public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
-    llvm::errs() << "\nDebugging";
-    if (state.count(nullptr)) {
-      state[nullptr].print();
-    }
-    llvm::errs() << "\nDebugging End\n" ;
-
     if (handleCallSite(llvm::CallSite{&value}, state, context)) {
       return;
     }
-
     if (!generator->isUsed(&value)) { //Global Check
       return;
     }
     if (handleBinaryOperator(&value, state)) {
       return;
     }
-    auto oldExprID = generator->GetOrCreateExprID(&value);
-    state[nullptr].findAndReplace(oldExprID, 0); //Set to True
-
+    llvm::errs() << "\nDebugging";
+    if (state.count(nullptr)) {
+      state[nullptr].print();
+    }
+    llvm::errs() << "\nDebugging End\n" ;
   }
 };
 

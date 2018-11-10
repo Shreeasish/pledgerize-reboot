@@ -48,7 +48,6 @@ struct DenseMapInfo<ExprKey> {
   }
 };
 
-
 static llvm::Function*
 getCalledFunction(llvm::CallSite cs) {
   if (!cs.getInstruction()) return nullptr;
@@ -58,12 +57,7 @@ getCalledFunction(llvm::CallSite cs) {
 
   return llvm::dyn_cast<llvm::Function>(called);
 }
-class ConstantExprNode {
-  const llvm::Constant* constant;
-public:
-  ConstantExprNode (const llvm::Constant* constant)
-    : constant{constant} { }
-};
+
 
 class ExprOp {
 public:
@@ -74,6 +68,13 @@ public:
     : opCode{opCode} { }
 };
 
+class ConstantExprNode {
+  const llvm::Constant* constant;
+public:
+  ConstantExprNode (const llvm::Constant* constant)
+    : constant{constant} { }
+};
+
 class ValueExprNode {
   const llvm::Value* value;
 public:
@@ -81,16 +82,17 @@ public:
     : value{value} { }
 };
 
-
 class BinaryExprNode {
+public:
   const ExprID lhs;
   const ExprOp op;
   const ExprID rhs;
-public:
   BinaryExprNode (ExprID lhs, OpKey op, ExprID rhs)
     : lhs{lhs}, op{op},
       rhs{rhs} { }
 };
+
+
 
 class Conjunct {
 public:
@@ -138,15 +140,14 @@ public:
     return;
   }
 };
-using ConjunctIDs = std::vector<Conjunct>;
 //Rename to conjuncts
 
 
 
+using ConjunctIDs = std::vector<Conjunct>;
 class Disjunct { // Or a Conjunction
-private:
-  ConjunctIDs conjunctIDs; // Conjuncts = Exprs
 public:
+  ConjunctIDs conjunctIDs; // Conjuncts = Exprs
   Disjunct() = default;
 
   bool operator==(const Disjunct& other) const;
@@ -167,15 +168,13 @@ public:
 
   }
 };
-using Disjuncts = std::vector<Disjunct>;
 
 // Class for handling the abstract state.
 // Contains a vector of vectors of conjunctions/disjuncts
+using Disjuncts = std::vector<Disjunct>;
 class Disjunction {
-// Vector of conjunctions
-private:
-  Disjuncts disjuncts;
 public:
+  Disjuncts disjuncts;
   Disjunction() = default;
 
   explicit Disjunction (Disjuncts otherDisjuncts)

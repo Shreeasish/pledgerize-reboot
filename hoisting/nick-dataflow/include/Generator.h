@@ -18,6 +18,15 @@ public:
       leafTable.insert({nullptr, constantExprCounter});
     }
 
+  ExprID
+  GetOrCreateExprID(ExprKey key) {
+    if( auto found = exprTable.find(key); found != exprTable.end()){
+      return found->second;
+    }
+    return GenerateBinaryExprID(key);
+  }
+
+
   ExprID //Handle BinaryOperator
   GetOrCreateExprID(const llvm::BinaryOperator* binOperator) {
     return GetOrCreateExprID(llvm::dyn_cast<llvm::Instruction>(binOperator));
@@ -49,7 +58,7 @@ public:
 
   // TODO: Establish whether only binaryExprs are needed
   inline int 
-  GetExprType(const ExprID exprID) {
+  GetExprType(const ExprID exprID) const {
     return exprID & (reservedCExprBits() >> (typeSize - 2));
   }
 
@@ -82,6 +91,49 @@ public:
       return index;
     };
     return valueSlab[asIndex(conjunctID)];
+  }
+
+  Disjunction
+  rewrite(const Disjunction& disjunction, const ExprID oldExprID, const ExprID newExprID) {
+    //TODO: Make Node types enum
+    auto isBinaryExprID = [this](const ExprID exprID) -> bool {
+      return GetExprType(exprID) == 2;
+    };
+
+    auto replace = [](auto& conjunct, const ExprID newExprID) {
+      conjunct = Conjunct{newExprID, conjunct.notNegated};
+    };
+
+    auto postOrderRebuild = 
+      [this, &newExprID, &oldExprID, &isBinaryExprID] (const ExprID& exprID, auto& postOrderRebuild) -> ExprID {
+      if (exprID == oldExprID) { 
+        return newExprID;  // Return the newID implying a replacement
+      }                    // Doesn't matter what type of conjunct
+      if (!isBinaryExprID(exprID)) {
+        return exprID;     // Leaf node and !==oldExprID
+      }
+
+      auto binaryNode = GetBinaryExprNode(exprID);
+      auto leftID  = postOrderRebuild(binaryNode.lhs, postOrderRebuild);
+      auto rightID = postOrderRebuild(binaryNode.rhs, postOrderRebuild);
+      return GetOrCreateExprID({ExprID(leftID), OpKey(binaryNode.op.opCode), ExprID(rightID)}); //Readability
+    };
+
+    Disjunction newDisjunction = disjunction; // Return new by value
+    for (auto& disjunct : newDisjunction.disjuncts) {
+      for (auto& conjunct : disjunct.conjunctIDs) {
+        if (isBinaryExprID(conjunct.exprID)) {
+          auto rebuildID = postOrderRebuild(conjunct.exprID, postOrderRebuild);
+          replace(conjunct, rebuildID); 
+          continue; // skip check for direct comparison
+        }
+        if ( conjunct.exprID == oldExprID) {
+          replace(conjunct, newExprID);
+          continue; 
+        }
+      }
+    }
+    return newDisjunction;
   }
 
   bool //Generator should not check in the state itself
@@ -118,13 +170,14 @@ private:
     assert(constant != nullptr);
     assert(llvm::isa<llvm::Constant>(constant));
 
-    llvm::errs() << "\nGenerating constant for\n";
-    llvm::errs() << *constant;
-
     constantSlab.emplace_back(constant);
     constantExprCounter++;
-    leafTable.insert({constant, constantExprCounter});
 
+    llvm::errs() << "\nGenerating constant for\n";
+    llvm::errs() << *constant;
+    llvm::errs() << "\n" << constantExprCounter;
+
+    leafTable.insert({constant, constantExprCounter});
     assert(constantExprCounter == old+1);
     return constantExprCounter;
   }
@@ -132,25 +185,29 @@ private:
   ExprID
   GenerateValueExprID(const llvm::Value* value) {
     const auto old = valueExprCounter;
-    llvm::errs() << "\nGenerating a value node\n";
-
-    if (value != nullptr) llvm::errs() << *value;
     valueSlab.emplace_back(value);
     valueExprCounter++;
     leafTable.insert({value, valueExprCounter});
 
-    assert(valueExprCounter == old+1);
+    llvm::errs() << "\nGenerating a value node for\n";
+    if (value != nullptr) {
+      llvm::errs() << *value;
+      llvm::errs() << "\n" << valueExprCounter;
+    }
+
+    assert(valueExprCounter == old + 1);
     return valueExprCounter;
   }
 
   ExprID
   GenerateBinaryExprID(ExprKey key) {
     binarySlab.emplace_back(BinaryExprNode{std::get<0>(key), std::get<1>(key), std::get<2>(key)});
-    exprTable.insert({key, ++binaryExprCounter});
+    binaryExprCounter++;
+    exprTable.insert({key, binaryExprCounter});
     return binaryExprCounter;
   }
 
-  ExprID //Handle CmpInst
+  ExprID //TODO: Rename cmpInst to inst
   GetOrCreateExprID(const llvm::Instruction* cmpInst) {
     assert(cmpInst != nullptr);
     auto* lhs = cmpInst->getOperand(0);
