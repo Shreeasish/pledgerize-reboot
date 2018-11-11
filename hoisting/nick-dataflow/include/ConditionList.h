@@ -134,9 +134,9 @@ public:
 
   void print() const {
     if (!notNegated) {
-      llvm::outs() << "!";
+      llvm::errs() << "!";
     }
-    llvm::outs() << exprID;
+    llvm::errs() << exprID;
     return;
   }
 };
@@ -251,6 +251,8 @@ Disjunct::findExprID(const ExprID& target) const {
   return false;
 }
 
+
+// Deprecate?
 bool
 Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
   llvm::errs() << "\n---------------------------------------";
@@ -272,9 +274,9 @@ Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
 void
 Disjunct::print() const {
   for (auto conjunct : conjunctIDs) {
-    llvm::outs() << "(";
+    llvm::errs() << "(";
     conjunct.print();
-    llvm::outs() << ") ";
+    llvm::errs() << ") ";
   }
   return;
 }
@@ -333,7 +335,7 @@ Disjunction::empty() const {
 void
 Disjunction::print() const {
   for (auto& disjunct : disjuncts) {
-    llvm::outs() << "\n";
+    llvm::errs() << "\n";
     disjunct.print();
   }
   return;

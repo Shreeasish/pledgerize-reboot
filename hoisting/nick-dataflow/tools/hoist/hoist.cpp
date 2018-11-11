@@ -104,7 +104,7 @@ public:
         llvm::errs() << *branchCondition;
         assert(false && "condition not handled");
       }
-      return 0;
+      return 111;
     };
 
     auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchAsValue);
@@ -124,11 +124,11 @@ public:
 
 class DisjunctionTransfer {
 private:
-  bool
+  void
   handleCallSite(const llvm::CallSite& cs, DisjunctionState& state, const Context& context) {
     const auto* fun = getCalledFunction(cs);
     if (!fun) {
-      return false;
+      return;
     }
 
     auto asDisjunct = [](Conjunct conjunct) -> Disjunct {
@@ -140,48 +140,65 @@ private:
     auto vacExpr = generator->GetVacuousExprID();
     state[nullptr].addDisjunct(asDisjunct({vacExpr,true}));
 
-    return true;
+    return;
   }
 
-  bool
+  void
   handleBinaryOperator(const llvm::Value* value, DisjunctionState& state) {
     auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(value);
     if (!binOp) {
-      return false;
+      return;
     }
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto exprID    = generator->GetOrCreateExprID(binOp);
-    llvm::errs() << "\n ---------------------------- \n";
-    llvm::errs() << "\nold Value"    << oldExprID;
-    llvm::errs() << "\nold Value"    << *value;
-    llvm::errs() << "\nnew Value"    << exprID;
-    llvm::errs() << "\nnew Value"    << generator->GetOrCreateExprID(binOp);
-    llvm::errs() << "\nllvm::value " << *value;
-    llvm::errs() << "\n ---------------------------- \n";
     if (oldExprID == exprID) {
-      return true;
+      return;
     }
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
-    return true;
+  }
+
+  void
+  handleUnknown(const llvm::Value* value, DisjunctionState& state) {
+    auto oldExprID = generator->GetOrCreateExprID(value);
+    state[nullptr] = generator->dropConjunct(state[nullptr], oldExprID);
   }
 
 public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
-    if (handleCallSite(llvm::CallSite{&value}, state, context)) {
-      return;
-    }
+    auto debugAfter = [&]() {
+      llvm::errs() << "\n-----------------------Debugging----------------- ";
+      llvm::errs() << "After Transfer \n";
+      if (state.count(nullptr)) {
+        state[nullptr].print();
+      }
+      generator->dumpState();
+      llvm::errs() << "\n----------------------------Debugging End -------------------------\n" ;
+    };
+
+    auto debugBefore = [&]() {
+      llvm::errs() << "\n-----------------------Debugging----------------- ";
+      llvm::errs() << "Before Transfer \n";
+      llvm::errs() << value;
+      if (state.count(nullptr)) {
+        state[nullptr].print();
+      }
+      generator->dumpState();
+      llvm::errs() << "\n----------------------------Debugging End -------------------------\n" ;
+      llvm::errs().flush() ;
+    };
+
+    debugBefore();
+    // Handles CallSites and BinaryOps for now
+    handleCallSite(llvm::CallSite{&value}, state, context);
     if (!generator->isUsed(&value)) { //Global Check
+      debugAfter();
       return;
     }
-    if (handleBinaryOperator(&value, state)) {
-      return;
-    }
-    llvm::errs() << "\nDebugging";
-    if (state.count(nullptr)) {
-      state[nullptr].print();
-    }
-    llvm::errs() << "\nDebugging End\n" ;
+    handleBinaryOperator(&value, state);
+    // TODO: Handle Unknowns
+    debugAfter();
+    return;
   }
 };
 

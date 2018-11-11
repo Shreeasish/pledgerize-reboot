@@ -17,6 +17,31 @@ public:
       constantSlab.emplace_back(ConstantExprNode{nullptr});
       leafTable.insert({nullptr, 0});
     }
+  /* Debugging Function -----------------*/
+  void
+  dumpState() {
+    llvm::errs() << "\n------------ Binary Table ------\n";
+    for (auto [exprKey, exprID] : exprTable) {
+      llvm::errs() << "\n ExprKey --- {" 
+                   << std::get<0>(exprKey) /*lhs*/ << "," << std::get<2>(exprKey) /*rhs*/
+                   << "}" ;
+      llvm::errs() << "\t ID:: " << exprID;
+    }
+    llvm::errs() << "\n------------ Binary Table ------\n";
+    llvm::errs() << "\n------------ Leaf Table ------\n";
+    for (auto [value, exprID] : leafTable) {
+      llvm::errs() << "\n llvm::value --- ";
+      if (value == nullptr) {
+        llvm::errs() << "nullptr" ;
+      }
+      else {
+        llvm::errs() << *value;
+      }
+      llvm::errs() << "\t ID:: " << exprID;
+    }
+    llvm::errs() << "\n------------ Leaf Table ------\n";
+  }
+  /* Debugging Function -----------------*/
 
   ExprID
   GetOrCreateExprID(ExprKey key) {
@@ -67,8 +92,8 @@ public:
   GetBinaryExprNode(const ExprID conjunctID) const {
     assert((conjunctID && reservedBExprBits()) && "ConjunctID is not a BinaryExpr");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
-      auto index = conjunctID & (!reservedBExprBits()); //Removal: remove bitwise
-      return index;
+      auto index = conjunctID & (~reservedBExprBits()); //Removal: remove bitwise
+      return index - 1; // Start from 0 // Expr Counters start from 1
     };
     return binarySlab[asIndex(conjunctID)];
   }
@@ -77,8 +102,8 @@ public:
   GetConstantExprNode(const ExprID conjunctID) const {
     assert((conjunctID && reservedCExprBits()) && "ConjunctID is not a ConstantExpr");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
-      auto index = conjunctID & (!reservedCExprBits());
-      return index;
+      auto index = conjunctID & (~reservedCExprBits());
+      return index; // Expr Counter starts from 0, Special case for Vacuous Expr
     };
     return constantSlab[asIndex(conjunctID)];
   }
@@ -87,8 +112,8 @@ public:
   GetValueExprNode(const ExprID conjunctID) const {
     assert((conjunctID && reservedVExprBits()) && "ConjunctID is not a ValueExprID");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
-      auto index = conjunctID & (!reservedVExprBits());
-      return index;
+      auto index = conjunctID & (~reservedVExprBits());
+      return index - 1; // Start from 0 // Expr Counters start from 1
     };
     return valueSlab[asIndex(conjunctID)];
   }
@@ -97,8 +122,6 @@ public:
   rewrite(const Disjunction& disjunction, const ExprID oldExprID, const ExprID newExprID) {
     //TODO: Make Node types enum
     auto isBinaryExprID = [this](const ExprID exprID) -> bool {
-      llvm::errs() << "\nexprID"   << exprID;
-      llvm::errs() << "\nexprtype" << GetExprType(exprID);
       return GetExprType(exprID) == 2;
     };
 
@@ -108,13 +131,12 @@ public:
 
     auto postOrderRebuild = 
       [this, &newExprID, &oldExprID, &isBinaryExprID] (const ExprID& exprID, auto& postOrderRebuild) -> ExprID {
-      if (exprID == oldExprID) { 
+      if (exprID == oldExprID) {
         return newExprID;  // Return the newID implying a replacement
       }                    // Doesn't matter what type of conjunct
       if (!isBinaryExprID(exprID)) {
         return exprID;     // Leaf node and !==oldExprID
       }
-
       auto binaryNode = GetBinaryExprNode(exprID);
       auto leftID  = postOrderRebuild(binaryNode.lhs, postOrderRebuild);
       auto rightID = postOrderRebuild(binaryNode.rhs, postOrderRebuild);
@@ -132,6 +154,40 @@ public:
         if ( conjunct.exprID == oldExprID) {
           replace(conjunct, newExprID);
           continue; 
+        }
+      }
+    }
+    return newDisjunction;
+  }
+
+  Disjunction
+  dropConjunct(const Disjunction& disjunction, const ExprID oldExprID) {
+    auto isBinaryExprID = [this](const ExprID exprID) -> bool {
+      return GetExprType(exprID) == 2;
+    };
+
+    bool found{false};
+    auto postOrderFind  = [this, &oldExprID, &isBinaryExprID, found](const ExprID& exprID, auto& postOrderFind) mutable -> bool {
+      if (oldExprID == exprID) {
+        found = true;
+        return found;
+      }
+      if (!isBinaryExprID(exprID)) {
+        return found;
+      }
+      auto binaryNode = GetBinaryExprNode(exprID);
+      postOrderFind(binaryNode.lhs, postOrderFind);
+      postOrderFind(binaryNode.rhs, postOrderFind);
+
+      return found;
+    };
+
+    Disjunction newDisjunction = disjunction; // Return new by value
+    for (auto& disjunct : newDisjunction.disjuncts) {
+      for (auto& conjunct : disjunct.conjunctIDs) {
+        if (postOrderFind(conjunct.exprID, postOrderFind)) { 
+          conjunct.exprID     = GetVacuousExprID();
+          conjunct.notNegated = true;
         }
       }
     }
@@ -215,6 +271,13 @@ private:
     }
     return GenerateBinaryExprID(key);
   }
+
+  // llvm::DenseMap<ExprKey, ExprID> exprTable;
+  // llvm::DenseMap<const llvm::Value*, ExprID> leafTable;
+  //
+  // std::deque<ConstantExprNode> constantSlab;
+  // std::deque<ValueExprNode>    valueSlab;
+  // std::deque<BinaryExprNode>   binarySlab;
 
 };
 
