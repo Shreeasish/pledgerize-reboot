@@ -3,6 +3,8 @@
 
 #include "ConditionList.h"
 
+#include <stack>
+
 //size_t to exprID?
 
 //TODO: Add checks for signed int overflow.
@@ -166,30 +168,43 @@ public:
       return GetExprType(exprID) == 2;
     };
 
-    bool found{false};
-    auto postOrderFind  = [this, &oldExprID, &isBinaryExprID, found](const ExprID& exprID, auto& postOrderFind) mutable -> bool {
-      if (oldExprID == exprID) {
-        found = true;
-        return found;
+    auto preOrderFind  = [this, &oldExprID, &isBinaryExprID](const Conjunct& conjunct) -> bool {
+//      if (oldExprID == exprID) {
+//        found = true;
+//        return found;
+//      }
+//      if (!isBinaryExprID(exprID)) {
+//        return found;
+//      }
+//      auto binaryNode = GetBinaryExprNode(exprID);
+//      postOrderFind(binaryNode.lhs, postOrderFind);
+//      postOrderFind(binaryNode.rhs, postOrderFind);
+//
+//      return found;
+//      Iterative Find
+//
+      std::stack<ExprID> exprStack;
+      exprStack.push(conjunct.exprID);
+      while (!exprStack.empty()) {
+        auto exprID = exprStack.top();
+        exprStack.pop();
+        if (oldExprID == exprID){
+          return true;
+        }
+        if (!isBinaryExprID(exprID)) {
+          continue;
+        }
+        auto binaryNode = GetBinaryExprNode(exprID);
+        exprStack.push(binaryNode.lhs);
+        exprStack.push(binaryNode.rhs);
       }
-      if (!isBinaryExprID(exprID)) {
-        return found;
-      }
-      auto binaryNode = GetBinaryExprNode(exprID);
-      postOrderFind(binaryNode.lhs, postOrderFind);
-      postOrderFind(binaryNode.rhs, postOrderFind);
-
-      return found;
+      return false;
     };
 
     Disjunction newDisjunction = disjunction; // Return new by value
     for (auto& disjunct : newDisjunction.disjuncts) {
-      for (auto& conjunct : disjunct.conjunctIDs) {
-        if (postOrderFind(conjunct.exprID, postOrderFind)) { 
-          conjunct.exprID     = GetVacuousExprID();
-          conjunct.notNegated = true;
-        }
-      }
+      std::replace_if( std::begin(disjunct.conjunctIDs), std::end(disjunct.conjunctIDs),
+                       preOrderFind, Conjunct{GetVacuousExprID(), true});
     }
     return newDisjunction;
   }
