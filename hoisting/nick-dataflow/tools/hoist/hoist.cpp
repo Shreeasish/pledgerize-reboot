@@ -80,7 +80,7 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    return Disjunction::unionDisjunctions(s1,s2).simplifyAdjacentNegation();
+    return Disjunction::unionDisjunctions(s1,s2).simplifyAdjacentNegation().simplifyNeighbourNegation();
   }
 };
 

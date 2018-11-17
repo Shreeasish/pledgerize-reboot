@@ -155,7 +155,7 @@ public:
 
   void print() const;
   void addConjunct(const Conjunct&);
-  auto findExprID(const ExprID&) const;
+  auto findExprID(const ExprID&) const; // returns an iterator
 
   bool
   findAndReplace(const ExprID target, ExprID newID);
@@ -237,10 +237,8 @@ public:
   // Refactor Later
   Disjunction&
   simplifyNeighbourNegation() {
-
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
       // assert(a != b && "Failed Set property");
-
       llvm::errs() << "\n";
       a.print();
       llvm::errs() << "a - b";
@@ -253,6 +251,7 @@ public:
       return a.exprID == b.exprID && a.notNegated == !b.notNegated;
     };
 
+
     auto simplify = [&isNegatedPair](auto& conjuncts1, auto& conjuncts2) {
       auto first     = conjuncts1.begin();
       auto second    = conjuncts2.begin();
@@ -262,11 +261,11 @@ public:
       while (first != firstEnd  && second != secondEnd) {
         if (isNegatedPair(*first, *second)) {
           llvm::errs() << "\n Found negated pair\n";
-          // kill conjunct
-          second++;
-          first++;
+          first  = conjuncts1.erase(first);
+          second = conjuncts2.erase(second);
         }
         if (second->exprID < first->exprID) {
+          
           second++;
         }
         else {
@@ -274,13 +273,23 @@ public:
         }
       }
     };
-    
-    auto first = disjuncts.begin();
-    auto second = ++first;
 
+    if (disjuncts.empty()){
+      return *this;
+      llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
+    }
+    
+    auto first  = disjuncts.begin();
+    auto second = first + 1;
+
+    llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
     for ( ; second != disjuncts.end(); first++, second++) {
+      llvm::errs() << "\n Disjunct Pairs \n";
+      first->print();
+      second->print();
       simplify(first->conjunctIDs, second->conjunctIDs);
     }
+    llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
     return *this;
   }
 
