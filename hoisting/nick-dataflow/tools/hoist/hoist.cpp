@@ -52,6 +52,7 @@ static cl::opt<string> inPath{cl::Positional,
 
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
 std::unique_ptr<Generator> generator;
+std::unique_ptr<IndirectCallResolver> resolver;
 
 using DisjunctionValue  = Disjunction;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
@@ -79,7 +80,7 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    return Disjunction::unionDisjunctions(s1,s2);
+    return Disjunction::unionDisjunctions(s1,s2).simplifyAdjacentNegation();
   }
 };
 
@@ -104,7 +105,7 @@ public:
         llvm::errs() << *branchCondition;
         assert(false && "condition not handled");
       }
-      return 111;
+      return 0;
     };
 
     auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchAsValue);
@@ -124,11 +125,15 @@ public:
 
 class DisjunctionTransfer {
 private:
-  void
+  bool
   handleCallSite(const llvm::CallSite& cs, DisjunctionState& state, const Context& context) {
     const auto* fun = getCalledFunction(cs);
     if (!fun) {
-      return;
+      return false;
+    }
+
+    if (fun->getName().startswith("llvm.")) {
+      return false;
     }
 
     auto asDisjunct = [](Conjunct conjunct) -> Disjunct {
@@ -139,28 +144,36 @@ private:
 
     auto vacExpr = generator->GetVacuousExprID();
     state[nullptr].addDisjunct(asDisjunct({vacExpr,true}));
-
-    return;
+    return true;
   }
 
-  void
+  bool
   handleBinaryOperator(const llvm::Value* value, DisjunctionState& state) {
     auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(value);
     if (!binOp) {
-      return;
+      return false;
     }
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto exprID    = generator->GetOrCreateExprID(binOp);
     if (oldExprID == exprID) {
-      return;
+      return false;
     }
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
+    return true;
   }
 
+
+  // Only reaches this if the llvm::value is actually used somewhere else
+  // i.e. GetOrCreateExprID should not create new exprIDs
+  // Add an assert?
   void
   handleUnknown(const llvm::Value* value, DisjunctionState& state) {
+    auto oldLeafTableSize = generator->getLeafTableSize();
+
     auto oldExprID = generator->GetOrCreateExprID(value);
     state[nullptr] = generator->dropConjunct(state[nullptr], oldExprID);
+
+    assert(oldLeafTableSize == generator->getLeafTableSize() && "New Value at Unknown");
   }
 
 public:
@@ -189,15 +202,20 @@ public:
     };
 
     debugBefore();
+    bool handled = false;
     // Handles CallSites and BinaryOps for now
-    handleCallSite(llvm::CallSite{&value}, state, context);
+    handled |= handleCallSite(llvm::CallSite{&value}, state, context);
     if (!generator->isUsed(&value)) { //Global Check
       debugAfter();
       return;
     }
-    handleBinaryOperator(&value, state);
-    // TODO: Handle Unknowns
+    handled |= handleBinaryOperator(&value, state);
+    // handleUnknown(&value, state);
     debugAfter();
+
+    if (!handled) {
+      handleUnknown(&value, state);
+    }
     return;
   }
 };
@@ -238,6 +256,8 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   }
 
   generator = make_unique<Generator>(Generator{});
+  resolver  = make_unique<IndirectCallResolver>(IndirectCallResolver{m});
+
   using Value    = Disjunction;
   using Transfer = DisjunctionTransfer;
   using Meet     = DisjunctionMeet;

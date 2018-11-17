@@ -89,6 +89,12 @@ public:
     return exprID >> (typeSize - 3); // Assumption: Signbit will not be set
   }
 
+  auto inline 
+  getLeafTableSize() {
+    return leafTable.size();
+  }
+
+  //TODO: Refactor to sinlge method
   // Getters for backingstore
   const BinaryExprNode& //Invariant: The ID searched for will always be there
   GetBinaryExprNode(const ExprID conjunctID) const {
@@ -120,15 +126,12 @@ public:
     return valueSlab[asIndex(conjunctID)];
   }
 
+  //TODO: Memoize
   Disjunction
   rewrite(const Disjunction& disjunction, const ExprID oldExprID, const ExprID newExprID) {
     //TODO: Make Node types enum
     auto isBinaryExprID = [this](const ExprID exprID) -> bool {
       return GetExprType(exprID) == 2;
-    };
-
-    auto replace = [](auto& conjunct, const ExprID newExprID) {
-      conjunct = Conjunct{newExprID, conjunct.notNegated};
     };
 
     auto postOrderRebuild = 
@@ -145,19 +148,18 @@ public:
       return GetOrCreateExprID({ExprID(leftID), OpKey(binaryNode.op.opCode), ExprID(rightID)}); //Readability
     };
 
-    Disjunction newDisjunction = disjunction; // Return new by value
-    for (auto& disjunct : newDisjunction.disjuncts) {
-      for (auto& conjunct : disjunct.conjunctIDs) {
-        if (isBinaryExprID(conjunct.exprID)) {
-          auto rebuildID = postOrderRebuild(conjunct.exprID, postOrderRebuild);
-          replace(conjunct, rebuildID); 
-          continue; // skip check for direct comparison
-        }
-        if ( conjunct.exprID == oldExprID) {
-          replace(conjunct, newExprID);
-          continue; 
-        }
-      }
+    auto rebuildConjunct = [&postOrderRebuild] (const Conjunct& conjunct) -> Conjunct {
+      auto rebuiltID   = postOrderRebuild(conjunct.exprID, postOrderRebuild);
+      return Conjunct{rebuiltID, conjunct.notNegated};
+    };
+
+    Disjunction newDisjunction{ };
+    for (auto& disjunct : disjunction.disjuncts) {
+      Disjunct newDisjunct{};
+      std::transform(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(),
+                  std::back_inserter(newDisjunct.conjunctIDs), rebuildConjunct);
+      std::sort(newDisjunct.conjunctIDs.begin(), newDisjunct.conjunctIDs.end());
+      newDisjunction.disjuncts.push_back(newDisjunct);
     }
     return newDisjunction;
   }
@@ -169,20 +171,6 @@ public:
     };
 
     auto preOrderFind  = [this, &oldExprID, &isBinaryExprID](const Conjunct& conjunct) -> bool {
-//      if (oldExprID == exprID) {
-//        found = true;
-//        return found;
-//      }
-//      if (!isBinaryExprID(exprID)) {
-//        return found;
-//      }
-//      auto binaryNode = GetBinaryExprNode(exprID);
-//      postOrderFind(binaryNode.lhs, postOrderFind);
-//      postOrderFind(binaryNode.rhs, postOrderFind);
-//
-//      return found;
-//      Iterative Find
-//
       std::stack<ExprID> exprStack;
       exprStack.push(conjunct.exprID);
       while (!exprStack.empty()) {
@@ -203,8 +191,9 @@ public:
 
     Disjunction newDisjunction = disjunction; // Return new by value
     for (auto& disjunct : newDisjunction.disjuncts) {
-      std::replace_if( std::begin(disjunct.conjunctIDs), std::end(disjunct.conjunctIDs),
-                       preOrderFind, Conjunct{GetVacuousExprID(), true});
+      std::replace_if(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(),
+                      preOrderFind, Conjunct{GetVacuousExprID(), true});
+      std::sort(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end());
     }
     return newDisjunction;
   }
@@ -273,27 +262,19 @@ private:
   }
 
   ExprID //TODO: Rename cmpInst to inst
-  GetOrCreateExprID(const llvm::Instruction* cmpInst) {
-    assert(cmpInst != nullptr);
-    auto* lhs = cmpInst->getOperand(0);
-    auto* rhs = cmpInst->getOperand(1);
+  GetOrCreateExprID(const llvm::Instruction* inst) {
+    assert(inst != nullptr);
+    auto*  lhs = inst->getOperand(0);
+    auto*  rhs = inst->getOperand(1);
     auto lhsID = GetOrCreateExprID(lhs);
     auto rhsID = GetOrCreateExprID(rhs);
-    ExprKey key{lhsID, cmpInst->getOpcode(), rhsID};
+    ExprKey key{lhsID, inst->getOpcode(), rhsID};
 
     if (auto found = exprTable.find(key); found != exprTable.end()) {
       return found->second;
     }
     return GenerateBinaryExprID(key);
   }
-
-  // llvm::DenseMap<ExprKey, ExprID> exprTable;
-  // llvm::DenseMap<const llvm::Value*, ExprID> leafTable;
-  //
-  // std::deque<ConstantExprNode> constantSlab;
-  // std::deque<ValueExprNode>    valueSlab;
-  // std::deque<BinaryExprNode>   binarySlab;
-
 };
 
 #endif

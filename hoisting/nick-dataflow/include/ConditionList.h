@@ -98,16 +98,16 @@ class Conjunct {
 public:
   ExprID exprID;
   bool notNegated;
-  
+
   Conjunct(ExprID exprID, bool notNegated) //explicit?
     : exprID{exprID},
       notNegated{notNegated} { }
 
   bool operator==(const Conjunct& other) const {
-    return exprID == other.exprID 
+    return exprID == other.exprID
       && notNegated == other.exprID;
   }
-  
+
   bool operator<(const Conjunct& other) const {
     if (exprID < other.exprID) {
       return true;
@@ -122,7 +122,7 @@ public:
   bool operator==(const ExprID other) const {
     return exprID == other;
   }
-  
+
   bool operator<(const ExprID other) const {
     return exprID < other;
   }
@@ -155,7 +155,7 @@ public:
 
   void print() const;
   void addConjunct(const Conjunct&);
-  bool findExprID(const ExprID&) const;
+  auto findExprID(const ExprID&) const;
 
   bool
   findAndReplace(const ExprID target, ExprID newID);
@@ -185,7 +185,7 @@ public:
   //Member Functions
   void applyConjunct(const Conjunct&);
   void addDisjunct(const Disjunct&);
-  bool findExprID(const ExprID&) const;
+  bool hasExprID(const ExprID&) const;
   void findAndReplace(const ExprID, const ExprID);
   // Helpers
   void print() const;
@@ -204,6 +204,92 @@ public:
                    std::back_inserter(dest_disjunct));
     return asDisjunction;
   }
+
+  // Rename to Horizontal/Vertical Negation
+
+  Disjunction&
+  simplifyAdjacentNegation() {
+    auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
+      // assert(a != b && "Failed Set property");
+
+      llvm::errs() << "\n";
+      a.print();
+      llvm::errs() << "a - b";
+      b.print();
+      llvm::errs() << (a.exprID == b.exprID && a.notNegated == !b.notNegated );
+      llvm::errs() << "\n";
+      // The second check is redundant since there should never be adjacent 
+      // conjuncts with the same exprID
+      // Add in as assert. Remove later
+      return a.exprID == b.exprID && a.notNegated == !b.notNegated;
+    };
+    auto hasNegatedPair = [&isNegatedPair](Disjunct& disjunct) {
+      disjunct.print();
+      auto found
+        = std::adjacent_find(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(), isNegatedPair);
+      return found != disjunct.conjunctIDs.end();
+    };
+    std::remove_if(disjuncts.begin(), disjuncts.end(), hasNegatedPair);
+    return *this;
+  }
+
+
+  // Refactor Later
+  Disjunction&
+  simplifyNeighbourNegation() {
+
+    auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
+      // assert(a != b && "Failed Set property");
+
+      llvm::errs() << "\n";
+      a.print();
+      llvm::errs() << "a - b";
+      b.print();
+      llvm::errs() << (a.exprID == b.exprID && a.notNegated == !b.notNegated );
+      llvm::errs() << "\n";
+      // The second check is redundant since there should never be adjacent 
+      // conjuncts with the same exprID
+      // Add in as assert. Remove later
+      return a.exprID == b.exprID && a.notNegated == !b.notNegated;
+    };
+
+    auto simplify = [&isNegatedPair](auto& conjuncts1, auto& conjuncts2) {
+      auto first     = conjuncts1.begin();
+      auto second    = conjuncts2.begin();
+      auto firstEnd  = conjuncts1.end();
+      auto secondEnd = conjuncts2.end();
+
+      while (first != firstEnd  && second != secondEnd) {
+        if (isNegatedPair(*first, *second)) {
+          llvm::errs() << "\n Found negated pair\n";
+          // kill conjunct
+          second++;
+          first++;
+        }
+        if (second->exprID < first->exprID) {
+          second++;
+        }
+        else {
+          first++;
+        }
+      }
+    };
+    
+    auto first = disjuncts.begin();
+    auto second = ++first;
+
+    for ( ; second != disjuncts.end(); first++, second++) {
+      simplify(first->conjunctIDs, second->conjunctIDs);
+    }
+    return *this;
+  }
+
+  void // Should
+  simplifyImplication() {
+    llvm_unreachable("Function not Implemented");
+  }
+
+
 };
 
 //---------------Method Definitions----------------//
@@ -227,8 +313,8 @@ Disjunct::addConjunct(const Conjunct& conjunct) {
       conjunctIDs.push_back(conjunct);
       return;
     }
-    if (*first == conjunct) { 
-      return; 
+    if (*first == conjunct) {
+      return;
     }
     conjunctIDs.insert(first - 1, conjunct);
     return;
@@ -238,17 +324,21 @@ Disjunct::addConjunct(const Conjunct& conjunct) {
   return;
 }
 
-bool
+auto
 Disjunct::findExprID(const ExprID& target) const {
-  auto position 
-    = std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
+//  auto position
+//    = std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
+//        [](const Conjunct& conjunct, const ExprID& target) -> bool {
+//          return conjunct.exprID < target;
+//        });
+//  if ( position != conjunctIDs.end() && position->exprID == target) {
+//    return true;
+//  }
+//  return false;
+  return std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
         [](const Conjunct& conjunct, const ExprID& target) -> bool {
           return conjunct.exprID < target;
         });
-  if ( position != conjunctIDs.end() && position->exprID == target) {
-    return true;
-  }
-  return false;
 }
 
 
@@ -302,18 +392,18 @@ Disjunction::applyConjunct(const Conjunct& conjunct) {
 
 
 //TODO: Required before dropping to Trees
+//TODO: Insert disjuncts into a disjunction in order
 void
 Disjunction::addDisjunct(const Disjunct& disjunct) {
-  disjunct.print();
-  disjuncts.push_back(disjunct); //TODO: Insert disjuncts into a disjunction in order
+  disjuncts.push_back(disjunct);
   return;
 }
 
 
 bool
-Disjunction::findExprID(const ExprID& exprID) const {
+Disjunction::hasExprID(const ExprID& exprID) const {
   for (auto& disjunct : disjuncts) {
-    if (disjunct.findExprID(exprID)) {
+    if (disjunct.findExprID(exprID) != disjunct.conjunctIDs.end()) {
       return true;
     }
   }
