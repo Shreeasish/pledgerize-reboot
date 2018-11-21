@@ -119,12 +119,12 @@ public:
     return false;
   }
 
-  bool operator==(const ExprID other) const {
-    return exprID == other;
-  }
-
   bool operator<(const ExprID other) const {
     return exprID < other;
+  }
+
+  bool operator==(const ExprID other) const {
+    return exprID == other;
   }
 
   void operator=(const Conjunct& other) {
@@ -150,6 +150,7 @@ public:
   ConjunctIDs conjunctIDs; // Conjuncts = Exprs
   Disjunct() = default;
 
+  bool operator<(const Disjunct& other) const;
   bool operator==(const Disjunct& other) const;
   void operator=(Disjunct);
 
@@ -159,14 +160,6 @@ public:
 
   bool
   findAndReplace(const ExprID target, ExprID newID);
-
-  bool
-  operator<(const Disjunct& other) const {
-    return std::lexicographical_compare (
-                   this->conjunctIDs.cbegin(), this->conjunctIDs.cend(),
-                   other.conjunctIDs.cbegin(), other.conjunctIDs.cend());
-
-  }
 };
 
 // Class for handling the abstract state.
@@ -180,8 +173,9 @@ public:
   explicit Disjunction (Disjuncts otherDisjuncts)
     : disjuncts{otherDisjuncts} { }
   //Operator Overloads
-  void operator=(Disjunction);
+  void operator=(const Disjunction);
   bool operator==(const Disjunction&) const;
+  bool operator<(const Disjunction&) const;
   //Member Functions
   void applyConjunct(const Conjunct&);
   void addDisjunct(const Disjunct&);
@@ -251,7 +245,6 @@ public:
       return a.exprID == b.exprID && a.notNegated == !b.notNegated;
     };
 
-
     auto simplify = [&isNegatedPair](auto& conjuncts1, auto& conjuncts2) {
       auto first     = conjuncts1.begin();
       auto second    = conjuncts2.begin();
@@ -265,7 +258,6 @@ public:
           second = conjuncts2.erase(second);
         }
         if (second->exprID < first->exprID) {
-          
           second++;
         }
         else {
@@ -274,7 +266,7 @@ public:
       }
     };
 
-    if (disjuncts.empty()){
+    if ( disjuncts.empty()) {
       return *this;
       llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
     }
@@ -303,12 +295,19 @@ public:
 
 //---------------Method Definitions----------------//
 bool
+Disjunct::operator<(const Disjunct& other) const {
+  return std::lexicographical_compare (
+      this->conjunctIDs.cbegin(), this->conjunctIDs.cend(),
+      other.conjunctIDs.cbegin(), other.conjunctIDs.cend());
+}
+
+bool
 Disjunct::operator==(const Disjunct& other) const {
   return conjunctIDs == other.conjunctIDs;
 }
 
 void
-Disjunct::operator=(Disjunct other) {
+Disjunct::operator=(const Disjunct other) {
   this->conjunctIDs = other.conjunctIDs;
   return;
 }
@@ -380,6 +379,19 @@ Disjunct::print() const {
   return;
 }
 
+/// ---------------------------------------- ///
+/// ---------- Disjunctions ---------------- ///
+/// ---------------------------------------- ///
+
+
+//void
+//Disjunction::operator<(const Disjunction& other) const {
+//  return std::lexicographical_compare
+//    (this->conjunctIDs.cbegin(), this->conjunctIDs.cend(),
+//     other.conjunctIDs.cbegin(), other.conjunctIDs.cend());
+//}
+
+
 void
 Disjunction::operator=(Disjunction other) {
   this->disjuncts = other.disjuncts;
@@ -400,11 +412,17 @@ Disjunction::applyConjunct(const Conjunct& conjunct) {
 }
 
 
+//void
+//Disjunction::addDisjunct(const Disjunct& disjunct) {
+//  disjuncts.push_back(disjunct);
+//  return;
+//}
+
 //TODO: Required before dropping to Trees
 //TODO: Insert disjuncts into a disjunction in order
 void
 Disjunction::addDisjunct(const Disjunct& disjunct) {
-  disjuncts.push_back(disjunct);
+  disjuncts.insert(std::upper_bound(disjuncts.begin(), disjuncts.end(), disjunct), disjunct);
   return;
 }
 

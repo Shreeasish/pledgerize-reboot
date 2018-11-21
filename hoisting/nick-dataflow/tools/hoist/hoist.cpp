@@ -112,7 +112,11 @@ public:
     auto destAsBool = [&branchInst](auto* destination) -> bool {
       return destination == branchInst->getOperand(2);
     };
+    llvm::errs() << "Crashing at: \n" << *branchAsValue;
     auto edgeOp = [&branchInst, &asBinaryExprID, &destAsBool, destination] (Disjunction destState) {
+      if ( branchInst->isUnconditional()) {
+        return destState;
+      }
       auto* branchCondition = branchInst->getCondition();
       Disjunction local{destState};
       local.applyConjunct({asBinaryExprID(branchCondition), destAsBool(destination)});
@@ -133,6 +137,11 @@ private:
     }
 
     if (fun->getName().startswith("llvm.")) {
+      return false;
+    }
+
+    if (fun->getName().startswith("special")) {
+      llvm::errs() << "\n not skipping call" << fun->getName();
       return false;
     }
 
@@ -159,6 +168,18 @@ private:
       return false;
     }
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
+    return true;
+  }
+
+  bool 
+  handleLoad(const llvm::Value* value, DisjunctionState& state) {
+    auto* loadInst = llvm::dyn_cast<llvm::LoadInst>(value);
+    if (!loadInst) {
+      return false;
+    }
+    auto oldExprID = generator->GetOrCreateExprID(value);
+    state[nullptr] = generator->dropConjunct(state[nullptr], oldExprID);
+
     return true;
   }
 
