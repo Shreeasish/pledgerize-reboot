@@ -80,7 +80,9 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    return Disjunction::unionDisjunctions(s1,s2).simplifyAdjacentNegation().simplifyNeighbourNegation();
+    return Disjunction::unionDisjunctions(s1,s2)
+            .simplifyAdjacentNegation()
+            .simplifyNeighbourNegation();
   }
 };
 
@@ -89,6 +91,31 @@ class DisjunctionEdgeTransformer {
 public:
   Disjunction
   operator()(const Disjunction& toMerge, llvm::Value* branchAsValue, llvm::Value* destination) {
+    // Use the label of the basic block of the branch to replace the appropriate operand of the phi
+    
+    auto getAssocValue = [&branchAsValue] (const llvm::PHINode* phi) {
+      auto* basicBlock = llvm::dyn_cast<llvm::BranchInst>(branchAsValue)->getParent();
+      return phi->getIncomingValueForBlock(basicBlock);
+    };
+
+    auto isUsedPhi = [] (const llvm::PHINode& phi) -> bool {
+      return generator->isUsed(&phi);
+    };
+
+    auto handlePhi = [&getAssocValue, &destination, &isUsedPhi](Disjunction destState) {
+      auto destBlock = llvm::dyn_cast<llvm::BasicBlock>(destination);
+      for (auto& phi : destBlock->phis()) {
+        if (!isUsedPhi(phi)) {
+          continue;
+        }
+        auto phiAsValue    = llvm::dyn_cast<llvm::Value>(&phi);
+        auto phiExprID     = generator->GetOrCreateExprID(phiAsValue);
+        auto phiOperand    = getAssocValue(&phi);
+        auto operandExprID = generator->GetOrCreateExprID(phiOperand);
+        destState = generator->rewrite(destState, phiExprID, operandExprID);
+      }
+      return destState;
+    };
 
     auto asBinaryExprID = [](llvm::Value* branchCondition) -> ExprID {
       auto* binOp
@@ -112,13 +139,14 @@ public:
     auto destAsBool = [&branchInst](auto* destination) -> bool {
       return destination == branchInst->getOperand(2);
     };
-    llvm::errs() << "Crashing at: \n" << *branchAsValue;
-    auto edgeOp = [&branchInst, &asBinaryExprID, &destAsBool, destination] (Disjunction destState) {
+    //llvm::errs() << "Crashing at: \n" << *branchAsValue;
+    auto edgeOp = [&branchInst, &asBinaryExprID, &destAsBool, &handlePhi, destination] (Disjunction destState) {
+      Disjunction local{destState};
+      local = handlePhi(destState);
       if ( branchInst->isUnconditional()) {
-        return destState;
+        return local;
       }
       auto* branchCondition = branchInst->getCondition();
-      Disjunction local{destState};
       local.applyConjunct({asBinaryExprID(branchCondition), destAsBool(destination)});
       return local;
     };
@@ -163,12 +191,28 @@ private:
       return false;
     }
     auto oldExprID = generator->GetOrCreateExprID(value);
+    // TODO: Move to on-the-fly creation
     auto exprID    = generator->GetOrCreateExprID(binOp);
     if (oldExprID == exprID) {
       return false;
     }
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
     return true;
+  }
+  
+  /// Loads and Stores:
+  /// Loads are handled by replacing the Load Value ExprID in the ExprTree 
+  /// with Value ExprID for the Alloca (pointer operand of the load).
+  /// This in turn will be replaced by the Value operand of a store.
+  /// The alloca value ExprID is therefore, transient. 
+
+  bool
+  skipPhi(const llvm::Value* value, DisjunctionState& state) {
+    auto* phi = llvm::dyn_cast<llvm::PHINode>(value);
+    if (phi) {
+      return true;
+    }
+    return false;
   }
 
   bool 
@@ -177,9 +221,21 @@ private:
     if (!loadInst) {
       return false;
     }
-    auto oldExprID = generator->GetOrCreateExprID(value);
-    state[nullptr] = generator->dropConjunct(state[nullptr], oldExprID);
+    auto oldExprID    = generator->GetOrCreateExprID(value);
+    auto allocaExprID = generator->GetOrCreateExprID(loadInst->getPointerOperand());
+    state[nullptr]    = generator->rewrite(state[nullptr], oldExprID, allocaExprID);
+    return true;
+  }
 
+  bool
+  handleStore(const llvm::Value* value, DisjunctionState& state) {
+    auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
+    if (!storeInst) {
+      return false;
+    }
+    auto valueOperandExprID = generator->GetOrCreateExprID(storeInst->getValueOperand());
+    auto allocaExprID = generator->GetOrCreateExprID(storeInst->getPointerOperand());
+    state[nullptr]    = generator->rewrite(state[nullptr], allocaExprID, valueOperandExprID);
     return true;
   }
 
@@ -191,6 +247,7 @@ private:
   handleUnknown(const llvm::Value* value, DisjunctionState& state) {
     auto oldLeafTableSize = generator->getLeafTableSize();
 
+    llvm::errs() << "\n Handling as Unknown" << *value;
     auto oldExprID = generator->GetOrCreateExprID(value);
     state[nullptr] = generator->dropConjunct(state[nullptr], oldExprID);
 
@@ -208,6 +265,7 @@ public:
       }
       generator->dumpState();
       llvm::errs() << "\n----------------------------Debugging End -------------------------\n" ;
+      llvm::errs().flush();
     };
 
     auto debugBefore = [&]() {
@@ -224,19 +282,20 @@ public:
 
     debugBefore();
     bool handled = false;
-    // Handles CallSites and BinaryOps for now
     handled |= handleCallSite(llvm::CallSite{&value}, state, context);
     if (!generator->isUsed(&value)) { //Global Check
       debugAfter();
       return;
     }
+    handled |=  skipPhi(&value, state);
+    handled |=  handleLoad(&value, state);
+    handled |= handleStore(&value, state);
     handled |= handleBinaryOperator(&value, state);
     // handleUnknown(&value, state);
-    debugAfter();
-
     if (!handled) {
       handleUnknown(&value, state);
     }
+    debugAfter();
     return;
   }
 };

@@ -50,7 +50,9 @@ struct DenseMapInfo<ExprKey> {
 
 static llvm::Function*
 getCalledFunction(llvm::CallSite cs) {
-  if (!cs.getInstruction()) return nullptr;
+  if (!cs.getInstruction()) {
+    return nullptr;
+  }
 
   auto* called = cs.getCalledValue()->stripPointerCasts();
   if (called->getName().contains("llvm")) return nullptr;

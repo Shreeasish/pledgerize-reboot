@@ -166,6 +166,8 @@ public:
 
   Disjunction
   dropConjunct(const Disjunction& disjunction, const ExprID oldExprID) {
+    llvm::errs() << "\nto drop" << oldExprID;
+    llvm::errs().flush();
     auto isBinaryExprID = [this](const ExprID exprID) -> bool {
       return GetExprType(exprID) == 2;
     };
