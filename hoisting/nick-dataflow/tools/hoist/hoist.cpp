@@ -92,7 +92,7 @@ public:
   Disjunction
   operator()(const Disjunction& toMerge, llvm::Value* branchAsValue, llvm::Value* destination) {
     // Use the label of the basic block of the branch to replace the appropriate operand of the phi
-    
+
     auto getAssocValue = [&branchAsValue] (const llvm::PHINode* phi) {
       auto* basicBlock = llvm::dyn_cast<llvm::BranchInst>(branchAsValue)->getParent();
       return phi->getIncomingValueForBlock(basicBlock);
@@ -199,12 +199,12 @@ private:
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
     return true;
   }
-  
+
   /// Loads and Stores:
-  /// Loads are handled by replacing the Load Value ExprID in the ExprTree 
+  /// Loads are handled by replacing the Load Value ExprID in the ExprTree
   /// with Value ExprID for the Alloca (pointer operand of the load).
   /// This in turn will be replaced by the Value operand of a store.
-  /// The alloca value ExprID is therefore, transient. 
+  /// The alloca value ExprID is therefore, transient.
 
   bool
   skipPhi(const llvm::Value* value, DisjunctionState& state) {
@@ -215,12 +215,13 @@ private:
     return false;
   }
 
-  bool 
+  bool
   handleLoad(const llvm::Value* value, DisjunctionState& state) {
     auto* loadInst = llvm::dyn_cast<llvm::LoadInst>(value);
     if (!loadInst) {
       return false;
     }
+    llvm::errs() << "\n Handling load\n";
     auto oldExprID    = generator->GetOrCreateExprID(value);
     auto allocaExprID = generator->GetOrCreateExprID(loadInst->getPointerOperand());
     state[nullptr]    = generator->rewrite(state[nullptr], oldExprID, allocaExprID);
@@ -233,12 +234,12 @@ private:
     if (!storeInst) {
       return false;
     }
+    llvm::errs() << "\n Handling store \n" << *value;
     auto valueOperandExprID = generator->GetOrCreateExprID(storeInst->getValueOperand());
     auto allocaExprID = generator->GetOrCreateExprID(storeInst->getPointerOperand());
     state[nullptr]    = generator->rewrite(state[nullptr], allocaExprID, valueOperandExprID);
     return true;
   }
-
 
   // Only reaches this if the llvm::value is actually used somewhere else
   // i.e. GetOrCreateExprID should not create new exprIDs
@@ -283,13 +284,16 @@ public:
     debugBefore();
     bool handled = false;
     handled |= handleCallSite(llvm::CallSite{&value}, state, context);
+    handled |= handleStore(&value, state);
+    if(handled) {
+      return;
+    }
     if (!generator->isUsed(&value)) { //Global Check
       debugAfter();
       return;
     }
     handled |=  skipPhi(&value, state);
     handled |=  handleLoad(&value, state);
-    handled |= handleStore(&value, state);
     handled |= handleBinaryOperator(&value, state);
     // handleUnknown(&value, state);
     if (!handled) {
