@@ -1,16 +1,30 @@
 #include "llvm/ADT/PostOrderIterator.h"
 #include "llvm/ADT/SparseBitVector.h"
+
+#include "llvm/Analysis/AliasAnalysis.h"
+#include "llvm/Analysis/BasicAliasAnalysis.h"
+#include "llvm/Analysis/CFLSteensAliasAnalysis.h"
 #include "llvm/Analysis/CallGraph.h"
+#include "llvm/Analysis/GlobalsModRef.h"
 #include "llvm/Analysis/LoopInfo.h"
+#include "llvm/Analysis/MemorySSA.h"
+#include "llvm/Analysis/Passes.h"
 #include "llvm/Analysis/PostDominators.h"
+#include "llvm/Analysis/ScalarEvolutionAliasAnalysis.h"
+#include "llvm/Analysis/ScopedNoAliasAA.h"
+#include "llvm/Analysis/TargetLibraryInfo.h"
+#include "llvm/Analysis/TypeBasedAliasAnalysis.h"
+
 #include "llvm/IR/CallSite.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DebugInfo.h"
 #include "llvm/IR/Instructions.h"
-#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Module.h"
+
 #include "llvm/IRReader/IRReader.h"
+
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ManagedStatic.h"
 #include "llvm/Support/PrettyStackTrace.h"
@@ -20,18 +34,19 @@
 
 
 #include <bitset>
+#include <iostream>
 #include <memory>
 #include <string>
-#include <iostream>
 #include <variant>
 
 
 #include "CustomDataflowAnalysis.h"
-#include "FutureFunctions.h"
-#include "IndirectCallResolver.h"
 #include "TaintAnalysis.h"
+#include "FutureFunctions.h"
 #include "ConditionList.h"
 #include "Generator.h"
+#include "IndirectCallResolver.h"
+
 
 
 using namespace llvm;
@@ -53,6 +68,7 @@ static cl::opt<string> inPath{cl::Positional,
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
 std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
+llvm::DenseMap<llvm::Function*, llvm::MemorySSA*> memSSAFunctions;
 
 using DisjunctionValue  = Disjunction;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
@@ -234,7 +250,10 @@ private:
     if (!storeInst) {
       return false;
     }
+
     llvm::errs() << "\n Handling store \n" << *value;
+
+
     auto valueOperandExprID = generator->GetOrCreateExprID(storeInst->getValueOperand());
     auto allocaExprID = generator->GetOrCreateExprID(storeInst->getPointerOperand());
     state[nullptr]    = generator->rewrite(state[nullptr], allocaExprID, valueOperandExprID);
@@ -300,6 +319,7 @@ public:
       handleUnknown(&value, state);
     }
     debugAfter();
+
     return;
   }
 };
@@ -342,6 +362,8 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   generator = make_unique<Generator>(Generator{});
   resolver  = make_unique<IndirectCallResolver>(IndirectCallResolver{m});
 
+  auto* something  = &getAnalysis<MemorySSAWrapperPass>(*mainFunction).getMSSA();
+
   using Value    = Disjunction;
   using Transfer = DisjunctionTransfer;
   using Meet     = DisjunctionMeet;
@@ -349,27 +371,42 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, EdgeTransformer, analysis::Backward>;
   Analysis analysis{m, mainFunction};
 
+  for (auto& f : m) {
+    if ( f.isDeclaration()) {
+      continue;
+    }
+    auto* MSSA = &getAnalysis<MemorySSAWrapperPass>(f).getMSSA();
+    memSSAFunctions.insert({&f, MSSA});
+  }
+
   AnalysisPackage package;
   package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
-  libCHandlers = getLibCHandlerMap(package);
-  auto results = analysis.computeDataflow();
-
+  libCHandlers   = getLibCHandlerMap(package);
+  auto results   = analysis.computeDataflow();
 
   return false;
 }
 
 void
 BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
+  info.addRequired<MemorySSAWrapperPass>();
   info.addRequired<PostDominatorTreeWrapperPass>();
   info.addRequired<LoopInfoWrapperPass>();
 }
 
-
 static void
 instrumentPromiseTree(llvm::Module& m) {
   legacy::PassManager pm;
-  pm.add(llvm::createPostDomTree());
   pm.add(new llvm::LoopInfoWrapperPass());
+  pm.add(createBasicAAWrapperPass());
+  pm.add(createTypeBasedAAWrapperPass());
+  pm.add(createGlobalsAAWrapperPass());
+  pm.add(createSCEVAAWrapperPass());
+  pm.add(createScopedNoAliasAAWrapperPass());
+  pm.add(createCFLSteensAAWrapperPass());
+  pm.add(createPostDomTree());
+  pm.add(new DominatorTreeWrapperPass());
+  pm.add(new MemorySSAWrapperPass());
   pm.add(new BuildPromiseTreePass());
   pm.run(m);
 }
