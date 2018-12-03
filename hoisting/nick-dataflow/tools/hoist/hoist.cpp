@@ -68,7 +68,7 @@ static cl::opt<string> inPath{cl::Positional,
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
 std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
-llvm::DenseMap<llvm::Function*, llvm::MemorySSA*> memSSAFunctions;
+llvm::DenseMap<const llvm::Function*, llvm::MemorySSAWalker*> functionWalkers;
 
 using DisjunctionValue  = Disjunction;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
@@ -251,8 +251,14 @@ private:
       return false;
     }
 
-    llvm::errs() << "\n Handling store \n" << *value;
+    auto getWalkerFor = [] (auto* inst) {
+      auto* func = inst->getFunction();
+      return functionWalkers[func];
+    };
 
+    llvm::errs() << "\n Handling store \n" << *value;
+    auto walker = getWalkerFor(storeInst);
+    assert(walker != nullptr && "No walker for function");
 
     auto valueOperandExprID = generator->GetOrCreateExprID(storeInst->getValueOperand());
     auto allocaExprID = generator->GetOrCreateExprID(storeInst->getPointerOperand());
@@ -361,8 +367,13 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 
   generator = make_unique<Generator>(Generator{});
   resolver  = make_unique<IndirectCallResolver>(IndirectCallResolver{m});
-
-  auto* something  = &getAnalysis<MemorySSAWrapperPass>(*mainFunction).getMSSA();
+  for (auto& f : m) {
+    if ( f.isDeclaration()) {
+      continue;
+    }
+    auto* walker = getAnalysis<MemorySSAWrapperPass>(f).getMSSA().getWalker();
+    functionWalkers.insert({&f, walker});
+  }
 
   using Value    = Disjunction;
   using Transfer = DisjunctionTransfer;
@@ -370,14 +381,6 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   using EdgeTransformer = DisjunctionEdgeTransformer;
   using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, EdgeTransformer, analysis::Backward>;
   Analysis analysis{m, mainFunction};
-
-  for (auto& f : m) {
-    if ( f.isDeclaration()) {
-      continue;
-    }
-    auto* MSSA = &getAnalysis<MemorySSAWrapperPass>(f).getMSSA();
-    memSSAFunctions.insert({&f, MSSA});
-  }
 
   AnalysisPackage package;
   package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
