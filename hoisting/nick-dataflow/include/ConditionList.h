@@ -71,15 +71,15 @@ public:
 };
 
 class ConstantExprNode {
-  const llvm::Constant* constant;
 public:
+  const llvm::Constant* constant;
   ConstantExprNode (const llvm::Constant* constant)
     : constant{constant} { }
 };
 
 class ValueExprNode {
-  const llvm::Value* value;
 public:
+  const llvm::Value* value;
   ValueExprNode (const llvm::Value* value)
     : value{value} { }
 };

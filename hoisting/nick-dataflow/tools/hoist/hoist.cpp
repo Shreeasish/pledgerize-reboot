@@ -68,7 +68,8 @@ static cl::opt<string> inPath{cl::Positional,
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
 std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
-llvm::DenseMap<const llvm::Function*, llvm::MemorySSAWalker*> functionWalkers;
+// TODO: Store walkers directly
+llvm::DenseMap<const llvm::Function*, llvm::MemorySSA*> functionMemSSAs;
 
 using DisjunctionValue  = Disjunction;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
@@ -221,7 +222,6 @@ private:
   /// with Value ExprID for the Alloca (pointer operand of the load).
   /// This in turn will be replaced by the Value operand of a store.
   /// The alloca value ExprID is therefore, transient.
-
   bool
   skipPhi(const llvm::Value* value, DisjunctionState& state) {
     auto* phi = llvm::dyn_cast<llvm::PHINode>(value);
@@ -231,38 +231,104 @@ private:
     return false;
   }
 
+
+  // Treat loadInsts as Value Nodes
   bool
   handleLoad(const llvm::Value* value, DisjunctionState& state) {
     auto* loadInst = llvm::dyn_cast<llvm::LoadInst>(value);
     if (!loadInst) {
       return false;
     }
-    llvm::errs() << "\n Handling load\n";
-    auto oldExprID    = generator->GetOrCreateExprID(value);
-    auto allocaExprID = generator->GetOrCreateExprID(loadInst->getPointerOperand());
-    state[nullptr]    = generator->rewrite(state[nullptr], oldExprID, allocaExprID);
     return true;
   }
 
   bool
   handleStore(const llvm::Value* value, DisjunctionState& state) {
+    auto getWalkerAndMSSA = [](const llvm::Instruction* inst) {
+      auto* func = inst->getFunction();
+      return std::make_pair(functionMemSSAs[func]->getWalker(),
+          functionMemSSAs[func]);
+    };
+
     auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
     if (!storeInst) {
       return false;
-    }
+    }   
 
-    auto getWalkerFor = [] (auto* inst) {
-      auto* func = inst->getFunction();
-      return functionWalkers[func];
-    };
 
     llvm::errs() << "\n Handling store \n" << *value;
-    auto walker = getWalkerFor(storeInst);
-    assert(walker != nullptr && "No walker for function");
+    auto [walker, memSSA] = getWalkerAndMSSA(storeInst);
+    assert(memSSA != nullptr && "No memSSA for function");
+
+
+    std::vector<const llvm::LoadInst*> asLoads;
+    auto isValueExprID = [](const ExprID exprID) {
+      return generator->GetExprType(exprID) == 1;
+    };
+    auto isBinaryExprID = [](const ExprID exprID) -> bool {
+      return generator->GetExprType(exprID) == 2;
+    };
+    auto insertLoad = [&asLoads] (const ExprID exprID) {
+      auto& valueNode = generator->GetValueExprNode(exprID);
+      asLoads.push_back(llvm::dyn_cast<llvm::LoadInst>(valueNode.value));
+    };
+    auto preOrder = [isValueExprID, isBinaryExprID, insertLoad] (const ExprID exprID, auto& preOrder) {
+      if (isValueExprID(exprID)) {
+        insertLoad(exprID);
+        return;
+      } else if (isBinaryExprID(exprID)) {
+        auto& binaryNode = generator->GetBinaryExprNode(exprID);
+        preOrder(binaryNode.lhs, preOrder);
+        preOrder(binaryNode.rhs, preOrder);
+      }
+      return;
+    };
+    for (auto& disjunct : state[nullptr].disjuncts) {
+      for (auto& conjunct : disjunct.conjunctIDs) {
+        preOrder(conjunct.exprID, preOrder);
+      }
+    }
+
+    auto eraseFrom = std::remove_if(asLoads.begin(), asLoads.end(), [ ] (const auto& loadInst) {
+        return loadInst == nullptr;
+        });
+    asLoads.erase(eraseFrom, asLoads.end());
+
+    llvm::errs() << "\n --------------- MEMSSA --------------- \n";
+
+    std::vector<llvm::MemoryAccess*> clobberingAccesses;
+    auto toMemoryAccess = [&walker = walker] (const auto& loadInst) {
+      return walker->getClobberingMemoryAccess(loadInst);
+    };
+    std::transform(asLoads.begin(), asLoads.end(), std::back_inserter(clobberingAccesses), toMemoryAccess);
+
+    using memoryDefs = std::vector<llvm::MemoryDef*>;
+    std::vector<memoryDefs> clobberingDefs;
+    auto toClobberingDefs = [](llvm::MemoryAccess* memAccess) {
+      if (auto* memDef = llvm::dyn_cast<llvm::MemoryDef>(memAccess)) {
+        return memoryDefs{memDef};
+      }
+      memoryDefs asMemDefs;
+      auto memDefs = [](const auto& memAccess) {
+        return llvm::dyn_cast<llvm::MemoryDef>(memAccess);
+      };
+      std::transform(memAccess->defs_begin(), memAccess->defs_end(), std::back_inserter(asMemDefs), memDefs);
+      return asMemDefs;
+    };
+    std::transform(clobberingAccesses.begin(), clobberingAccesses.end(), std::back_inserter(clobberingDefs), toClobberingDefs);
+    llvm::errs() << "\n --------------- MEMSSA --------------- \n";
+
+    auto* storeMemDef = llvm::dyn_cast<llvm::MemoryDef>(memSSA->getMemoryAccess(storeInst));
+    for (auto& defs : clobberingDefs) {
+      for (auto& def : defs) {
+        if (def == storeMemDef) {
+          llvm::errs() << "Yippie Kay Ay Mother***!" ;
+        }
+      }
+    }
 
     auto valueOperandExprID = generator->GetOrCreateExprID(storeInst->getValueOperand());
-    auto allocaExprID = generator->GetOrCreateExprID(storeInst->getPointerOperand());
-    state[nullptr]    = generator->rewrite(state[nullptr], allocaExprID, valueOperandExprID);
+    //state[nullptr]    = generator->rewrite(state[nullptr], allocaExprID, valueOperandExprID);
     return true;
   }
 
@@ -371,8 +437,9 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     if ( f.isDeclaration()) {
       continue;
     }
-    auto* walker = getAnalysis<MemorySSAWrapperPass>(f).getMSSA().getWalker();
-    functionWalkers.insert({&f, walker});
+    auto* memSSA = &getAnalysis<MemorySSAWrapperPass>(f).getMSSA();
+    memSSA->print(llvm::outs());
+    functionMemSSAs.insert({&f, memSSA});
   }
 
   using Value    = Disjunction;
@@ -382,9 +449,9 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, EdgeTransformer, analysis::Backward>;
   Analysis analysis{m, mainFunction};
 
-  AnalysisPackage package;
-  package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
-  libCHandlers   = getLibCHandlerMap(package);
+  //AnalysisPackage package;
+  //package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
+  //libCHandlers   = getLibCHandlerMap(package);
   auto results   = analysis.computeDataflow();
 
   return false;
@@ -393,22 +460,22 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 void
 BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
   info.addRequired<MemorySSAWrapperPass>();
-  info.addRequired<PostDominatorTreeWrapperPass>();
-  info.addRequired<LoopInfoWrapperPass>();
+  //info.addRequired<PostDominatorTreeWrapperPass>();
+  //info.addRequired<LoopInfoWrapperPass>();
 }
 
 static void
 instrumentPromiseTree(llvm::Module& m) {
   legacy::PassManager pm;
   pm.add(new llvm::LoopInfoWrapperPass());
-  pm.add(createBasicAAWrapperPass());
-  pm.add(createTypeBasedAAWrapperPass());
-  pm.add(createGlobalsAAWrapperPass());
-  pm.add(createSCEVAAWrapperPass());
-  pm.add(createScopedNoAliasAAWrapperPass());
-  pm.add(createCFLSteensAAWrapperPass());
-  pm.add(createPostDomTree());
-  pm.add(new DominatorTreeWrapperPass());
+  //pm.add(createBasicAAWrapperPass());
+  //pm.add(createTypeBasedAAWrapperPass());
+  //pm.add(createGlobalsAAWrapperPass());
+  //pm.add(createSCEVAAWrapperPass());
+  //pm.add(createScopedNoAliasAAWrapperPass());
+  //pm.add(createCFLSteensAAWrapperPass());
+  //pm.add(createPostDomTree());
+  //pm.add(new DominatorTreeWrapperPass());
   pm.add(new MemorySSAWrapperPass());
   pm.add(new BuildPromiseTreePass());
   pm.run(m);
