@@ -205,6 +205,13 @@ public:
     return leafTable.count(value) > 0;
   }
 
+  ExprID // load *X = Store *Y
+  GetOrCreateAliasExprID (const llvm::Instruction* loadInst, const llvm::Instruction* storeInst) {
+    auto loadNode  = GetOrCreateExprID(llvm::dyn_cast<llvm::Value>(loadInst));
+    auto storeNode = GetOrCreateExprID(llvm::dyn_cast<llvm::Value>(storeInst));
+    return GetOrCreateExprID({loadNode, aliasOp, storeNode});
+  }
+
 private:
   ExprID valueExprCounter    = 0;
   ExprID binaryExprCounter   = 0;

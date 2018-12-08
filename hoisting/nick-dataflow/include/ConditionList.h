@@ -21,8 +21,10 @@ using namespace llvm;
 using Privileges = std::bitset<COUNT>;
 using ExprID     = int16_t;  // Deterministic size
 using OpKey      = int16_t;  // Cannot be unsigned
-constexpr int typeSize  = 16;
 using ExprKey    = std::tuple<ExprID, OpKey, ExprID>;
+
+constexpr   int typeSize{16};
+constexpr OpKey aliasOp{100};
 
 // template specialization for ExprKey
 template<>

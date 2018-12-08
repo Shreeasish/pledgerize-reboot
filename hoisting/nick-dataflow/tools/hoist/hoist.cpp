@@ -255,7 +255,6 @@ private:
       return false;
     }   
 
-
     llvm::errs() << "\n Handling store \n" << *value;
     auto [walker, memSSA] = getWalkerAndMSSA(storeInst);
     assert(memSSA != nullptr && "No memSSA for function");
@@ -310,6 +309,7 @@ private:
       }
       memoryDefs asMemDefs;
       auto memDefs = [](const auto& memAccess) {
+        assert(llvm::dyn_cast<llvm::MemoryDef>(memAccess) && "MemPhi Operand is not a MemDef");
         return llvm::dyn_cast<llvm::MemoryDef>(memAccess);
       };
       std::transform(memAccess->defs_begin(), memAccess->defs_end(), std::back_inserter(asMemDefs), memDefs);
@@ -322,7 +322,6 @@ private:
     for (auto& defs : clobberingDefs) {
       for (auto& def : defs) {
         if (def == storeMemDef) {
-          llvm::errs() << "Yippie Kay Ay Mother***!" ;
         }
       }
     }
