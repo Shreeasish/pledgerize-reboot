@@ -174,6 +174,31 @@ public:
 
 class DisjunctionTransfer {
 private:
+  Disjunction
+  weakUpdate(const Disjunction& disjunction, const llvm::LoadInst* loadInst, const llvm::StoreInst* storeInst) {
+    auto getLoadValueExprs = [](const auto& loadInst, const auto& storeInst) {
+      auto* loadAsValue    = llvm::dyn_cast<llvm::Value>(loadInst);
+      auto loadExpr  = generator->GetOrCreateExprID(loadAsValue);
+      auto valueOpExpr = generator->GetOrCreateExprID(storeInst->getValueOperand());
+      return std::make_pair(loadExpr, valueOpExpr);
+    };
+
+    auto [loadExprID, valueOpExprID] = getLoadValueExprs(loadInst, storeInst);
+    auto aliasExpr     = generator->GetOrCreateExprID({loadExprID, aliasOp, valueOpExprID});
+    auto aliasConjunct = Conjunct(aliasExpr, true);
+
+    Disjunction localDisjunct{};
+    for (auto& disjunct : disjunction.disjuncts) {
+      Disjunct tempDisjunct = disjunct;
+      if (disjunct.findExprID(loadExprID) != disjunct.conjunctIDs.end()) {
+        tempDisjunct.addConjunct(  aliasConjunct);
+        tempDisjunct.addConjunct( !aliasConjunct);
+      }
+      localDisjunct.addDisjunct(tempDisjunct);
+    }
+    return generator->rewrite(localDisjunct, loadExprID, valueOpExprID);
+  }
+
   bool
   handleCallSite(const llvm::CallSite& cs, DisjunctionState& state, const Context& context) {
     const auto* fun = getCalledFunction(cs);
@@ -254,12 +279,12 @@ private:
     if (!storeInst) {
       return false;
     }   
-
     llvm::errs() << "\n Handling store \n" << *value;
     auto [walker, memSSA] = getWalkerAndMSSA(storeInst);
     assert(memSSA != nullptr && "No memSSA for function");
 
 
+    /// Find all loads in the disjunct
     std::vector<const llvm::LoadInst*> asLoads;
     auto isValueExprID = [](const ExprID exprID) {
       return generator->GetExprType(exprID) == 1;
@@ -271,6 +296,7 @@ private:
       auto& valueNode = generator->GetValueExprNode(exprID);
       asLoads.push_back(llvm::dyn_cast<llvm::LoadInst>(valueNode.value));
     };
+
     auto preOrder = [isValueExprID, isBinaryExprID, insertLoad] (const ExprID exprID, auto& preOrder) {
       if (isValueExprID(exprID)) {
         insertLoad(exprID);
@@ -288,46 +314,58 @@ private:
       }
     }
 
+    /// Remove nullptrs due to miscasts
     auto eraseFrom = std::remove_if(asLoads.begin(), asLoads.end(), [ ] (const auto& loadInst) {
         return loadInst == nullptr;
         });
     asLoads.erase(eraseFrom, asLoads.end());
 
+
     llvm::errs() << "\n --------------- MEMSSA --------------- \n";
-
-    std::vector<llvm::MemoryAccess*> clobberingAccesses;
-    auto toMemoryAccess = [&walker = walker] (const auto& loadInst) {
-      return walker->getClobberingMemoryAccess(loadInst);
+    using LoadMAPair  = std::pair<const llvm::LoadInst*, llvm::MemoryAccess*>;
+    using LoadMAPairs = std::vector<LoadMAPair>;
+    auto pairWithClobbers = [&walker = walker] (const llvm::LoadInst* loadInst) {
+      return LoadMAPair{loadInst, walker->getClobberingMemoryAccess(loadInst)};
     };
-    std::transform(asLoads.begin(), asLoads.end(), std::back_inserter(clobberingAccesses), toMemoryAccess);
+    LoadMAPairs loadsWithClobbers;
+    std::transform(asLoads.begin(), asLoads.end(), std::back_inserter(loadsWithClobbers), pairWithClobbers);
 
-    using memoryDefs = std::vector<llvm::MemoryDef*>;
-    std::vector<memoryDefs> clobberingDefs;
-    auto toClobberingDefs = [](llvm::MemoryAccess* memAccess) {
+    using MemDefs       = std::vector<llvm::MemoryDef*>;
+    using LoadMDefPair  = std::pair<const llvm::LoadInst*, MemDefs>; 
+    using LoadMDefPairs = std::vector<LoadMDefPair>;
+    auto toClobberingDefs = [](LoadMAPair loadMAPair) {
+      auto* memAccess = loadMAPair.second;
+      auto* loadInst  = loadMAPair.first;
+      MemDefs asMemDefs{};
       if (auto* memDef = llvm::dyn_cast<llvm::MemoryDef>(memAccess)) {
-        return memoryDefs{memDef};
+        asMemDefs.push_back(memDef);
+        return LoadMDefPair{loadInst, asMemDefs};
       }
-      memoryDefs asMemDefs;
-      auto memDefs = [](const auto& memAccess) {
+      auto toMemDef = [](const auto& memAccess) {
         assert(llvm::dyn_cast<llvm::MemoryDef>(memAccess) && "MemPhi Operand is not a MemDef");
         return llvm::dyn_cast<llvm::MemoryDef>(memAccess);
       };
-      std::transform(memAccess->defs_begin(), memAccess->defs_end(), std::back_inserter(asMemDefs), memDefs);
-      return asMemDefs;
+      std::transform(loadMAPair.second->defs_begin(), loadMAPair.second->defs_end(), std::back_inserter(asMemDefs), toMemDef);
+      return LoadMDefPair{loadMAPair.first, asMemDefs};
     };
-    std::transform(clobberingAccesses.begin(), clobberingAccesses.end(), std::back_inserter(clobberingDefs), toClobberingDefs);
-    llvm::errs() << "\n --------------- MEMSSA --------------- \n";
+    LoadMDefPairs loadsWithMDefs;
+    std::transform(loadsWithClobbers.begin(), loadsWithClobbers.end(), std::back_inserter(loadsWithMDefs), toClobberingDefs);
+
 
     auto* storeMemDef = llvm::dyn_cast<llvm::MemoryDef>(memSSA->getMemoryAccess(storeInst));
-    for (auto& defs : clobberingDefs) {
-      for (auto& def : defs) {
-        if (def == storeMemDef) {
+    auto localDisjunction = state[nullptr];
+    for (auto& [loadInst, memDefs] : loadsWithMDefs) {
+      for (auto& memDef : memDefs) {
+        if (memDef == storeMemDef) {
+          localDisjunction = weakUpdate(localDisjunction, loadInst, storeInst);
         }
       }
     }
 
     auto valueOperandExprID = generator->GetOrCreateExprID(storeInst->getValueOperand());
     //state[nullptr]    = generator->rewrite(state[nullptr], allocaExprID, valueOperandExprID);
+    state[nullptr] = localDisjunction;
+    llvm::errs() << "\n --------------- MEMSSA --------------- \n";
     return true;
   }
 

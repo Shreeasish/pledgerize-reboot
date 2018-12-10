@@ -136,6 +136,12 @@ public:
     notNegated = other.notNegated;
   }
 
+  Conjunct operator!() const {
+    Conjunct newConjunct = *this;
+    newConjunct.notNegated = !notNegated;
+    return newConjunct;
+  }
+
   void print() const {
     if (!notNegated) {
       llvm::errs() << "!";
