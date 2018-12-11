@@ -143,6 +143,9 @@ public:
         return exprID;     // Leaf node and !==oldExprID
       }
       auto binaryNode = GetBinaryExprNode(exprID);
+      if (binaryNode.op.isAliasOp()) {
+        return exprID;
+      }
       auto leftID  = postOrderRebuild(binaryNode.lhs, postOrderRebuild);
       auto rightID = postOrderRebuild(binaryNode.rhs, postOrderRebuild);
       return GetOrCreateExprID({ExprID(leftID), OpKey(binaryNode.op.opCode), ExprID(rightID)}); //Readability
@@ -200,17 +203,49 @@ public:
     return newDisjunction;
   }
 
-  bool //Generator should not check in the state itself
-  isUsed(const llvm::Value* value) const {
-    return leafTable.count(value) > 0;
-  }
-
   ExprID // load *X = Store *Y
   GetOrCreateAliasExprID (const llvm::Instruction* loadInst, const llvm::Instruction* storeInst) {
     auto loadNode  = GetOrCreateExprID(llvm::dyn_cast<llvm::Value>(loadInst));
     auto storeNode = GetOrCreateExprID(llvm::dyn_cast<llvm::Value>(storeInst));
     return GetOrCreateExprID({loadNode, aliasOp, storeNode});
   }
+
+  bool //Generator should not check in the state itself
+  isUsed(const llvm::Value* value) const {
+    return leafTable.count(value) > 0;
+  }
+
+  bool
+  preOrderFind(const Conjunct& conjunct, const ExprID& targetExprID) const {
+    auto isBinaryExprID = [this](const ExprID exprID) -> bool {
+      return GetExprType(exprID) == 2;
+    };
+
+    auto preOrder = [this, &targetExprID, &isBinaryExprID](const Conjunct& conjunct) -> bool {
+      std::stack<ExprID> exprStack;
+      exprStack.push(conjunct.exprID);
+      while (!exprStack.empty()) {
+        auto exprID = exprStack.top();
+        exprStack.pop();
+        if (targetExprID == exprID){
+          return true;
+        }
+        if (!isBinaryExprID(exprID)) {
+          continue;
+        }
+        auto binaryNode = GetBinaryExprNode(exprID);
+        if (binaryNode.op.isAliasOp()) {
+          continue;
+        }
+        exprStack.push(binaryNode.lhs);
+        exprStack.push(binaryNode.rhs);
+      }
+      return false;
+    };
+
+    return preOrder(conjunct);
+  }
+
 
 private:
   ExprID valueExprCounter    = 0;

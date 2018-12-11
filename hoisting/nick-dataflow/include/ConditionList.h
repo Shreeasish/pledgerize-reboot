@@ -62,7 +62,6 @@ getCalledFunction(llvm::CallSite cs) {
   return llvm::dyn_cast<llvm::Function>(called);
 }
 
-
 class ExprOp {
 public:
   const OpKey opCode;
@@ -70,6 +69,11 @@ public:
 
   explicit ExprOp(OpKey opCode)
     : opCode{opCode} { }
+
+  bool
+  isAliasOp() const {
+    return opCode == aliasOp;
+  }
 };
 
 class ConstantExprNode {
@@ -322,7 +326,8 @@ Disjunct::operator=(const Disjunct other) {
   return;
 }
 
-//Invariant: The conjunctions will be sorted
+/// Invariant: The conjunctions will be sorted
+/// Maintains  uniqueness
 void
 Disjunct::addConjunct(const Conjunct& conjunct) {
   auto binary_insert = [](auto& conjunctIDs, auto first, auto last, auto& conjunct) {
@@ -428,11 +433,18 @@ Disjunction::applyConjunct(const Conjunct& conjunct) {
 //  return;
 //}
 
-//TODO: Required before dropping to Trees
-//TODO: Insert disjuncts into a disjunction in order
+//TODO: Clean
 void
 Disjunction::addDisjunct(const Disjunct& disjunct) {
-  disjuncts.insert(std::upper_bound(disjuncts.begin(), disjuncts.end(), disjunct), disjunct);
+  auto upper_bound = std::upper_bound(disjuncts.begin(), disjuncts.end(), disjunct);
+  if (upper_bound == disjuncts.end()) {
+    disjuncts.insert(upper_bound, disjunct);
+    return;
+  }
+  if (*upper_bound == disjunct) {
+    return;
+  }
+  disjuncts.insert(upper_bound, disjunct);
   return;
 }
 

@@ -187,16 +187,28 @@ private:
     auto aliasExpr     = generator->GetOrCreateExprID({loadExprID, aliasOp, valueOpExprID});
     auto aliasConjunct = Conjunct(aliasExpr, true);
 
-    Disjunction localDisjunct{};
+    Disjunction forRewrites{};
+    Disjunction noRewrites{disjunction};
     for (auto& disjunct : disjunction.disjuncts) {
-      Disjunct tempDisjunct = disjunct;
-      if (disjunct.findExprID(loadExprID) != disjunct.conjunctIDs.end()) {
-        tempDisjunct.addConjunct(  aliasConjunct);
-        tempDisjunct.addConjunct( !aliasConjunct);
+      auto    aliasDisjunct{disjunct};
+      auto notAliasDisjunct{disjunct};
+      for (auto& conjunct : disjunct.conjunctIDs) {
+        if (generator->preOrderFind(conjunct, loadExprID)) {
+          aliasDisjunct.addConjunct( aliasConjunct);
+          notAliasDisjunct.addConjunct(!aliasConjunct);
+          forRewrites.addDisjunct(aliasDisjunct);
+          noRewrites.addDisjunct(notAliasDisjunct);
+        }
       }
-      localDisjunct.addDisjunct(tempDisjunct);
     }
-    return generator->rewrite(localDisjunct, loadExprID, valueOpExprID);
+    llvm::errs() << "\n For Rewrites" ;
+    forRewrites.print();
+    llvm::errs() << "\n For Non Rewrites" ;
+    noRewrites.print();
+    llvm::errs() << "\n" ;
+    llvm::errs() << "\n" ;
+    auto rewritten = generator->rewrite(forRewrites, loadExprID, valueOpExprID);
+    return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
 
   bool
@@ -303,6 +315,9 @@ private:
         return;
       } else if (isBinaryExprID(exprID)) {
         auto& binaryNode = generator->GetBinaryExprNode(exprID);
+        if (binaryNode.op.isAliasOp()) {
+          return;
+        }
         preOrder(binaryNode.lhs, preOrder);
         preOrder(binaryNode.rhs, preOrder);
       }
@@ -319,7 +334,8 @@ private:
         return loadInst == nullptr;
         });
     asLoads.erase(eraseFrom, asLoads.end());
-
+    eraseFrom = std::unique(asLoads.begin(), asLoads.end());
+    asLoads.erase(eraseFrom, asLoads.end());
 
     llvm::errs() << "\n --------------- MEMSSA --------------- \n";
     using LoadMAPair  = std::pair<const llvm::LoadInst*, llvm::MemoryAccess*>;
@@ -357,6 +373,7 @@ private:
     for (auto& [loadInst, memDefs] : loadsWithMDefs) {
       for (auto& memDef : memDefs) {
         if (memDef == storeMemDef) {
+          llvm::errs() << "\n WeakUpdate";
           localDisjunction = weakUpdate(localDisjunction, loadInst, storeInst);
         }
       }
@@ -414,6 +431,7 @@ public:
     handled |= handleCallSite(llvm::CallSite{&value}, state, context);
     handled |= handleStore(&value, state);
     if(handled) {
+      debugAfter();
       return;
     }
     if (!generator->isUsed(&value)) { //Global Check
