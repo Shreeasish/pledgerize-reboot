@@ -367,7 +367,13 @@ private:
     LoadMDefPairs loadsWithMDefs;
     std::transform(loadsWithClobbers.begin(), loadsWithClobbers.end(), std::back_inserter(loadsWithMDefs), toClobberingDefs);
 
-
+    assert(memSSA != nullptr && "memSSA is nullptr");
+    auto check = memSSA->getMemoryAccess(storeInst);
+    assert(check != nullptr && "store has no memAccess");
+    llvm::errs() << "\n STORE MEMACCESS \n";
+    memSSA->print(llvm::errs());
+    
+    llvm::errs() << "\n MEMSSA END \n";
     auto* storeMemDef = llvm::dyn_cast<llvm::MemoryDef>(memSSA->getMemoryAccess(storeInst));
     auto localDisjunction = state[nullptr];
     for (auto& [loadInst, memDefs] : loadsWithMDefs) {
