@@ -25,6 +25,7 @@ using ExprKey    = std::tuple<ExprID, OpKey, ExprID>;
 
 constexpr   int typeSize{16};
 constexpr OpKey aliasOp{100};
+constexpr OpKey switchOp{101};
 
 // template specialization for ExprKey
 template<>

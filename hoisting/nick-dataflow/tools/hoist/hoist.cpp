@@ -133,41 +133,53 @@ public:
       }
       return destState;
     };
-
-    auto asBinaryExprID = [](llvm::Value* branchCondition) -> ExprID {
-      auto* binOp
-        = llvm::dyn_cast<llvm::BinaryOperator>(branchCondition);
-      if (binOp) { // Does this actually happen?
-        return generator->GetOrCreateExprID(binOp);
-      }
-      auto* cmpInst
-        = llvm::dyn_cast<llvm::CmpInst>(branchCondition);
-      if (cmpInst) {
-        return generator->GetOrCreateExprID(cmpInst);
-      }
-      if (!cmpInst) { //change to last on the list
-        llvm::errs() << *branchCondition;
-        assert(false && "condition not handled");
-      }
-      return 0;
+  
+    auto isSwitch = [] (const llvm::Instruction* instruction) {
+      return instruction->getNumOperands() > 3;
     };
 
-    auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchAsValue);
-    auto destAsBool = [&branchInst](auto* destination) -> bool {
-      return destination == branchInst->getOperand(2);
+    auto branchOrSwitch = llvm::dyn_cast<llvm::Instruction>(branchAsValue);
+    auto isConditionalJump = [&branchOrSwitch] () {
+      return branchOrSwitch->getNumOperands() > 2;
     };
-    //llvm::errs() << "Crashing at: \n" << *branchAsValue;
-    auto edgeOp = [&branchInst, &asBinaryExprID, &destAsBool, &handlePhi, destination] (Disjunction destState) {
-      Disjunction local{destState};
+
+    auto conjunctForm = [&branchOrSwitch, &isSwitch, &destination] () -> bool {
+      if (isSwitch(branchOrSwitch)) {
+        return true;
+      }
+      return destination == branchOrSwitch->getOperand(2);
+    };
+
+    auto getConditionExprID = [&isSwitch, &destination] (const llvm::Instruction* branchOrSwitch) {
+      auto* condition  = branchOrSwitch->getOperand(0);
+      auto  conditionAsExprID = generator->GetOrCreateExprID(condition); 
+      if (!isSwitch(branchOrSwitch)) {
+        return conditionAsExprID; // Lazy generation (updated by transfers)
+      }
+      
+      // Create synthetic cmp Expr 
+      for (auto opIt = branchOrSwitch->op_begin(); opIt != branchOrSwitch->op_end(); opIt+=2) {
+        if ( destination == *(opIt + 1) ) {
+          auto caseValueAsExprID = generator->GetOrCreateExprID(*opIt);
+          return generator->GetOrCreateExprID({conditionAsExprID, switchOp, caseValueAsExprID});
+        }
+      }
+      //TODO: Switch simplify
+      llvm_unreachable("Destination not found in switch");
+    };
+
+    auto edgeOp = [&] (Disjunction destState) {
+      Disjunction local(destState);
       local = handlePhi(destState);
-      if ( branchInst->isUnconditional()) {
+      if (!isConditionalJump()) {
         return local;
       }
-      auto* branchCondition = branchInst->getCondition();
-      local.applyConjunct({asBinaryExprID(branchCondition), destAsBool(destination)});
+      auto conditionID = getConditionExprID(branchOrSwitch);
+      local.applyConjunct({conditionID, conjunctForm()});
       return local;
     };
-    return edgeOp(toMerge);
+
+  return edgeOp(toMerge);
   }
 };
 
@@ -366,12 +378,6 @@ private:
     };
     LoadMDefPairs loadsWithMDefs;
     std::transform(loadsWithClobbers.begin(), loadsWithClobbers.end(), std::back_inserter(loadsWithMDefs), toClobberingDefs);
-
-    assert(memSSA != nullptr && "memSSA is nullptr");
-    auto check = memSSA->getMemoryAccess(storeInst);
-    assert(check != nullptr && "store has no memAccess");
-    llvm::errs() << "\n STORE MEMACCESS \n";
-    memSSA->print(llvm::errs());
     
     llvm::errs() << "\n MEMSSA END \n";
     auto* storeMemDef = llvm::dyn_cast<llvm::MemoryDef>(memSSA->getMemoryAccess(storeInst));
@@ -385,8 +391,6 @@ private:
       }
     }
 
-    auto valueOperandExprID = generator->GetOrCreateExprID(storeInst->getValueOperand());
-    //state[nullptr]    = generator->rewrite(state[nullptr], allocaExprID, valueOperandExprID);
     state[nullptr] = localDisjunction;
     llvm::errs() << "\n --------------- MEMSSA --------------- \n";
     return true;
@@ -499,7 +503,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
       continue;
     }
     auto* memSSA = &getAnalysis<MemorySSAWrapperPass>(f).getMSSA();
-    memSSA->print(llvm::outs());
+    //memSSA->print(llvm::outs());
     functionMemSSAs.insert({&f, memSSA});
   }
 
