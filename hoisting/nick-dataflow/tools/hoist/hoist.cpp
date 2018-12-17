@@ -97,9 +97,9 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    return Disjunction::unionDisjunctions(s1,s2)
-            .simplifyAdjacentNegation()
-            .simplifyNeighbourNegation();
+    return Disjunction::unionDisjunctions(s1,s2);
+//            .simplifyAdjacentNegation()
+//            .simplifyNeighbourNegation();
   }
 };
 
@@ -174,6 +174,12 @@ public:
       if (!isConditionalJump()) {
         return local;
       }
+      if (isSwitch(branchOrSwitch)) {
+        auto emptyDisjunction = Disjunction{};
+        emptyDisjunction.applyConjunct({generator->GetVacuousExprID(), true});
+        return emptyDisjunction;
+      }
+
       auto conditionID = getConditionExprID(branchOrSwitch);
       local.applyConjunct({conditionID, conjunctForm()});
       return local;
@@ -266,6 +272,24 @@ private:
     return true;
   }
 
+  bool
+  handleCmpInst(const llvm::Value* value, DisjunctionState& state) {
+    auto cmpInst = llvm::dyn_cast<llvm::CmpInst>(value);
+    if (!cmpInst) {
+      return false;
+    }
+
+    auto oldExprID = generator->GetOrCreateExprID(value);
+    // TODO: Move to on-the-fly creation
+    auto exprID    = generator->GetOrCreateExprID(cmpInst);
+    if (oldExprID == exprID) {
+      return false;
+    }
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
+    return true;
+  }
+
+
   /// Loads and Stores:
   /// Loads are handled by replacing the Load Value ExprID in the ExprTree
   /// with Value ExprID for the Alloca (pointer operand of the load).
@@ -341,7 +365,7 @@ private:
       }
     }
 
-    /// Remove nullptrs due to miscasts
+    /// Remove nullptrs from miscasts
     auto eraseFrom = std::remove_if(asLoads.begin(), asLoads.end(), [ ] (const auto& loadInst) {
         return loadInst == nullptr;
         });
@@ -448,9 +472,10 @@ public:
       debugAfter();
       return;
     }
-    handled |=  skipPhi(&value, state);
-    handled |=  handleLoad(&value, state);
+    handled |= skipPhi(&value, state);
+    handled |= handleLoad(&value, state);
     handled |= handleBinaryOperator(&value, state);
+    handled |= handleCmpInst(&value, state);
     // handleUnknown(&value, state);
     if (!handled) {
       handleUnknown(&value, state);
