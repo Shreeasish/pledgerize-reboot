@@ -162,7 +162,7 @@ public:
       std::transform(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(),
                   std::back_inserter(newDisjunct.conjunctIDs), rebuildConjunct);
       std::sort(newDisjunct.conjunctIDs.begin(), newDisjunct.conjunctIDs.end());
-      newDisjunction.disjuncts.push_back(newDisjunct);
+      newDisjunction.addDisjunct(newDisjunct);
     }
     return newDisjunction;
   }

@@ -97,9 +97,10 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    return Disjunction::unionDisjunctions(s1,s2);
-//            .simplifyAdjacentNegation()
-//            .simplifyNeighbourNegation();
+    return Disjunction::unionDisjunctions(s1,s2)
+            .simplifyAdjacentNegation()
+            .simplifyNeighbourNegation()
+            .simplifyUnique();
   }
 };
 
@@ -219,13 +220,17 @@ private:
         }
       }
     }
+    auto rewritten = generator->rewrite(forRewrites, loadExprID, valueOpExprID);
+   // std::sort(rewritten.disjuncts.begin(), rewritten.disjuncts.end());
+   // std::sort(noRewrites.disjuncts.begin(), noRewrites.disjuncts.end());
+
     llvm::errs() << "\n For Rewrites" ;
     forRewrites.print();
     llvm::errs() << "\n For Non Rewrites" ;
     noRewrites.print();
     llvm::errs() << "\n" ;
     llvm::errs() << "\n" ;
-    auto rewritten = generator->rewrite(forRewrites, loadExprID, valueOpExprID);
+
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
 

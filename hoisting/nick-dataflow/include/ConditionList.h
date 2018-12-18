@@ -112,39 +112,44 @@ public:
     : exprID{exprID},
       notNegated{notNegated} { }
 
-  bool operator==(const Conjunct& other) const {
+  bool 
+  operator==(const Conjunct& other) const {
     return exprID == other.exprID
       && notNegated == other.exprID;
   }
 
-  bool operator<(const Conjunct& other) const {
+  bool
+  operator<(const Conjunct& other) const {
     if (exprID < other.exprID) {
       return true;
     }
-
     if (exprID == other.exprID) {
-      return !(notNegated < other.notNegated);
+      return notNegated < other.notNegated;
     }
     return false;
   }
 
-  bool operator<(const ExprID other) const {
-    return exprID < other;
+  Conjunct 
+  operator!() const {
+    Conjunct newConjunct = *this;
+    newConjunct.notNegated = !notNegated;
+    return newConjunct;
   }
 
-  bool operator==(const ExprID other) const {
-    return exprID == other;
-  }
-
-  void operator=(const Conjunct& other) {
+  void 
+  operator=(const Conjunct& other) {
     exprID     = other.exprID;
     notNegated = other.notNegated;
   }
 
-  Conjunct operator!() const {
-    Conjunct newConjunct = *this;
-    newConjunct.notNegated = !notNegated;
-    return newConjunct;
+  bool 
+  operator<(const ExprID other) const {
+    return exprID < other;
+  }
+
+  bool 
+  operator==(const ExprID other) const {
+    return exprID == other;
   }
 
   void print() const {
@@ -211,6 +216,15 @@ public:
     std::set_union(disjuncts1.begin(), disjuncts1.end(),
                    disjuncts2.begin(), disjuncts2.end(),
                    std::back_inserter(dest_disjunct));
+    /// REMOVE ///
+    llvm::errs() << "\nUNION L";
+    lhs.print();
+    llvm::errs() << "\nUNION R";
+    rhs.print();
+    llvm::errs() << "SORTED";
+    asDisjunction.print();
+    llvm::errs() << "\n";
+    /// REMOVE ///
     return asDisjunction;
   }
 
@@ -218,19 +232,18 @@ public:
 
   Disjunction&
   simplifyAdjacentNegation() {
-    auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
-      // assert(a != b && "Failed Set property");
+    /// REMOVE ///
+    llvm::errs() << "\n==================PRE SIMPLIFY ====================\n";
+    this->print();
+    llvm::errs() << "\n==================PRE SIMPLIFY ====================\n";
+    /// REMOVE ///
 
-      llvm::errs() << "\n";
-      a.print();
-      llvm::errs() << "a - b";
-      b.print();
-      llvm::errs() << (a.exprID == b.exprID && a.notNegated == !b.notNegated );
-      llvm::errs() << "\n";
+
+    auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
       // The second check is redundant since there should never be adjacent 
       // conjuncts with the same exprID
       // Add in as assert. Remove later
-      return a.exprID == b.exprID && a.notNegated == !b.notNegated;
+      return a.exprID == b.exprID && (a.notNegated xor b.notNegated);
     };
     auto hasNegatedPair = [&isNegatedPair](Disjunct& disjunct) {
       disjunct.print();
@@ -238,7 +251,17 @@ public:
         = std::adjacent_find(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(), isNegatedPair);
       return found != disjunct.conjunctIDs.end();
     };
-    std::remove_if(disjuncts.begin(), disjuncts.end(), hasNegatedPair);
+
+
+    auto eraseIt = std::remove_if(disjuncts.begin(), disjuncts.end(), hasNegatedPair);
+    disjuncts.erase(eraseIt, disjuncts.end());
+
+    std::sort(disjuncts.begin(),disjuncts.end());
+    /// REMOVE ///
+    llvm::errs() << "\n==================SIMPLIFY1====================\n";
+    this->print();
+    llvm::errs() << "\n==================SIMPLIFY1====================\n";
+    /// REMOVE ///
     return *this;
   }
 
@@ -247,17 +270,10 @@ public:
   Disjunction&
   simplifyNeighbourNegation() {
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
-      // assert(a != b && "Failed Set property");
-      llvm::errs() << "\n";
-      a.print();
-      llvm::errs() << "a - b";
-      b.print();
-      llvm::errs() << (a.exprID == b.exprID && a.notNegated == !b.notNegated );
-      llvm::errs() << "\n";
       // The second check is redundant since there should never be adjacent 
       // conjuncts with the same exprID
       // Add in as assert. Remove later
-      return a.exprID == b.exprID && a.notNegated == !b.notNegated;
+      return a.exprID == b.exprID && (a.notNegated xor b.notNegated);
     };
 
     auto simplify = [&isNegatedPair](auto& conjuncts1, auto& conjuncts2) {
@@ -283,26 +299,43 @@ public:
 
     if ( disjuncts.empty()) {
       return *this;
+      /// REMOVE ///
       llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
+      llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
+      /// REMOVE ///
     }
     
     auto first  = disjuncts.begin();
     auto second = first + 1;
 
-    llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
     for ( ; second != disjuncts.end(); first++, second++) {
-      llvm::errs() << "\n Disjunct Pairs \n";
-      first->print();
-      second->print();
       simplify(first->conjunctIDs, second->conjunctIDs);
     }
+    std::sort(disjuncts.begin(),disjuncts.end());
+
+    /// REMOVE ///
     llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
+    this->print();
+    llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
+    /// REMOVE ///
     return *this;
   }
 
   void // Should
   simplifyImplication() {
     llvm_unreachable("Function not Implemented");
+  }
+
+  Disjunction&
+  simplifyUnique() {
+    auto eraseIt = std::unique(disjuncts.begin(), disjuncts.end());
+    disjuncts.erase(eraseIt, disjuncts.end());
+    /// REMOVE ///
+    llvm::errs() << "\n=====================SIMPLIFY3=====================\n";
+    this->print();
+    llvm::errs() << "\n=====================SIMPLIFY3=====================\n";
+    /// REMOVE ///
+    return *this;
   }
 
 
@@ -340,7 +373,7 @@ Disjunct::addConjunct(const Conjunct& conjunct) {
     if (*first == conjunct) {
       return;
     }
-    conjunctIDs.insert(first - 1, conjunct);
+    conjunctIDs.insert(first, conjunct);
     return;
   };
 
