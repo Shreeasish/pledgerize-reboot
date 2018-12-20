@@ -3,6 +3,7 @@
 
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/BasicAliasAnalysis.h"
+#include "llvm/Analysis/CFG.h"
 #include "llvm/Analysis/CFLSteensAliasAnalysis.h"
 #include "llvm/Analysis/CallGraph.h"
 #include "llvm/Analysis/GlobalsModRef.h"
@@ -71,6 +72,10 @@ std::unique_ptr<IndirectCallResolver> resolver;
 // TODO: Store walkers directly
 llvm::DenseMap<const llvm::Function*, llvm::MemorySSA*> functionMemSSAs;
 
+using Edge  = std::pair<const llvm::BasicBlock*,const llvm::BasicBlock*>;
+using Edges = llvm::SmallVector<Edge, 10>;
+llvm::DenseMap<const llvm::Function*, Edges> functionBackEdges;
+
 using DisjunctionValue  = Disjunction;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
@@ -100,6 +105,7 @@ public:
     return Disjunction::unionDisjunctions(s1,s2)
             .simplifyAdjacentNegation()
             .simplifyNeighbourNegation()
+            .simplifyImplication()
             .simplifyUnique();
   }
 };
@@ -168,10 +174,9 @@ public:
       //TODO: Switch simplify
       llvm_unreachable("Destination not found in switch");
     };
-
     auto edgeOp = [&] (Disjunction destState) {
       Disjunction local(destState);
-      local = handlePhi(destState);
+      local = handlePhi(local);
       if (!isConditionalJump()) {
         return local;
       }
@@ -535,6 +540,9 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     auto* memSSA = &getAnalysis<MemorySSAWrapperPass>(f).getMSSA();
     //memSSA->print(llvm::outs());
     functionMemSSAs.insert({&f, memSSA});
+    Edges backedges;
+    llvm::FindFunctionBackedges(f, backedges);
+    functionBackEdges.try_emplace(&f, backedges);
   }
 
   using Value    = Disjunction;

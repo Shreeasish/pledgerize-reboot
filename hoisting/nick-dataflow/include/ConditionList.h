@@ -115,7 +115,7 @@ public:
   bool 
   operator==(const Conjunct& other) const {
     return exprID == other.exprID
-      && notNegated == other.exprID;
+      && !(notNegated xor other.notNegated);
   }
 
   bool
@@ -321,13 +321,43 @@ public:
     return *this;
   }
 
-  void // Should
+  Disjunction& // Should
   simplifyImplication() {
-    llvm_unreachable("Function not Implemented");
+    std::sort(disjuncts.begin(), disjuncts.end(), 
+        [ ] (const auto& lhs, const auto& rhs) {
+          return lhs.conjunctIDs.size() < rhs.conjunctIDs.size();
+        });
+    
+    auto iter = disjuncts.begin();
+    auto end  = disjuncts.end();
+    auto isSubset = [&iter](const Disjunct disjunct) { //iter1 is subset of iter2
+     return std::includes(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(),
+                           iter->conjunctIDs.begin(), iter->conjunctIDs.end());
+    };
+    while (iter != end) {
+      end = std::remove_if(iter + 1, end, isSubset);
+      iter++;
+    }
+
+    disjuncts.erase(end, disjuncts.end());
+    std::sort(disjuncts.begin(), disjuncts.end());
+    return *this;
   }
 
   Disjunction&
   simplifyUnique() {
+    llvm::errs() << "\n=====================PRE SIMPLIFY3=====================\n";
+    for (auto it = disjuncts.begin(); it != disjuncts.end(); it++) {
+      it->print();
+      if ( (it + 1) == disjuncts.end()) {
+        break;
+      }
+      (it+1)->print();
+
+      if ( *it == *(it+1)) {
+        llvm::errs() << "MATCH";
+      }
+    }
     auto eraseIt = std::unique(disjuncts.begin(), disjuncts.end());
     disjuncts.erase(eraseIt, disjuncts.end());
     /// REMOVE ///
@@ -460,12 +490,6 @@ Disjunction::applyConjunct(const Conjunct& conjunct) {
   return;
 }
 
-
-//void
-//Disjunction::addDisjunct(const Disjunct& disjunct) {
-//  disjuncts.push_back(disjunct);
-//  return;
-//}
 
 //TODO: Clean
 void
