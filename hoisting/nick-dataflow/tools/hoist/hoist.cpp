@@ -81,6 +81,12 @@ using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
 
+Edges
+getBackedges(const llvm::Function* func) {
+  return functionBackEdges[func];
+}
+
+
 static void
 setRequiredPrivileges(Privileges requiredPrivileges, llvm::CallSite cs, const Context& context) {
   auto fun = cs.getCalledFunction();
@@ -174,6 +180,14 @@ public:
       //TODO: Switch simplify
       llvm_unreachable("Destination not found in switch");
     };
+
+    auto stripTrues = [] (auto& disjunction) {
+      for (auto& disjunct : disjunction.disjuncts) {
+        if (disjunct.conjunctIDs.size() > 1) {
+          disjunct.conjunctIDs.erase(disjunct.conjunctIDs.begin());
+        }
+      }
+    };
     auto edgeOp = [&] (Disjunction destState) {
       Disjunction local(destState);
       local = handlePhi(local);
@@ -185,9 +199,9 @@ public:
         emptyDisjunction.applyConjunct({generator->GetVacuousExprID(), true});
         return emptyDisjunction;
       }
-
       auto conditionID = getConditionExprID(branchOrSwitch);
       local.applyConjunct({conditionID, conjunctForm()});
+      stripTrues(local);
       return local;
     };
 
@@ -305,14 +319,6 @@ private:
   /// with Value ExprID for the Alloca (pointer operand of the load).
   /// This in turn will be replaced by the Value operand of a store.
   /// The alloca value ExprID is therefore, transient.
-  bool
-  skipPhi(const llvm::Value* value, DisjunctionState& state) {
-    auto* phi = llvm::dyn_cast<llvm::PHINode>(value);
-    if (phi) {
-      return true;
-    }
-    return false;
-  }
 
 
   // Treat loadInsts as Value Nodes
@@ -430,6 +436,46 @@ private:
     return true;
   }
 
+
+  bool
+  handlePhi(llvm::Value* value, DisjunctionState& state) {
+    auto* phi = llvm::dyn_cast<llvm::PHINode>(value);
+    if (!phi) {
+      return false;
+    }
+    auto isFromBackEdge = [&phi] (const llvm::BasicBlock* incomingBlock) -> bool {
+      auto* parentBlock = phi->getParent();
+      auto* parentFunction = parentBlock->getParent();
+      auto backEdges = getBackedges(parentFunction);
+      auto foundIt = std::find_if(backEdges.begin(), backEdges.end(), 
+          [&](const auto& bbPair) {
+          return bbPair.first == incomingBlock && bbPair.second == parentBlock; });
+      return foundIt != backEdges.end();
+    };
+    
+    bool isLoopPhi = false;
+    for (auto& incomingBlock : phi->blocks()) {
+      isLoopPhi |= isFromBackEdge(incomingBlock);
+    }
+
+    if(!isLoopPhi) {
+      return true;
+    }
+  
+    auto phiExprID = generator->GetOrCreateExprID(value);
+    state[nullptr] = generator->dropConjunct(state[nullptr], phiExprID);
+    state[nullptr] = state[nullptr].simplifyImplication();
+    
+//    std::vector<llvm::Value*> phiOp;
+//    std::transform(backEdgeBlocks.begin(), backEdgeBlocks.end(), std::back_inserter(phiOp), [phi](const auto& bb){
+//        return phi->getIncomingValueForBlock(bb);
+//        });
+//
+//    for (auto& phiOp 
+
+    return true;
+  }
+
   // Only reaches this if the llvm::value is actually used somewhere else
   // i.e. GetOrCreateExprID should not create new exprIDs
   // Add an assert?
@@ -472,6 +518,7 @@ public:
 
     debugBefore();
     bool handled = false;
+    handled |= handlePhi(&value, state);
     handled |= handleCallSite(llvm::CallSite{&value}, state, context);
     handled |= handleStore(&value, state);
     if(handled) {
@@ -482,7 +529,7 @@ public:
       debugAfter();
       return;
     }
-    handled |= skipPhi(&value, state);
+    handled |= handlePhi(&value, state);
     handled |= handleLoad(&value, state);
     handled |= handleBinaryOperator(&value, state);
     handled |= handleCmpInst(&value, state);
@@ -537,6 +584,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     if ( f.isDeclaration()) {
       continue;
     }
+    auto* AA = &getAnalysis<AAResultsWrapperPass>(f).getAAResults();
     auto* memSSA = &getAnalysis<MemorySSAWrapperPass>(f).getMSSA();
     //memSSA->print(llvm::outs());
     functionMemSSAs.insert({&f, memSSA});
@@ -562,23 +610,25 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 
 void
 BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
+  info.addRequired<AAResultsWrapperPass>();
   info.addRequired<MemorySSAWrapperPass>();
   //info.addRequired<PostDominatorTreeWrapperPass>();
   //info.addRequired<LoopInfoWrapperPass>();
+  info.setPreservesAll();
 }
 
 static void
 instrumentPromiseTree(llvm::Module& m) {
   legacy::PassManager pm;
   pm.add(new llvm::LoopInfoWrapperPass());
-  //pm.add(createBasicAAWrapperPass());
-  //pm.add(createTypeBasedAAWrapperPass());
-  //pm.add(createGlobalsAAWrapperPass());
-  //pm.add(createSCEVAAWrapperPass());
-  //pm.add(createScopedNoAliasAAWrapperPass());
-  //pm.add(createCFLSteensAAWrapperPass());
-  //pm.add(createPostDomTree());
-  //pm.add(new DominatorTreeWrapperPass());
+  pm.add(createBasicAAWrapperPass());
+  pm.add(createTypeBasedAAWrapperPass());
+  pm.add(createGlobalsAAWrapperPass());
+  pm.add(createSCEVAAWrapperPass());
+  pm.add(createScopedNoAliasAAWrapperPass());
+  pm.add(createCFLSteensAAWrapperPass());
+  pm.add(createPostDomTree());
+  pm.add(new DominatorTreeWrapperPass());
   pm.add(new MemorySSAWrapperPass());
   pm.add(new BuildPromiseTreePass());
   pm.run(m);
