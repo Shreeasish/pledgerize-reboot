@@ -71,6 +71,7 @@ std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
 // TODO: Store walkers directly
 llvm::DenseMap<const llvm::Function*, llvm::MemorySSA*> functionMemSSAs;
+llvm::DenseMap<const llvm::Function*, llvm::AliasAnalysis*> functionAAs;
 
 using Edge  = std::pair<const llvm::BasicBlock*,const llvm::BasicBlock*>;
 using Edges = llvm::SmallVector<Edge, 10>;
@@ -212,6 +213,19 @@ public:
 
 class DisjunctionTransfer {
 private:
+  Disjunction
+  strongUpdate(const Disjunction& disjunction, const llvm::LoadInst* loadInst, const llvm::StoreInst* storeInst) {
+    auto getLoadValueExprs = [](const auto& loadInst, const auto& storeInst) {
+      auto* loadAsValue    = llvm::dyn_cast<llvm::Value>(loadInst);
+      auto loadExpr  = generator->GetOrCreateExprID(loadAsValue);
+      auto valueOpExpr = generator->GetOrCreateExprID(storeInst->getValueOperand());
+      return std::pair(loadExpr, valueOpExpr);
+    };
+
+    auto [loadExprID, valueOpExprID] = getLoadValueExprs(loadInst, storeInst);
+    return generator->rewrite(disjunction, loadExprID, valueOpExprID);
+  }
+
   Disjunction
   weakUpdate(const Disjunction& disjunction, const llvm::LoadInst* loadInst, const llvm::StoreInst* storeInst) {
     auto getLoadValueExprs = [](const auto& loadInst, const auto& storeInst) {
@@ -380,6 +394,24 @@ private:
         preOrder(conjunct.exprID, preOrder);
       }
     }
+
+    /// Perform Strong update and remove from loads
+    std::vector<const llvm::LoadInst*> strongLoads;
+    auto removeCopyStrong = [&storeInst, &strongLoads] (const llvm::LoadInst* loadInst) {
+      auto* storeFunction = storeInst->getParent()->getParent();
+      auto AA = functionAAs[storeFunction];
+
+      auto loadAsMemLoc  = llvm::MemoryLocation(loadInst);
+      auto storeAsMemLoc = llvm::MemoryLocation(storeInst);
+      auto aliasResult   = AA->alias(loadAsMemLoc, storeAsMemLoc);
+      if (aliasResult == AliasResult::MustAlias) {
+        strongLoads.push_back(loadInst);
+        return true;
+      }
+      return false;
+    };
+    auto eraseIt = std::remove_if(asLoads.begin(), asLoads.end(), removeCopyStrong);
+    asLoads.erase(eraseIt, asLoads.end());
 
     /// Remove nullptrs from miscasts
     auto eraseFrom = std::remove_if(asLoads.begin(), asLoads.end(), [ ] (const auto& loadInst) {
@@ -584,10 +616,13 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     if ( f.isDeclaration()) {
       continue;
     }
-    auto* AA = &getAnalysis<AAResultsWrapperPass>(f).getAAResults();
+
     auto* memSSA = &getAnalysis<MemorySSAWrapperPass>(f).getMSSA();
-    //memSSA->print(llvm::outs());
     functionMemSSAs.insert({&f, memSSA});
+
+    auto* AA = &getAnalysis<AAResultsWrapperPass>(f).getAAResults();
+    functionAAs.insert({&f, AA});
+    //memSSA->print(llvm::outs());
     Edges backedges;
     llvm::FindFunctionBackedges(f, backedges);
     functionBackEdges.try_emplace(&f, backedges);
@@ -603,18 +638,17 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   //AnalysisPackage package;
   //package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
   //libCHandlers   = getLibCHandlerMap(package);
-  auto results   = analysis.computeDataflow();
+  auto results  = analysis.computeDataflow();
 
   return false;
 }
 
 void
 BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
-  info.addRequired<AAResultsWrapperPass>();
+  info.addRequired<LoopInfoWrapperPass>();
+  info.addPreserved<AAResultsWrapperPass>();
   info.addRequired<MemorySSAWrapperPass>();
   //info.addRequired<PostDominatorTreeWrapperPass>();
-  //info.addRequired<LoopInfoWrapperPass>();
-  info.setPreservesAll();
 }
 
 static void
