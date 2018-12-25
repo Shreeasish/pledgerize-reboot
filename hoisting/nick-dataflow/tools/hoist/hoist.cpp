@@ -70,7 +70,7 @@ std::unordered_map<std::string, FunctionPledges> libCHandlers;
 std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
 // TODO: Store walkers directly
-llvm::DenseMap<const llvm::Function*, llvm::MemorySSA*> functionMemSSAs;
+llvm::DenseMap<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> functionMemSSAs;
 llvm::DenseMap<const llvm::Function*, llvm::AliasAnalysis*> functionAAs;
 
 using Edge  = std::pair<const llvm::BasicBlock*,const llvm::BasicBlock*>;
@@ -350,7 +350,7 @@ private:
     auto getWalkerAndMSSA = [](const llvm::Instruction* inst) {
       auto* func = inst->getFunction();
       return std::make_pair(functionMemSSAs[func]->getWalker(),
-          functionMemSSAs[func]);
+          functionMemSSAs[func].get());
     };
 
     auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
@@ -394,25 +394,6 @@ private:
         preOrder(conjunct.exprID, preOrder);
       }
     }
-
-    /// Perform Strong update and remove from loads
-    std::vector<const llvm::LoadInst*> strongLoads;
-    auto removeCopyStrong = [&storeInst, &strongLoads] (const llvm::LoadInst* loadInst) {
-      auto* storeFunction = storeInst->getParent()->getParent();
-      auto AA = functionAAs[storeFunction];
-
-      auto loadAsMemLoc  = llvm::MemoryLocation(loadInst);
-      auto storeAsMemLoc = llvm::MemoryLocation(storeInst);
-      auto aliasResult   = AA->alias(loadAsMemLoc, storeAsMemLoc);
-      if (aliasResult == AliasResult::MustAlias) {
-        strongLoads.push_back(loadInst);
-        return true;
-      }
-      return false;
-    };
-    auto eraseIt = std::remove_if(asLoads.begin(), asLoads.end(), removeCopyStrong);
-    asLoads.erase(eraseIt, asLoads.end());
-
     /// Remove nullptrs from miscasts
     auto eraseFrom = std::remove_if(asLoads.begin(), asLoads.end(), [ ] (const auto& loadInst) {
         return loadInst == nullptr;
@@ -420,6 +401,29 @@ private:
     asLoads.erase(eraseFrom, asLoads.end());
     eraseFrom = std::unique(asLoads.begin(), asLoads.end());
     asLoads.erase(eraseFrom, asLoads.end());
+
+
+    /// Perform Strong update and remove from loads
+    std::vector<const llvm::LoadInst*> strongLoads;
+    auto removeCopyStrong = [&storeInst, &strongLoads] (const llvm::LoadInst* loadInst) {
+      auto* storeFunction = storeInst->getParent()->getParent();
+      auto* AA = functionAAs[storeFunction];
+      assert(AA != nullptr && "AA is nullptr");
+
+      auto loadAsMemLoc  = MemoryLocation::get(loadInst);
+      auto storeAsMemLoc = MemoryLocation::get(storeInst);
+      auto aliasResult   = AA->alias(storeAsMemLoc, loadAsMemLoc);
+      if (aliasResult == AliasResult::MustAlias) {
+        strongLoads.push_back(loadInst);
+        return true;
+      }
+      return false;
+    };
+
+    auto eraseIt = std::remove_if(asLoads.begin(), asLoads.end(), removeCopyStrong);
+    asLoads.erase(eraseIt, asLoads.end());
+
+    assert(asLoads.empty() && "asloads is not empty");
 
     llvm::errs() << "\n --------------- MEMSSA --------------- \n";
     using LoadMAPair  = std::pair<const llvm::LoadInst*, llvm::MemoryAccess*>;
@@ -453,6 +457,7 @@ private:
     
     llvm::errs() << "\n MEMSSA END \n";
     auto* storeMemDef = llvm::dyn_cast<llvm::MemoryDef>(memSSA->getMemoryAccess(storeInst));
+    storeMemDef->print(llvm::errs());
     auto localDisjunction = state[nullptr];
     for (auto& [loadInst, memDefs] : loadsWithMDefs) {
       for (auto& memDef : memDefs) {
@@ -612,21 +617,27 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 
   generator = make_unique<Generator>(Generator{});
   resolver  = make_unique<IndirectCallResolver>(IndirectCallResolver{m});
+
+
   for (auto& f : m) {
     if ( f.isDeclaration()) {
       continue;
     }
 
-    auto* memSSA = &getAnalysis<MemorySSAWrapperPass>(f).getMSSA();
-    functionMemSSAs.insert({&f, memSSA});
-
+    auto* DT = &getAnalysis<DominatorTreeWrapperPass>(f).getDomTree();
     auto* AA = &getAnalysis<AAResultsWrapperPass>(f).getAAResults();
     functionAAs.insert({&f, AA});
+    //auto* memSSA = &getAnalysis<MemorySSAWrapperPass>(f).getMSSA();
+    auto memSSA = std::make_unique<MemorySSA>(f, AA, DT);
+    functionMemSSAs.try_emplace(&f, std::move(memSSA));
+
+
     //memSSA->print(llvm::outs());
     Edges backedges;
     llvm::FindFunctionBackedges(f, backedges);
     functionBackEdges.try_emplace(&f, backedges);
   }
+
 
   using Value    = Disjunction;
   using Transfer = DisjunctionTransfer;
@@ -645,16 +656,17 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 
 void
 BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
-  info.addRequired<LoopInfoWrapperPass>();
-  info.addPreserved<AAResultsWrapperPass>();
-  info.addRequired<MemorySSAWrapperPass>();
+  info.setPreservesAll();
+  info.addRequired<DominatorTreeWrapperPass>();
+  info.addRequired<AAResultsWrapperPass>();
+  //info.addRequired<MemorySSAWrapperPass>();
   //info.addRequired<PostDominatorTreeWrapperPass>();
 }
 
 static void
 instrumentPromiseTree(llvm::Module& m) {
   legacy::PassManager pm;
-  pm.add(new llvm::LoopInfoWrapperPass());
+  //pm.add(new llvm::LoopInfoWrapperPass());
   pm.add(createBasicAAWrapperPass());
   pm.add(createTypeBasedAAWrapperPass());
   pm.add(createGlobalsAAWrapperPass());
