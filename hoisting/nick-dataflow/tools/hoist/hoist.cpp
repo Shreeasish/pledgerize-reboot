@@ -513,6 +513,19 @@ private:
     return true;
   }
 
+  bool
+  handleGep(const llvm::Value* value, DisjunctionState& state) {
+    auto* gep = llvm::dyn_cast<llvm::GetElementPtrInst>(value);
+    if (!gep) {
+      return false;
+    }
+    llvm::errs() << "Handling Geps \n" ;
+    auto oldExprID = generator->GetOrCreateExprID(value);
+    auto gepExprID = generator->GetOrCreateExprID(gep);
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, gepExprID);
+    return true;
+  }
+
   // Only reaches this if the llvm::value is actually used somewhere else
   // i.e. GetOrCreateExprID should not create new exprIDs
   // Add an assert?
@@ -558,7 +571,8 @@ public:
     handled |= handlePhi(&value, state);
     handled |= handleCallSite(llvm::CallSite{&value}, state, context);
     handled |= handleStore(&value, state);
-    if(handled) {
+
+    if (handled) {
       debugAfter();
       return;
     }
@@ -566,10 +580,10 @@ public:
       debugAfter();
       return;
     }
-    handled |= handlePhi(&value, state);
     handled |= handleLoad(&value, state);
     handled |= handleBinaryOperator(&value, state);
     handled |= handleCmpInst(&value, state);
+    handled |= handleGep(&value, state);
     // handleUnknown(&value, state);
     if (!handled) {
       handleUnknown(&value, state);

@@ -79,6 +79,22 @@ public:
   }
 
   ExprID
+  GetOrCreateExprID(const llvm::GetElementPtrInst* gep) {
+    assert(gep != nullptr);
+
+    auto* lhs = gep->getPointerOperand();
+    auto lhsID = GetOrCreateExprID(lhs);
+    for (auto& index : gep->indices()) {
+      auto rhsID = GetOrCreateExprID(index);
+      ExprKey key{lhsID, gep->getOpcode(), rhsID};
+      lhsID = GetOrCreateExprID(key);
+    }
+    llvm::errs() << "generated gepID" << lhsID << "\n";
+    return lhsID;
+  }
+
+
+  ExprID
   inline GetVacuousExprID() {
     return 0;
   }
