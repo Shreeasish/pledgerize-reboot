@@ -415,15 +415,20 @@ private:
       auto aliasResult   = AA->alias(storeAsMemLoc, loadAsMemLoc);
       if (aliasResult == AliasResult::MustAlias) {
         strongLoads.push_back(loadInst);
+        llvm::errs() << "\nMust Pairs\n" ;
+        llvm::errs() << *loadInst;
+        llvm::errs() << *storeInst;
         return true;
       }
       return false;
     };
-
     auto eraseIt = std::remove_if(asLoads.begin(), asLoads.end(), removeCopyStrong);
     asLoads.erase(eraseIt, asLoads.end());
 
-    assert(asLoads.empty() && "asloads is not empty");
+    auto localDisjunction = state[nullptr];
+    for (auto* strongLoad : strongLoads) {
+      localDisjunction = strongUpdate(localDisjunction, strongLoad, storeInst);
+    }
 
     llvm::errs() << "\n --------------- MEMSSA --------------- \n";
     using LoadMAPair  = std::pair<const llvm::LoadInst*, llvm::MemoryAccess*>;
@@ -447,6 +452,8 @@ private:
       }
       auto toMemDef = [](const auto& memAccess) {
         assert(llvm::dyn_cast<llvm::MemoryDef>(memAccess) && "MemPhi Operand is not a MemDef");
+        llvm::errs() << "Printing memAccess";
+        llvm::errs() << *memAccess;
         return llvm::dyn_cast<llvm::MemoryDef>(memAccess);
       };
       std::transform(loadMAPair.second->defs_begin(), loadMAPair.second->defs_end(), std::back_inserter(asMemDefs), toMemDef);
@@ -458,7 +465,6 @@ private:
     llvm::errs() << "\n MEMSSA END \n";
     auto* storeMemDef = llvm::dyn_cast<llvm::MemoryDef>(memSSA->getMemoryAccess(storeInst));
     storeMemDef->print(llvm::errs());
-    auto localDisjunction = state[nullptr];
     for (auto& [loadInst, memDefs] : loadsWithMDefs) {
       for (auto& memDef : memDefs) {
         if (memDef == storeMemDef) {
@@ -503,13 +509,6 @@ private:
     state[nullptr] = generator->dropConjunct(state[nullptr], phiExprID);
     state[nullptr] = state[nullptr].simplifyImplication();
     
-//    std::vector<llvm::Value*> phiOp;
-//    std::transform(backEdgeBlocks.begin(), backEdgeBlocks.end(), std::back_inserter(phiOp), [phi](const auto& bb){
-//        return phi->getIncomingValueForBlock(bb);
-//        });
-//
-//    for (auto& phiOp 
-
     return true;
   }
 
@@ -526,11 +525,32 @@ private:
     return true;
   }
 
+  bool
+  handleRet(const llvm::Value* value, DisjunctionState& state) {
+    auto* ret = llvm::dyn_cast<llvm::ReturnInst>(value);
+    if (!ret) {
+      return false;
+    }
+    llvm::errs() << "Handling Return \n" ;
+    state[nullptr].print();
+    if ( auto* retValue = ret->getReturnValue(); retValue ) {
+      auto retValueExprID = generator->GetOrCreateExprID(retValue);
+      Conjunct retConjunct{retValueExprID, true};
+      Disjunct disjunct{};
+      disjunct.addConjunct(retConjunct);
+      state[nullptr].addDisjunct(disjunct);
+    }
+    return true;
+  }
+
   // Only reaches this if the llvm::value is actually used somewhere else
   // i.e. GetOrCreateExprID should not create new exprIDs
   // Add an assert?
   void
   handleUnknown(const llvm::Value* value, DisjunctionState& state) {
+    if (!generator->isUsed(value)) {
+      return;
+    }
     auto oldLeafTableSize = generator->getLeafTableSize();
 
     llvm::errs() << "\n Handling as Unknown" << *value;
@@ -571,6 +591,8 @@ public:
     handled |= handlePhi(&value, state);
     handled |= handleCallSite(llvm::CallSite{&value}, state, context);
     handled |= handleStore(&value, state);
+    handled |= handleGep(&value, state);
+    handled |= handleRet(&value, state);
 
     if (handled) {
       debugAfter();
@@ -583,8 +605,6 @@ public:
     handled |= handleLoad(&value, state);
     handled |= handleBinaryOperator(&value, state);
     handled |= handleCmpInst(&value, state);
-    handled |= handleGep(&value, state);
-    // handleUnknown(&value, state);
     if (!handled) {
       handleUnknown(&value, state);
     }

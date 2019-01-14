@@ -278,13 +278,19 @@ public:
     // TODO: This would be better if it checked whether the new state at this
     // function different from the old.
     bool needsUpdate = false;
+    [[maybe_unused]]
     auto* passedConcrete = cs.getInstruction();
-    auto& passedAbstract = state.FindAndConstruct(passedConcrete);
+    //auto& passedAbstract = state.FindAndConstruct(passedConcrete);
+    auto& passedAbstract = state[nullptr];
+    //llvm::errs() << "Printing From DataFlow";
+    //passedAbstract.print();
     for (auto& bb : *callee) {
       if (auto* ret = llvm::dyn_cast<llvm::ReturnInst>(bb.getTerminator());
           ret && ret->getReturnValue()) {
-        auto& retState = summaryState[ret->getReturnValue()];
-        auto newState = meet({passedAbstract.second, retState});
+        //auto& retState = summaryState[ret->getReturnValue()];
+        auto& retState = summaryState[nullptr];
+        //auto  newState = meet({passedAbstract.second, retState});
+        auto  newState = meet({passedAbstract, retState});
         needsUpdate |= !(newState == retState);
         retState = newState;
       }
@@ -376,7 +382,9 @@ public:
       results[bb] = state;
 
       // Propagate through all instructions in the block
+      llvm::outs() << "\nTrace\n";
       for (auto& i : Direction::getInstructions(*bb)) {
+        llvm::outs() << "\n" << i;
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
@@ -450,6 +458,7 @@ public:
     auto& calledState  = allResults[newContext][callee];
     auto& summaryState = calledState[callee];
     bool needsUpdate   = summaryState.size() == 0;
+
 
     needsUpdate |= Direction::prepareSummaryState(cs, callee, state, summaryState, transfer, meet, context);
 

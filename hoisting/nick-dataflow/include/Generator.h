@@ -95,7 +95,7 @@ public:
 
 
   ExprID
-  inline GetVacuousExprID() {
+  constexpr GetVacuousExprID() {
     return 0;
   }
 
