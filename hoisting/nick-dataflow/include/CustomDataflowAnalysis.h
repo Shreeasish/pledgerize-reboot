@@ -388,9 +388,11 @@ public:
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
-        } else {
+        } 
+        // ska: uncomment to skip function calls
+        //else {
           applyTransfer(i, state, context);
-        }
+        //}
 //meet.printState(llvm::outs(),state);
         results[&i] = state;
       }

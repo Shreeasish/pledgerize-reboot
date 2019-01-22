@@ -27,6 +27,7 @@
 #include "llvm/IRReader/IRReader.h"
 
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/Debug.h"
 #include "llvm/Support/ManagedStatic.h"
 #include "llvm/Support/PrettyStackTrace.h"
 #include "llvm/Support/Signals.h"
@@ -47,8 +48,6 @@
 #include "ConditionList.h"
 #include "Generator.h"
 #include "IndirectCallResolver.h"
-
-
 
 using namespace llvm;
 
@@ -214,11 +213,14 @@ public:
 class DisjunctionTransfer {
 private:
   Disjunction
-  strongUpdate(const Disjunction& disjunction, const llvm::LoadInst* loadInst, const llvm::StoreInst* storeInst) {
+  strongUpdate(const Disjunction& disjunction,
+               const llvm::LoadInst* loadInst,
+               const llvm::StoreInst* storeInst) {
     auto getLoadValueExprs = [](const auto& loadInst, const auto& storeInst) {
-      auto* loadAsValue    = llvm::dyn_cast<llvm::Value>(loadInst);
-      auto loadExpr  = generator->GetOrCreateExprID(loadAsValue);
-      auto valueOpExpr = generator->GetOrCreateExprID(storeInst->getValueOperand());
+      auto* loadAsValue = llvm::dyn_cast<llvm::Value>(loadInst);
+      auto  loadExpr    = generator->GetOrCreateExprID(loadAsValue);
+      auto  valueOpExpr =
+          generator->GetOrCreateExprID(storeInst->getValueOperand());
       return std::pair(loadExpr, valueOpExpr);
     };
 
@@ -227,11 +229,14 @@ private:
   }
 
   Disjunction
-  weakUpdate(const Disjunction& disjunction, const llvm::LoadInst* loadInst, const llvm::StoreInst* storeInst) {
+  weakUpdate(const Disjunction& disjunction,
+             const llvm::LoadInst* loadInst,
+             const llvm::StoreInst* storeInst) {
     auto getLoadValueExprs = [](const auto& loadInst, const auto& storeInst) {
-      auto* loadAsValue    = llvm::dyn_cast<llvm::Value>(loadInst);
-      auto loadExpr  = generator->GetOrCreateExprID(loadAsValue);
-      auto valueOpExpr = generator->GetOrCreateExprID(storeInst->getValueOperand());
+      auto* loadAsValue = llvm::dyn_cast<llvm::Value>(loadInst);
+      auto loadExpr     = generator->GetOrCreateExprID(loadAsValue);
+      auto valueOpExpr =
+          generator->GetOrCreateExprID(storeInst->getValueOperand());
       return std::make_pair(loadExpr, valueOpExpr);
     };
 
@@ -242,11 +247,11 @@ private:
     Disjunction forRewrites{};
     Disjunction noRewrites{disjunction};
     for (auto& disjunct : disjunction.disjuncts) {
-      auto    aliasDisjunct{disjunct};
+      auto aliasDisjunct{disjunct};
       auto notAliasDisjunct{disjunct};
       for (auto& conjunct : disjunct.conjunctIDs) {
         if (generator->preOrderFind(conjunct, loadExprID)) {
-          aliasDisjunct.addConjunct( aliasConjunct);
+          aliasDisjunct.addConjunct(aliasConjunct);
           notAliasDisjunct.addConjunct(!aliasConjunct);
           forRewrites.addDisjunct(aliasDisjunct);
           noRewrites.addDisjunct(notAliasDisjunct);
@@ -254,21 +259,22 @@ private:
       }
     }
     auto rewritten = generator->rewrite(forRewrites, loadExprID, valueOpExprID);
-   // std::sort(rewritten.disjuncts.begin(), rewritten.disjuncts.end());
-   // std::sort(noRewrites.disjuncts.begin(), noRewrites.disjuncts.end());
+    // std::sort(rewritten.disjuncts.begin(), rewritten.disjuncts.end());
+    // std::sort(noRewrites.disjuncts.begin(), noRewrites.disjuncts.end());
 
-    llvm::errs() << "\n For Rewrites" ;
+    llvm::errs() << "\n For Rewrites";
     forRewrites.print();
-    llvm::errs() << "\n For Non Rewrites" ;
+    llvm::errs() << "\n For Non Rewrites";
     noRewrites.print();
-    llvm::errs() << "\n" ;
-    llvm::errs() << "\n" ;
+    llvm::errs() << "\n";
+    llvm::errs() << "\n";
 
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
 
   bool
   handleCallSite(const llvm::CallSite& cs, DisjunctionState& state, const Context& context) {
+    // ska: Add function call magic from Nick
     const auto* fun = getCalledFunction(cs);
     if (!fun) {
       return false;
@@ -283,6 +289,11 @@ private:
       return false;
     }
 
+    //
+    llvm::errs() << "Printing from CallSite \n";
+    llvm::errs() << "Function Name " << fun->getName() << "\n";
+    state[nullptr].print();
+    //
     auto asDisjunct = [](Conjunct conjunct) -> Disjunct {
       auto d = Disjunct{};
       d.addConjunct(conjunct);
@@ -301,7 +312,6 @@ private:
       return false;
     }
     auto oldExprID = generator->GetOrCreateExprID(value);
-    // TODO: Move to on-the-fly creation
     auto exprID    = generator->GetOrCreateExprID(binOp);
     if (oldExprID == exprID) {
       return false;
@@ -319,7 +329,7 @@ private:
 
     auto oldExprID = generator->GetOrCreateExprID(value);
     // TODO: Move to on-the-fly creation
-    auto exprID    = generator->GetOrCreateExprID(cmpInst);
+    auto exprID = generator->GetOrCreateExprID(cmpInst);
     if (oldExprID == exprID) {
       return false;
     }
@@ -350,7 +360,7 @@ private:
     auto getWalkerAndMSSA = [](const llvm::Instruction* inst) {
       auto* func = inst->getFunction();
       return std::make_pair(functionMemSSAs[func]->getWalker(),
-          functionMemSSAs[func].get());
+                            functionMemSSAs[func].get());
     };
 
     auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
@@ -375,7 +385,8 @@ private:
       asLoads.push_back(llvm::dyn_cast<llvm::LoadInst>(valueNode.value));
     };
 
-    auto preOrder = [isValueExprID, isBinaryExprID, insertLoad] (const ExprID exprID, auto& preOrder) {
+    auto preOrder = [isValueExprID, isBinaryExprID, insertLoad](
+                        const ExprID exprID, auto& preOrder) {
       if (isValueExprID(exprID)) {
         insertLoad(exprID);
         return;
@@ -394,14 +405,19 @@ private:
         preOrder(conjunct.exprID, preOrder);
       }
     }
-    /// Remove nullptrs from miscasts
-    auto eraseFrom = std::remove_if(asLoads.begin(), asLoads.end(), [ ] (const auto& loadInst) {
-        return loadInst == nullptr;
+    /// Remove nullptrs from miscasts and interprocedural MemAccess
+    auto eraseFrom = std::remove_if(
+        asLoads.begin(), asLoads.end(), [storeInst](const auto& loadInst) {
+          if (loadInst == nullptr) {
+            return true;
+          }
+          auto* loadParentFunction  = loadInst->getParent()->getParent();
+          auto* storeParentFunction = storeInst->getParent()->getParent();
+          return loadParentFunction != storeParentFunction;
         });
     asLoads.erase(eraseFrom, asLoads.end());
     eraseFrom = std::unique(asLoads.begin(), asLoads.end());
     asLoads.erase(eraseFrom, asLoads.end());
-
 
     /// Perform Strong update and remove from loads
     std::vector<const llvm::LoadInst*> strongLoads;
@@ -410,9 +426,10 @@ private:
       auto* AA = functionAAs[storeFunction];
       assert(AA != nullptr && "AA is nullptr");
 
-      auto loadAsMemLoc  = MemoryLocation::get(loadInst);
-      auto storeAsMemLoc = MemoryLocation::get(storeInst);
-      auto aliasResult   = AA->alias(storeAsMemLoc, loadAsMemLoc);
+      //auto loadAsMemLoc  = MemoryLocation::get(loadInst);
+      //auto storeAsMemLoc = MemoryLocation::get(storeInst);
+      llvm::errs() << "\n CRAAAASH\n" << "\n" << *loadInst << "\n" << *storeInst;
+      auto aliasResult   = AA->alias(loadInst, storeInst);
       if (aliasResult == AliasResult::MustAlias) {
         strongLoads.push_back(loadInst);
         llvm::errs() << "\nMust Pairs\n" ;
@@ -479,23 +496,25 @@ private:
     return true;
   }
 
-
   bool
   handlePhi(llvm::Value* value, DisjunctionState& state) {
     auto* phi = llvm::dyn_cast<llvm::PHINode>(value);
     if (!phi) {
       return false;
     }
-    auto isFromBackEdge = [&phi] (const llvm::BasicBlock* incomingBlock) -> bool {
-      auto* parentBlock = phi->getParent();
+    auto isFromBackEdge =
+        [&phi](const llvm::BasicBlock* incomingBlock) -> bool {
+      auto* parentBlock    = phi->getParent();
       auto* parentFunction = parentBlock->getParent();
-      auto backEdges = getBackedges(parentFunction);
-      auto foundIt = std::find_if(backEdges.begin(), backEdges.end(), 
-          [&](const auto& bbPair) {
-          return bbPair.first == incomingBlock && bbPair.second == parentBlock; });
+      auto backEdges       = getBackedges(parentFunction);
+      auto foundIt         = std::find_if(
+          backEdges.begin(), backEdges.end(), [&](const auto& bbPair) {
+            return bbPair.first == incomingBlock
+                   && bbPair.second == parentBlock;
+          });
       return foundIt != backEdges.end();
     };
-    
+
     bool isLoopPhi = false;
     for (auto& incomingBlock : phi->blocks()) {
       isLoopPhi |= isFromBackEdge(incomingBlock);
@@ -598,7 +617,7 @@ public:
       debugAfter();
       return;
     }
-    if (!generator->isUsed(&value)) { //Global Check
+    if (!generator->isUsed(&value)) {  // Global Check
       debugAfter();
       return;
     }
@@ -635,11 +654,17 @@ public:
 
   bool runOnModule(llvm::Module& m) override;
   void getAnalysisUsage(llvm::AnalysisUsage &info) const override;
+  StringRef getPassName() const override;
 
-private:
+//private:
   static char ID;
 };
 char BuildPromiseTreePass::ID = 0;
+
+StringRef
+BuildPromiseTreePass::getPassName() const {
+  return "BuildPromiseTreePass";
+}
 
 
 bool
@@ -657,12 +682,14 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     if ( f.isDeclaration()) {
       continue;
     }
-
+    llvm::errs() << "\n Get Dom Tree for " << f.getName() << "\n";
     auto* DT = &getAnalysis<DominatorTreeWrapperPass>(f).getDomTree();
+    llvm::errs() << "\n Get AA Tree for " << f.getName() << "\n";
     auto* AA = &getAnalysis<AAResultsWrapperPass>(f).getAAResults();
-    functionAAs.insert({&f, AA});
-    //auto* memSSA = &getAnalysis<MemorySSAWrapperPass>(f).getMSSA();
+    llvm::errs() << "\n Get memSSA Tree for " << f.getName() << "\n";
     auto memSSA = std::make_unique<MemorySSA>(f, AA, DT);
+    functionAAs.insert({&f, AA});
+
     functionMemSSAs.try_emplace(&f, std::move(memSSA));
 
 
@@ -691,25 +718,29 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 void
 BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
   info.setPreservesAll();
-  info.addRequired<DominatorTreeWrapperPass>();
   info.addRequired<AAResultsWrapperPass>();
-  //info.addRequired<MemorySSAWrapperPass>();
+  //info.addRequired<AliasAnalysis>();
+  info.addRequired<DominatorTreeWrapperPass>();
   //info.addRequired<PostDominatorTreeWrapperPass>();
 }
 
+
 static void
 instrumentPromiseTree(llvm::Module& m) {
+  llvm::DebugFlag = true;
   legacy::PassManager pm;
-  //pm.add(new llvm::LoopInfoWrapperPass());
-  pm.add(createBasicAAWrapperPass());
-  pm.add(createTypeBasedAAWrapperPass());
-  pm.add(createGlobalsAAWrapperPass());
-  pm.add(createSCEVAAWrapperPass());
-  pm.add(createScopedNoAliasAAWrapperPass());
-  pm.add(createCFLSteensAAWrapperPass());
-  pm.add(createPostDomTree());
+//  pm.add(createTypeBasedAAWrapperPass());
+//  pm.add(createGlobalsAAWrapperPass());
+//  pm.add(createSCEVAAWrapperPass());
+//  pm.add(createScopedNoAliasAAWrapperPass());
+//  pm.add(createCFLSteensAAWrapperPass());
+//  pm.add(new llvm::LoopInfoWrapperPass());
+//  pm.add(createPostDomTree());
+  //pm.add(new MemorySSAWrapperPass());
   pm.add(new DominatorTreeWrapperPass());
-  pm.add(new MemorySSAWrapperPass());
+  pm.add(createBasicAAWrapperPass());
+  pm.add(new AAResultsWrapperPass());
+  pm.add(new DominatorTreeWrapperPass());
   pm.add(new BuildPromiseTreePass());
   pm.run(m);
 }
@@ -717,14 +748,13 @@ instrumentPromiseTree(llvm::Module& m) {
 
 int
 main(int argc, char** argv) {
-
   // This boilerplate provides convenient stack traces and clean LLVM exit
   // handling. It also initializes the built in support for convenient
   // command line option handling.
   sys::PrintStackTraceOnErrorSignal(argv[0]);
   llvm::PrettyStackTraceProgram X(argc, argv);
   llvm_shutdown_obj shutdown;
-  cl::HideUnrelatedOptions(futureFunctionsCategory);
+  //cl::HideUnrelatedOptions(futureFunctionsCategory);
   cl::ParseCommandLineOptions(argc, argv);
 
   // Construct an IR file from the filename passed on the command line.
@@ -737,6 +767,7 @@ main(int argc, char** argv) {
     err.print(argv[0], errs());
     return -1;
   }
+
 
   instrumentPromiseTree(*module);
   return 0;
