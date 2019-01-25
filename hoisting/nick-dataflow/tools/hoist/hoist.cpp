@@ -19,6 +19,7 @@
 #include "llvm/IR/CallSite.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DebugInfo.h"
+#include "llvm/IR/Dominators.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/LegacyPassManager.h"
@@ -70,7 +71,7 @@ std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
 // TODO: Store walkers directly
 llvm::DenseMap<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> functionMemSSAs;
-llvm::DenseMap<const llvm::Function*, llvm::AliasAnalysis*> functionAAs;
+llvm::DenseMap<const llvm::Function*, llvm::AAResultsWrapperPass*> functionAAs;
 
 using Edge  = std::pair<const llvm::BasicBlock*,const llvm::BasicBlock*>;
 using Edges = llvm::SmallVector<Edge, 10>;
@@ -357,16 +358,21 @@ private:
 
   bool
   handleStore(const llvm::Value* value, DisjunctionState& state) {
+
+    auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
+    if (!storeInst) {
+      return false;
+    }
+
+    llvm::errs() << "\nStore Function Name"
+                 << storeInst->getParent()->getParent()->getName();
+
     auto getWalkerAndMSSA = [](const llvm::Instruction* inst) {
       auto* func = inst->getFunction();
       return std::make_pair(functionMemSSAs[func]->getWalker(),
                             functionMemSSAs[func].get());
     };
 
-    auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
-    if (!storeInst) {
-      return false;
-    }   
     llvm::errs() << "\n Handling store \n" << *value;
     auto [walker, memSSA] = getWalkerAndMSSA(storeInst);
     assert(memSSA != nullptr && "No memSSA for function");
@@ -423,13 +429,15 @@ private:
     std::vector<const llvm::LoadInst*> strongLoads;
     auto removeCopyStrong = [&storeInst, &strongLoads] (const llvm::LoadInst* loadInst) {
       auto* storeFunction = storeInst->getParent()->getParent();
-      auto* AA = functionAAs[storeFunction];
-      assert(AA != nullptr && "AA is nullptr");
+      auto* AAWrapper = functionAAs[storeFunction];
+      assert(AAWrapper != nullptr && "AA is nullptr");
 
-      //auto loadAsMemLoc  = MemoryLocation::get(loadInst);
-      //auto storeAsMemLoc = MemoryLocation::get(storeInst);
+      auto loadAsMemLoc  = llvm::MemoryLocation::get(loadInst);
+      auto storeAsMemLoc = llvm::MemoryLocation::get(storeInst);
       llvm::errs() << "\n CRAAAASH\n" << "\n" << *loadInst << "\n" << *storeInst;
-      auto aliasResult   = AA->alias(loadInst, storeInst);
+      llvm::errs() << "\n LOAD Parent" << loadInst->getParent()->getParent()->getName();
+      auto& AAResults = AAWrapper->getAAResults();
+      auto aliasResult   = AAResults.alias(loadAsMemLoc, storeAsMemLoc);
       if (aliasResult == AliasResult::MustAlias) {
         strongLoads.push_back(loadInst);
         llvm::errs() << "\nMust Pairs\n" ;
@@ -685,10 +693,10 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     llvm::errs() << "\n Get Dom Tree for " << f.getName() << "\n";
     auto* DT = &getAnalysis<DominatorTreeWrapperPass>(f).getDomTree();
     llvm::errs() << "\n Get AA Tree for " << f.getName() << "\n";
-    auto* AA = &getAnalysis<AAResultsWrapperPass>(f).getAAResults();
+    auto* AAWrapper = &getAnalysis<AAResultsWrapperPass>(f);
     llvm::errs() << "\n Get memSSA Tree for " << f.getName() << "\n";
-    auto memSSA = std::make_unique<MemorySSA>(f, AA, DT);
-    functionAAs.insert({&f, AA});
+    auto memSSA = std::make_unique<MemorySSA>(f, &AAWrapper->getAAResults(), DT);
+    functionAAs.insert({&f, AAWrapper});
 
     functionMemSSAs.try_emplace(&f, std::move(memSSA));
 
@@ -717,10 +725,11 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 
 void
 BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
-  info.setPreservesAll();
-  info.addRequired<AAResultsWrapperPass>();
-  //info.addRequired<AliasAnalysis>();
+  //info.setPreservesAll();
   info.addRequired<DominatorTreeWrapperPass>();
+  info.addRequired<AAResultsWrapperPass>();
+  info.addPreserved<AAResultsWrapperPass>();
+  //info.addRequired<AliasAnalysis>();
   //info.addRequired<PostDominatorTreeWrapperPass>();
 }
 
@@ -729,18 +738,17 @@ static void
 instrumentPromiseTree(llvm::Module& m) {
   llvm::DebugFlag = true;
   legacy::PassManager pm;
-//  pm.add(createTypeBasedAAWrapperPass());
-//  pm.add(createGlobalsAAWrapperPass());
-//  pm.add(createSCEVAAWrapperPass());
-//  pm.add(createScopedNoAliasAAWrapperPass());
-//  pm.add(createCFLSteensAAWrapperPass());
-//  pm.add(new llvm::LoopInfoWrapperPass());
+  pm.add(createTypeBasedAAWrapperPass());
+  pm.add(createGlobalsAAWrapperPass());
+  pm.add(createSCEVAAWrapperPass());
+  pm.add(createScopedNoAliasAAWrapperPass());
+  pm.add(createCFLSteensAAWrapperPass());
+  pm.add(new llvm::LoopInfoWrapperPass());
 //  pm.add(createPostDomTree());
-  //pm.add(new MemorySSAWrapperPass());
+//  pm.add(new MemorySSAWrapperPass());
   pm.add(new DominatorTreeWrapperPass());
   pm.add(createBasicAAWrapperPass());
   pm.add(new AAResultsWrapperPass());
-  pm.add(new DominatorTreeWrapperPass());
   pm.add(new BuildPromiseTreePass());
   pm.run(m);
 }
