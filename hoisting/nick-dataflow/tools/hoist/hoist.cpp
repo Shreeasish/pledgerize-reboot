@@ -124,12 +124,12 @@ public:
   operator()(const Disjunction& toMerge, llvm::Value* branchAsValue, llvm::Value* destination) {
     // Use the label of the basic block of the branch to replace the appropriate operand of the phi
 
-    auto getAssocValue = [&branchAsValue] (const llvm::PHINode* phi) {
+    auto getAssocValue = [&branchAsValue] (llvm::PHINode* const phi) {
       auto* basicBlock = llvm::dyn_cast<llvm::BranchInst>(branchAsValue)->getParent();
       return phi->getIncomingValueForBlock(basicBlock);
     };
 
-    auto isUsedPhi = [] (const llvm::PHINode& phi) -> bool {
+    auto isUsedPhi = [] (llvm::PHINode& phi) -> bool {
       return generator->isUsed(&phi);
     };
 
@@ -148,7 +148,7 @@ public:
       return destState;
     };
   
-    auto isSwitch = [] (const llvm::Instruction* instruction) {
+    auto isSwitch = [] (llvm::Instruction* const instruction) {
       return instruction->getNumOperands() > 3;
     };
 
@@ -164,7 +164,7 @@ public:
       return destination == branchOrSwitch->getOperand(2);
     };
 
-    auto getConditionExprID = [&isSwitch, &destination] (const llvm::Instruction* branchOrSwitch) {
+    auto getConditionExprID = [&isSwitch, &destination] (llvm::Instruction* const branchOrSwitch) {
       auto* condition  = branchOrSwitch->getOperand(0);
       auto  conditionAsExprID = generator->GetOrCreateExprID(condition); 
       if (!isSwitch(branchOrSwitch)) {
@@ -215,10 +215,10 @@ class DisjunctionTransfer {
 private:
   Disjunction
   strongUpdate(const Disjunction& disjunction,
-               const llvm::LoadInst* loadInst,
-               const llvm::StoreInst* storeInst) {
-    auto getLoadValueExprs = [](const auto& loadInst, const auto& storeInst) {
-      auto* loadAsValue = llvm::dyn_cast<llvm::Value>(loadInst);
+               llvm::LoadInst* const loadInst,
+               llvm::StoreInst* const storeInst) {
+    auto getLoadValueExprs = [](auto loadInst, auto storeInst) {
+      auto* const loadAsValue = llvm::dyn_cast<llvm::Value>(loadInst);
       auto  loadExpr    = generator->GetOrCreateExprID(loadAsValue);
       auto  valueOpExpr =
           generator->GetOrCreateExprID(storeInst->getValueOperand());
@@ -231,10 +231,10 @@ private:
 
   Disjunction
   weakUpdate(const Disjunction& disjunction,
-             const llvm::LoadInst* loadInst,
-             const llvm::StoreInst* storeInst) {
-    auto getLoadValueExprs = [](const auto& loadInst, const auto& storeInst) {
-      auto* loadAsValue = llvm::dyn_cast<llvm::Value>(loadInst);
+             llvm::LoadInst*  const loadInst,
+             llvm::StoreInst* const storeInst) {
+    auto getLoadValueExprs = [](auto loadInst, auto storeInst) {
+      auto* const loadAsValue = llvm::dyn_cast<llvm::Value>(loadInst);
       auto loadExpr     = generator->GetOrCreateExprID(loadAsValue);
       auto valueOpExpr =
           generator->GetOrCreateExprID(storeInst->getValueOperand());
@@ -307,8 +307,8 @@ private:
   }
 
   bool
-  handleBinaryOperator(const llvm::Value* value, DisjunctionState& state) {
-    auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(value);
+  handleBinaryOperator(llvm::Value* const value, DisjunctionState& state) {
+    auto* const binOp = llvm::dyn_cast<llvm::BinaryOperator>(value);
     if (!binOp) {
       return false;
     }
@@ -322,7 +322,7 @@ private:
   }
 
   bool
-  handleCmpInst(const llvm::Value* value, DisjunctionState& state) {
+  handleCmpInst(llvm::Value* const value, DisjunctionState& state) {
     auto cmpInst = llvm::dyn_cast<llvm::CmpInst>(value);
     if (!cmpInst) {
       return false;
@@ -348,7 +348,7 @@ private:
 
   // Treat loadInsts as Value Nodes
   bool
-  handleLoad(const llvm::Value* value, DisjunctionState& state) {
+  handleLoad(llvm::Value* const value, DisjunctionState& state) {
     auto* loadInst = llvm::dyn_cast<llvm::LoadInst>(value);
     if (!loadInst) {
       return false;
@@ -357,7 +357,7 @@ private:
   }
 
   bool
-  handleStore(const llvm::Value* value, DisjunctionState& state) {
+  handleStore(llvm::Value* value, DisjunctionState& state) {
 
     auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
     if (!storeInst) {
@@ -367,7 +367,7 @@ private:
     llvm::errs() << "\nStore Function Name"
                  << storeInst->getParent()->getParent()->getName();
 
-    auto getWalkerAndMSSA = [](const llvm::Instruction* inst) {
+    auto getWalkerAndMSSA = [](llvm::Instruction* const inst) {
       auto* func = inst->getFunction();
       return std::make_pair(functionMemSSAs[func]->getWalker(),
                             functionMemSSAs[func].get());
@@ -379,7 +379,7 @@ private:
 
 
     /// Find all loads in the disjunct
-    std::vector<const llvm::LoadInst*> asLoads;
+    std::vector<llvm::LoadInst*> asLoads;
     auto isValueExprID = [](const ExprID exprID) {
       return generator->GetExprType(exprID) == 1;
     };
@@ -413,7 +413,7 @@ private:
     }
     /// Remove nullptrs from miscasts and interprocedural MemAccess
     auto eraseFrom = std::remove_if(
-        asLoads.begin(), asLoads.end(), [storeInst](const auto& loadInst) {
+        asLoads.begin(), asLoads.end(), [storeInst](auto& loadInst) {
           if (loadInst == nullptr) {
             return true;
           }
@@ -426,8 +426,8 @@ private:
     asLoads.erase(eraseFrom, asLoads.end());
 
     /// Perform Strong update and remove from loads
-    std::vector<const llvm::LoadInst*> strongLoads;
-    auto removeCopyStrong = [&storeInst, &strongLoads] (const llvm::LoadInst* loadInst) {
+    std::vector<llvm::LoadInst*> strongLoads;
+    auto removeCopyStrong = [&storeInst, &strongLoads] (llvm::LoadInst* loadInst) {
       auto* storeFunction = storeInst->getParent()->getParent();
       auto* AAWrapper = functionAAs[storeFunction];
       assert(AAWrapper != nullptr && "AA is nullptr");
@@ -456,17 +456,17 @@ private:
     }
 
     llvm::errs() << "\n --------------- MEMSSA --------------- \n";
-    using LoadMAPair  = std::pair<const llvm::LoadInst*, llvm::MemoryAccess*>;
+    using LoadMAPair  = std::pair<llvm::LoadInst*, llvm::MemoryAccess*>;
     using LoadMAPairs = std::vector<LoadMAPair>;
-    auto pairWithClobbers = [&walker = walker] (const llvm::LoadInst* loadInst) {
+    auto pairWithClobbers = [&walker = walker] (llvm::LoadInst* loadInst) {
       return LoadMAPair{loadInst, walker->getClobberingMemoryAccess(loadInst)};
     };
     LoadMAPairs loadsWithClobbers;
     std::transform(asLoads.begin(), asLoads.end(), std::back_inserter(loadsWithClobbers), pairWithClobbers);
 
-    using MemDefs       = std::vector<llvm::MemoryDef*>;
-    using LoadMDefPair  = std::pair<const llvm::LoadInst*, MemDefs>; 
-    using LoadMDefPairs = std::vector<LoadMDefPair>;
+    using MemDefs         = std::vector<llvm::MemoryDef*>;
+    using LoadMDefPair    = std::pair<llvm::LoadInst*, MemDefs>;
+    using LoadMDefPairs   = std::vector<LoadMDefPair>;
     auto toClobberingDefs = [](LoadMAPair loadMAPair) {
       auto* memAccess = loadMAPair.second;
       auto* loadInst  = loadMAPair.first;
@@ -475,13 +475,17 @@ private:
         asMemDefs.push_back(memDef);
         return LoadMDefPair{loadInst, asMemDefs};
       }
-      auto toMemDef = [](const auto& memAccess) {
-        assert(llvm::dyn_cast<llvm::MemoryDef>(memAccess) && "MemPhi Operand is not a MemDef");
+      auto toMemDef = [](auto memAccess) {
+        assert(llvm::dyn_cast<llvm::MemoryDef>(memAccess)
+               && "MemPhi Operand is not a MemDef");
         llvm::errs() << "Printing memAccess";
         llvm::errs() << *memAccess;
         return llvm::dyn_cast<llvm::MemoryDef>(memAccess);
       };
-      std::transform(loadMAPair.second->defs_begin(), loadMAPair.second->defs_end(), std::back_inserter(asMemDefs), toMemDef);
+      std::transform(loadMAPair.second->defs_begin(),
+                     loadMAPair.second->defs_end(),
+                     std::back_inserter(asMemDefs),
+                     toMemDef);
       return LoadMDefPair{loadMAPair.first, asMemDefs};
     };
     LoadMDefPairs loadsWithMDefs;
@@ -540,7 +544,7 @@ private:
   }
 
   bool
-  handleGep(const llvm::Value* value, DisjunctionState& state) {
+  handleGep(llvm::Value* const value, DisjunctionState& state) {
     auto* gep = llvm::dyn_cast<llvm::GetElementPtrInst>(value);
     if (!gep) {
       return false;
@@ -553,7 +557,7 @@ private:
   }
 
   bool
-  handleRet(const llvm::Value* value, DisjunctionState& state) {
+  handleRet(llvm::Value* const value, DisjunctionState& state) {
     auto* ret = llvm::dyn_cast<llvm::ReturnInst>(value);
     if (!ret) {
       return false;
@@ -590,7 +594,7 @@ private:
   // i.e. GetOrCreateExprID should not create new exprIDs
   // Add an assert?
   void
-  handleUnknown(const llvm::Value* value, DisjunctionState& state) {
+  handleUnknown(llvm::Value* const value, DisjunctionState& state) {
     if (!generator->isUsed(value)) {
       return;
     }

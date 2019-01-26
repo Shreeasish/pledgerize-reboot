@@ -86,8 +86,8 @@ public:
 
 class ValueExprNode {
 public:
-  const llvm::Value* value;
-  ValueExprNode (const llvm::Value* value)
+  llvm::Value* const value;
+  ValueExprNode (llvm::Value* const value)
     : value{value} { }
 };
 

@@ -54,18 +54,18 @@ public:
   }
 
 
-  ExprID //Handle BinaryOperator
-  GetOrCreateExprID(const llvm::BinaryOperator* binOperator) {
+  ExprID  // Handle BinaryOperator
+  GetOrCreateExprID(llvm::BinaryOperator* const binOperator) {
     return GetOrCreateExprID(llvm::dyn_cast<llvm::Instruction>(binOperator));
   }
 
-  ExprID //Handle CmpInst
-  GetOrCreateExprID(const llvm::CmpInst* cmpInst) {
+  ExprID  // Handle CmpInst
+  GetOrCreateExprID(llvm::CmpInst* const cmpInst) {
     return GetOrCreateExprID(llvm::dyn_cast<llvm::Instruction>(cmpInst));
   }
 
   ExprID
-  GetOrCreateExprID(const llvm::Value* value) {
+  GetOrCreateExprID(llvm::Value* const value) {
     assert(value != nullptr);
 
     // Get Constant or Value for leaf
@@ -79,7 +79,7 @@ public:
   }
 
   ExprID
-  GetOrCreateExprID(const llvm::GetElementPtrInst* gep) {
+  GetOrCreateExprID(llvm::GetElementPtrInst* const gep) {
     assert(gep != nullptr);
 
     auto* lhs = gep->getPointerOperand();
@@ -220,14 +220,16 @@ public:
   }
 
   ExprID // load *X = Store *Y
-  GetOrCreateAliasExprID (const llvm::Instruction* loadInst, const llvm::Instruction* storeInst) {
-    auto loadNode  = GetOrCreateExprID(llvm::dyn_cast<llvm::Value>(loadInst));
-    auto storeNode = GetOrCreateExprID(llvm::dyn_cast<llvm::Value>(storeInst));
+  GetOrCreateAliasExprID (llvm::Instruction* const loadInst, llvm::Instruction* const storeInst) {
+    auto* const asLoadValue  =  llvm::dyn_cast<llvm::Value>(loadInst);
+    auto* const asStoreValue = llvm::dyn_cast<llvm::Value>(storeInst);
+    auto loadNode  = GetOrCreateExprID(asLoadValue);
+    auto storeNode = GetOrCreateExprID(asStoreValue);
     return GetOrCreateExprID({loadNode, aliasOp, storeNode});
   }
 
   bool //Generator should not check in the state itself
-  isUsed(const llvm::Value* value) const {
+  isUsed(llvm::Value* const value) const {
     return leafTable.count(value) > 0;
   }
 
@@ -284,7 +286,7 @@ private:
   std::deque<BinaryExprNode>   binarySlab;
 
   llvm::DenseMap<ExprKey, ExprID> exprTable;
-  llvm::DenseMap<const llvm::Value*, ExprID> leafTable;
+  llvm::DenseMap<llvm::Value*, ExprID> leafTable;
 
   constexpr ExprID reservedVExprBits() const {
     return 1 << (typeSize - 3); // -1 for sign bit
@@ -297,7 +299,7 @@ private:
   }
 
   ExprID // Templatize
-  GenerateConstantExprID(const llvm::Constant* constant) {
+  GenerateConstantExprID(llvm::Constant* const constant) {
     assert(constant != nullptr);
 
     constantSlab.emplace_back(constant);
@@ -312,7 +314,7 @@ private:
   }
 
   ExprID
-  GenerateValueExprID(const llvm::Value* value) {
+  GenerateValueExprID(llvm::Value* const value) {
     valueSlab.emplace_back(value);
     valueExprCounter++;
     leafTable.insert({value, valueExprCounter});
@@ -333,7 +335,7 @@ private:
   }
 
   ExprID //TODO: Rename cmpInst to inst
-  GetOrCreateExprID(const llvm::Instruction* inst) {
+  GetOrCreateExprID(llvm::Instruction* const inst) {
     assert(inst != nullptr);
     auto*  lhs = inst->getOperand(0);
     auto*  rhs = inst->getOperand(1);
