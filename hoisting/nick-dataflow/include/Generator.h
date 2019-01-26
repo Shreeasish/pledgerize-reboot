@@ -262,6 +262,17 @@ public:
     return preOrder(conjunct);
   }
 
+  template<class Compare>
+  ExprID
+  findValueExprID(Compare comp) {
+    auto found = std::find_if(valueSlab.rbegin(), valueSlab.rend(), comp);
+    if (found != valueSlab.rend()) {
+      auto* foundValue = found->value;
+      auto  exprID = GetOrCreateExprID(foundValue);
+      return exprID;
+    }
+    return 0;
+  }
 
 private:
   ExprID valueExprCounter    = 0;

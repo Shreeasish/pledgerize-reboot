@@ -558,15 +558,32 @@ private:
     if (!ret) {
       return false;
     }
-    llvm::errs() << "Handling Return \n" ;
+    auto* function = ret->getParent()->getParent();
+    llvm::errs() << "\nHandling Return " ;
+    llvm::errs() << "\nParent Function " ;
     state[nullptr].print();
-    if ( auto* retValue = ret->getReturnValue(); retValue ) {
-      auto retValueExprID = generator->GetOrCreateExprID(retValue);
-      Conjunct retConjunct{retValueExprID, true};
-      Disjunct disjunct{};
-      disjunct.addConjunct(retConjunct);
-      state[nullptr].addDisjunct(disjunct);
+
+
+    auto isCallSite = [&function] (auto& valueExprNode) {
+      llvm::Value nonConstValue = valueExprNode.value;
+      if (auto cs = llvm::CallSite(nonConstValue)) {
+        return cs.getCalledFunction() == function;
+      }
+      return false;
+    };
+
+    auto csExprID = generator->findValueExprID(isCallSite);
+    if (!csExprID) {
+      return true;
     }
+
+    //if ( auto* retValue = ret->getReturnValue(); retValue ) {
+    //  auto retValueExprID = generator->GetOrCreateExprID(retValue);
+    //  Conjunct retConjunct{retValueExprID, true};
+    //  Disjunct disjunct{};
+    //  disjunct.addConjunct(retConjunct);
+    //  state[nullptr].addDisjunct(disjunct);
+    //}
     return true;
   }
 

@@ -367,8 +367,6 @@ public:
     /// REMOVE ///
     return *this;
   }
-
-
 };
 
 //---------------Method Definitions----------------//
