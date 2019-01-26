@@ -565,8 +565,7 @@ private:
 
 
     auto isCallSite = [&function] (auto& valueExprNode) {
-      llvm::Value nonConstValue = valueExprNode.value;
-      if (auto cs = llvm::CallSite(nonConstValue)) {
+      if (auto cs = llvm::CallSite(valueExprNode.value)) {
         return cs.getCalledFunction() == function;
       }
       return false;
