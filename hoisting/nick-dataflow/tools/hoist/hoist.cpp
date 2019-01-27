@@ -557,36 +557,34 @@ private:
   }
 
   bool
-  handleRet(llvm::Value* const value, DisjunctionState& state) {
+  handleRet(llvm::Value* const value, DisjunctionState& state, const Context context) {
     auto* ret = llvm::dyn_cast<llvm::ReturnInst>(value);
     if (!ret) {
       return false;
     }
-    auto* function = ret->getParent()->getParent();
-    llvm::errs() << "\nHandling Return " ;
-    llvm::errs() << "\nParent Function " ;
-    state[nullptr].print();
 
-
-    auto isCallSite = [&function] (auto& valueExprNode) {
-      if (auto cs = llvm::CallSite(valueExprNode.value)) {
-        return cs.getCalledFunction() == function;
+    llvm::Value* callAsValue = nullptr;
+    for (auto* inst : context) {
+      if (inst != nullptr) {
+        callAsValue = llvm::dyn_cast<llvm::Value>(inst);
       }
-      return false;
-    };
+    }
 
-    auto csExprID = generator->findValueExprID(isCallSite);
-    if (!csExprID) {
+    if (!generator->isUsed(callAsValue)) {
       return true;
     }
 
-    //if ( auto* retValue = ret->getReturnValue(); retValue ) {
-    //  auto retValueExprID = generator->GetOrCreateExprID(retValue);
-    //  Conjunct retConjunct{retValueExprID, true};
-    //  Disjunct disjunct{};
-    //  disjunct.addConjunct(retConjunct);
-    //  state[nullptr].addDisjunct(disjunct);
-    //}
+    auto* function = ret->getParent()->getParent();
+    llvm::errs() << "\nHandling Return ";
+    llvm::errs() << "\nParent Function ";
+    state[nullptr].print();
+
+
+    auto* retValue = ret->getReturnValue();
+    auto newExprID = generator->GetOrCreateExprID(retValue);
+    auto oldExprID = generator->GetOrCreateExprID(callAsValue);
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
+
     return true;
   }
 
@@ -610,6 +608,23 @@ private:
 public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    auto debugBefore = [&]() {
+      llvm::errs() << "\n-----------------------Debugging----------------- ";
+      llvm::errs() << "Before Transfer \n";
+      llvm::errs() << value;
+      llvm::errs() << "\n Context \n" ;
+      for ( auto* inst : context) {
+        if (inst != nullptr) {
+          llvm::errs() << *inst << "\t";
+        }
+      }
+      if (state.count(nullptr)) {
+        state[nullptr].print();
+      }
+      generator->dumpState();
+      llvm::errs() << "\n----------------------------Debugging End -------------------------\n" ;
+      llvm::errs().flush() ;
+    };
     auto debugAfter = [&]() {
       llvm::errs() << "\n-----------------------Debugging----------------- ";
       llvm::errs() << "After Transfer \n";
@@ -621,25 +636,13 @@ public:
       llvm::errs().flush();
     };
 
-    auto debugBefore = [&]() {
-      llvm::errs() << "\n-----------------------Debugging----------------- ";
-      llvm::errs() << "Before Transfer \n";
-      llvm::errs() << value;
-      if (state.count(nullptr)) {
-        state[nullptr].print();
-      }
-      generator->dumpState();
-      llvm::errs() << "\n----------------------------Debugging End -------------------------\n" ;
-      llvm::errs().flush() ;
-    };
-
     debugBefore();
     bool handled = false;
     handled |= handlePhi(&value, state);
     handled |= handleCallSite(llvm::CallSite{&value}, state, context);
     handled |= handleStore(&value, state);
     handled |= handleGep(&value, state);
-    handled |= handleRet(&value, state);
+    handled |= handleRet(&value, state, context);
 
     if (handled) {
       debugAfter();
