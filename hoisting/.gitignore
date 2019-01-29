@@ -1,6 +1,5 @@
 build/
 ExternalTests/
-tests/
 *.bc
 *.ll
 *.out

@@ -1,2 +1,0 @@
-strtold() <long double strtold (const char *__restrict s, char **__restrict sp) at ./arch/amd64/gdtoa/strtold.c:39>:
-    |strtorx()

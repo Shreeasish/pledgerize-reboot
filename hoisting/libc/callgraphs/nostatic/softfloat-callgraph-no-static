@@ -1,3 +1,0 @@
-main() <main (int argc, char **argv) at ./softfloat/timesoftfloat.c:2477>:
-    |strcmp()
-    |fputs()

@@ -1,4 +1,0 @@
-main() <int main (int argc, char **argv) at ./net/res_random.c:259>:
-    |printf()
-    |atoi()
-    |res_randomid()
