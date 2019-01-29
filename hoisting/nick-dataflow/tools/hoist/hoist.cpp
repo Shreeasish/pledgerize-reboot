@@ -280,29 +280,52 @@ private:
     if (!fun) {
       return false;
     }
-
     if (fun->getName().startswith("llvm.")) {
-      return false;
+      return true;
     }
 
-    if (fun->getName().startswith("special")) {
-      llvm::errs() << "\n not skipping call" << fun->getName();
-      return false;
-    }
+    [&]( ){
+      llvm::errs() << "Printing from CallSite \n"
+                   << *(cs.getInstruction()) << "\n\n";
+      for (auto& arg : cs.args()) {
+        llvm::errs() << *arg << "\t";
+      }
+      llvm::errs() << "\nFunction Name " << fun->getName() << "\n";
+      for (auto& arg : fun->args()) {
+        llvm::errs() << arg << "\t";
+      }
+      state[nullptr].print();
+      llvm::errs() << "\n";
+      return this;
+    }();
 
-    //
-    llvm::errs() << "Printing from CallSite \n";
-    llvm::errs() << "Function Name " << fun->getName() << "\n";
-    state[nullptr].print();
-    //
-    auto asDisjunct = [](Conjunct conjunct) -> Disjunct {
-      auto d = Disjunct{};
-      d.addConjunct(conjunct);
-      return d;
+    using argParamPair = std::pair<llvm::Value*, llvm::Value*>;
+    std::vector<argParamPair> argPairs;
+    [&](auto& argPairs) mutable {
+      int i = 0;
+      for (auto& param : fun->args()) {
+        auto* paramAsValue = (llvm::Value*) &param;
+        auto arg = cs.getArgument(i);
+        argPairs.push_back(argParamPair{arg, paramAsValue});
+        i++;
+      }
+      return this;
+    }(argPairs);
+
+    auto rewritePair = [&](auto* arg, auto* param) {
+      auto argExprID   = generator->GetOrCreateExprID(arg);
+      auto paramExprID = generator->GetOrCreateExprID(param);
+      generator->rewrite(state[nullptr], argExprID, paramExprID);
     };
 
-    auto vacExpr = generator->GetVacuousExprID();
-    state[nullptr].addDisjunct(asDisjunct({vacExpr,true}));
+    for (auto [arg, param] : argPairs) {
+      llvm::errs() << "\n" << "arg " << *arg 
+                   << "\n" << "param " << *param;
+      rewritePair(arg, param);
+    }
+
+    //auto vacExpr = generator->GetVacuousExprID();
+    //state[nullptr].addDisjunct(asDisjunct({vacExpr,true}));
     return true;
   }
 
@@ -358,12 +381,10 @@ private:
 
   bool
   handleStore(llvm::Value* value, DisjunctionState& state) {
-
     auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
     if (!storeInst) {
       return false;
     }
-
     llvm::errs() << "\nStore Function Name"
                  << storeInst->getParent()->getParent()->getName();
 
@@ -574,7 +595,6 @@ private:
       return true;
     }
 
-    auto* function = ret->getParent()->getParent();
     llvm::errs() << "\nHandling Return ";
     llvm::errs() << "\nParent Function ";
     state[nullptr].print();
