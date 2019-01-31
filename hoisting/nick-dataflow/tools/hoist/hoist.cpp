@@ -213,6 +213,7 @@ public:
 
 class DisjunctionTransfer {
 private:
+
   Disjunction
   strongUpdate(const Disjunction& disjunction,
                llvm::LoadInst* const loadInst,
@@ -378,6 +379,23 @@ private:
     }
     return true;
   }
+  
+  [[no_discard]]
+  bool
+  isEscapingStore(llvm::StoreInst* const storeInst, const llvm::MemorySSA* const memSSA) {
+    auto* asMemAccess = memSSA->getMemoryAccess(storeInst);
+    for (User* user : memAccess->users()) {
+      if (llvm::isa<llvm::MemoryAccess>(user)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool
+  handleEscapingStore(DisjunctionState state, llvm::StoreInst* const storeInst ) {
+    state[nullptr]
+  }
 
   bool
   handleStore(llvm::Value* value, DisjunctionState& state) {
@@ -398,6 +416,9 @@ private:
     auto [walker, memSSA] = getWalkerAndMSSA(storeInst);
     assert(memSSA != nullptr && "No memSSA for function");
 
+    if (isEscapingStore(storeInst, memSSA)) {
+      return handleEscapingStore(state, storeInst);
+    }
 
     /// Find all loads in the disjunct
     std::vector<llvm::LoadInst*> asLoads;
@@ -608,9 +629,6 @@ private:
     return true;
   }
 
-  // Only reaches this if the llvm::value is actually used somewhere else
-  // i.e. GetOrCreateExprID should not create new exprIDs
-  // Add an assert?
   void
   handleUnknown(llvm::Value* const value, DisjunctionState& state) {
     if (!generator->isUsed(value)) {
@@ -668,7 +686,7 @@ public:
       debugAfter();
       return;
     }
-    if (!generator->isUsed(&value)) {  // Global Check
+    if (!generator->isUsed(&value)) {
       debugAfter();
       return;
     }
