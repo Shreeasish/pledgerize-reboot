@@ -1,0 +1,15 @@
+_citrus_none_ctype_mbrtowc() <size_t _citrus_none_ctype_mbrtowc (wchar_t *__restrict pwc, const char *__restrict s, size_t n) at ./citrus/citrus_none.c:55>:
+_citrus_none_ctype_mbsnrtowcs() <size_t _citrus_none_ctype_mbsnrtowcs (wchar_t *__restrict dst, const char **__restrict src, size_t nmc, size_t len) at ./citrus/citrus_none.c:68>:
+    |strnlen()
+_citrus_none_ctype_wcrtomb() <size_t _citrus_none_ctype_wcrtomb (char *__restrict s, wchar_t wc) at ./citrus/citrus_none.c:87>:
+    |wrapv() <char wrapv (unsigned char ch) at ./citrus/citrus_none.c:46>
+_citrus_none_ctype_wcsnrtombs() <size_t _citrus_none_ctype_wcsnrtombs (char *__restrict dst, const wchar_t **__restrict src, size_t nwc, size_t len) at ./citrus/citrus_none.c:102>:
+    |wrapv() <char wrapv (unsigned char ch) at ./citrus/citrus_none.c:46>
+_citrus_utf8_ctype_mbrtowc() <size_t _citrus_utf8_ctype_mbrtowc (wchar_t *__restrict pwc, const char *__restrict s, size_t n, mbstate_t *__restrict ps) at ./citrus/citrus_utf8.c:44>:
+_citrus_utf8_ctype_mbsinit() <int _citrus_utf8_ctype_mbsinit (const mbstate_t *__restrict ps) at ./citrus/citrus_utf8.c:172>:
+_citrus_utf8_ctype_mbsnrtowcs() <size_t _citrus_utf8_ctype_mbsnrtowcs (wchar_t *__restrict dst, const char **__restrict src, size_t nmc, size_t len, mbstate_t *__restrict ps) at ./citrus/citrus_utf8.c:178>:
+    |_citrus_utf8_ctype_mbrtowc() <size_t _citrus_utf8_ctype_mbrtowc (wchar_t *__restrict pwc, const char *__restrict s, size_t n, mbstate_t *__restrict ps) at ./citrus/citrus_utf8.c:44>:
+_citrus_utf8_ctype_wcrtomb() <size_t _citrus_utf8_ctype_wcrtomb (char *__restrict s, wchar_t wc, mbstate_t *__restrict ps) at ./citrus/citrus_utf8.c:258>:
+_citrus_utf8_ctype_wcsnrtombs() <size_t _citrus_utf8_ctype_wcsnrtombs (char *__restrict dst, const wchar_t **__restrict src, size_t nwc, size_t len, mbstate_t *__restrict ps) at ./citrus/citrus_utf8.c:317>:
+    |_citrus_utf8_ctype_wcrtomb() <size_t _citrus_utf8_ctype_wcrtomb (char *__restrict s, wchar_t wc, mbstate_t *__restrict ps) at ./citrus/citrus_utf8.c:258>:
+    |memcpy()

@@ -1,0 +1,541 @@
+_Exit() <void _Exit (int status) at ./stdlib/_Exit.c:19>:
+    |_exit()
+__atexit_register_cleanup() <void __atexit_register_cleanup (void (*func) (void)) at ./stdlib/atexit.c:224>:
+    |getpagesize()
+    |_ATEXIT_LOCK()
+    |mmap()
+    |mprotect()
+    |_ATEXIT_UNLOCK()
+__cxa_atexit() <int __cxa_atexit (void (*func) (void *), void *arg, void *dso) at ./stdlib/atexit.c:68>:
+    |getpagesize()
+    |_ATEXIT_LOCK()
+    |mprotect()
+    |mmap()
+    |memset()
+    |_ATEXIT_UNLOCK()
+__cxa_finalize() <void __cxa_finalize (void *dso) at ./stdlib/atexit.c:145>:
+    |getpagesize()
+    |_thread_finalize() <void _thread_finalize (void) at ./stdlib/atexit.c:127>:
+    |    |TIB_GET()
+    |    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |_ATEXIT_LOCK()
+    |mprotect()
+    |_ATEXIT_UNLOCK()
+    |munmap()
+    |TAILQ_FIRST()
+    |_ATFORK_LOCK()
+    |TAILQ_FOREACH_SAFE()
+    |TAILQ_REMOVE()
+    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |_ATFORK_UNLOCK()
+__cxa_thread_atexit_impl() <int __cxa_thread_atexit_impl (void (*func) (void *), void *arg, void *dso) at ./stdlib/thread_atexit.c:31>:
+    |TIB_GET()
+    |calloc() <void *calloc (size_t nmemb, size_t size) at ./stdlib/malloc.c:1709>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |dlctl()
+__dorand48() <void __dorand48 (unsigned short xseed[3]) at ./stdlib/_rand48.c:30>:
+__findenv() <char *__findenv (const char *name, int len, int *offset) at ./stdlib/getenv.c:46>:
+_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |_MALLOC_LOCK()
+    |_MALLOC_UNLOCK()
+    |mprotect()
+_thread_finalize() <void _thread_finalize (void) at ./stdlib/atexit.c:127>:
+    |TIB_GET()
+    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+a64l() <long a64l (const char *s) at ./stdlib/a64l.c:11>:
+abort() <void abort (void) at ./stdlib/abort.c:38>:
+    |sigfillset()
+    |sigdelset()
+    |sigprocmask()
+    |raise()
+    |memset()
+    |sigaction()
+    |_exit()
+atexit() <int atexit (void (*fn) (void)) at ./stdlib/atexit.c:120>:
+    |__cxa_atexit() <int __cxa_atexit (void (*func) (void *), void *arg, void *dso) at ./stdlib/atexit.c:68>:
+    |    |getpagesize()
+    |    |_ATEXIT_LOCK()
+    |    |mprotect()
+    |    |mmap()
+    |    |memset()
+    |    |_ATEXIT_UNLOCK()
+atof() <double atof (const char *ascii) at ./stdlib/atof.c:34>:
+    |strtod()
+atoi() <int atoi (const char *str) at ./stdlib/atoi.c:34>:
+    |strtol() <long strtol (const char *nptr, char **endptr, int base) at ./stdlib/strtol.c:43>:
+    |    |isspace()
+    |    |isxdigit()
+    |    |isdigit()
+    |    |isalpha()
+    |    |isupper()
+atol() <long atol (const char *str) at ./stdlib/atol.c:34>:
+    |strtol() <long strtol (const char *nptr, char **endptr, int base) at ./stdlib/strtol.c:43>:
+    |    |isspace()
+    |    |isxdigit()
+    |    |isdigit()
+    |    |isalpha()
+    |    |isupper()
+bsearch() <void *bsearch (const void *key, const void *base0, size_t nmemb, size_t size, int (*compar) (const void *, const void *)) at ./stdlib/bsearch.c:50>:
+calloc() <void *calloc (size_t nmemb, size_t size) at ./stdlib/malloc.c:1709>:
+    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |    |mprotect()
+    |_MALLOC_LOCK()
+    |_MALLOC_UNLOCK()
+div() <div_t div (int num, int denom) at ./stdlib/div.c:37>:
+drand48() <double drand48 (void) at ./stdlib/drand48.c:19>:
+    |arc4random_buf()
+    |ldexp()
+    |erand48() <double erand48 (unsigned short xseed[3]) at ./stdlib/erand48.c:19>:
+    |    |__dorand48() <void __dorand48 (unsigned short xseed[3]) at ./stdlib/_rand48.c:30>:
+    |    |ldexp()
+erand48() <double erand48 (unsigned short xseed[3]) at ./stdlib/erand48.c:19>:
+    |__dorand48() <void __dorand48 (unsigned short xseed[3]) at ./stdlib/_rand48.c:30>:
+    |ldexp()
+exit() <void exit (int status) at ./stdlib/exit.c:48>:
+    |__cxa_finalize() <void __cxa_finalize (void *dso) at ./stdlib/atexit.c:145>:
+    |    |getpagesize()
+    |    |_thread_finalize() <void _thread_finalize (void) at ./stdlib/atexit.c:127>:
+    |    |    |TIB_GET()
+    |    |    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |    |    |_MALLOC_LOCK()
+    |    |    |    |_MALLOC_UNLOCK()
+    |    |_ATEXIT_LOCK()
+    |    |mprotect()
+    |    |_ATEXIT_UNLOCK()
+    |    |munmap()
+    |    |TAILQ_FIRST()
+    |    |_ATFORK_LOCK()
+    |    |TAILQ_FOREACH_SAFE()
+    |    |TAILQ_REMOVE()
+    |    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |_ATFORK_UNLOCK()
+    |_exit()
+free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |_MALLOC_LOCK()
+    |_MALLOC_UNLOCK()
+freezero() <void freezero (void *ptr, size_t sz) at ./stdlib/malloc.c:1450>:
+    |_MALLOC_LOCK()
+    |_MALLOC_UNLOCK()
+gcvt() <char *gcvt (double value, int ndigit, char *buf) at ./stdlib/gcvt.c:33>:
+    |localeconv()
+    |__dtoa()
+    |snprintf()
+    |__freedtoa()
+getenv() <char *getenv (const char *name) at ./stdlib/getenv.c:71>:
+    |__findenv() <char *__findenv (const char *name, int len, int *offset) at ./stdlib/getenv.c:46>:
+getopt() <int getopt (int nargc, char *const *nargv, const char *options) at ./stdlib/getopt_long.c:485>:
+getopt_long() <int getopt_long (int nargc, char *const *nargv, const char *options, const struct option *long_options, int *idx) at ./stdlib/getopt_long.c:504>:
+getopt_long_only() <int getopt_long_only (int nargc, char *const *nargv, const char *options, const struct option *long_options, int *idx) at ./stdlib/getopt_long.c:517>:
+getsubopt() <int getsubopt (char **optionp, char *const *tokens, char **valuep) at ./stdlib/getsubopt.c:45>:
+    |strcmp()
+hcreate() <int hcreate (size_t nel) at ./stdlib/hcreate.c:88>:
+    |_DIAGASSERT()
+    |calloc() <void *calloc (size_t nmemb, size_t size) at ./stdlib/malloc.c:1709>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |SLIST_INIT()
+hdestroy() <void hdestroy (void) at ./stdlib/hcreate.c:132>:
+    |_DIAGASSERT()
+    |SLIST_EMPTY()
+    |SLIST_FIRST()
+    |SLIST_REMOVE_HEAD()
+    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+heapsort() <int heapsort (void *vbase, size_t nmemb, size_t size, int (*compar) (const void *, const void *)) at ./stdlib/heapsort.c:134>:
+    |malloc() <void *malloc (size_t size) at ./stdlib/malloc.c:1244>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |CREATE()
+    |COPY()
+    |SELECT()
+    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+hsearch() <ENTRY *hsearch (ENTRY item, ACTION action) at ./stdlib/hcreate.c:154>:
+    |_DIAGASSERT()
+    |strlen()
+    |__default_hash()
+    |SLIST_FIRST()
+    |strcmp()
+    |SLIST_NEXT()
+    |malloc() <void *malloc (size_t size) at ./stdlib/malloc.c:1244>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |SLIST_INSERT_HEAD()
+icdb_add() <int icdb_add (struct icdb db, const void *entry) at ./stdlib/icdb.c:288>:
+    |reallocarray() <void *reallocarray (void *optr, size_t nmemb, size_t size) at ./stdlib/reallocarray.c:30>:
+    |    |realloc() <void *realloc (void *ptr, size_t size) at ./stdlib/malloc.c:1672>:
+    |    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |    |_MALLOC_LOCK()
+    |    |    |    |_MALLOC_UNLOCK()
+    |    |    |    |mprotect()
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |memcpy()
+icdb_close() <int icdb_close (struct icdb db) at ./stdlib/icdb.c:375>:
+    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |munmap()
+    |close()
+icdb_get() <int icdb_get (struct icdb db, void *entry, uint32_t idx) at ./stdlib/icdb.c:208>:
+    |memcpy()
+icdb_lookup() <int icdb_lookup (struct icdb db, int keynum, const void *key, void *entry, uint32_t *idxp) at ./stdlib/icdb.c:218>:
+    |SipHash24()
+    |icdb_get() <int icdb_get (struct icdb db, void *entry, uint32_t idx) at ./stdlib/icdb.c:208>:
+    |    |memcpy()
+    |memcmp()
+icdb_nentries() <int icdb_nentries (struct icdb db) at ./stdlib/icdb.c:252>:
+icdb_rehash() <int icdb_rehash (struct icdb db) at ./stdlib/icdb.c:309>:
+    |arc4random_buf()
+    |reallocarray() <void *reallocarray (void *optr, size_t nmemb, size_t size) at ./stdlib/reallocarray.c:30>:
+    |    |realloc() <void *realloc (void *ptr, size_t size) at ./stdlib/malloc.c:1672>:
+    |    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |    |_MALLOC_LOCK()
+    |    |    |    |_MALLOC_UNLOCK()
+    |    |    |    |mprotect()
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |memset()
+    |SipHash24()
+icdb_save() <int icdb_save (struct icdb db, int fd) at ./stdlib/icdb.c:346>:
+    |icdb_rehash() <int icdb_rehash (struct icdb db) at ./stdlib/icdb.c:309>:
+    |    |arc4random_buf()
+    |    |reallocarray() <void *reallocarray (void *optr, size_t nmemb, size_t size) at ./stdlib/reallocarray.c:30>:
+    |    |    |realloc() <void *realloc (void *ptr, size_t size) at ./stdlib/malloc.c:1672>:
+    |    |    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |    |    |_MALLOC_LOCK()
+    |    |    |    |    |_MALLOC_UNLOCK()
+    |    |    |    |    |mprotect()
+    |    |    |    |_MALLOC_LOCK()
+    |    |    |    |_MALLOC_UNLOCK()
+    |    |memset()
+    |    |SipHash24()
+    |ftruncate()
+    |write()
+icdb_update() <int icdb_update (struct icdb db, const void *entry, int offset) at ./stdlib/icdb.c:266>:
+    |memcpy()
+    |msync()
+imaxdiv() <imaxdiv_t imaxdiv (intmax_t num, intmax_t denom) at ./stdlib/imaxdiv.c:37>:
+initstate() <char *initstate (u_int seed, char *arg_state, size_t n) at ./stdlib/random.c:268>:
+    |LOCK()
+    |UNLOCK()
+insque() <void insque (void *entry, void *pred) at ./stdlib/insque.c:40>:
+jrand48() <long jrand48 (unsigned short xseed[3]) at ./stdlib/jrand48.c:18>:
+    |__dorand48() <void __dorand48 (unsigned short xseed[3]) at ./stdlib/_rand48.c:30>:
+l64a() <char *l64a (long value) at ./stdlib/l64a.c:11>:
+lcong48() <void lcong48 (unsigned short p[7]) at ./stdlib/lcong48.c:18>:
+    |lcong48_deterministic() <void lcong48_deterministic (unsigned short p[7]) at ./stdlib/lcong48.c:25>:
+lcong48_deterministic() <void lcong48_deterministic (unsigned short p[7]) at ./stdlib/lcong48.c:25>:
+ldiv() <ldiv_t ldiv (long num, long denom) at ./stdlib/ldiv.c:37>:
+lfind() <void *lfind (const void *key, const void *base, size_t *nelp, size_t width, cmp_fn_t compar) at ./stdlib/lsearch.c:52>:
+lldiv() <lldiv_t lldiv (long long num, long long denom) at ./stdlib/lldiv.c:37>:
+lrand48() <long lrand48 (void) at ./stdlib/lrand48.c:18>:
+    |arc4random()
+    |__dorand48() <void __dorand48 (unsigned short xseed[3]) at ./stdlib/_rand48.c:30>:
+lsearch() <void *lsearch (const void *key, void *base, size_t *nelp, size_t width, cmp_fn_t compar) at ./stdlib/lsearch.c:44>:
+malloc() <void *malloc (size_t size) at ./stdlib/malloc.c:1244>:
+    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |    |mprotect()
+    |_MALLOC_LOCK()
+    |_MALLOC_UNLOCK()
+malloc_dump() <void malloc_dump (int fd, int poolno, struct dir_info pool) at ./stdlib/malloc.c:2264>:
+    |RBT_INIT()
+malloc_gdump() <void malloc_gdump (int fd) at ./stdlib/malloc.c:2291>:
+    |malloc_dump() <void malloc_dump (int fd, int poolno, struct dir_info pool) at ./stdlib/malloc.c:2264>:
+    |    |RBT_INIT()
+mergesort() <int mergesort (void *base, size_t nmemb, size_t size, int (*cmp) (const void *, const void *)) at ./stdlib/merge.c:91>:
+    |malloc() <void *malloc (size_t size) at ./stdlib/malloc.c:1244>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |setup() <void setup (u_char *list1, u_char *list2, size_t n, size_t size, int (*cmp) (const void *, const void *)) at ./stdlib/merge.c:251>:
+    |    |EVAL()
+    |    |swap()
+    |    |reverse()
+    |EVAL()
+    |COPY()
+    |ICOPY_LIST()
+    |ICOPY_ELT()
+    |CCOPY_LIST()
+    |CCOPY_ELT()
+    |memmove()
+    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+mrand48() <long mrand48 (void) at ./stdlib/mrand48.c:18>:
+    |arc4random()
+    |__dorand48() <void __dorand48 (unsigned short xseed[3]) at ./stdlib/_rand48.c:30>:
+nrand48() <long nrand48 (unsigned short xseed[3]) at ./stdlib/nrand48.c:18>:
+    |__dorand48() <void __dorand48 (unsigned short xseed[3]) at ./stdlib/_rand48.c:30>:
+posix_memalign() <int posix_memalign (void **memptr, size_t alignment, size_t size) at ./stdlib/malloc.c:2032>:
+    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |    |mprotect()
+    |_MALLOC_LOCK()
+    |_MALLOC_UNLOCK()
+posix_openpt() <int posix_openpt (int oflag) at ./stdlib/posix_pty.c:32>:
+    |open()
+    |ioctl()
+    |close()
+ptsname() <char *ptsname (int mfd) at ./stdlib/posix_pty.c:106>:
+    |strlcpy()
+    |strlcat()
+putenv() <int putenv (char *str) at ./stdlib/setenv.c:43>:
+    |__findenv() <char *__findenv (const char *name, int len, int *offset) at ./stdlib/getenv.c:46>:
+    |reallocarray() <void *reallocarray (void *optr, size_t nmemb, size_t size) at ./stdlib/reallocarray.c:30>:
+    |    |realloc() <void *realloc (void *ptr, size_t size) at ./stdlib/malloc.c:1672>:
+    |    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |    |_MALLOC_LOCK()
+    |    |    |    |_MALLOC_UNLOCK()
+    |    |    |    |mprotect()
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |memcpy()
+qsort() <void qsort (void *a, size_t n, size_t es, int (*cmp) (const void *, const void *)) at ./stdlib/qsort.c:217>:
+    |TYPE_ALIGNED()
+r_sort_a() <void r_sort_a (const u_char **a, int n, int i, const u_char *tr, u_int endch) at ./stdlib/radixsort.c:122> (R):
+    |push()
+    |empty()
+    |pop()
+    |r_sort_a() <void r_sort_a (const u_char **a, int n, int i, const u_char *tr, u_int endch) at ./stdlib/radixsort.c:122> (recursive: see 331)
+    |swap()
+r_sort_b() <void r_sort_b (const u_char **a, const u_char **ta, int n, int i, const u_char *tr, u_int endch) at ./stdlib/radixsort.c:209> (R):
+    |push()
+    |empty()
+    |pop()
+    |r_sort_b() <void r_sort_b (const u_char **a, const u_char **ta, int n, int i, const u_char *tr, u_int endch) at ./stdlib/radixsort.c:209> (recursive: see 337)
+    |swap()
+radixsort() <int radixsort (const u_char **a, int n, const u_char *tab, u_int endch) at ./stdlib/radixsort.c:85>:
+    |r_sort_a() <void r_sort_a (const u_char **a, int n, int i, const u_char *tr, u_int endch) at ./stdlib/radixsort.c:122> (R):
+    |    |push()
+    |    |empty()
+    |    |pop()
+    |    |r_sort_a() <void r_sort_a (const u_char **a, int n, int i, const u_char *tr, u_int endch) at ./stdlib/radixsort.c:122> (recursive: see 344)
+    |    |swap()
+rand() <int rand (void) at ./stdlib/rand.c:51>:
+    |arc4random()
+    |rand_r() <int rand_r (u_int *seed) at ./stdlib/rand.c:38>:
+rand_r() <int rand_r (u_int *seed) at ./stdlib/rand.c:38>:
+random() <long random (void) at ./stdlib/random.c:407>:
+    |LOCK()
+    |UNLOCK()
+realloc() <void *realloc (void *ptr, size_t size) at ./stdlib/malloc.c:1672>:
+    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |    |mprotect()
+    |_MALLOC_LOCK()
+    |_MALLOC_UNLOCK()
+reallocarray() <void *reallocarray (void *optr, size_t nmemb, size_t size) at ./stdlib/reallocarray.c:30>:
+    |realloc() <void *realloc (void *ptr, size_t size) at ./stdlib/malloc.c:1672>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+realpath() <char *realpath (const char *path, char *resolved) at ./stdlib/realpath.c:46>:
+    |malloc() <void *malloc (size_t size) at ./stdlib/malloc.c:1244>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |strlcpy()
+    |getcwd()
+    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |strlen()
+    |strchr()
+    |memcpy()
+    |memmove()
+    |strcmp()
+    |strrchr()
+    |strlcat()
+    |readlink()
+recallocarray() <void *recallocarray (void *ptr, size_t oldnmemb, size_t newnmemb, size_t size) at ./stdlib/recallocarray.c:31>:
+    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |    |mprotect()
+    |_MALLOC_LOCK()
+    |_MALLOC_UNLOCK()
+    |calloc() <void *calloc (size_t nmemb, size_t size) at ./stdlib/malloc.c:1709>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |getpagesize()
+    |memset()
+    |malloc() <void *malloc (size_t size) at ./stdlib/malloc.c:1244>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |memcpy()
+    |explicit_bzero()
+    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+remque() <void remque (void *element) at ./stdlib/remque.c:40>:
+seed48() <unsigned short *seed48 (unsigned short xseed[3]) at ./stdlib/seed48.c:18>:
+    |seed48_deterministic() <unsigned short *seed48_deterministic (unsigned short xseed[3]) at ./stdlib/seed48.c:28>:
+seed48_deterministic() <unsigned short *seed48_deterministic (unsigned short xseed[3]) at ./stdlib/seed48.c:28>:
+setenv() <int setenv (const char *name, const char *value, int rewrite) at ./stdlib/setenv.c:91>:
+    |strlen()
+    |__findenv() <char *__findenv (const char *name, int len, int *offset) at ./stdlib/getenv.c:46>:
+    |reallocarray() <void *reallocarray (void *optr, size_t nmemb, size_t size) at ./stdlib/reallocarray.c:30>:
+    |    |realloc() <void *realloc (void *ptr, size_t size) at ./stdlib/malloc.c:1672>:
+    |    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |    |_MALLOC_LOCK()
+    |    |    |    |_MALLOC_UNLOCK()
+    |    |    |    |mprotect()
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |memcpy()
+    |malloc() <void *malloc (size_t size) at ./stdlib/malloc.c:1244>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+setstate() <char *setstate (char *arg_state) at ./stdlib/random.c:330>:
+    |LOCK()
+    |UNLOCK()
+setup() <void setup (u_char *list1, u_char *list2, size_t n, size_t size, int (*cmp) (const void *, const void *)) at ./stdlib/merge.c:251>:
+    |EVAL()
+    |swap()
+    |reverse()
+sradixsort() <int sradixsort (const u_char **a, int n, const u_char *tab, u_int endch) at ./stdlib/radixsort.c:97>:
+    |calloc() <void *calloc (size_t nmemb, size_t size) at ./stdlib/malloc.c:1709>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+    |r_sort_b() <void r_sort_b (const u_char **a, const u_char **ta, int n, int i, const u_char *tr, u_int endch) at ./stdlib/radixsort.c:209> (R):
+    |    |push()
+    |    |empty()
+    |    |pop()
+    |    |r_sort_b() <void r_sort_b (const u_char **a, const u_char **ta, int n, int i, const u_char *tr, u_int endch) at ./stdlib/radixsort.c:209> (recursive: see 459)
+    |    |swap()
+    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+srand48() <void srand48 (long seed) at ./stdlib/srand48.c:20>:
+    |srand48_deterministic() <void srand48_deterministic (long seed) at ./stdlib/srand48.c:27>:
+srand48_deterministic() <void srand48_deterministic (long seed) at ./stdlib/srand48.c:27>:
+srandom_deterministic() <void srandom_deterministic (unsigned int x) at ./stdlib/random.c:241>:
+    |LOCK()
+    |UNLOCK()
+strtoimax() <intmax_t strtoimax (const char *nptr, char **endptr, int base) at ./stdlib/strtoimax.c:42>:
+    |isspace()
+    |isxdigit()
+    |isdigit()
+    |isalpha()
+    |isupper()
+strtol() <long strtol (const char *nptr, char **endptr, int base) at ./stdlib/strtol.c:43>:
+    |isspace()
+    |isxdigit()
+    |isdigit()
+    |isalpha()
+    |isupper()
+strtoll() <long long strtoll (const char *nptr, char **endptr, int base) at ./stdlib/strtoll.c:45>:
+    |isspace()
+    |isxdigit()
+    |isdigit()
+    |isalpha()
+    |isupper()
+strtonum() <long long strtonum (const char *numstr, long long minval, long long maxval, const char **errstrp) at ./stdlib/strtonum.c:29>:
+    |strtoll() <long long strtoll (const char *nptr, char **endptr, int base) at ./stdlib/strtoll.c:45>:
+    |    |isspace()
+    |    |isxdigit()
+    |    |isdigit()
+    |    |isalpha()
+    |    |isupper()
+strtoul() <unsigned long strtoul (const char *nptr, char **endptr, int base) at ./stdlib/strtoul.c:43>:
+    |isspace()
+    |isxdigit()
+    |isdigit()
+    |isalpha()
+    |isupper()
+strtoull() <unsigned long long strtoull (const char *nptr, char **endptr, int base) at ./stdlib/strtoull.c:45>:
+    |isspace()
+    |isxdigit()
+    |isdigit()
+    |isalpha()
+    |isupper()
+strtoumax() <uintmax_t strtoumax (const char *nptr, char **endptr, int base) at ./stdlib/strtoumax.c:42>:
+    |isspace()
+    |isxdigit()
+    |isdigit()
+    |isalpha()
+    |isupper()
+system() <int system (const char *command) at ./stdlib/system.c:40>:
+    |sigemptyset()
+    |sigaddset()
+    |sigprocmask()
+    |vfork()
+    |execve()
+    |_exit()
+    |sigaction()
+    |waitpid()
+tdelete() <void *tdelete (const void *vkey, void **vrootp, int (*compar) (const void *, const void *)) at ./stdlib/tsearch.c:53>:
+    |free() <void free (void *ptr) at ./stdlib/malloc.c:1417>:
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+tfind() <void *tfind (const void *vkey, void *const *vrootp, int (*compar) (const void *, const void *)) at ./stdlib/tfind.c:23>:
+tsearch() <void *tsearch (const void *vkey, void **vrootp, int (*compar) (const void *, const void *)) at ./stdlib/tsearch.c:24>:
+    |malloc() <void *malloc (size_t size) at ./stdlib/malloc.c:1244>:
+    |    |_malloc_init() <void _malloc_init (int from_rthreads) at ./stdlib/malloc.c:1203>:
+    |    |    |_MALLOC_LOCK()
+    |    |    |_MALLOC_UNLOCK()
+    |    |    |mprotect()
+    |    |_MALLOC_LOCK()
+    |    |_MALLOC_UNLOCK()
+twalk() <void twalk (const void *vroot, void (*action) (const void *, VISIT, int)) at ./stdlib/tsearch.c:112>:
+unsetenv() <int unsetenv (const char *name) at ./stdlib/setenv.c:159>:
+    |__findenv() <char *__findenv (const char *name, int len, int *offset) at ./stdlib/getenv.c:46>:

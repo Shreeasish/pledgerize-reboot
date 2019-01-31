@@ -1,0 +1,30 @@
+_MCOUNT_DECL() < at ./gmon/mcount.c:45>:
+    |curcpu()
+_mcleanup() <void _mcleanup (void) at ./gmon/gmon.c:138>:
+    |ERR()
+    |sysctl()
+    |hertz() <int hertz (void) at ./gmon/gmon.c:315>:
+    |    |setitimer()
+    |moncontrol() <void moncontrol (int mode) at ./gmon/gmon.c:293>:
+    |    |profil()
+    |issetugid()
+    |getenv()
+    |strlen()
+    |getpid()
+    |open()
+    |perror()
+    |close()
+    |snprintf()
+    |write()
+    |bzero()
+    |munmap()
+moncontrol() <void moncontrol (int mode) at ./gmon/gmon.c:293>:
+    |profil()
+monstartup() <void monstartup (u_long lowpc, u_long highpc) at ./gmon/gmon.c:56>:
+    |ROUNDDOWN()
+    |ROUNDUP()
+    |mmap()
+    |moncontrol() <void moncontrol (int mode) at ./gmon/gmon.c:293>:
+    |    |profil()
+    |munmap()
+    |ERR()

@@ -1,0 +1,5 @@
+__dbpanic() <void __dbpanic (DB *dbp) at ./db/db/db.c:84>:
+dbopen() <DB *dbopen (const char *fname, int flags, int mode, DBTYPE type, const void *openinfo) at ./db/db/db.c:44>:
+    |__bt_open()
+    |__hash_open()
+    |__rec_open()

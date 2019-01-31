@@ -1,0 +1,10 @@
+__fpclassifyl() <int __fpclassifyl (long double e) at ./arch/amd64/gen/fpclassifyl.c:23>:
+__isfinitel() <int __isfinitel (long double e) at ./arch/amd64/gen/isfinitel.c:23>:
+__isinfl() <int __isinfl (long double e) at ./arch/amd64/gen/isinfl.c:23>:
+__isnanl() <int __isnanl (long double e) at ./arch/amd64/gen/isnanl.c:23>:
+__isnormall() <int __isnormall (long double e) at ./arch/amd64/gen/isnormall.c:23>:
+__signbitl() <int __signbitl (long double e) at ./arch/amd64/gen/signbitl.c:23>:
+_atomic_lock() <int _atomic_lock (volatile _atomic_lock_t *lock) at ./arch/amd64/gen/_atomic_lock.c:12>:
+    |__asm__()
+ldexp() <double ldexp (double value, int exp) at ./arch/amd64/gen/ldexp.c:42>:
+    |__asm()

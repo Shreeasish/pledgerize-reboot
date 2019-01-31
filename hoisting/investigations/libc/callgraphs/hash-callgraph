@@ -1,0 +1,311 @@
+HASHData() <char *HASHData (const u_char *data, size_t len, char *buf) at ./hash/helper.c:109>:
+    |HASHInit()
+    |HASHUpdate()
+    |HASHEnd() <char *HASHEnd (HASH_CTX *ctx, char *buf) at ./hash/helper.c:39>:
+    |    |malloc()
+    |    |HASHFinal()
+    |    |explicit_bzero()
+HASHEnd() <char *HASHEnd (HASH_CTX *ctx, char *buf) at ./hash/helper.c:39>:
+    |malloc()
+    |HASHFinal()
+    |explicit_bzero()
+HASHFile() <char *HASHFile (const char *filename, char *buf) at ./hash/helper.c:102>:
+    |HASHFileChunk() <char *HASHFileChunk (const char *filename, char *buf, off_t off, off_t len) at ./hash/helper.c:60>:
+    |    |HASHInit()
+    |    |open()
+    |    |fstat()
+    |    |close()
+    |    |lseek()
+    |    |read()
+    |    |MINIMUM()
+    |    |HASHUpdate()
+    |    |HASHEnd() <char *HASHEnd (HASH_CTX *ctx, char *buf) at ./hash/helper.c:39>:
+    |    |    |malloc()
+    |    |    |HASHFinal()
+    |    |    |explicit_bzero()
+HASHFileChunk() <char *HASHFileChunk (const char *filename, char *buf, off_t off, off_t len) at ./hash/helper.c:60>:
+    |HASHInit()
+    |open()
+    |fstat()
+    |close()
+    |lseek()
+    |read()
+    |MINIMUM()
+    |HASHUpdate()
+    |HASHEnd() <char *HASHEnd (HASH_CTX *ctx, char *buf) at ./hash/helper.c:39>:
+    |    |malloc()
+    |    |HASHFinal()
+    |    |explicit_bzero()
+MD5Final() <void MD5Final (unsigned char digest[MD5_DIGEST_LENGTH], MD5_CTX *ctx) at ./hash/md5.c:127>:
+    |MD5Pad() <void MD5Pad (MD5_CTX *ctx) at ./hash/md5.c:105>:
+    |    |PUT_64BIT_LE()
+    |    |MD5Update() <void MD5Update (MD5_CTX *ctx, const unsigned char *input, size_t len) at ./hash/md5.c:66>:
+    |    |    |memcpy()
+    |    |    |MD5Transform() <void MD5Transform (u_int32_t state[4], const u_int8_t block[MD5_BLOCK_LENGTH]) at ./hash/md5.c:157>:
+    |    |    |    |memcpy()
+    |    |    |    |MD5STEP()
+    |PUT_32BIT_LE()
+    |explicit_bzero()
+MD5Pad() <void MD5Pad (MD5_CTX *ctx) at ./hash/md5.c:105>:
+    |PUT_64BIT_LE()
+    |MD5Update() <void MD5Update (MD5_CTX *ctx, const unsigned char *input, size_t len) at ./hash/md5.c:66>:
+    |    |memcpy()
+    |    |MD5Transform() <void MD5Transform (u_int32_t state[4], const u_int8_t block[MD5_BLOCK_LENGTH]) at ./hash/md5.c:157>:
+    |    |    |memcpy()
+    |    |    |MD5STEP()
+MD5Transform() <void MD5Transform (u_int32_t state[4], const u_int8_t block[MD5_BLOCK_LENGTH]) at ./hash/md5.c:157>:
+    |memcpy()
+    |MD5STEP()
+MD5Update() <void MD5Update (MD5_CTX *ctx, const unsigned char *input, size_t len) at ./hash/md5.c:66>:
+    |memcpy()
+    |MD5Transform() <void MD5Transform (u_int32_t state[4], const u_int8_t block[MD5_BLOCK_LENGTH]) at ./hash/md5.c:157>:
+    |    |memcpy()
+    |    |MD5STEP()
+RMD160Final() <void RMD160Final (u_int8_t digest[RMD160_DIGEST_LENGTH], RMD160_CTX *ctx) at ./hash/rmd160.c:152>:
+    |RMD160Pad() <void RMD160Pad (RMD160_CTX *ctx) at ./hash/rmd160.c:132>:
+    |    |PUT_64BIT_LE()
+    |    |RMD160Update() <void RMD160Update (RMD160_CTX *ctx, const u_int8_t *input, size_t len) at ./hash/rmd160.c:104>:
+    |    |    |memcpy()
+    |    |    |RMD160Transform() <void RMD160Transform (u_int32_t state[5], const u_int8_t block[RMD160_BLOCK_LENGTH]) at ./hash/rmd160.c:164>:
+    |    |    |    |memcpy()
+    |    |    |    |R()
+    |PUT_32BIT_LE()
+    |explicit_bzero()
+RMD160Init() <void RMD160Init (RMD160_CTX *ctx) at ./hash/rmd160.c:92>:
+RMD160Pad() <void RMD160Pad (RMD160_CTX *ctx) at ./hash/rmd160.c:132>:
+    |PUT_64BIT_LE()
+    |RMD160Update() <void RMD160Update (RMD160_CTX *ctx, const u_int8_t *input, size_t len) at ./hash/rmd160.c:104>:
+    |    |memcpy()
+    |    |RMD160Transform() <void RMD160Transform (u_int32_t state[5], const u_int8_t block[RMD160_BLOCK_LENGTH]) at ./hash/rmd160.c:164>:
+    |    |    |memcpy()
+    |    |    |R()
+RMD160Transform() <void RMD160Transform (u_int32_t state[5], const u_int8_t block[RMD160_BLOCK_LENGTH]) at ./hash/rmd160.c:164>:
+    |memcpy()
+    |R()
+RMD160Update() <void RMD160Update (RMD160_CTX *ctx, const u_int8_t *input, size_t len) at ./hash/rmd160.c:104>:
+    |memcpy()
+    |RMD160Transform() <void RMD160Transform (u_int32_t state[5], const u_int8_t block[RMD160_BLOCK_LENGTH]) at ./hash/rmd160.c:164>:
+    |    |memcpy()
+    |    |R()
+SHA1Final() <void SHA1Final (u_int8_t digest[SHA1_DIGEST_LENGTH], SHA1_CTX *context) at ./hash/sha1.c:167>:
+    |SHA1Pad() <void SHA1Pad (SHA1_CTX *context) at ./hash/sha1.c:150>:
+    |    |SHA1Update() <void SHA1Update (SHA1_CTX *context, const u_int8_t *data, size_t len) at ./hash/sha1.c:126>:
+    |    |    |memcpy()
+    |    |    |SHA1Transform() <void SHA1Transform (u_int32_t state[5], const u_int8_t buffer[SHA1_BLOCK_LENGTH]) at ./hash/sha1.c:54>:
+    |    |    |    |memcpy()
+    |    |    |    |R0()
+    |    |    |    |R1()
+    |    |    |    |R2()
+    |    |    |    |R3()
+    |    |    |    |R4()
+    |explicit_bzero()
+SHA1Pad() <void SHA1Pad (SHA1_CTX *context) at ./hash/sha1.c:150>:
+    |SHA1Update() <void SHA1Update (SHA1_CTX *context, const u_int8_t *data, size_t len) at ./hash/sha1.c:126>:
+    |    |memcpy()
+    |    |SHA1Transform() <void SHA1Transform (u_int32_t state[5], const u_int8_t buffer[SHA1_BLOCK_LENGTH]) at ./hash/sha1.c:54>:
+    |    |    |memcpy()
+    |    |    |R0()
+    |    |    |R1()
+    |    |    |R2()
+    |    |    |R3()
+    |    |    |R4()
+SHA1Transform() <void SHA1Transform (u_int32_t state[5], const u_int8_t buffer[SHA1_BLOCK_LENGTH]) at ./hash/sha1.c:54>:
+    |memcpy()
+    |R0()
+    |R1()
+    |R2()
+    |R3()
+    |R4()
+SHA1Update() <void SHA1Update (SHA1_CTX *context, const u_int8_t *data, size_t len) at ./hash/sha1.c:126>:
+    |memcpy()
+    |SHA1Transform() <void SHA1Transform (u_int32_t state[5], const u_int8_t buffer[SHA1_BLOCK_LENGTH]) at ./hash/sha1.c:54>:
+    |    |memcpy()
+    |    |R0()
+    |    |R1()
+    |    |R2()
+    |    |R3()
+    |    |R4()
+SHA224Final() <void SHA224Final (u_int8_t digest[SHA224_DIGEST_LENGTH], SHA2_CTX *context) at ./hash/sha2.c:322>:
+    |SHA224Pad()
+    |BE_32_TO_8()
+    |memcpy()
+    |explicit_bzero()
+SHA224Init() <void SHA224Init (SHA2_CTX *context) at ./hash/sha2.c:305>:
+    |memcpy()
+    |memset()
+SHA256Final() <void SHA256Final (u_int8_t digest[SHA256_DIGEST_LENGTH], SHA2_CTX *context) at ./hash/sha2.c:602>:
+    |SHA256Pad() <void SHA256Pad (SHA2_CTX *context) at ./hash/sha2.c:558>:
+    |    |memset()
+    |    |SHA256Transform() <void SHA256Transform (u_int32_t state[8], const u_int8_t data[SHA256_BLOCK_LENGTH]) at ./hash/sha2.c:435>:
+    |    |    |ROUND256_0_TO_15()
+    |    |    |ROUND256()
+    |    |    |BE_8_TO_32()
+    |    |    |Sigma1_256()
+    |    |    |Ch()
+    |    |    |Sigma0_256()
+    |    |    |Maj()
+    |    |    |sigma0_256()
+    |    |    |sigma1_256()
+    |    |BE_64_TO_8()
+    |BE_32_TO_8()
+    |memcpy()
+    |explicit_bzero()
+SHA256Init() <void SHA256Init (SHA2_CTX *context) at ./hash/sha2.c:342>:
+    |memcpy()
+    |memset()
+SHA256Pad() <void SHA256Pad (SHA2_CTX *context) at ./hash/sha2.c:558>:
+    |memset()
+    |SHA256Transform() <void SHA256Transform (u_int32_t state[8], const u_int8_t data[SHA256_BLOCK_LENGTH]) at ./hash/sha2.c:435>:
+    |    |ROUND256_0_TO_15()
+    |    |ROUND256()
+    |    |BE_8_TO_32()
+    |    |Sigma1_256()
+    |    |Ch()
+    |    |Sigma0_256()
+    |    |Maj()
+    |    |sigma0_256()
+    |    |sigma1_256()
+    |BE_64_TO_8()
+SHA256Transform() <void SHA256Transform (u_int32_t state[8], const u_int8_t data[SHA256_BLOCK_LENGTH]) at ./hash/sha2.c:435>:
+    |ROUND256_0_TO_15()
+    |ROUND256()
+    |BE_8_TO_32()
+    |Sigma1_256()
+    |Ch()
+    |Sigma0_256()
+    |Maj()
+    |sigma0_256()
+    |sigma1_256()
+SHA256Update() <void SHA256Update (SHA2_CTX *context, const u_int8_t *data, size_t len) at ./hash/sha2.c:511>:
+    |memcpy()
+    |SHA256Transform() <void SHA256Transform (u_int32_t state[8], const u_int8_t data[SHA256_BLOCK_LENGTH]) at ./hash/sha2.c:435>:
+    |    |ROUND256_0_TO_15()
+    |    |ROUND256()
+    |    |BE_8_TO_32()
+    |    |Sigma1_256()
+    |    |Ch()
+    |    |Sigma0_256()
+    |    |Maj()
+    |    |sigma0_256()
+    |    |sigma1_256()
+SHA384Final() <void SHA384Final (u_int8_t digest[SHA384_DIGEST_LENGTH], SHA2_CTX *context) at ./hash/sha2.c:921>:
+    |SHA384Pad()
+    |BE_64_TO_8()
+    |memcpy()
+    |explicit_bzero()
+SHA384Init() <void SHA384Init (SHA2_CTX *context) at ./hash/sha2.c:904>:
+    |memcpy()
+    |memset()
+SHA512Final() <void SHA512Final (u_int8_t digest[SHA512_DIGEST_LENGTH], SHA2_CTX *context) at ./hash/sha2.c:883>:
+    |SHA512Pad() <void SHA512Pad (SHA2_CTX *context) at ./hash/sha2.c:839>:
+    |    |memset()
+    |    |SHA512Transform() <void SHA512Transform (u_int64_t state[8], const u_int8_t data[SHA512_BLOCK_LENGTH]) at ./hash/sha2.c:716>:
+    |    |    |ROUND512_0_TO_15()
+    |    |    |ROUND512()
+    |    |    |BE_8_TO_64()
+    |    |    |Sigma1_512()
+    |    |    |Ch()
+    |    |    |Sigma0_512()
+    |    |    |Maj()
+    |    |    |sigma0_512()
+    |    |    |sigma1_512()
+    |    |BE_64_TO_8()
+    |BE_64_TO_8()
+    |memcpy()
+    |explicit_bzero()
+SHA512Init() <void SHA512Init (SHA2_CTX *context) at ./hash/sha2.c:622>:
+    |memcpy()
+    |memset()
+SHA512Pad() <void SHA512Pad (SHA2_CTX *context) at ./hash/sha2.c:839>:
+    |memset()
+    |SHA512Transform() <void SHA512Transform (u_int64_t state[8], const u_int8_t data[SHA512_BLOCK_LENGTH]) at ./hash/sha2.c:716>:
+    |    |ROUND512_0_TO_15()
+    |    |ROUND512()
+    |    |BE_8_TO_64()
+    |    |Sigma1_512()
+    |    |Ch()
+    |    |Sigma0_512()
+    |    |Maj()
+    |    |sigma0_512()
+    |    |sigma1_512()
+    |BE_64_TO_8()
+SHA512Transform() <void SHA512Transform (u_int64_t state[8], const u_int8_t data[SHA512_BLOCK_LENGTH]) at ./hash/sha2.c:716>:
+    |ROUND512_0_TO_15()
+    |ROUND512()
+    |BE_8_TO_64()
+    |Sigma1_512()
+    |Ch()
+    |Sigma0_512()
+    |Maj()
+    |sigma0_512()
+    |sigma1_512()
+SHA512Update() <void SHA512Update (SHA2_CTX *context, const u_int8_t *data, size_t len) at ./hash/sha2.c:792>:
+    |memcpy()
+    |ADDINC128()
+    |SHA512Transform() <void SHA512Transform (u_int64_t state[8], const u_int8_t data[SHA512_BLOCK_LENGTH]) at ./hash/sha2.c:716>:
+    |    |ROUND512_0_TO_15()
+    |    |ROUND512()
+    |    |BE_8_TO_64()
+    |    |Sigma1_512()
+    |    |Ch()
+    |    |Sigma0_512()
+    |    |Maj()
+    |    |sigma0_512()
+    |    |sigma1_512()
+SHA512_256Final() <void SHA512_256Final (u_int8_t digest[SHA512_256_DIGEST_LENGTH], SHA2_CTX *context) at ./hash/sha2.c:958>:
+    |SHA512_256Pad()
+    |BE_64_TO_8()
+    |memcpy()
+    |explicit_bzero()
+SHA512_256Init() <void SHA512_256Init (SHA2_CTX *context) at ./hash/sha2.c:941>:
+    |memcpy()
+    |memset()
+SipHash() <uint64_t SipHash (const SIPHASH_KEY *key, int rc, int rf, const void *src, size_t len) at ./hash/siphash.c:143>:
+    |SipHash_Init() <void SipHash_Init (SIPHASH_CTX *ctx, const SIPHASH_KEY *key) at ./hash/siphash.c:56>:
+    |    |le64toh()
+    |    |memset()
+    |SipHash_Update() <void SipHash_Update (SIPHASH_CTX *ctx, int rc, int rf, const void *src, size_t len) at ./hash/siphash.c:74>:
+    |    |memcpy()
+    |    |SipHash_CRounds() <void SipHash_CRounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:180>:
+    |    |    |le64toh()
+    |    |    |SipHash_Rounds() <void SipHash_Rounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:156>:
+    |    |    |    |SIP_ROTL()
+    |SipHash_End() <uint64_t SipHash_End (SIPHASH_CTX *ctx, int rc, int rf) at ./hash/siphash.c:122>:
+    |    |memset()
+    |    |SipHash_CRounds() <void SipHash_CRounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:180>:
+    |    |    |le64toh()
+    |    |    |SipHash_Rounds() <void SipHash_Rounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:156>:
+    |    |    |    |SIP_ROTL()
+    |    |SipHash_Rounds() <void SipHash_Rounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:156>:
+    |    |    |SIP_ROTL()
+    |    |explicit_bzero()
+SipHash_End() <uint64_t SipHash_End (SIPHASH_CTX *ctx, int rc, int rf) at ./hash/siphash.c:122>:
+    |memset()
+    |SipHash_CRounds() <void SipHash_CRounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:180>:
+    |    |le64toh()
+    |    |SipHash_Rounds() <void SipHash_Rounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:156>:
+    |    |    |SIP_ROTL()
+    |SipHash_Rounds() <void SipHash_Rounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:156>:
+    |    |SIP_ROTL()
+    |explicit_bzero()
+SipHash_Final() <void SipHash_Final (void *dst, SIPHASH_CTX *ctx, int rc, int rf) at ./hash/siphash.c:112>:
+    |htole64()
+    |SipHash_End() <uint64_t SipHash_End (SIPHASH_CTX *ctx, int rc, int rf) at ./hash/siphash.c:122>:
+    |    |memset()
+    |    |SipHash_CRounds() <void SipHash_CRounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:180>:
+    |    |    |le64toh()
+    |    |    |SipHash_Rounds() <void SipHash_Rounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:156>:
+    |    |    |    |SIP_ROTL()
+    |    |SipHash_Rounds() <void SipHash_Rounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:156>:
+    |    |    |SIP_ROTL()
+    |    |explicit_bzero()
+    |memcpy()
+SipHash_Init() <void SipHash_Init (SIPHASH_CTX *ctx, const SIPHASH_KEY *key) at ./hash/siphash.c:56>:
+    |le64toh()
+    |memset()
+SipHash_Update() <void SipHash_Update (SIPHASH_CTX *ctx, int rc, int rf, const void *src, size_t len) at ./hash/siphash.c:74>:
+    |memcpy()
+    |SipHash_CRounds() <void SipHash_CRounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:180>:
+    |    |le64toh()
+    |    |SipHash_Rounds() <void SipHash_Rounds (SIPHASH_CTX *ctx, int rounds) at ./hash/siphash.c:156>:
+    |    |    |SIP_ROTL()

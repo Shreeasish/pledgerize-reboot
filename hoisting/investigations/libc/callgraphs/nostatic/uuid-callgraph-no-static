@@ -1,0 +1,27 @@
+uuid_compare() <int32_t uuid_compare (const uuid_t *a, const uuid_t *b, uint32_t *status) at ./uuid/uuid_compare.c:51>:
+    |uuid_is_nil() <int32_t uuid_is_nil (const uuid_t *u, uint32_t *status) at ./uuid/uuid_is_nil.c:42>:
+    |    |memcmp()
+    |DIFF_RETURN()
+    |memcmp()
+uuid_create() <void uuid_create (uuid_t *u, uint32_t *status) at ./uuid/uuid_create.c:45>:
+    |arc4random_buf()
+uuid_create_nil() <void uuid_create_nil (uuid_t *u, uint32_t *status) at ./uuid/uuid_create_nil.c:42>:
+    |memset()
+uuid_dec_be() <void uuid_dec_be (const void *buf, uuid_t *uuid) at ./uuid/uuid_stream.c:201>:
+uuid_dec_le() <void uuid_dec_le (const void *buf, uuid_t *uuid) at ./uuid/uuid_stream.c:171>:
+uuid_enc_be() <void uuid_enc_be (void *buf, const uuid_t *uuid) at ./uuid/uuid_stream.c:186>:
+uuid_enc_le() <void uuid_enc_le (void *buf, const uuid_t *uuid) at ./uuid/uuid_stream.c:156>:
+uuid_equal() <int32_t uuid_equal (const uuid_t *a, const uuid_t *b, uint32_t *status) at ./uuid/uuid_equal.c:42>:
+    |uuid_is_nil() <int32_t uuid_is_nil (const uuid_t *u, uint32_t *status) at ./uuid/uuid_is_nil.c:42>:
+    |    |memcmp()
+    |memcmp()
+uuid_from_string() <void uuid_from_string (const char *s, uuid_t *u, uint32_t *status) at ./uuid/uuid_from_string.c:47>:
+    |uuid_create_nil() <void uuid_create_nil (uuid_t *u, uint32_t *status) at ./uuid/uuid_create_nil.c:42>:
+    |    |memset()
+    |strlen()
+    |sscanf()
+uuid_hash() <uint16_t uuid_hash (const uuid_t *u, uint32_t *status) at ./uuid/uuid_hash.c:41>:
+uuid_is_nil() <int32_t uuid_is_nil (const uuid_t *u, uint32_t *status) at ./uuid/uuid_is_nil.c:42>:
+    |memcmp()
+uuid_to_string() <void uuid_to_string (const uuid_t *u, char **s, uint32_t *status) at ./uuid/uuid_to_string.c:47>:
+    |asprintf()

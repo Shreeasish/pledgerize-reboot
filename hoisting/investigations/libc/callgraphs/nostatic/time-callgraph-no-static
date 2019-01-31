@@ -1,0 +1,51 @@
+asctime() <char *asctime (const struct tm *timeptr) at ./time/asctime.c:130> (R):
+    |_THREAD_PRIVATE_KEY()
+    |asctime() <char *asctime (const struct tm *timeptr) at ./time/asctime.c:130> (recursive: see 1)
+    |_THREAD_PRIVATE()
+asctime_r() <char *asctime_r (const struct tm *timeptr, char *buf) at ./time/asctime.c:115>:
+ctime() <char *ctime (const time_t *timep) at ./time/localtime.c:1518>:
+    |asctime() <char *asctime (const struct tm *timeptr) at ./time/asctime.c:130> (R):
+    |    |_THREAD_PRIVATE_KEY()
+    |    |asctime() <char *asctime (const struct tm *timeptr) at ./time/asctime.c:130> (recursive: see 7)
+    |    |_THREAD_PRIVATE()
+    |localtime() <struct tm localtime (const time_t *timep) at ./time/localtime.c:1299>
+ctime_r() <char *ctime_r (const time_t *timep, char *buf) at ./time/localtime.c:1530>:
+    |asctime_r() <char *asctime_r (const struct tm *timeptr, char *buf) at ./time/asctime.c:115>:
+    |localtime_r() <struct tm localtime_r (const time_t *timep, struct tm p_tm) at ./time/localtime.c:1288>
+difftime() <double difftime (time_t t1, time_t t0) at ./time/difftime.c:10>:
+    |HI()
+    |LO()
+mktime() <time_t mktime (struct tm tmp) at ./time/localtime.c:1880>:
+    |_THREAD_PRIVATE_MUTEX_LOCK()
+    |_THREAD_PRIVATE_MUTEX_UNLOCK()
+posix2time() <time_t posix2time (time_t t) at ./time/localtime.c:1959>:
+    |tzset() <void tzset (void) at ./time/localtime.c:1174>:
+    |    |_THREAD_PRIVATE_MUTEX_LOCK()
+    |    |_THREAD_PRIVATE_MUTEX_UNLOCK()
+strftime() <size_t strftime (char *s, size_t maxsize, const char *format, const struct tm *t) at ./time/strftime.c:121>:
+    |tzset() <void tzset (void) at ./time/localtime.c:1174>:
+    |    |_THREAD_PRIVATE_MUTEX_LOCK()
+    |    |_THREAD_PRIVATE_MUTEX_UNLOCK()
+strftime_l() <size_t strftime_l (char *s, size_t maxsize, const char *format, const struct tm *t, locale_t locale __attribute__ ((__unused__))) at ./time/strftime_l.c:10>:
+    |strftime() <size_t strftime (char *s, size_t maxsize, const char *format, const struct tm *t) at ./time/strftime.c:121>:
+    |    |tzset() <void tzset (void) at ./time/localtime.c:1174>:
+    |    |    |_THREAD_PRIVATE_MUTEX_LOCK()
+    |    |    |_THREAD_PRIVATE_MUTEX_UNLOCK()
+strptime() <char *strptime (const char *buf, const char *fmt, struct tm tm) at ./time/strptime.c:82>:
+time2posix() <time_t time2posix (time_t t) at ./time/localtime.c:1952>:
+    |tzset() <void tzset (void) at ./time/localtime.c:1174>:
+    |    |_THREAD_PRIVATE_MUTEX_LOCK()
+    |    |_THREAD_PRIVATE_MUTEX_UNLOCK()
+timegm() <time_t timegm (struct tm tmp) at ./time/localtime.c:1903>:
+timelocal() <time_t timelocal (struct tm tmp) at ./time/localtime.c:1895>:
+    |mktime() <time_t mktime (struct tm tmp) at ./time/localtime.c:1880>:
+    |    |_THREAD_PRIVATE_MUTEX_LOCK()
+    |    |_THREAD_PRIVATE_MUTEX_UNLOCK()
+timeoff() <time_t timeoff (struct tm tmp, long offset) at ./time/localtime.c:1911>:
+tzset() <void tzset (void) at ./time/localtime.c:1174>:
+    |_THREAD_PRIVATE_MUTEX_LOCK()
+    |_THREAD_PRIVATE_MUTEX_UNLOCK()
+wcsftime() <size_t wcsftime (wchar_t *__restrict s, size_t maxsize, const wchar_t *__restrict format, const struct tm *__restrict t) at ./time/wcsftime.c:119>:
+    |tzset() <void tzset (void) at ./time/localtime.c:1174>:
+    |    |_THREAD_PRIVATE_MUTEX_LOCK()
+    |    |_THREAD_PRIVATE_MUTEX_UNLOCK()

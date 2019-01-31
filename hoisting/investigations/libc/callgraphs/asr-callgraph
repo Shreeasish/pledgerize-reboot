@@ -1,0 +1,570 @@
+_asr_addr_as_fqdn() <ssize_t _asr_addr_as_fqdn (const char *addr, int family, char *dst, size_t max) at ./asr/asr_utils.c:507>:
+    |ntohl()
+    |snprintf()
+_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (R):
+    |DPRINT()
+    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (recursive: see 4)
+    |close()
+    |free()
+    |freeaddrinfo()
+    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |DPRINT()
+    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |free()
+_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |DPRINT()
+    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |free()
+_asr_dname_from_fqdn() <ssize_t _asr_dname_from_fqdn (const char *str, char *dst, size_t max) at ./asr/asr_utils.c:62>:
+    |strchr()
+    |dname_check_label() <int dname_check_label (const char *s, size_t l) at ./asr/asr_utils.c:53>
+    |memmove()
+_asr_dump_config() <void _asr_dump_config (FILE *f, struct asr a) at ./asr/asr_debug.c:255>:
+    |fprintf()
+    |PRINTOPT()
+    |_asr_print_sockaddr() <const char *_asr_print_sockaddr (const struct sockaddr *sa, char *buf, size_t len) at ./asr/asr_debug.c:224>:
+    |    |inet_ntop()
+    |    |ntohs()
+    |    |snprintf()
+_asr_dump_packet() <void _asr_dump_packet (FILE *f, const void *data, size_t len) at ./asr/asr_debug.c:167>:
+    |_asr_unpack_init() <void _asr_unpack_init (struct asr_unpack unpack, const char *buf, size_t len) at ./asr/asr_utils.c:174>
+    |_asr_unpack_header() <int _asr_unpack_header (struct asr_unpack p, struct asr_dns_header h) at ./asr/asr_utils.c:255>:
+    |    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |    |memmove()
+    |    |ntohs()
+    |fprintf()
+    |strerror()
+    |print_header() <const char *print_header (const struct asr_dns_header *h, char *buf, size_t max) at ./asr/asr_debug.c:146>:
+    |    |snprintf()
+    |    |OPCODE()
+    |    |rcodetostr() <const char *rcodetostr (uint16_t v) at ./asr/asr_debug.c:42>:
+    |    |RCODE()
+    |_asr_unpack_query() <int _asr_unpack_query (struct asr_unpack p, struct asr_dns_query q) at ./asr/asr_utils.c:270>:
+    |    |unpack_dname() <int unpack_dname (struct asr_unpack p, char *dst, size_t max) at ./asr/asr_utils.c:234>:
+    |    |    |dname_expand() <ssize_t dname_expand (const unsigned char *data, size_t len, size_t offset, size_t *newoffset, char *dst, size_t max) at ./asr/asr_utils.c:112>:
+    |    |    |    |dname_check_label() <int dname_check_label (const char *s, size_t l) at ./asr/asr_utils.c:53>
+    |    |    |    |memmove()
+    |    |unpack_u16() <int unpack_u16 (struct asr_unpack p, uint16_t *u16) at ./asr/asr_utils.c:200>:
+    |    |    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |    |    |memmove()
+    |    |    |ntohs()
+    |print_query() <const char *print_query (const struct asr_dns_query *q, char *buf, size_t max) at ./asr/asr_debug.c:134>:
+    |    |snprintf()
+    |    |print_dname() <const char *print_dname (const char *_dname, char *buf, size_t max) at ./asr/asr_debug.c:56>:
+    |    |    |_asr_strdname() <char *_asr_strdname (const char *_dname, char *buf, size_t max) at ./asr/asr.c:768>:
+    |    |    |    |strlcpy()
+    |    |    |    |memmove()
+    |    |__p_class()
+    |    |__p_type()
+    |_asr_unpack_rr() <int _asr_unpack_rr (struct asr_unpack p, struct asr_dns_rr rr) at ./asr/asr_utils.c:280>:
+    |    |unpack_dname() <int unpack_dname (struct asr_unpack p, char *dst, size_t max) at ./asr/asr_utils.c:234>:
+    |    |    |dname_expand() <ssize_t dname_expand (const unsigned char *data, size_t len, size_t offset, size_t *newoffset, char *dst, size_t max) at ./asr/asr_utils.c:112>:
+    |    |    |    |dname_check_label() <int dname_check_label (const char *s, size_t l) at ./asr/asr_utils.c:53>
+    |    |    |    |memmove()
+    |    |unpack_u16() <int unpack_u16 (struct asr_unpack p, uint16_t *u16) at ./asr/asr_utils.c:200>:
+    |    |    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |    |    |memmove()
+    |    |    |ntohs()
+    |    |unpack_u32() <int unpack_u32 (struct asr_unpack p, uint32_t *u32) at ./asr/asr_utils.c:211>:
+    |    |    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |    |    |memmove()
+    |    |    |ntohl()
+    |    |unpack_inaddr() <int unpack_inaddr (struct asr_unpack p, struct in_addr a) at ./asr/asr_utils.c:222>:
+    |    |    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |    |    |memmove()
+    |    |unpack_in6addr() <int unpack_in6addr (struct asr_unpack p, struct in6_addr a6) at ./asr/asr_utils.c:228>:
+    |    |    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |    |    |memmove()
+    |print_rr() <const char *print_rr (const struct asr_dns_rr *rr, char *buf, size_t max) at ./asr/asr_debug.c:62>:
+    |    |snprintf()
+    |    |print_dname() <const char *print_dname (const char *_dname, char *buf, size_t max) at ./asr/asr_debug.c:56>:
+    |    |    |_asr_strdname() <char *_asr_strdname (const char *_dname, char *buf, size_t max) at ./asr/asr.c:768>:
+    |    |    |    |strlcpy()
+    |    |    |    |memmove()
+    |    |__p_class()
+    |    |__p_type()
+    |    |inet_ntop()
+_asr_iter_db() <int _asr_iter_db (struct asr_query as) at ./asr/asr.c:836>:
+    |DPRINT()
+_asr_iter_domain() <int _asr_iter_domain (struct asr_query as, const char *name, char *buf, size_t len) at ./asr/res_search_async.c:246>:
+    |strlen()
+    |DPRINT()
+    |domcat() <size_t domcat (const char *name, const char *domain, char *buf, size_t buflen) at ./asr/res_search_async.c:215>:
+    |    |_asr_make_fqdn() <size_t _asr_make_fqdn (const char *name, const char *domain, char *buf, size_t buflen) at ./asr/asr.c:415>:
+    |    |    |strlen()
+    |    |    |strlcpy()
+    |    |    |strlcat()
+    |strlcpy()
+    |strchr()
+_asr_make_fqdn() <size_t _asr_make_fqdn (const char *name, const char *domain, char *buf, size_t buflen) at ./asr/asr.c:415>:
+    |strlen()
+    |strlcpy()
+    |strlcat()
+_asr_pack_edns0() <int _asr_pack_edns0 (struct asr_pack p, uint16_t pktsz, int dnssec_do) at ./asr/asr_utils.c:418>:
+    |DPRINT()
+    |pack_dname() <int pack_dname (struct asr_pack p, const char *dname) at ./asr/asr_utils.c:384>:
+    |    |pack_data() <int pack_data (struct asr_pack p, const void *data, size_t len) at ./asr/asr_utils.c:359>:
+    |    |    |memmove()
+    |    |strlen()
+    |pack_u16() <int pack_u16 (struct asr_pack p, uint16_t v) at ./asr/asr_utils.c:376>:
+    |    |htons()
+    |    |pack_data() <int pack_data (struct asr_pack p, const void *data, size_t len) at ./asr/asr_utils.c:359>:
+    |    |    |memmove()
+_asr_pack_header() <int _asr_pack_header (struct asr_pack p, const struct asr_dns_header *h) at ./asr/asr_utils.c:393>:
+    |htons()
+    |pack_data() <int pack_data (struct asr_pack p, const void *data, size_t len) at ./asr/asr_utils.c:359>:
+    |    |memmove()
+_asr_pack_query() <int _asr_pack_query (struct asr_pack p, uint16_t type, uint16_t class, const char *dname) at ./asr/asr_utils.c:408>:
+    |pack_dname() <int pack_dname (struct asr_pack p, const char *dname) at ./asr/asr_utils.c:384>:
+    |    |pack_data() <int pack_data (struct asr_pack p, const void *data, size_t len) at ./asr/asr_utils.c:359>:
+    |    |    |memmove()
+    |    |strlen()
+    |pack_u16() <int pack_u16 (struct asr_pack p, uint16_t v) at ./asr/asr_utils.c:376>:
+    |    |htons()
+    |    |pack_data() <int pack_data (struct asr_pack p, const void *data, size_t len) at ./asr/asr_utils.c:359>:
+    |    |    |memmove()
+_asr_parse_namedb_line() <int _asr_parse_namedb_line (FILE *file, char **tokens, int ntoken, char *lbuf, size_t sz) at ./asr/asr.c:803>:
+    |fgetln()
+    |memcpy()
+    |strcspn()
+    |strsplit() <int strsplit (char *line, char **tokens, int ntokens) at ./asr/asr.c:514>:
+    |    |strsep()
+_asr_print_sockaddr() <const char *_asr_print_sockaddr (const struct sockaddr *sa, char *buf, size_t len) at ./asr/asr_debug.c:224>:
+    |inet_ntop()
+    |ntohs()
+    |snprintf()
+_asr_querystr() <const char *_asr_querystr (int type) at ./asr/asr_debug.c:333>:
+    |CASE()
+_asr_resolver_done() <void _asr_resolver_done (void *arg) at ./asr/asr.c:110>:
+    |_THREAD_PRIVATE()
+    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |DPRINT()
+    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |free()
+    |free()
+_asr_sockaddr_from_str() <int _asr_sockaddr_from_str (struct sockaddr sa, int family, const char *str) at ./asr/asr_utils.c:437> (R):
+    |_asr_sockaddr_from_str() <int _asr_sockaddr_from_str (struct sockaddr sa, int family, const char *str) at ./asr/asr_utils.c:437> (recursive: see 145)
+    |inet_pton()
+    |memset()
+    |strchr()
+    |strdup()
+    |free()
+    |IN6_IS_ADDR_LINKLOCAL()
+    |IN6_IS_ADDR_MC_LINKLOCAL()
+    |IN6_IS_ADDR_MC_INTFACELOCAL()
+    |if_nametoindex()
+    |strtonum()
+_asr_statestr() <const char *_asr_statestr (int state) at ./asr/asr_debug.c:310>:
+    |CASE()
+_asr_strdname() <char *_asr_strdname (const char *_dname, char *buf, size_t max) at ./asr/asr.c:768>:
+    |strlcpy()
+    |memmove()
+_asr_transitionstr() <const char *_asr_transitionstr (int type) at ./asr/asr_debug.c:351>:
+    |CASE()
+_asr_unpack_header() <int _asr_unpack_header (struct asr_unpack p, struct asr_dns_header h) at ./asr/asr_utils.c:255>:
+    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |memmove()
+    |ntohs()
+_asr_unpack_query() <int _asr_unpack_query (struct asr_unpack p, struct asr_dns_query q) at ./asr/asr_utils.c:270>:
+    |unpack_dname() <int unpack_dname (struct asr_unpack p, char *dst, size_t max) at ./asr/asr_utils.c:234>:
+    |    |dname_expand() <ssize_t dname_expand (const unsigned char *data, size_t len, size_t offset, size_t *newoffset, char *dst, size_t max) at ./asr/asr_utils.c:112>:
+    |    |    |dname_check_label() <int dname_check_label (const char *s, size_t l) at ./asr/asr_utils.c:53>
+    |    |    |memmove()
+    |unpack_u16() <int unpack_u16 (struct asr_unpack p, uint16_t *u16) at ./asr/asr_utils.c:200>:
+    |    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |    |memmove()
+    |    |ntohs()
+_asr_unpack_rr() <int _asr_unpack_rr (struct asr_unpack p, struct asr_dns_rr rr) at ./asr/asr_utils.c:280>:
+    |unpack_dname() <int unpack_dname (struct asr_unpack p, char *dst, size_t max) at ./asr/asr_utils.c:234>:
+    |    |dname_expand() <ssize_t dname_expand (const unsigned char *data, size_t len, size_t offset, size_t *newoffset, char *dst, size_t max) at ./asr/asr_utils.c:112>:
+    |    |    |dname_check_label() <int dname_check_label (const char *s, size_t l) at ./asr/asr_utils.c:53>
+    |    |    |memmove()
+    |unpack_u16() <int unpack_u16 (struct asr_unpack p, uint16_t *u16) at ./asr/asr_utils.c:200>:
+    |    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |    |memmove()
+    |    |ntohs()
+    |unpack_u32() <int unpack_u32 (struct asr_unpack p, uint32_t *u32) at ./asr/asr_utils.c:211>:
+    |    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |    |memmove()
+    |    |ntohl()
+    |unpack_inaddr() <int unpack_inaddr (struct asr_unpack p, struct in_addr a) at ./asr/asr_utils.c:222>:
+    |    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |    |memmove()
+    |unpack_in6addr() <int unpack_in6addr (struct asr_unpack p, struct in6_addr a6) at ./asr/asr_utils.c:228>:
+    |    |unpack_data() <int unpack_data (struct asr_unpack p, void *data, size_t len) at ./asr/asr_utils.c:183>:
+    |    |    |memmove()
+asr_abort() <void asr_abort (struct asr_query as) at ./asr/asr.c:131>:
+    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (R):
+    |    |DPRINT()
+    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (recursive: see 197)
+    |    |close()
+    |    |free()
+    |    |freeaddrinfo()
+    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |DPRINT()
+    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |free()
+asr_run() <int asr_run (struct asr_query as, struct asr_result ar) at ./asr/asr.c:142>:
+    |DPRINT()
+    |_asr_querystr() <const char *_asr_querystr (int type) at ./asr/asr_debug.c:333>:
+    |    |CASE()
+    |_asr_transitionstr() <const char *_asr_transitionstr (int type) at ./asr/asr_debug.c:351>:
+    |    |CASE()
+    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (R):
+    |    |DPRINT()
+    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (recursive: see 213)
+    |    |close()
+    |    |free()
+    |    |freeaddrinfo()
+    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |DPRINT()
+    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |free()
+asr_run_sync() <int asr_run_sync (struct asr_query as, struct asr_result ar) at ./asr/asr.c:169>:
+    |asr_run() <int asr_run (struct asr_query as, struct asr_result ar) at ./asr/asr.c:142>:
+    |    |DPRINT()
+    |    |_asr_querystr() <const char *_asr_querystr (int type) at ./asr/asr_debug.c:333>:
+    |    |    |CASE()
+    |    |_asr_transitionstr() <const char *_asr_transitionstr (int type) at ./asr/asr_debug.c:351>:
+    |    |    |CASE()
+    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (R):
+    |    |    |DPRINT()
+    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (recursive: see 230)
+    |    |    |close()
+    |    |    |free()
+    |    |    |freeaddrinfo()
+    |    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |    |DPRINT()
+    |    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |    |free()
+    |clock_gettime()
+    |poll()
+    |timespecsub()
+freerrset() <void freerrset (struct rrsetinfo rrset) at ./asr/getrrsetbyname.c:54>:
+    |free()
+getaddrinfo() <int getaddrinfo (const char *hostname, const char *servname, const struct addrinfo *hints, struct addrinfo res) at ./asr/getaddrinfo.c:28>:
+    |res_init() <int res_init (void) at ./asr/res_init.c:38>:
+    |    |_asr_use_resolver() <struct asr_ctx _asr_use_resolver (void *arg) at ./asr/asr.c:302>
+    |    |_MUTEX_LOCK()
+    |    |strlcpy()
+    |    |memcpy()
+    |    |memset()
+    |    |_MUTEX_UNLOCK()
+    |    |strlen()
+    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |DPRINT()
+    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |free()
+    |getaddrinfo_async() <struct asr_query getaddrinfo_async (const char *hostname, const char *servname, const struct addrinfo *hints, void *asr) at ./asr/getaddrinfo_async.c:74>
+    |asr_run_sync() <int asr_run_sync (struct asr_query as, struct asr_result ar) at ./asr/asr.c:169>:
+    |    |asr_run() <int asr_run (struct asr_query as, struct asr_result ar) at ./asr/asr.c:142>:
+    |    |    |DPRINT()
+    |    |    |_asr_querystr() <const char *_asr_querystr (int type) at ./asr/asr_debug.c:333>:
+    |    |    |    |CASE()
+    |    |    |_asr_transitionstr() <const char *_asr_transitionstr (int type) at ./asr/asr_debug.c:351>:
+    |    |    |    |CASE()
+    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (R):
+    |    |    |    |DPRINT()
+    |    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (recursive: see 266)
+    |    |    |    |close()
+    |    |    |    |free()
+    |    |    |    |freeaddrinfo()
+    |    |    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |    |    |DPRINT()
+    |    |    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |    |    |free()
+    |    |clock_gettime()
+    |    |poll()
+    |    |timespecsub()
+getnameinfo() <int getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host, size_t hostlen, char *serv, size_t servlen, int flags) at ./asr/getnameinfo.c:148>:
+    |asr_print_addr() <size_t asr_print_addr (const struct sockaddr *sa, char *buf, size_t buflen) at ./asr/getnameinfo.c:47>:
+    |    |SA_IN()
+    |    |SA_IN6()
+    |    |inet_ntop()
+    |    |strlcpy()
+    |    |IN6_IS_ADDR_LINKLOCAL()
+    |    |IN6_IS_ADDR_MC_LINKLOCAL()
+    |    |IN6_IS_ADDR_MC_INTFACELOCAL()
+    |    |if_indextoname()
+    |    |snprintf()
+    |    |strlcat()
+    |    |strlen()
+    |asr_print_port() <size_t asr_print_port (const struct sockaddr *sa, const char *proto, char *buf, size_t buflen) at ./asr/getnameinfo.c:110>:
+    |    |SA_IN()
+    |    |SA_IN6()
+    |    |memset()
+    |    |getservbyport_r()
+    |    |strlcpy()
+    |    |endservent_r()
+    |    |snprintf()
+    |    |ntohs()
+    |res_init() <int res_init (void) at ./asr/res_init.c:38>:
+    |    |_asr_use_resolver() <struct asr_ctx _asr_use_resolver (void *arg) at ./asr/asr.c:302>
+    |    |_MUTEX_LOCK()
+    |    |strlcpy()
+    |    |memcpy()
+    |    |memset()
+    |    |_MUTEX_UNLOCK()
+    |    |strlen()
+    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |DPRINT()
+    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |free()
+    |getnameinfo_async() <struct asr_query getnameinfo_async (const struct sockaddr *sa, socklen_t slen, char *host, size_t hostlen, char *serv, size_t servlen, int flags, void *asr) at ./asr/getnameinfo_async.c:39>
+    |asr_run_sync() <int asr_run_sync (struct asr_query as, struct asr_result ar) at ./asr/asr.c:169>:
+    |    |asr_run() <int asr_run (struct asr_query as, struct asr_result ar) at ./asr/asr.c:142>:
+    |    |    |DPRINT()
+    |    |    |_asr_querystr() <const char *_asr_querystr (int type) at ./asr/asr_debug.c:333>:
+    |    |    |    |CASE()
+    |    |    |_asr_transitionstr() <const char *_asr_transitionstr (int type) at ./asr/asr_debug.c:351>:
+    |    |    |    |CASE()
+    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (R):
+    |    |    |    |DPRINT()
+    |    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (recursive: see 321)
+    |    |    |    |close()
+    |    |    |    |free()
+    |    |    |    |freeaddrinfo()
+    |    |    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |    |    |DPRINT()
+    |    |    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |    |    |free()
+    |    |clock_gettime()
+    |    |poll()
+    |    |timespecsub()
+getrrsetbyname() <int getrrsetbyname (const char *name, unsigned int class, unsigned int type, unsigned int flags, struct rrsetinfo res) at ./asr/getrrsetbyname.c:29>:
+    |res_init() <int res_init (void) at ./asr/res_init.c:38>:
+    |    |_asr_use_resolver() <struct asr_ctx _asr_use_resolver (void *arg) at ./asr/asr.c:302>
+    |    |_MUTEX_LOCK()
+    |    |strlcpy()
+    |    |memcpy()
+    |    |memset()
+    |    |_MUTEX_UNLOCK()
+    |    |strlen()
+    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |DPRINT()
+    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |free()
+    |getrrsetbyname_async() <struct asr_query getrrsetbyname_async (const char *hostname, unsigned int rdclass, unsigned int rdtype, unsigned int flags, void *asr) at ./asr/getrrsetbyname_async.c:38>
+    |asr_run_sync() <int asr_run_sync (struct asr_query as, struct asr_result ar) at ./asr/asr.c:169>:
+    |    |asr_run() <int asr_run (struct asr_query as, struct asr_result ar) at ./asr/asr.c:142>:
+    |    |    |DPRINT()
+    |    |    |_asr_querystr() <const char *_asr_querystr (int type) at ./asr/asr_debug.c:333>:
+    |    |    |    |CASE()
+    |    |    |_asr_transitionstr() <const char *_asr_transitionstr (int type) at ./asr/asr_debug.c:351>:
+    |    |    |    |CASE()
+    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (R):
+    |    |    |    |DPRINT()
+    |    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (recursive: see 355)
+    |    |    |    |close()
+    |    |    |    |free()
+    |    |    |    |freeaddrinfo()
+    |    |    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |    |    |DPRINT()
+    |    |    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |    |    |free()
+    |    |clock_gettime()
+    |    |poll()
+    |    |timespecsub()
+res_init() <int res_init (void) at ./asr/res_init.c:38>:
+    |_asr_use_resolver() <struct asr_ctx _asr_use_resolver (void *arg) at ./asr/asr.c:302>
+    |_MUTEX_LOCK()
+    |strlcpy()
+    |memcpy()
+    |memset()
+    |_MUTEX_UNLOCK()
+    |strlen()
+    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |DPRINT()
+    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |free()
+res_mkquery() <int res_mkquery (int op, const char *dname, int class, int type, const unsigned char *data, int datalen, const unsigned char *newrr, unsigned char *buf, int buflen) at ./asr/res_mkquery.c:33>:
+    |strlen()
+    |strlcpy()
+    |strlcat()
+    |_asr_dname_from_fqdn() <ssize_t _asr_dname_from_fqdn (const char *str, char *dst, size_t max) at ./asr/asr_utils.c:62>:
+    |    |strchr()
+    |    |dname_check_label() <int dname_check_label (const char *s, size_t l) at ./asr/asr_utils.c:53>
+    |    |memmove()
+    |_asr_use_resolver() <struct asr_ctx _asr_use_resolver (void *arg) at ./asr/asr.c:302>
+    |memset()
+    |res_randomid()
+    |_asr_pack_init() <void _asr_pack_init (struct asr_pack pack, char *buf, size_t len) at ./asr/asr_utils.c:165>
+    |_asr_pack_header() <int _asr_pack_header (struct asr_pack p, const struct asr_dns_header *h) at ./asr/asr_utils.c:393>:
+    |    |htons()
+    |    |pack_data() <int pack_data (struct asr_pack p, const void *data, size_t len) at ./asr/asr_utils.c:359>:
+    |    |    |memmove()
+    |_asr_pack_query() <int _asr_pack_query (struct asr_pack p, uint16_t type, uint16_t class, const char *dname) at ./asr/asr_utils.c:408>:
+    |    |pack_dname() <int pack_dname (struct asr_pack p, const char *dname) at ./asr/asr_utils.c:384>:
+    |    |    |pack_data() <int pack_data (struct asr_pack p, const void *data, size_t len) at ./asr/asr_utils.c:359>:
+    |    |    |    |memmove()
+    |    |    |strlen()
+    |    |pack_u16() <int pack_u16 (struct asr_pack p, uint16_t v) at ./asr/asr_utils.c:376>:
+    |    |    |htons()
+    |    |    |pack_data() <int pack_data (struct asr_pack p, const void *data, size_t len) at ./asr/asr_utils.c:359>:
+    |    |    |    |memmove()
+    |_asr_pack_edns0() <int _asr_pack_edns0 (struct asr_pack p, uint16_t pktsz, int dnssec_do) at ./asr/asr_utils.c:418>:
+    |    |DPRINT()
+    |    |pack_dname() <int pack_dname (struct asr_pack p, const char *dname) at ./asr/asr_utils.c:384>:
+    |    |    |pack_data() <int pack_data (struct asr_pack p, const void *data, size_t len) at ./asr/asr_utils.c:359>:
+    |    |    |    |memmove()
+    |    |    |strlen()
+    |    |pack_u16() <int pack_u16 (struct asr_pack p, uint16_t v) at ./asr/asr_utils.c:376>:
+    |    |    |htons()
+    |    |    |pack_data() <int pack_data (struct asr_pack p, const void *data, size_t len) at ./asr/asr_utils.c:359>:
+    |    |    |    |memmove()
+    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |DPRINT()
+    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |free()
+res_query() <int res_query (const char *name, int class, int type, u_char *ans, int anslen) at ./asr/res_query.c:30>:
+    |res_init() <int res_init (void) at ./asr/res_init.c:38>:
+    |    |_asr_use_resolver() <struct asr_ctx _asr_use_resolver (void *arg) at ./asr/asr.c:302>
+    |    |_MUTEX_LOCK()
+    |    |strlcpy()
+    |    |memcpy()
+    |    |memset()
+    |    |_MUTEX_UNLOCK()
+    |    |strlen()
+    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |DPRINT()
+    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |free()
+    |res_query_async() <struct asr_query res_query_async (const char *name, int class, int type, void *asr) at ./asr/res_send_async.c:105>
+    |asr_run_sync() <int asr_run_sync (struct asr_query as, struct asr_result ar) at ./asr/asr.c:169>:
+    |    |asr_run() <int asr_run (struct asr_query as, struct asr_result ar) at ./asr/asr.c:142>:
+    |    |    |DPRINT()
+    |    |    |_asr_querystr() <const char *_asr_querystr (int type) at ./asr/asr_debug.c:333>:
+    |    |    |    |CASE()
+    |    |    |_asr_transitionstr() <const char *_asr_transitionstr (int type) at ./asr/asr_debug.c:351>:
+    |    |    |    |CASE()
+    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (R):
+    |    |    |    |DPRINT()
+    |    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (recursive: see 440)
+    |    |    |    |close()
+    |    |    |    |free()
+    |    |    |    |freeaddrinfo()
+    |    |    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |    |    |DPRINT()
+    |    |    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |    |    |free()
+    |    |clock_gettime()
+    |    |poll()
+    |    |timespecsub()
+    |memmove()
+    |free()
+res_querydomain() <int res_querydomain (const char *name, const char *domain, int class, int type, u_char *answer, int anslen) at ./asr/res_mkquery.c:87>:
+    |strlen()
+    |strlcpy()
+    |strlcat()
+    |_asr_make_fqdn() <size_t _asr_make_fqdn (const char *name, const char *domain, char *buf, size_t buflen) at ./asr/asr.c:415>:
+    |    |strlen()
+    |    |strlcpy()
+    |    |strlcat()
+    |res_query() <int res_query (const char *name, int class, int type, u_char *ans, int anslen) at ./asr/res_query.c:30>:
+    |    |res_init() <int res_init (void) at ./asr/res_init.c:38>:
+    |    |    |_asr_use_resolver() <struct asr_ctx _asr_use_resolver (void *arg) at ./asr/asr.c:302>
+    |    |    |_MUTEX_LOCK()
+    |    |    |strlcpy()
+    |    |    |memcpy()
+    |    |    |memset()
+    |    |    |_MUTEX_UNLOCK()
+    |    |    |strlen()
+    |    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |    |DPRINT()
+    |    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |    |free()
+    |    |res_query_async() <struct asr_query res_query_async (const char *name, int class, int type, void *asr) at ./asr/res_send_async.c:105>
+    |    |asr_run_sync() <int asr_run_sync (struct asr_query as, struct asr_result ar) at ./asr/asr.c:169>:
+    |    |    |asr_run() <int asr_run (struct asr_query as, struct asr_result ar) at ./asr/asr.c:142>:
+    |    |    |    |DPRINT()
+    |    |    |    |_asr_querystr() <const char *_asr_querystr (int type) at ./asr/asr_debug.c:333>:
+    |    |    |    |    |CASE()
+    |    |    |    |_asr_transitionstr() <const char *_asr_transitionstr (int type) at ./asr/asr_debug.c:351>:
+    |    |    |    |    |CASE()
+    |    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (R):
+    |    |    |    |    |DPRINT()
+    |    |    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (recursive: see 484)
+    |    |    |    |    |close()
+    |    |    |    |    |free()
+    |    |    |    |    |freeaddrinfo()
+    |    |    |    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |    |    |    |DPRINT()
+    |    |    |    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |    |    |    |free()
+    |    |    |clock_gettime()
+    |    |    |poll()
+    |    |    |timespecsub()
+    |    |memmove()
+    |    |free()
+res_search() <int res_search (const char *name, int class, int type, u_char *ans, int anslen) at ./asr/res_query.c:73>:
+    |res_init() <int res_init (void) at ./asr/res_init.c:38>:
+    |    |_asr_use_resolver() <struct asr_ctx _asr_use_resolver (void *arg) at ./asr/asr.c:302>
+    |    |_MUTEX_LOCK()
+    |    |strlcpy()
+    |    |memcpy()
+    |    |memset()
+    |    |_MUTEX_UNLOCK()
+    |    |strlen()
+    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |DPRINT()
+    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |free()
+    |res_search_async() <struct asr_query res_search_async (const char *name, int class, int type, void *asr) at ./asr/res_search_async.c:41>
+    |asr_run_sync() <int asr_run_sync (struct asr_query as, struct asr_result ar) at ./asr/asr.c:169>:
+    |    |asr_run() <int asr_run (struct asr_query as, struct asr_result ar) at ./asr/asr.c:142>:
+    |    |    |DPRINT()
+    |    |    |_asr_querystr() <const char *_asr_querystr (int type) at ./asr/asr_debug.c:333>:
+    |    |    |    |CASE()
+    |    |    |_asr_transitionstr() <const char *_asr_transitionstr (int type) at ./asr/asr_debug.c:351>:
+    |    |    |    |CASE()
+    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (R):
+    |    |    |    |DPRINT()
+    |    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (recursive: see 520)
+    |    |    |    |close()
+    |    |    |    |free()
+    |    |    |    |freeaddrinfo()
+    |    |    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |    |    |DPRINT()
+    |    |    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |    |    |free()
+    |    |clock_gettime()
+    |    |poll()
+    |    |timespecsub()
+    |memmove()
+    |free()
+res_send() <int res_send (const u_char *buf, int buflen, u_char *ans, int anslen) at ./asr/res_send.c:30>:
+    |res_init() <int res_init (void) at ./asr/res_init.c:38>:
+    |    |_asr_use_resolver() <struct asr_ctx _asr_use_resolver (void *arg) at ./asr/asr.c:302>
+    |    |_MUTEX_LOCK()
+    |    |strlcpy()
+    |    |memcpy()
+    |    |memset()
+    |    |_MUTEX_UNLOCK()
+    |    |strlen()
+    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |DPRINT()
+    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |free()
+    |res_send_async() <struct asr_query res_send_async (const unsigned char *buf, int buflen, void *asr) at ./asr/res_send_async.c:53>
+    |asr_run_sync() <int asr_run_sync (struct asr_query as, struct asr_result ar) at ./asr/asr.c:169>:
+    |    |asr_run() <int asr_run (struct asr_query as, struct asr_result ar) at ./asr/asr.c:142>:
+    |    |    |DPRINT()
+    |    |    |_asr_querystr() <const char *_asr_querystr (int type) at ./asr/asr_debug.c:333>:
+    |    |    |    |CASE()
+    |    |    |_asr_transitionstr() <const char *_asr_transitionstr (int type) at ./asr/asr_debug.c:351>:
+    |    |    |    |CASE()
+    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (R):
+    |    |    |    |DPRINT()
+    |    |    |    |_asr_async_free() <void _asr_async_free (struct asr_query as) at ./asr/asr.c:236> (recursive: see 556)
+    |    |    |    |close()
+    |    |    |    |free()
+    |    |    |    |freeaddrinfo()
+    |    |    |    |_asr_ctx_unref() <void _asr_ctx_unref (struct asr_ctx ac) at ./asr/asr.c:336>:
+    |    |    |    |    |DPRINT()
+    |    |    |    |    |asr_ctx_free() <void asr_ctx_free (struct asr_ctx ac) at ./asr/asr.c:349>:
+    |    |    |    |    |    |free()
+    |    |clock_gettime()
+    |    |poll()
+    |    |timespecsub()
+    |memmove()
+    |free()
