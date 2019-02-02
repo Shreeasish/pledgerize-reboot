@@ -420,10 +420,13 @@ Disjunct::findExprID(const ExprID& target) const {
 //    return true;
 //  }
 //  return false;
-  return std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
-        [](const Conjunct& conjunct, const ExprID& target) -> bool {
-          return conjunct.exprID < target;
-        });
+return std::lower_bound(
+    conjunctIDs.begin(),
+    conjunctIDs.end(),
+    target,
+    [](const Conjunct& conjunct, const ExprID& target) -> bool {
+      return conjunct.exprID < target;
+    });
 }
 
 
@@ -488,8 +491,7 @@ Disjunction::applyConjunct(const Conjunct& conjunct) {
   return;
 }
 
-
-//TODO: Clean
+// TODO: Clean
 void
 Disjunction::addDisjunct(const Disjunct& disjunct) {
   auto upper_bound = std::upper_bound(disjuncts.begin(), disjuncts.end(), disjunct);

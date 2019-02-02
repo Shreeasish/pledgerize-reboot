@@ -280,17 +280,19 @@ public:
     bool needsUpdate = false;
     [[maybe_unused]]
     auto* passedConcrete = cs.getInstruction();
-    //auto& passedAbstract = state.FindAndConstruct(passedConcrete);
-    auto& passedAbstract = state[nullptr];
-    //llvm::errs() << "Printing From DataFlow";
-    //passedAbstract.print();
+    auto& passedAbstract = state.FindAndConstruct(nullptr);
+    //auto& passedAbstract = state[nullptr];
+
+
+    llvm::errs() << "Callee" << callee->getName();
     for (auto& bb : *callee) {
       if (auto* ret = llvm::dyn_cast<llvm::ReturnInst>(bb.getTerminator());
-          ret && ret->getReturnValue()) {
-        //auto& retState = summaryState[ret->getReturnValue()];
-        auto& retState = summaryState[nullptr];
-        //auto  newState = meet({passedAbstract.second, retState});
-        auto  newState = meet({passedAbstract, retState});
+          ret /*&& ret->getReturnValue()*/ ) {
+        // Pick up returns with return values
+        // auto& retState = summaryState[ret->getReturnValue()];
+        // auto  newState = meet({passedAbstract, retState});
+        auto& retState = summaryState[ret];
+        auto  newState = meet({passedAbstract.second, retState});
         needsUpdate |= !(newState == retState);
         retState = newState;
       }
@@ -410,7 +412,8 @@ public:
 
       if (auto* key = Direction::getFunctionValueKey(*bb)) {
         auto* summary = getSummaryKey(f);
-        results[&f][summary] = meet({results[&f][summary], state[key]});
+        //results[&f][summary] = meet({results[&f][summary], state[key]});
+        results[&f][summary] = meet({results[&f][summary], state[nullptr]});
       }
     }
 
@@ -460,7 +463,6 @@ public:
     auto& calledState  = allResults[newContext][callee];
     auto& summaryState = calledState[callee];
     bool needsUpdate   = summaryState.size() == 0;
-
 
     needsUpdate |= Direction::prepareSummaryState(cs, callee, state, summaryState, transfer, meet, context);
 
@@ -513,6 +515,7 @@ private:
       // state, meet it with the new one. Otherwise, copy the new value over,
       // implicitly meeting with bottom.
       auto temp = edgeTransformer(valueStatePair.second, branchAsValue, destination);
+
       auto [found, newlyAdded] = destinationState.insert({nullptr,temp});
       if (!newlyAdded) {
       found->second

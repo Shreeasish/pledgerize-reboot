@@ -277,11 +277,23 @@ private:
   bool
   handleCallSite(const llvm::CallSite& cs, DisjunctionState& state, const Context& context) {
     // ska: Add function call magic from Nick
+    
+    if (!cs.getInstruction()) {
+      return false;
+    }
     const auto* fun = getCalledFunction(cs);
     if (!fun) {
       return false;
     }
     if (fun->getName().startswith("llvm.")) {
+      return true;
+    }
+
+    if (fun->getName().startswith("print")) {
+      auto vacExpr    = generator->GetVacuousExprID();
+      Disjunct asDisjunct{};
+      asDisjunct.addConjunct({vacExpr, true});
+      state[nullptr].addDisjunct(asDisjunct);
       return true;
     }
 
@@ -295,23 +307,23 @@ private:
       for (auto& arg : fun->args()) {
         llvm::errs() << arg << "\t";
       }
-      state[nullptr].print();
+      state[cs.getInstruction()].print();
       llvm::errs() << "\n";
-      return this;
+      return;
     }();
+
+    state[nullptr] = state[cs.getInstruction()];
 
     using argParamPair = std::pair<llvm::Value*, llvm::Value*>;
     std::vector<argParamPair> argPairs;
-    [&](auto& argPairs) mutable {
-      int i = 0;
+    { int i = 0;
       for (auto& param : fun->args()) {
         auto* paramAsValue = (llvm::Value*) &param;
         auto arg = cs.getArgument(i);
         argPairs.push_back(argParamPair{arg, paramAsValue});
         i++;
       }
-      return this;
-    }(argPairs);
+    };
 
     auto rewritePair = [&](auto* arg, auto* param) {
       auto argExprID   = generator->GetOrCreateExprID(arg);
@@ -320,13 +332,11 @@ private:
     };
 
     for (auto [arg, param] : argPairs) {
-      llvm::errs() << "\n" << "arg " << *arg 
+      llvm::errs() << "\n" << "Marshalling"
+                   << "\n" << "arg " << *arg 
                    << "\n" << "param " << *param;
       rewritePair(arg, param);
     }
-
-    //auto vacExpr = generator->GetVacuousExprID();
-    //state[nullptr].addDisjunct(asDisjunct({vacExpr,true}));
     return true;
   }
 
@@ -380,25 +390,8 @@ private:
     return true;
   }
   
-  [[no_discard]]
   bool
-  isEscapingStore(llvm::StoreInst* const storeInst, const llvm::MemorySSA* const memSSA) {
-    auto* asMemAccess = memSSA->getMemoryAccess(storeInst);
-    for (User* user : memAccess->users()) {
-      if (llvm::isa<llvm::MemoryAccess>(user)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  bool
-  handleEscapingStore(DisjunctionState state, llvm::StoreInst* const storeInst ) {
-    state[nullptr]
-  }
-
-  bool
-  handleStore(llvm::Value* value, DisjunctionState& state) {
+  handleStore(llvm::Value* const value, DisjunctionState& state, const Context context) {
     auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
     if (!storeInst) {
       return false;
@@ -415,10 +408,6 @@ private:
     llvm::errs() << "\n Handling store \n" << *value;
     auto [walker, memSSA] = getWalkerAndMSSA(storeInst);
     assert(memSSA != nullptr && "No memSSA for function");
-
-    if (isEscapingStore(storeInst, memSSA)) {
-      return handleEscapingStore(state, storeInst);
-    }
 
     /// Find all loads in the disjunct
     std::vector<llvm::LoadInst*> asLoads;
@@ -545,8 +534,17 @@ private:
       }
     }
 
-    state[nullptr] = localDisjunction;
+
     llvm::errs() << "\n --------------- MEMSSA --------------- \n";
+    state[nullptr] = localDisjunction;
+
+    /// Capture stores which are not in the top level function
+    if (context.back() == nullptr) {
+      return true;
+    }
+    auto storeExprID =
+        generator->GetOrCreateExprID(storeInst->getValueOperand());
+    state[nullptr].applyConjunct({storeExprID, true});
     return true;
   }
 
@@ -557,7 +555,7 @@ private:
       return false;
     }
     auto isFromBackEdge =
-        [&phi](const llvm::BasicBlock* incomingBlock) -> bool {
+      [&phi](const llvm::BasicBlock* incomingBlock) -> bool {
       auto* parentBlock    = phi->getParent();
       auto* parentFunction = parentBlock->getParent();
       auto backEdges       = getBackedges(parentFunction);
@@ -604,21 +602,25 @@ private:
     if (!ret) {
       return false;
     }
+    state[nullptr] = state[ret];
+
+    llvm::errs() << "\nHandling Return " << *ret;
+    llvm::errs() << "\nParent Function " << ret->getParent()->getParent()->getName();
+    state[nullptr].print();
 
     llvm::Value* callAsValue = nullptr;
     for (auto* inst : context) {
       if (inst != nullptr) {
+        llvm::errs() << "Context" << *inst;
         callAsValue = llvm::dyn_cast<llvm::Value>(inst);
       }
     }
 
     if (!generator->isUsed(callAsValue)) {
+      if (callAsValue)
+        llvm::errs() << *callAsValue << " is not used";
       return true;
     }
-
-    llvm::errs() << "\nHandling Return ";
-    llvm::errs() << "\nParent Function ";
-    state[nullptr].print();
 
 
     auto* retValue = ret->getReturnValue();
@@ -678,7 +680,7 @@ public:
     bool handled = false;
     handled |= handlePhi(&value, state);
     handled |= handleCallSite(llvm::CallSite{&value}, state, context);
-    handled |= handleStore(&value, state);
+    handled |= handleStore(&value, state, context);
     handled |= handleGep(&value, state);
     handled |= handleRet(&value, state, context);
 
