@@ -147,7 +147,7 @@ public:
       }
       return destState;
     };
-  
+
     auto isSwitch = [] (llvm::Instruction* const instruction) {
       return instruction->getNumOperands() > 3;
     };
@@ -166,19 +166,21 @@ public:
 
     auto getConditionExprID = [&isSwitch, &destination] (llvm::Instruction* const branchOrSwitch) {
       auto* condition  = branchOrSwitch->getOperand(0);
-      auto  conditionAsExprID = generator->GetOrCreateExprID(condition); 
+      auto  conditionAsExprID = generator->GetOrCreateExprID(condition);
       if (!isSwitch(branchOrSwitch)) {
         return conditionAsExprID; // Lazy generation (updated by transfers)
       }
-      
-      // Create synthetic cmp Expr 
-      for (auto opIt = branchOrSwitch->op_begin(); opIt != branchOrSwitch->op_end(); opIt+=2) {
-        if ( destination == *(opIt + 1) ) {
+
+      // Create synthetic cmp Expr
+      for (auto opIt = branchOrSwitch->op_begin();
+           opIt != branchOrSwitch->op_end();
+           opIt += 2) {
+        if (destination == *(opIt + 1)) {
           auto caseValueAsExprID = generator->GetOrCreateExprID(*opIt);
-          return generator->GetOrCreateExprID({conditionAsExprID, switchOp, caseValueAsExprID});
+          ExprKey key{conditionAsExprID, OpIDs::switchOp, caseValueAsExprID};
+          return generator->GetOrCreateExprID(key, branchOrSwitch);
         }
       }
-      //TODO: Switch simplify
       llvm_unreachable("Destination not found in switch");
     };
 
@@ -214,70 +216,8 @@ public:
 class DisjunctionTransfer {
 private:
 
-  Disjunction
-  strongUpdate(const Disjunction& disjunction,
-               llvm::LoadInst* const loadInst,
-               llvm::StoreInst* const storeInst) {
-    auto getLoadValueExprs = [](auto loadInst, auto storeInst) {
-      auto* const loadAsValue = llvm::dyn_cast<llvm::Value>(loadInst);
-      auto  loadExpr    = generator->GetOrCreateExprID(loadAsValue);
-      auto  valueOpExpr =
-          generator->GetOrCreateExprID(storeInst->getValueOperand());
-      return std::pair(loadExpr, valueOpExpr);
-    };
-
-    auto [loadExprID, valueOpExprID] = getLoadValueExprs(loadInst, storeInst);
-    return generator->rewrite(disjunction, loadExprID, valueOpExprID);
-  }
-
-  Disjunction
-  weakUpdate(const Disjunction& disjunction,
-             llvm::LoadInst*  const loadInst,
-             llvm::StoreInst* const storeInst) {
-    auto getLoadValueExprs = [](auto loadInst, auto storeInst) {
-      auto* const loadAsValue = llvm::dyn_cast<llvm::Value>(loadInst);
-      auto loadExpr     = generator->GetOrCreateExprID(loadAsValue);
-      auto valueOpExpr =
-          generator->GetOrCreateExprID(storeInst->getValueOperand());
-      return std::make_pair(loadExpr, valueOpExpr);
-    };
-
-    auto [loadExprID, valueOpExprID] = getLoadValueExprs(loadInst, storeInst);
-    auto aliasExpr     = generator->GetOrCreateExprID({loadExprID, aliasOp, valueOpExprID});
-    auto aliasConjunct = Conjunct(aliasExpr, true);
-
-    Disjunction forRewrites{};
-    Disjunction noRewrites{disjunction};
-    for (auto& disjunct : disjunction.disjuncts) {
-      auto aliasDisjunct{disjunct};
-      auto notAliasDisjunct{disjunct};
-      for (auto& conjunct : disjunct.conjunctIDs) {
-        if (generator->preOrderFind(conjunct, loadExprID)) {
-          aliasDisjunct.addConjunct(aliasConjunct);
-          notAliasDisjunct.addConjunct(!aliasConjunct);
-          forRewrites.addDisjunct(aliasDisjunct);
-          noRewrites.addDisjunct(notAliasDisjunct);
-        }
-      }
-    }
-    auto rewritten = generator->rewrite(forRewrites, loadExprID, valueOpExprID);
-    // std::sort(rewritten.disjuncts.begin(), rewritten.disjuncts.end());
-    // std::sort(noRewrites.disjuncts.begin(), noRewrites.disjuncts.end());
-
-    llvm::errs() << "\n For Rewrites";
-    forRewrites.print();
-    llvm::errs() << "\n For Non Rewrites";
-    noRewrites.print();
-    llvm::errs() << "\n";
-    llvm::errs() << "\n";
-
-    return Disjunction::unionDisjunctions(rewritten, noRewrites);
-  }
-
   bool
   handleCallSite(const llvm::CallSite& cs, DisjunctionState& state, const Context& context) {
-    // ska: Add function call magic from Nick
-    
     if (!cs.getInstruction()) {
       return false;
     }
@@ -297,8 +237,8 @@ private:
       return true;
     }
 
-    [&]( ){
-      llvm::errs() << "Printing from CallSite \n"
+    { /// Debug Trace
+      llvm::errs() << "Handling from CallSite \n"
                    << *(cs.getInstruction()) << "\n\n";
       for (auto& arg : cs.args()) {
         llvm::errs() << *arg << "\t";
@@ -309,34 +249,34 @@ private:
       }
       state[cs.getInstruction()].print();
       llvm::errs() << "\n";
-      return;
-    }();
+    }
 
     state[nullptr] = state[cs.getInstruction()];
+    //using argParamPair = std::pair<llvm::Value*, llvm::Value*>;
+    //std::vector<argParamPair> argPairs;
+    //{ int i = 0;
+    //  for (auto& param : fun->args()) {
+    //    auto* paramAsValue = (llvm::Value*) &param;
+    //    auto arg = cs.getArgument(i);
+    //    llvm::errs() << "\nCallSite arg " << *arg;
+    //    argPairs.push_back(argParamPair{arg, paramAsValue});
+    //    i++;
+    //  }
+    //};
 
-    using argParamPair = std::pair<llvm::Value*, llvm::Value*>;
-    std::vector<argParamPair> argPairs;
-    { int i = 0;
-      for (auto& param : fun->args()) {
-        auto* paramAsValue = (llvm::Value*) &param;
-        auto arg = cs.getArgument(i);
-        argPairs.push_back(argParamPair{arg, paramAsValue});
-        i++;
-      }
-    };
+    //auto rewritePair = [&](auto* arg, auto* param) {
+    //  auto argExprID   = generator->GetOrCreateExprID(arg);
+    //  auto paramExprID = generator->GetOrCreateExprID(param);
+    //  llvm::errs() << "\n Param Expr Id " << paramExprID;
+    //  generator->rewrite(state[nullptr], argExprID, paramExprID);
+    //};
 
-    auto rewritePair = [&](auto* arg, auto* param) {
-      auto argExprID   = generator->GetOrCreateExprID(arg);
-      auto paramExprID = generator->GetOrCreateExprID(param);
-      generator->rewrite(state[nullptr], argExprID, paramExprID);
-    };
-
-    for (auto [arg, param] : argPairs) {
-      llvm::errs() << "\n" << "Marshalling"
-                   << "\n" << "arg " << *arg 
-                   << "\n" << "param " << *param;
-      rewritePair(arg, param);
-    }
+    //for (auto [arg, param] : argPairs) {
+    //  llvm::errs() << "\n" << "Marshalling"
+    //               << "\n" << "arg " << *arg
+    //               << "\n" << "param " << *param;
+    //  rewritePair(arg, param);
+    //}
     return true;
   }
 
@@ -363,7 +303,6 @@ private:
     }
 
     auto oldExprID = generator->GetOrCreateExprID(value);
-    // TODO: Move to on-the-fly creation
     auto exprID = generator->GetOrCreateExprID(cmpInst);
     if (oldExprID == exprID) {
       return false;
@@ -372,26 +311,146 @@ private:
     return true;
   }
 
-
-  /// Loads and Stores:
-  /// Loads are handled by replacing the Load Value ExprID in the ExprTree
-  /// with Value ExprID for the Alloca (pointer operand of the load).
-  /// This in turn will be replaced by the Value operand of a store.
-  /// The alloca value ExprID is therefore, transient.
-
-
-  // Treat loadInsts as Value Nodes
   bool
   handleLoad(llvm::Value* const value, DisjunctionState& state) {
     auto* loadInst = llvm::dyn_cast<llvm::LoadInst>(value);
     if (!loadInst) {
       return false;
     }
+    auto oldExprID = generator->GetOrCreateExprID(value);
+    auto newExprID = generator->GetOrCreateExprID(loadInst);
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
     return true;
   }
+
+  /// Store Inst helpers, ordered by call order
   
+  std::vector<llvm::LoadInst*>
+  getLoads(DisjunctionState& state) {
+    std::vector<llvm::LoadInst*> asLoads;
+    auto isBinaryExprID = [](const ExprID exprID) -> bool {
+      return generator->GetExprType(exprID) == 2;
+    };
+    auto insertIfLoad = [&asLoads](const auto binaryNode) {
+      if (auto loadInst =
+              llvm::dyn_cast<llvm::LoadInst>(binaryNode.instruction)) {
+        asLoads.push_back(loadInst);
+      }
+    };
+    auto findLoads = [&](const ExprID exprID, auto& findLoads) {
+      if (!isBinaryExprID(exprID)) {
+        return;
+      }
+      auto& binaryNode = generator->GetBinaryExprNode(exprID);
+      insertIfLoad(binaryNode);
+      findLoads(binaryNode.lhs, findLoads);
+      findLoads(binaryNode.rhs, findLoads);
+      return;
+    };
+
+    for (auto& disjunct : state[nullptr].disjuncts) {
+      for (auto& conjunct : disjunct.conjunctIDs) {
+        findLoads(conjunct.exprID, findLoads);
+      }
+    }
+    return asLoads;
+  }
+  
+  auto
+  seperateLoads(llvm::StoreInst* const storeInst, std::vector<LoadInst*>& loads) {
+    std::vector<llvm::LoadInst*> otherLoads;
+    std::vector<llvm::LoadInst*> strongLoads;
+    auto* storeFunction = storeInst->getFunction();
+    auto* AAWrapper     = functionAAs[storeFunction];
+    assert(AAWrapper != nullptr && "AA is nullptr");
+
+    auto distill = [&] (llvm::LoadInst* loadInst) {
+      auto loadAsMemLoc  = llvm::MemoryLocation::get(loadInst);
+      auto storeAsMemLoc = llvm::MemoryLocation::get(storeInst);
+      {  /// Debug Trace
+        llvm::errs() << "\n CRAAAASH\n"
+                     << *loadInst << "\t" << *storeInst;
+        llvm::errs() << "\n LOAD Parent" << loadInst->getFunction()->getName();
+      }
+      auto& AAResults  = AAWrapper->getAAResults();
+      auto aliasResult = AAResults.alias(loadAsMemLoc, storeAsMemLoc);
+      if (aliasResult == AliasResult::MustAlias) {
+        { /// Debug Trace
+          llvm::errs() << "\nMust Pairs\n";
+          llvm::errs() << *loadInst;
+          llvm::errs() << *storeInst;
+        }
+        strongLoads.push_back(loadInst);
+      } else if (aliasResult == AliasResult::NoAlias) {
+        return;
+      } else {
+        if (loadInst->getFunction() == storeFunction) {
+          otherLoads.push_back(loadInst);
+        }
+      }
+    };
+
+    for (auto* loadInst : loads) {
+      distill(loadInst);
+    }
+    return std::make_pair(strongLoads, otherLoads);
+  }
+
+  Disjunction
+  strongUpdate(const Disjunction& disjunction,
+               llvm::LoadInst* const loadInst,
+               llvm::StoreInst* const storeInst) {
+    auto loadExprID = generator->GetOrCreateExprID(loadInst);
+    auto operand    = storeInst->getValueOperand();
+    auto opExprID   = generator->GetOrCreateExprID(operand);
+    return generator->rewrite(disjunction, loadExprID, opExprID);
+  }
+
+  Disjunction
+  weakUpdate(const Disjunction& disjunction,
+             llvm::LoadInst* const loadInst,
+             llvm::StoreInst* const storeInst) {
+    auto storeValue = storeInst->getValueOperand();
+    auto valExprID  = generator->GetOrCreateExprID(storeValue);
+    auto aliasConjunct = [&]() {
+      auto* loadPtr  = loadInst->getPointerOperand();
+      auto ptrExprID = generator->GetOrCreateExprID(loadPtr);
+      ExprKey aliasKey{ptrExprID, OpIDs::aliasOp, valExprID};
+      auto aliasExpr = generator->GetOrCreateExprID(aliasKey, storeInst);
+      return Conjunct(aliasExpr, true);
+    }();
+    auto loadExprID = generator->GetOrCreateExprID(loadInst);
+
+    Disjunction forRewrites{};
+    Disjunction noRewrites{disjunction};
+    for (auto& disjunct : disjunction.disjuncts) {
+      auto aliasDisjunct{disjunct};
+      auto notAliasDisjunct{disjunct};
+      for (auto& conjunct : disjunct.conjunctIDs) {
+        if (generator->find(conjunct, loadExprID)) {
+          aliasDisjunct.addConjunct(aliasConjunct);
+          notAliasDisjunct.addConjunct(!aliasConjunct);
+          forRewrites.addDisjunct(aliasDisjunct);
+          noRewrites.addDisjunct(notAliasDisjunct);
+        }
+      }
+    }
+    auto rewritten  = generator->rewrite(forRewrites, loadExprID, valExprID);
+
+    llvm::errs() << "\n For Rewrites";
+    forRewrites.print();
+    llvm::errs() << "\n For Non Rewrites";
+    noRewrites.print();
+    llvm::errs() << "\n";
+    llvm::errs() << "\n";
+
+    return Disjunction::unionDisjunctions(rewritten, noRewrites);
+  }
+
   bool
-  handleStore(llvm::Value* const value, DisjunctionState& state, const Context context) {
+  handleStore(llvm::Value* const value,
+              DisjunctionState& state,
+              const Context context) {
     auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
     if (!storeInst) {
       return false;
@@ -404,96 +463,30 @@ private:
       return std::make_pair(functionMemSSAs[func]->getWalker(),
                             functionMemSSAs[func].get());
     };
-
     llvm::errs() << "\n Handling store \n" << *value;
     auto [walker, memSSA] = getWalkerAndMSSA(storeInst);
     assert(memSSA != nullptr && "No memSSA for function");
 
-    /// Find all loads in the disjunct
-    std::vector<llvm::LoadInst*> asLoads;
-    auto isValueExprID = [](const ExprID exprID) {
-      return generator->GetExprType(exprID) == 1;
-    };
-    auto isBinaryExprID = [](const ExprID exprID) -> bool {
-      return generator->GetExprType(exprID) == 2;
-    };
-    auto insertLoad = [&asLoads] (const ExprID exprID) {
-      auto& valueNode = generator->GetValueExprNode(exprID);
-      asLoads.push_back(llvm::dyn_cast<llvm::LoadInst>(valueNode.value));
-    };
-
-    auto preOrder = [isValueExprID, isBinaryExprID, insertLoad](
-                        const ExprID exprID, auto& preOrder) {
-      if (isValueExprID(exprID)) {
-        insertLoad(exprID);
-        return;
-      } else if (isBinaryExprID(exprID)) {
-        auto& binaryNode = generator->GetBinaryExprNode(exprID);
-        if (binaryNode.op.isAliasOp()) {
-          return;
-        }
-        preOrder(binaryNode.lhs, preOrder);
-        preOrder(binaryNode.rhs, preOrder);
-      }
-      return;
-    };
-    for (auto& disjunct : state[nullptr].disjuncts) {
-      for (auto& conjunct : disjunct.conjunctIDs) {
-        preOrder(conjunct.exprID, preOrder);
-      }
-    }
-    /// Remove nullptrs from miscasts and interprocedural MemAccess
-    auto eraseFrom = std::remove_if(
-        asLoads.begin(), asLoads.end(), [storeInst](auto& loadInst) {
-          if (loadInst == nullptr) {
-            return true;
-          }
-          auto* loadParentFunction  = loadInst->getParent()->getParent();
-          auto* storeParentFunction = storeInst->getParent()->getParent();
-          return loadParentFunction != storeParentFunction;
-        });
-    asLoads.erase(eraseFrom, asLoads.end());
-    eraseFrom = std::unique(asLoads.begin(), asLoads.end());
-    asLoads.erase(eraseFrom, asLoads.end());
-
-    /// Perform Strong update and remove from loads
-    std::vector<llvm::LoadInst*> strongLoads;
-    auto removeCopyStrong = [&storeInst, &strongLoads] (llvm::LoadInst* loadInst) {
-      auto* storeFunction = storeInst->getParent()->getParent();
-      auto* AAWrapper = functionAAs[storeFunction];
-      assert(AAWrapper != nullptr && "AA is nullptr");
-
-      auto loadAsMemLoc  = llvm::MemoryLocation::get(loadInst);
-      auto storeAsMemLoc = llvm::MemoryLocation::get(storeInst);
-      llvm::errs() << "\n CRAAAASH\n" << "\n" << *loadInst << "\n" << *storeInst;
-      llvm::errs() << "\n LOAD Parent" << loadInst->getParent()->getParent()->getName();
-      auto& AAResults = AAWrapper->getAAResults();
-      auto aliasResult   = AAResults.alias(loadAsMemLoc, storeAsMemLoc);
-      if (aliasResult == AliasResult::MustAlias) {
-        strongLoads.push_back(loadInst);
-        llvm::errs() << "\nMust Pairs\n" ;
-        llvm::errs() << *loadInst;
-        llvm::errs() << *storeInst;
-        return true;
-      }
-      return false;
-    };
-    auto eraseIt = std::remove_if(asLoads.begin(), asLoads.end(), removeCopyStrong);
-    asLoads.erase(eraseIt, asLoads.end());
+    std::vector<llvm::LoadInst*> asLoads = getLoads(state);
+    auto [strongLoads, weakLoads]        = seperateLoads(storeInst, asLoads);
 
     auto localDisjunction = state[nullptr];
     for (auto* strongLoad : strongLoads) {
       localDisjunction = strongUpdate(localDisjunction, strongLoad, storeInst);
     }
 
-    llvm::errs() << "\n --------------- MEMSSA --------------- \n";
-    using LoadMAPair  = std::pair<llvm::LoadInst*, llvm::MemoryAccess*>;
-    using LoadMAPairs = std::vector<LoadMAPair>;
-    auto pairWithClobbers = [&walker = walker] (llvm::LoadInst* loadInst) {
+
+    using LoadMAPair      = std::pair<llvm::LoadInst*, llvm::MemoryAccess*>;
+    using LoadMAPairs     = std::vector<LoadMAPair>;
+    auto pairWithClobbers = [& walker = walker](llvm::LoadInst* loadInst) {
+      llvm::errs() << *loadInst;
       return LoadMAPair{loadInst, walker->getClobberingMemoryAccess(loadInst)};
     };
     LoadMAPairs loadsWithClobbers;
-    std::transform(asLoads.begin(), asLoads.end(), std::back_inserter(loadsWithClobbers), pairWithClobbers);
+    std::transform(weakLoads.begin(),
+                   weakLoads.end(),
+                   std::back_inserter(loadsWithClobbers),
+                   pairWithClobbers);
 
     using MemDefs         = std::vector<llvm::MemoryDef*>;
     using LoadMDefPair    = std::pair<llvm::LoadInst*, MemDefs>;
@@ -520,10 +513,14 @@ private:
       return LoadMDefPair{loadMAPair.first, asMemDefs};
     };
     LoadMDefPairs loadsWithMDefs;
-    std::transform(loadsWithClobbers.begin(), loadsWithClobbers.end(), std::back_inserter(loadsWithMDefs), toClobberingDefs);
-    
+    std::transform(loadsWithClobbers.begin(),
+                   loadsWithClobbers.end(),
+                   std::back_inserter(loadsWithMDefs),
+                   toClobberingDefs);
     llvm::errs() << "\n MEMSSA END \n";
-    auto* storeMemDef = llvm::dyn_cast<llvm::MemoryDef>(memSSA->getMemoryAccess(storeInst));
+
+    auto* storeMemDef =
+        llvm::dyn_cast<llvm::MemoryDef>(memSSA->getMemoryAccess(storeInst));
     storeMemDef->print(llvm::errs());
     for (auto& [loadInst, memDefs] : loadsWithMDefs) {
       for (auto& memDef : memDefs) {
@@ -537,14 +534,7 @@ private:
 
     llvm::errs() << "\n --------------- MEMSSA --------------- \n";
     state[nullptr] = localDisjunction;
-
     /// Capture stores which are not in the top level function
-    if (context.back() == nullptr) {
-      return true;
-    }
-    auto storeExprID =
-        generator->GetOrCreateExprID(storeInst->getValueOperand());
-    state[nullptr].applyConjunct({storeExprID, true});
     return true;
   }
 
@@ -575,11 +565,11 @@ private:
     if(!isLoopPhi) {
       return true;
     }
-  
+
     auto phiExprID = generator->GetOrCreateExprID(value);
     state[nullptr] = generator->dropConjunct(state[nullptr], phiExprID);
     state[nullptr] = state[nullptr].simplifyImplication();
-    
+
     return true;
   }
 

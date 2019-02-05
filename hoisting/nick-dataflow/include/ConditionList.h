@@ -20,33 +20,44 @@ using namespace llvm;
 
 using Privileges = std::bitset<COUNT>;
 using ExprID     = int16_t;  // Deterministic size
-using OpKey      = int16_t;  // Cannot be unsigned
+using OpKey      = int16_t;  // Negatives used to hash sentinels
 using ExprKey    = std::tuple<ExprID, OpKey, ExprID>;
 
-constexpr   int typeSize{16};
+constexpr int typeSize{16};
+namespace OpIDs {
 constexpr OpKey aliasOp{100};
 constexpr OpKey switchOp{101};
+constexpr OpKey loadOp{102};
+}  // namespace OpIDs
 
-// template specialization for ExprKey
+namespace ReservedExprIDs {
+constexpr ExprID vacuousExprID = 0;
+constexpr ExprID emptyExprID   = 1;
+}  // namespace ReservedExprIDs
+
 template<>
 struct DenseMapInfo<ExprKey> {
-  static inline ExprKey getEmptyKey() {
+  static inline ExprKey
+  getEmptyKey() {
     return {ExprID(-1), OpKey(0), ExprID(-1)};
   }
 
-  static inline ExprKey getTombstoneKey() {
+  static inline ExprKey
+  getTombstoneKey() {
     return {ExprID(-2), OpKey(0), ExprID(-2)};
   }
 
-  static unsigned getHashValue(const ExprKey& exprKey) {
-    int16_t lhsAsInt     = std::get<0>(exprKey);
-    int16_t opCodeAsInt  = std::get<1>(exprKey);
-    int16_t rhsAsInt     = std::get<2>(exprKey);
-    int16_t asArray[] = {lhsAsInt, opCodeAsInt, rhsAsInt};
+  static unsigned
+  getHashValue(const ExprKey& exprKey) {
+    int16_t lhsAsInt    = std::get<0>(exprKey);
+    int16_t opCodeAsInt = std::get<1>(exprKey);
+    int16_t rhsAsInt    = std::get<2>(exprKey);
+    int16_t asArray[]   = {lhsAsInt, opCodeAsInt, rhsAsInt};
     return llvm::hash_combine_range(std::begin(asArray), std::end(asArray));
   }
 
-  static bool isEqual(const ExprKey &LHS, const ExprKey &RHS) {
+  static bool
+  isEqual(const ExprKey& LHS, const ExprKey& RHS) {
     return LHS == RHS;
   }
 };
@@ -72,8 +83,8 @@ public:
     : opCode{opCode} { }
 
   bool
-  isAliasOp() const {
-    return opCode == aliasOp;
+  operator==(OpKey opCode) const {
+    return this->opCode == opCode;
   }
 };
 
@@ -96,9 +107,12 @@ public:
   const ExprID lhs;
   const ExprOp op;
   const ExprID rhs;
-  BinaryExprNode (ExprID lhs, OpKey op, ExprID rhs)
-    : lhs{lhs}, op{op},
-      rhs{rhs} { }
+  llvm::Instruction* const instruction = nullptr;
+  BinaryExprNode(ExprID lhs,
+                 OpKey op,
+                 ExprID rhs,
+                 llvm::Instruction* const instruction)
+    : lhs{lhs}, op{op}, rhs{rhs}, instruction{instruction} {}
 };
 
 
@@ -112,7 +126,7 @@ public:
     : exprID{exprID},
       notNegated{notNegated} { }
 
-  bool 
+  bool
   operator==(const Conjunct& other) const {
     return exprID == other.exprID
       && !(notNegated xor other.notNegated);
@@ -129,25 +143,25 @@ public:
     return false;
   }
 
-  Conjunct 
+  Conjunct
   operator!() const {
     Conjunct newConjunct = *this;
     newConjunct.notNegated = !notNegated;
     return newConjunct;
   }
 
-  void 
+  void
   operator=(const Conjunct& other) {
     exprID     = other.exprID;
     notNegated = other.notNegated;
   }
 
-  bool 
+  bool
   operator<(const ExprID other) const {
     return exprID < other;
   }
 
-  bool 
+  bool
   operator==(const ExprID other) const {
     return exprID == other;
   }
@@ -240,7 +254,7 @@ public:
 
 
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
-      // The second check is redundant since there should never be adjacent 
+      // The second check is redundant since there should never be adjacent
       // conjuncts with the same exprID
       // Add in as assert. Remove later
       return a.exprID == b.exprID && (a.notNegated xor b.notNegated);
@@ -270,7 +284,7 @@ public:
   Disjunction&
   simplifyNeighbourNegation() {
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
-      // The second check is redundant since there should never be adjacent 
+      // The second check is redundant since there should never be adjacent
       // conjuncts with the same exprID
       // Add in as assert. Remove later
       return a.exprID == b.exprID && (a.notNegated xor b.notNegated);
@@ -304,7 +318,7 @@ public:
       llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
       /// REMOVE ///
     }
-    
+
     auto first  = disjuncts.begin();
     auto second = first + 1;
 
@@ -323,11 +337,11 @@ public:
 
   Disjunction& // Should
   simplifyImplication() {
-    std::sort(disjuncts.begin(), disjuncts.end(), 
+    std::sort(disjuncts.begin(), disjuncts.end(),
         [ ] (const auto& lhs, const auto& rhs) {
           return lhs.conjunctIDs.size() < rhs.conjunctIDs.size();
         });
-    
+
     auto iter = disjuncts.begin();
     auto end  = disjuncts.end();
     auto isSubset = [&iter](const Disjunct disjunct) { //iter1 is subset of iter2

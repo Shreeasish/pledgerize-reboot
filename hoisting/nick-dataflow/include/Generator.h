@@ -17,7 +17,11 @@ public:
          binaryExprCounter  { reservedBExprBits() },
          constantExprCounter{ reservedCExprBits() } {
       constantSlab.emplace_back(ConstantExprNode{nullptr});
-      leafTable.insert({nullptr, 0});
+      leafTable.insert({nullptr, GetVacuousExprID()});
+
+      llvm::errs() << "\n   valueExprCounter " << valueExprCounter;
+      llvm::errs() << "\n   binaryExprCouner " << binaryExprCounter;
+      llvm::errs() << "\nconstantExprCounter " << constantExprCounter;
     }
   /* Debugging Function -----------------*/
   void
@@ -46,20 +50,20 @@ public:
   /* Debugging Function -----------------*/
 
   ExprID
-  GetOrCreateExprID(ExprKey key) {
+  GetOrCreateExprID(ExprKey key, llvm::Instruction* const instruction) {
     if (auto found = exprTable.find(key); found != exprTable.end()){
       return found->second;
     }
-    return GenerateBinaryExprID(key);
+    return GenerateBinaryExprID(key, instruction);
   }
 
 
-  ExprID  // Handle BinaryOperator
+  ExprID
   GetOrCreateExprID(llvm::BinaryOperator* const binOperator) {
     return GetOrCreateExprID(llvm::dyn_cast<llvm::Instruction>(binOperator));
   }
 
-  ExprID  // Handle CmpInst
+  ExprID
   GetOrCreateExprID(llvm::CmpInst* const cmpInst) {
     return GetOrCreateExprID(llvm::dyn_cast<llvm::Instruction>(cmpInst));
   }
@@ -67,8 +71,6 @@ public:
   ExprID
   GetOrCreateExprID(llvm::Value* const value) {
     assert(value != nullptr);
-
-    // Get Constant or Value for leaf
     if (auto found = leafTable.find(value); found != leafTable.end()) {
       return found->second;
     }
@@ -87,16 +89,28 @@ public:
     for (auto& index : gep->indices()) {
       auto rhsID = GetOrCreateExprID(index);
       ExprKey key{lhsID, gep->getOpcode(), rhsID};
-      lhsID = GetOrCreateExprID(key);
+      lhsID = GetOrCreateExprID(key, gep);
     }
-    llvm::errs() << "generated gepID" << lhsID << "\n";
+    llvm::errs() << "\ngenerated gepID" << lhsID << "\n";
     return lhsID;
   }
 
+  ExprID
+  GetOrCreateExprID(llvm::LoadInst* const loadInst) {
+    llvm::errs() << "\ngenerator loadInst";
+    auto* pointer      = loadInst->getPointerOperand();
+    auto pointerExprID = GetOrCreateExprID(pointer);
+    return GetOrCreateExprID({pointerExprID, OpIDs::loadOp, GetEmptyExprID()}, loadInst);
+  }
+
+  ExprID
+  constexpr GetEmptyExprID() {
+    return ReservedExprIDs::emptyExprID;
+  }
 
   ExprID
   constexpr GetVacuousExprID() {
-    return 0;
+    return ReservedExprIDs::vacuousExprID;
   }
 
   // TODO: Establish whether only binaryExprs are needed
@@ -112,11 +126,11 @@ public:
 
   //TODO: Refactor to sinlge method
   // Getters for backingstore
-  const BinaryExprNode& //Invariant: The ID searched for will always be there
+  const BinaryExprNode& 
   GetBinaryExprNode(const ExprID conjunctID) const {
     assert((conjunctID && reservedBExprBits()) && "ConjunctID is not a BinaryExpr");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
-      auto index = conjunctID & (~reservedBExprBits()); //Removal: remove bitwise
+      auto index = conjunctID & (~reservedBExprBits());
       return index - 1; // Start from 0 // Expr Counters start from 1
     };
     return binarySlab[asIndex(conjunctID)];
@@ -159,12 +173,14 @@ public:
         return exprID;     // Leaf node and !==oldExprID
       }
       auto binaryNode = GetBinaryExprNode(exprID);
-      if (binaryNode.op.isAliasOp()) {
-        return exprID;
-      }
+      //FIXME: WHY?!! -- Possibly because loads would be recognized twice
+      //if (binaryNode.op.isAliasOp()) {
+      //  return exprID;
+      //}
       auto leftID  = postOrderRebuild(binaryNode.lhs, postOrderRebuild);
       auto rightID = postOrderRebuild(binaryNode.rhs, postOrderRebuild);
-      return GetOrCreateExprID({ExprID(leftID), OpKey(binaryNode.op.opCode), ExprID(rightID)}); //Readability
+      return GetOrCreateExprID(
+          {ExprID(leftID), OpKey(binaryNode.op.opCode), ExprID(rightID)}, binaryNode.instruction);
     };
 
     auto rebuildConjunct = [&postOrderRebuild] (const Conjunct& conjunct) -> Conjunct {
@@ -219,13 +235,15 @@ public:
     return newDisjunction;
   }
 
-  ExprID // load *X = Store *Y
-  GetOrCreateAliasExprID (llvm::Instruction* const loadInst, llvm::Instruction* const storeInst) {
-    auto* const asLoadValue  =  llvm::dyn_cast<llvm::Value>(loadInst);
+  ExprID  // load *X = Store *Y
+  GetOrCreateAliasExprID(llvm::Instruction* const loadInst,
+                         llvm::Instruction* const storeInst) {
+    auto* const asLoadValue  = llvm::dyn_cast<llvm::Value>(loadInst);
     auto* const asStoreValue = llvm::dyn_cast<llvm::Value>(storeInst);
-    auto loadNode  = GetOrCreateExprID(asLoadValue);
-    auto storeNode = GetOrCreateExprID(asStoreValue);
-    return GetOrCreateExprID({loadNode, aliasOp, storeNode});
+    auto loadNode            = GetOrCreateExprID(asLoadValue);
+    auto storeNode           = GetOrCreateExprID(asStoreValue);
+    return GetOrCreateExprID({loadNode, OpIDs::aliasOp, storeNode}, storeInst);
+    // Use the store since the update happens at the store
   }
 
   bool //Generator should not check in the state itself
@@ -233,12 +251,14 @@ public:
     return value && leafTable.count(value) > 0;
   }
 
+
+  // Specialized for weakupdates:
+  // breaks abstraction. FIXME
   bool
-  preOrderFind(const Conjunct& conjunct, const ExprID& targetExprID) const {
+  find(const Conjunct& conjunct, const ExprID& targetExprID) const {
     auto isBinaryExprID = [this](const ExprID exprID) -> bool {
       return GetExprType(exprID) == 2;
     };
-
     auto preOrder = [this, &targetExprID, &isBinaryExprID](const Conjunct& conjunct) -> bool {
       std::stack<ExprID> exprStack;
       exprStack.push(conjunct.exprID);
@@ -252,9 +272,6 @@ public:
           continue;
         }
         auto binaryNode = GetBinaryExprNode(exprID);
-        if (binaryNode.op.isAliasOp()) {
-          continue;
-        }
         exprStack.push(binaryNode.lhs);
         exprStack.push(binaryNode.rhs);
       }
@@ -264,7 +281,7 @@ public:
     return preOrder(conjunct);
   }
 
-  template<class Compare>
+  template <class Compare>
   ExprID
   findValueExprID(Compare comp) {
     auto found = std::find_if(valueSlab.rbegin(), valueSlab.rend(), comp);
@@ -277,17 +294,17 @@ public:
   }
 
 private:
-  ExprID valueExprCounter    = 0;
-  ExprID binaryExprCounter   = 0;
-  ExprID constantExprCounter = 0;
-
   std::deque<ConstantExprNode> constantSlab;
   std::deque<ValueExprNode>    valueSlab;
   std::deque<BinaryExprNode>   binarySlab;
 
+  ExprID valueExprCounter;
+  ExprID binaryExprCounter;
+  ExprID constantExprCounter;
+
   llvm::DenseMap<ExprKey, ExprID> exprTable;
   llvm::DenseMap<llvm::Value*, ExprID> leafTable;
-
+  
   constexpr ExprID reservedVExprBits() const {
     return 1 << (typeSize - 3); // -1 for sign bit
   }
@@ -327,14 +344,15 @@ private:
   }
 
   ExprID
-  GenerateBinaryExprID(ExprKey key) {
-    binarySlab.emplace_back(BinaryExprNode{std::get<0>(key), std::get<1>(key), std::get<2>(key)});
+  GenerateBinaryExprID(ExprKey key, llvm::Instruction* const instruction) {
+    binarySlab.emplace_back(BinaryExprNode{
+        std::get<0>(key), std::get<1>(key), std::get<2>(key), instruction});
     binaryExprCounter++;
     exprTable.insert({key, binaryExprCounter});
     return binaryExprCounter;
   }
 
-  ExprID //TODO: Rename cmpInst to inst
+  ExprID
   GetOrCreateExprID(llvm::Instruction* const inst) {
     assert(inst != nullptr);
     auto*  lhs = inst->getOperand(0);
@@ -346,7 +364,7 @@ private:
     if (auto found = exprTable.find(key); found != exprTable.end()) {
       return found->second;
     }
-    return GenerateBinaryExprID(key);
+    return GenerateBinaryExprID(key, inst);
   }
 };
 
