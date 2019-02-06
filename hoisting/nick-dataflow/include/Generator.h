@@ -165,8 +165,9 @@ public:
     };
 
     auto postOrderRebuild = 
-      [this, &newExprID, &oldExprID, &isBinaryExprID] (const ExprID& exprID, auto& postOrderRebuild) -> ExprID {
+      [&,this] (const ExprID& exprID, auto& postOrderRebuild) -> ExprID {
       if (exprID == oldExprID) {
+        llvm::errs() << "\nFound exprID" << exprID;
         return newExprID;  // Return the newID implying a replacement
       }                    // Doesn't matter what type of conjunct
       if (!isBinaryExprID(exprID)) {

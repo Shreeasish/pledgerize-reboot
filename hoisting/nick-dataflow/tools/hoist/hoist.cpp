@@ -215,7 +215,6 @@ public:
 
 class DisjunctionTransfer {
 private:
-
   bool
   handleCallSite(const llvm::CallSite& cs, DisjunctionState& state, const Context& context) {
     if (!cs.getInstruction()) {
@@ -252,31 +251,32 @@ private:
     }
 
     state[nullptr] = state[cs.getInstruction()];
-    //using argParamPair = std::pair<llvm::Value*, llvm::Value*>;
-    //std::vector<argParamPair> argPairs;
-    //{ int i = 0;
-    //  for (auto& param : fun->args()) {
-    //    auto* paramAsValue = (llvm::Value*) &param;
-    //    auto arg = cs.getArgument(i);
-    //    llvm::errs() << "\nCallSite arg " << *arg;
-    //    argPairs.push_back(argParamPair{arg, paramAsValue});
-    //    i++;
-    //  }
-    //};
+    using argParamPair = std::pair<llvm::Value*, llvm::Value*>;
+    std::vector<argParamPair> argPairs;
+    { int i = 0;
+      for (auto& param : fun->args()) {
+        auto* paramAsValue = (llvm::Value*) &param;
+        auto arg = cs.getArgument(i);
+        llvm::errs() << "\nCallSite arg " << *arg;
+        argPairs.push_back(argParamPair{arg, paramAsValue});
+        i++;
+      }
+    };
 
-    //auto rewritePair = [&](auto* arg, auto* param) {
-    //  auto argExprID   = generator->GetOrCreateExprID(arg);
-    //  auto paramExprID = generator->GetOrCreateExprID(param);
-    //  llvm::errs() << "\n Param Expr Id " << paramExprID;
-    //  generator->rewrite(state[nullptr], argExprID, paramExprID);
-    //};
+    auto rewritePair = [&](auto* arg, auto* param) {
+      auto argExprID   = generator->GetOrCreateExprID(arg);
+      auto paramExprID = generator->GetOrCreateExprID(param);
+      llvm::errs() << "\n Param Expr Id " << paramExprID;
+      llvm::errs() << "\n argExprID " << argExprID;
+      return generator->rewrite(state[nullptr], paramExprID, argExprID);
+    };
 
-    //for (auto [arg, param] : argPairs) {
-    //  llvm::errs() << "\n" << "Marshalling"
-    //               << "\n" << "arg " << *arg
-    //               << "\n" << "param " << *param;
-    //  rewritePair(arg, param);
-    //}
+    for (auto [arg, param] : argPairs) {
+      llvm::errs() << "\n" << "Marshalling"
+                   << "\n" << "arg " << *arg
+                   << "\n" << "param " << *param;
+      state[nullptr] = rewritePair(arg, param);
+    }
     return true;
   }
 
@@ -324,7 +324,7 @@ private:
   }
 
   /// Store Inst helpers, ordered by call order
-  
+
   std::vector<llvm::LoadInst*>
   getLoads(DisjunctionState& state) {
     std::vector<llvm::LoadInst*> asLoads;
@@ -355,38 +355,73 @@ private:
     }
     return asLoads;
   }
-  
+
+
+  AliasResult
+  getMemSSAResults(llvm::StoreInst* const storeInst,
+                   llvm::LoadInst* const loadInst) {
+    auto [storeFunc, loadFunc] = [&]() {
+      return std::make_pair(storeInst->getFunction(), loadInst->getFunction());
+    }();
+    if (storeFunc != loadFunc) {
+      return AliasResult::MayAlias;
+    } // Conservatively assert that mem-ops from different functions alias
+
+    auto [walker, memSSA] = [&]() {
+      auto* func = storeInst->getFunction();
+      return std::make_pair(functionMemSSAs[func]->getWalker(),
+                            functionMemSSAs[func].get());
+    }();
+    assert(memSSA != nullptr && "No memSSA for function");
+
+    auto* clobber     = walker->getClobberingMemoryAccess(loadInst);
+    auto* storeMemAcc = memSSA->getMemoryAccess(storeInst);
+    auto* storeMemDef = llvm::dyn_cast<llvm::MemoryDef>(storeMemAcc);
+    for (auto memDef = clobber->defs_begin(); memDef != clobber->defs_end(); memDef++) {
+      if (memDef == storeMemDef) {
+        return AliasResult::MustAlias;
+      }
+    }
+    llvm_unreachable("Part of the same function, but does not alias");
+    return AliasResult::NoAlias;
+  }
+
+  AliasResult
+  getAliasType(llvm::StoreInst* const storeInst,
+               llvm::LoadInst* const loadInst) {
+    auto* storeFunction = storeInst->getFunction();
+    auto* AAWrapper     = functionAAs[storeFunction];
+    auto& AAResults = AAWrapper->getAAResults();
+    assert(AAWrapper != nullptr && "AA is nullptr");
+
+    auto loadAsMemLoc  = llvm::MemoryLocation::get(loadInst);
+    auto storeAsMemLoc = llvm::MemoryLocation::get(storeInst);
+    auto aliasType = AAResults.alias(loadAsMemLoc, storeAsMemLoc);
+    if (aliasType == AliasResult::MustAlias
+        /*|| aliasType == AliasResult::NoAlias*/) {
+      return aliasType;
+    }
+    //Consult MemSSA for may-alias
+    return getMemSSAResults(storeInst, loadInst);
+  }
+
   auto
   seperateLoads(llvm::StoreInst* const storeInst, std::vector<LoadInst*>& loads) {
     std::vector<llvm::LoadInst*> otherLoads;
     std::vector<llvm::LoadInst*> strongLoads;
-    auto* storeFunction = storeInst->getFunction();
-    auto* AAWrapper     = functionAAs[storeFunction];
-    assert(AAWrapper != nullptr && "AA is nullptr");
 
     auto distill = [&] (llvm::LoadInst* loadInst) {
-      auto loadAsMemLoc  = llvm::MemoryLocation::get(loadInst);
-      auto storeAsMemLoc = llvm::MemoryLocation::get(storeInst);
-      {  /// Debug Trace
-        llvm::errs() << "\n CRAAAASH\n"
-                     << *loadInst << "\t" << *storeInst;
-        llvm::errs() << "\n LOAD Parent" << loadInst->getFunction()->getName();
-      }
-      auto& AAResults  = AAWrapper->getAAResults();
-      auto aliasResult = AAResults.alias(loadAsMemLoc, storeAsMemLoc);
+      auto aliasResult = getAliasType(storeInst, loadInst);
       if (aliasResult == AliasResult::MustAlias) {
-        { /// Debug Trace
-          llvm::errs() << "\nMust Pairs\n";
-          llvm::errs() << *loadInst;
-          llvm::errs() << *storeInst;
-        }
         strongLoads.push_back(loadInst);
       } else if (aliasResult == AliasResult::NoAlias) {
-        return;
+        llvm::errs() << "\n No Alias for";
+        llvm::errs() << "\n" << *storeInst;
+        llvm::errs() << "\n" << *loadInst;
+        llvm::errs() << "\n" << loadInst->getFunction()->getName();
+        return; //Discard NoAliases
       } else {
-        if (loadInst->getFunction() == storeFunction) {
-          otherLoads.push_back(loadInst);
-        }
+        otherLoads.push_back(loadInst);
       }
     };
 
@@ -457,16 +492,6 @@ private:
     }
     llvm::errs() << "\nStore Function Name"
                  << storeInst->getParent()->getParent()->getName();
-
-    auto getWalkerAndMSSA = [](llvm::Instruction* const inst) {
-      auto* func = inst->getFunction();
-      return std::make_pair(functionMemSSAs[func]->getWalker(),
-                            functionMemSSAs[func].get());
-    };
-    llvm::errs() << "\n Handling store \n" << *value;
-    auto [walker, memSSA] = getWalkerAndMSSA(storeInst);
-    assert(memSSA != nullptr && "No memSSA for function");
-
     std::vector<llvm::LoadInst*> asLoads = getLoads(state);
     auto [strongLoads, weakLoads]        = seperateLoads(storeInst, asLoads);
 
@@ -474,67 +499,12 @@ private:
     for (auto* strongLoad : strongLoads) {
       localDisjunction = strongUpdate(localDisjunction, strongLoad, storeInst);
     }
-
-
-    using LoadMAPair      = std::pair<llvm::LoadInst*, llvm::MemoryAccess*>;
-    using LoadMAPairs     = std::vector<LoadMAPair>;
-    auto pairWithClobbers = [& walker = walker](llvm::LoadInst* loadInst) {
-      llvm::errs() << *loadInst;
-      return LoadMAPair{loadInst, walker->getClobberingMemoryAccess(loadInst)};
-    };
-    LoadMAPairs loadsWithClobbers;
-    std::transform(weakLoads.begin(),
-                   weakLoads.end(),
-                   std::back_inserter(loadsWithClobbers),
-                   pairWithClobbers);
-
-    using MemDefs         = std::vector<llvm::MemoryDef*>;
-    using LoadMDefPair    = std::pair<llvm::LoadInst*, MemDefs>;
-    using LoadMDefPairs   = std::vector<LoadMDefPair>;
-    auto toClobberingDefs = [](LoadMAPair loadMAPair) {
-      auto* memAccess = loadMAPair.second;
-      auto* loadInst  = loadMAPair.first;
-      MemDefs asMemDefs{};
-      if (auto* memDef = llvm::dyn_cast<llvm::MemoryDef>(memAccess)) {
-        asMemDefs.push_back(memDef);
-        return LoadMDefPair{loadInst, asMemDefs};
-      }
-      auto toMemDef = [](auto memAccess) {
-        assert(llvm::dyn_cast<llvm::MemoryDef>(memAccess)
-               && "MemPhi Operand is not a MemDef");
-        llvm::errs() << "Printing memAccess";
-        llvm::errs() << *memAccess;
-        return llvm::dyn_cast<llvm::MemoryDef>(memAccess);
-      };
-      std::transform(loadMAPair.second->defs_begin(),
-                     loadMAPair.second->defs_end(),
-                     std::back_inserter(asMemDefs),
-                     toMemDef);
-      return LoadMDefPair{loadMAPair.first, asMemDefs};
-    };
-    LoadMDefPairs loadsWithMDefs;
-    std::transform(loadsWithClobbers.begin(),
-                   loadsWithClobbers.end(),
-                   std::back_inserter(loadsWithMDefs),
-                   toClobberingDefs);
-    llvm::errs() << "\n MEMSSA END \n";
-
-    auto* storeMemDef =
-        llvm::dyn_cast<llvm::MemoryDef>(memSSA->getMemoryAccess(storeInst));
-    storeMemDef->print(llvm::errs());
-    for (auto& [loadInst, memDefs] : loadsWithMDefs) {
-      for (auto& memDef : memDefs) {
-        if (memDef == storeMemDef) {
-          llvm::errs() << "\n WeakUpdate";
-          localDisjunction = weakUpdate(localDisjunction, loadInst, storeInst);
-        }
-      }
+    for (auto weakLoad : weakLoads) {
+      localDisjunction = weakUpdate(localDisjunction, weakLoad, storeInst);
     }
-
 
     llvm::errs() << "\n --------------- MEMSSA --------------- \n";
     state[nullptr] = localDisjunction;
-    /// Capture stores which are not in the top level function
     return true;
   }
 
