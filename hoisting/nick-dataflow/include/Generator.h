@@ -10,44 +10,48 @@
 //TODO: Add checks for signed int overflow.
 //TODO: Add checks for boundaries between ID types
 //TODO: CamelCase functions
+//TODO: Move traversals to a single function
+using ValueConstOrBinaryExprNode = std::variant<const ValueExprNode, const ConstantExprNode, const BinaryExprNode>;
+
 class Generator {
 public:
+  enum ExprNodeType {
+    Special,
+    Value,
+    Binary,
+    Constant
+  };
+
   Generator()
        : valueExprCounter   { reservedVExprBits() }, 
          binaryExprCounter  { reservedBExprBits() },
          constantExprCounter{ reservedCExprBits() } {
       constantSlab.emplace_back(ConstantExprNode{nullptr});
       leafTable.insert({nullptr, GetVacuousExprID()});
-
-      llvm::errs() << "\n   valueExprCounter " << valueExprCounter;
-      llvm::errs() << "\n   binaryExprCouner " << binaryExprCounter;
-      llvm::errs() << "\nconstantExprCounter " << constantExprCounter;
     }
-  /* Debugging Function -----------------*/
+
   void
   dumpState() {
-    llvm::errs() << "\n------------ Binary Table ------\n";
+    llvm::errs() << "\n------------ Binary Table --------\n";
     for (auto [exprKey, exprID] : exprTable) {
-      llvm::errs() << "\n ExprKey --- {" 
-                   << std::get<0>(exprKey) /*lhs*/ << "," << std::get<2>(exprKey) /*rhs*/
-                   << "}" ;
-      llvm::errs() << "\t ID:: " << exprID;
+      llvm::errs() << "ID:: " << exprID;
+      llvm::errs() << "\t ExprKey --- (" 
+                   << std::get<0>(exprKey) << "|"
+                   << std::get<1>(exprKey) << "|" 
+                   << std::get<2>(exprKey) << ")";
     }
-    llvm::errs() << "\n------------ Binary Table ------\n";
-    llvm::errs() << "\n------------ Leaf Table ------\n";
+    llvm::errs() << "\n------------ Leaf Table ---------\n";
     for (auto [value, exprID] : leafTable) {
-      llvm::errs() << "\n llvm::value --- ";
+      llvm::errs() << "ID:: " << exprID << "\t";
       if (value == nullptr) {
         llvm::errs() << "nullptr" ;
       }
       else {
         llvm::errs() << *value;
       }
-      llvm::errs() << "\t ID:: " << exprID;
     }
     llvm::errs() << "\n------------ Leaf Table ------\n";
   }
-  /* Debugging Function -----------------*/
 
   ExprID
   GetOrCreateExprID(ExprKey key, llvm::Instruction* const instruction) {
@@ -74,8 +78,8 @@ public:
     if (auto found = leafTable.find(value); found != leafTable.end()) {
       return found->second;
     }
-    if (llvm::isa<Constant>(value)) {
-      return GenerateConstantExprID(llvm::dyn_cast<Constant>(value));
+    if (llvm::isa<llvm::Constant>(value)) {
+      return GenerateConstantExprID(llvm::dyn_cast<llvm::Constant>(value));
     }
     return GenerateValueExprID(value);
   }
@@ -91,13 +95,11 @@ public:
       ExprKey key{lhsID, gep->getOpcode(), rhsID};
       lhsID = GetOrCreateExprID(key, gep);
     }
-    llvm::errs() << "\ngenerated gepID" << lhsID << "\n";
     return lhsID;
   }
 
   ExprID
   GetOrCreateExprID(llvm::LoadInst* const loadInst) {
-    llvm::errs() << "\ngenerator loadInst";
     auto* pointer      = loadInst->getPointerOperand();
     auto pointerExprID = GetOrCreateExprID(pointer);
     return GetOrCreateExprID({pointerExprID, OpIDs::loadOp, GetEmptyExprID()}, loadInst);
@@ -124,8 +126,13 @@ public:
     return leafTable.size();
   }
 
-  //TODO: Refactor to sinlge method
-  // Getters for backingstore
+  const ConstantExprNode&
+  GetSpecialExprNode(const ExprID conjunctID) const {
+    assert(!(conjunctID && reservedCExprBits()) && "ConjunctID is not a SpecialID");
+    auto asIndex = conjunctID;
+    return constantSlab[asIndex];
+  }
+  
   const BinaryExprNode& 
   GetBinaryExprNode(const ExprID conjunctID) const {
     assert((conjunctID && reservedBExprBits()) && "ConjunctID is not a BinaryExpr");
@@ -156,6 +163,33 @@ public:
     return valueSlab[asIndex(conjunctID)];
   }
 
+  ValueConstOrBinaryExprNode
+  GetExprNode(const ExprID exprID) {
+    auto exprType = GetExprType(exprID);
+    switch (exprType) {
+      case ExprNodeType::Special: {
+        return GetSpecialExprNode(exprID);
+        break;
+      }
+      case ExprNodeType::Value: {
+        return GetValueExprNode(exprID);
+        break;
+      }
+      case ExprNodeType::Binary: {
+        return GetBinaryExprNode(exprID);
+        break;
+      }
+      case ExprNodeType::Constant: {
+        return GetConstantExprNode(exprID);
+        break;
+      }
+      default: {
+        llvm_unreachable("Node type doesn't work");
+      }
+    }
+  }
+
+
   //TODO: Memoize
   Disjunction
   rewrite(const Disjunction& disjunction, const ExprID oldExprID, const ExprID newExprID) {
@@ -167,17 +201,12 @@ public:
     auto postOrderRebuild = 
       [&,this] (const ExprID& exprID, auto& postOrderRebuild) -> ExprID {
       if (exprID == oldExprID) {
-        llvm::errs() << "\nFound exprID" << exprID;
         return newExprID;  // Return the newID implying a replacement
       }                    // Doesn't matter what type of conjunct
       if (!isBinaryExprID(exprID)) {
         return exprID;     // Leaf node and !==oldExprID
       }
       auto binaryNode = GetBinaryExprNode(exprID);
-      //FIXME: WHY?!! -- Possibly because loads would be recognized twice
-      //if (binaryNode.op.isAliasOp()) {
-      //  return exprID;
-      //}
       auto leftID  = postOrderRebuild(binaryNode.lhs, postOrderRebuild);
       auto rightID = postOrderRebuild(binaryNode.rhs, postOrderRebuild);
       return GetOrCreateExprID(
@@ -202,8 +231,6 @@ public:
 
   Disjunction
   dropConjunct(const Disjunction& disjunction, const ExprID oldExprID) {
-    llvm::errs() << "\nto drop" << oldExprID;
-    llvm::errs().flush();
     auto isBinaryExprID = [this](const ExprID exprID) -> bool {
       return GetExprType(exprID) == 2;
     };
@@ -235,26 +262,12 @@ public:
     }
     return newDisjunction;
   }
-
-  ExprID  // load *X = Store *Y
-  GetOrCreateAliasExprID(llvm::Instruction* const loadInst,
-                         llvm::Instruction* const storeInst) {
-    auto* const asLoadValue  = llvm::dyn_cast<llvm::Value>(loadInst);
-    auto* const asStoreValue = llvm::dyn_cast<llvm::Value>(storeInst);
-    auto loadNode            = GetOrCreateExprID(asLoadValue);
-    auto storeNode           = GetOrCreateExprID(asStoreValue);
-    return GetOrCreateExprID({loadNode, OpIDs::aliasOp, storeNode}, storeInst);
-    // Use the store since the update happens at the store
-  }
-
-  bool //Generator should not check in the state itself
+  
+  bool
   isUsed(llvm::Value* const value) const {
     return value && leafTable.count(value) > 0;
   }
 
-
-  // Specialized for weakupdates:
-  // breaks abstraction. FIXME
   bool
   find(const Conjunct& conjunct, const ExprID& targetExprID) const {
     auto isBinaryExprID = [this](const ExprID exprID) -> bool {
@@ -284,7 +297,7 @@ public:
 
   template <class Compare>
   ExprID
-  findValueExprID(Compare comp) {
+  findValue(Compare comp) {
     auto found = std::find_if(valueSlab.rbegin(), valueSlab.rend(), comp);
     if (found != valueSlab.rend()) {
       auto* foundValue = found->value;
@@ -292,6 +305,41 @@ public:
       return exprID;
     }
     return 0;
+  }
+
+  template <class Visitor>
+  Disjunction
+  worker(const Disjunction disjunction, Visitor visitor) {
+    auto isBinaryExprID = [this](const ExprID exprID) -> bool {
+      return GetExprType(exprID) == ExprNodeType::Binary;
+    };
+    auto preOrder = [&, this](Conjunct& conjunct) {
+      std::stack<ExprID> exprStack;
+      exprStack.push(conjunct.exprID);
+      while (!exprStack.empty()) {
+        auto exprID = exprStack.top();
+        exprStack.pop();
+
+        auto asVariant = GetExprNode(exprID);
+        // FIXME: I don't like this
+        std::variant<ExprID> exprIDAsVariant{exprID};
+        std::visit(visitor, exprIDAsVariant, asVariant);
+
+        if (auto binaryNode = std::get_if<const BinaryExprNode>(&asVariant)) {
+          exprStack.push(binaryNode->lhs);
+          exprStack.push(binaryNode->rhs);
+        }
+        return;
+      }
+    };
+
+    auto localDisjunction = disjunction;
+    for (auto disjunct : localDisjunction.disjuncts) {
+      for (auto conjunct : disjunct) {
+        preOrder(conjunct);
+      }
+    }
+    return localDisjunction;
   }
 
 private:
@@ -305,6 +353,7 @@ private:
 
   llvm::DenseMap<ExprKey, ExprID> exprTable;
   llvm::DenseMap<llvm::Value*, ExprID> leafTable;
+
   
   constexpr ExprID reservedVExprBits() const {
     return 1 << (typeSize - 3); // -1 for sign bit
@@ -322,11 +371,6 @@ private:
 
     constantSlab.emplace_back(constant);
     constantExprCounter++;
-
-    llvm::errs() << "\nGenerating constant for\n";
-    llvm::errs() << *constant;
-    llvm::errs() << "\n" << constantExprCounter;
-
     leafTable.insert({constant, constantExprCounter});
     return constantExprCounter;
   }
@@ -336,11 +380,6 @@ private:
     valueSlab.emplace_back(value);
     valueExprCounter++;
     leafTable.insert({value, valueExprCounter});
-
-    llvm::errs() << "\nGenerating a value node for\n";
-    llvm::errs() << *value;
-    llvm::errs() << "\n" << valueExprCounter;
-
     return valueExprCounter;
   }
 

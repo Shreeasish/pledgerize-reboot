@@ -284,7 +284,6 @@ public:
     //auto& passedAbstract = state[nullptr];
 
 
-    llvm::errs() << "Callee" << callee->getName();
     for (auto& bb : *callee) {
       if (auto* ret = llvm::dyn_cast<llvm::ReturnInst>(bb.getTerminator());
           ret /*&& ret->getReturnValue()*/ ) {

@@ -48,6 +48,7 @@
 #include "FutureFunctions.h"
 #include "ConditionList.h"
 #include "Generator.h"
+#include "Printer.h"
 #include "IndirectCallResolver.h"
 
 using namespace llvm;
@@ -69,6 +70,7 @@ static cl::opt<string> inPath{cl::Positional,
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
 std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
+std::unique_ptr<Printer> printer;
 // TODO: Store walkers directly
 llvm::DenseMap<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> functionMemSSAs;
 llvm::DenseMap<const llvm::Function*, llvm::AAResultsWrapperPass*> functionAAs;
@@ -246,7 +248,7 @@ private:
       for (auto& arg : fun->args()) {
         llvm::errs() << arg << "\t";
       }
-      state[cs.getInstruction()].print();
+      state[cs.getInstruction()].print(llvm::errs());
       llvm::errs() << "\n";
     }
 
@@ -447,6 +449,7 @@ private:
              llvm::StoreInst* const storeInst) {
     auto storeValue = storeInst->getValueOperand();
     auto valExprID  = generator->GetOrCreateExprID(storeValue);
+    // TODO: Move aliasConjunct creation to the generator
     auto aliasConjunct = [&]() {
       auto* loadPtr  = loadInst->getPointerOperand();
       auto ptrExprID = generator->GetOrCreateExprID(loadPtr);
@@ -473,9 +476,9 @@ private:
     auto rewritten  = generator->rewrite(forRewrites, loadExprID, valExprID);
 
     llvm::errs() << "\n For Rewrites";
-    forRewrites.print();
+    forRewrites.print(llvm::errs());
     llvm::errs() << "\n For Non Rewrites";
-    noRewrites.print();
+    noRewrites.print(llvm::errs());
     llvm::errs() << "\n";
     llvm::errs() << "\n";
 
@@ -566,7 +569,7 @@ private:
 
     llvm::errs() << "\nHandling Return " << *ret;
     llvm::errs() << "\nParent Function " << ret->getParent()->getParent()->getName();
-    state[nullptr].print();
+    state[nullptr].print(llvm::errs());
 
     llvm::Value* callAsValue = nullptr;
     for (auto* inst : context) {
@@ -608,35 +611,8 @@ private:
 public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
-    auto debugBefore = [&]() {
-      llvm::errs() << "\n-----------------------Debugging----------------- ";
-      llvm::errs() << "Before Transfer \n";
-      llvm::errs() << value;
-      llvm::errs() << "\n Context \n" ;
-      for ( auto* inst : context) {
-        if (inst != nullptr) {
-          llvm::errs() << *inst << "\t";
-        }
-      }
-      if (state.count(nullptr)) {
-        state[nullptr].print();
-      }
-      generator->dumpState();
-      llvm::errs() << "\n----------------------------Debugging End -------------------------\n" ;
-      llvm::errs().flush() ;
-    };
-    auto debugAfter = [&]() {
-      llvm::errs() << "\n-----------------------Debugging----------------- ";
-      llvm::errs() << "After Transfer \n";
-      if (state.count(nullptr)) {
-        state[nullptr].print();
-      }
-      generator->dumpState();
-      llvm::errs() << "\n----------------------------Debugging End -------------------------\n" ;
-      llvm::errs().flush();
-    };
+    auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
 
-    debugBefore();
     bool handled = false;
     handled |= handlePhi(&value, state);
     handled |= handleCallSite(llvm::CallSite{&value}, state, context);
@@ -645,36 +621,24 @@ public:
     handled |= handleRet(&value, state, context);
 
     if (handled) {
-      debugAfter();
+      printer->printState(inst, state[nullptr]);
       return;
     }
     if (!generator->isUsed(&value)) {
-      debugAfter();
+      printer->printState(inst, state[nullptr]);
       return;
     }
     handled |= handleLoad(&value, state);
     handled |= handleBinaryOperator(&value, state);
     handled |= handleCmpInst(&value, state);
+
     if (!handled) {
       handleUnknown(&value, state);
     }
-    debugAfter();
-
+    printer->printState(inst, state[nullptr]);
     return;
   }
 };
-
-
-static void
-printLineNumber(llvm::raw_ostream& out, llvm::Instruction& inst) {
-  if (const llvm::DILocation* debugLoc = inst.getDebugLoc()) {
-    out << "At " << debugLoc->getFilename()
-        << " line " << debugLoc->getLine()
-        << ":\n";
-  } else {
-    out << "At an unknown location:\n";
-  }
-}
 
 
 class BuildPromiseTreePass : public llvm::ModulePass {
@@ -687,7 +651,6 @@ public:
   void getAnalysisUsage(llvm::AnalysisUsage &info) const override;
   StringRef getPassName() const override;
 
-//private:
   static char ID;
 };
 char BuildPromiseTreePass::ID = 0;
@@ -707,6 +670,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 
   generator = make_unique<Generator>(Generator{});
   resolver  = make_unique<IndirectCallResolver>(IndirectCallResolver{m});
+  printer   = make_unique<Printer>(generator.get(), llvm::errs());
 
 
   for (auto& f : m) {
@@ -722,7 +686,6 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     functionAAs.insert({&f, AAWrapper});
 
     functionMemSSAs.try_emplace(&f, std::move(memSSA));
-
 
     //memSSA->print(llvm::outs());
     Edges backedges;
@@ -767,8 +730,8 @@ instrumentPromiseTree(llvm::Module& m) {
   pm.add(createScopedNoAliasAAWrapperPass());
   pm.add(createCFLSteensAAWrapperPass());
   pm.add(new llvm::LoopInfoWrapperPass());
-//  pm.add(createPostDomTree());
-//  pm.add(new MemorySSAWrapperPass());
+  //pm.add(createPostDomTree());
+  //pm.add(new MemorySSAWrapperPass());
   pm.add(new DominatorTreeWrapperPass());
   pm.add(createBasicAAWrapperPass());
   pm.add(new AAResultsWrapperPass());

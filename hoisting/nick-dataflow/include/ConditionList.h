@@ -62,6 +62,7 @@ struct DenseMapInfo<ExprKey> {
   }
 };
 
+/// FIXME: Why is this here?
 static llvm::Function*
 getCalledFunction(llvm::CallSite cs) {
   if (!cs.getInstruction()) {
@@ -166,11 +167,11 @@ public:
     return exprID == other;
   }
 
-  void print() const {
+  void print(llvm::raw_ostream& out) const {
     if (!notNegated) {
-      llvm::errs() << "!";
+      out << "!";
     }
-    llvm::errs() << exprID;
+    out << exprID;
     return;
   }
 };
@@ -188,12 +189,21 @@ public:
   bool operator==(const Disjunct& other) const;
   void operator=(Disjunct);
 
-  void print() const;
+  void print(llvm::raw_ostream&) const;
   void addConjunct(const Conjunct&);
-  auto findExprID(const ExprID&) const; // returns an iterator
+  auto findExprID(const ExprID&) const;  // returns an iterator
+  bool findAndReplace(const ExprID target, ExprID newID);
 
-  bool
-  findAndReplace(const ExprID target, ExprID newID);
+  auto
+  begin() const {
+    return conjunctIDs.begin();
+  }
+
+  auto
+  end() const {
+    return conjunctIDs.end();
+  }
+
 };
 
 // Class for handling the abstract state.
@@ -216,8 +226,11 @@ public:
   bool hasExprID(const ExprID&) const;
   void findAndReplace(const ExprID, const ExprID);
   // Helpers
-  void print() const;
+  void print(llvm::raw_ostream&) const;
   bool empty() const;
+
+  auto begin() const { return disjuncts.begin(); }
+  auto end() const { return disjuncts.end(); }
 
   static Disjunction
   unionDisjunctions(const Disjunction& lhs, const Disjunction& rhs) {
@@ -230,29 +243,12 @@ public:
     std::set_union(disjuncts1.begin(), disjuncts1.end(),
                    disjuncts2.begin(), disjuncts2.end(),
                    std::back_inserter(dest_disjunct));
-    /// REMOVE ///
-    llvm::errs() << "\nUNION L";
-    lhs.print();
-    llvm::errs() << "\nUNION R";
-    rhs.print();
-    llvm::errs() << "SORTED";
-    asDisjunction.print();
-    llvm::errs() << "\n";
-    /// REMOVE ///
     return asDisjunction;
   }
 
   // Rename to Horizontal/Vertical Negation
-
   Disjunction&
   simplifyAdjacentNegation() {
-    /// REMOVE ///
-    llvm::errs() << "\n==================PRE SIMPLIFY ====================\n";
-    this->print();
-    llvm::errs() << "\n==================PRE SIMPLIFY ====================\n";
-    /// REMOVE ///
-
-
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
       // The second check is redundant since there should never be adjacent
       // conjuncts with the same exprID
@@ -260,7 +256,6 @@ public:
       return a.exprID == b.exprID && (a.notNegated xor b.notNegated);
     };
     auto hasNegatedPair = [&isNegatedPair](Disjunct& disjunct) {
-      disjunct.print();
       auto found
         = std::adjacent_find(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(), isNegatedPair);
       return found != disjunct.conjunctIDs.end();
@@ -271,11 +266,6 @@ public:
     disjuncts.erase(eraseIt, disjuncts.end());
 
     std::sort(disjuncts.begin(),disjuncts.end());
-    /// REMOVE ///
-    llvm::errs() << "\n==================SIMPLIFY1====================\n";
-    this->print();
-    llvm::errs() << "\n==================SIMPLIFY1====================\n";
-    /// REMOVE ///
     return *this;
   }
 
@@ -298,7 +288,6 @@ public:
 
       while (first != firstEnd  && second != secondEnd) {
         if (isNegatedPair(*first, *second)) {
-          llvm::errs() << "\n Found negated pair\n";
           first  = conjuncts1.erase(first);
           second = conjuncts2.erase(second);
         }
@@ -313,25 +302,14 @@ public:
 
     if ( disjuncts.empty()) {
       return *this;
-      /// REMOVE ///
-      llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
-      llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
-      /// REMOVE ///
     }
 
     auto first  = disjuncts.begin();
     auto second = first + 1;
-
     for ( ; second != disjuncts.end(); first++, second++) {
       simplify(first->conjunctIDs, second->conjunctIDs);
     }
     std::sort(disjuncts.begin(),disjuncts.end());
-
-    /// REMOVE ///
-    llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
-    this->print();
-    llvm::errs() << "\n=====================SIMPLIFY2=====================\n";
-    /// REMOVE ///
     return *this;
   }
 
@@ -360,25 +338,8 @@ public:
 
   Disjunction&
   simplifyUnique() {
-    llvm::errs() << "\n=====================PRE SIMPLIFY3=====================\n";
-    for (auto it = disjuncts.begin(); it != disjuncts.end(); it++) {
-      it->print();
-      if ( (it + 1) == disjuncts.end()) {
-        break;
-      }
-      (it+1)->print();
-
-      if ( *it == *(it+1)) {
-        llvm::errs() << "MATCH";
-      }
-    }
     auto eraseIt = std::unique(disjuncts.begin(), disjuncts.end());
     disjuncts.erase(eraseIt, disjuncts.end());
-    /// REMOVE ///
-    llvm::errs() << "\n=====================SIMPLIFY3=====================\n";
-    this->print();
-    llvm::errs() << "\n=====================SIMPLIFY3=====================\n";
-    /// REMOVE ///
     return *this;
   }
 };
@@ -447,9 +408,6 @@ return std::lower_bound(
 // Deprecate?
 bool
 Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
-  llvm::errs() << "\n---------------------------------------";
-  llvm::errs() << "\nReplacing " << target << "with" << newID;
-  llvm::errs() << "\n---------------------------------------";
   auto position = std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
         [](Conjunct conjunct, ExprID target) -> bool {
           return conjunct.exprID < target;
@@ -464,11 +422,11 @@ Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
 
 
 void
-Disjunct::print() const {
+Disjunct::print(llvm::raw_ostream& out) const {
   for (auto conjunct : conjunctIDs) {
-    llvm::errs() << "(";
-    conjunct.print();
-    llvm::errs() << ") ";
+    out << "(";
+    conjunct.print(out);
+    out << ") ";
   }
   return;
 }
@@ -544,10 +502,10 @@ Disjunction::empty() const {
 }
 
 void
-Disjunction::print() const {
+Disjunction::print(llvm::raw_ostream& out) const {
   for (auto& disjunct : disjuncts) {
-    llvm::errs() << "\n";
-    disjunct.print();
+    out << "\n";
+    disjunct.print(out);
   }
   return;
 }
