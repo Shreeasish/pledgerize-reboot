@@ -28,6 +28,7 @@ namespace OpIDs {
 constexpr OpKey aliasOp{100};
 constexpr OpKey switchOp{101};
 constexpr OpKey loadOp{102};
+constexpr OpKey lastOp{103};
 }  // namespace OpIDs
 
 namespace ReservedExprIDs {
@@ -198,9 +199,17 @@ public:
   begin() const {
     return conjunctIDs.begin();
   }
-
   auto
   end() const {
+    return conjunctIDs.end();
+  }
+
+  auto
+  begin() {
+    return conjunctIDs.begin();
+  }
+  auto
+  end() {
     return conjunctIDs.end();
   }
 
@@ -231,18 +240,22 @@ public:
 
   auto begin() const { return disjuncts.begin(); }
   auto end() const { return disjuncts.end(); }
+  
+  auto begin() { return disjuncts.begin(); }
+  auto end() { return disjuncts.end(); }
 
+  bool isEmpty() const { return disjuncts.begin() == disjuncts.end(); }
   static Disjunction
   unionDisjunctions(const Disjunction& lhs, const Disjunction& rhs) {
     //Invariant: Disjuncts are sets
     Disjunction asDisjunction;
-
     auto& dest_disjunct = asDisjunction.disjuncts;
     auto& disjuncts1    = lhs.disjuncts;
     auto& disjuncts2    = rhs.disjuncts;
     std::set_union(disjuncts1.begin(), disjuncts1.end(),
                    disjuncts2.begin(), disjuncts2.end(),
                    std::back_inserter(dest_disjunct));
+    asDisjunction.print(llvm::errs());
     return asDisjunction;
   }
 
@@ -272,7 +285,7 @@ public:
 
   // Refactor Later
   Disjunction&
-  simplifyNeighbourNegation() {
+  simplifyNeighbourNegation(Conjunct vacuousConjunct) {
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
       // The second check is redundant since there should never be adjacent
       // conjuncts with the same exprID
@@ -280,7 +293,7 @@ public:
       return a.exprID == b.exprID && (a.notNegated xor b.notNegated);
     };
 
-    auto simplify = [&isNegatedPair](auto& conjuncts1, auto& conjuncts2) {
+    auto simplify = [&isNegatedPair, vacuousConjunct](auto& conjuncts1, auto& conjuncts2) {
       auto first     = conjuncts1.begin();
       auto second    = conjuncts2.begin();
       auto firstEnd  = conjuncts1.end();
@@ -288,8 +301,10 @@ public:
 
       while (first != firstEnd  && second != secondEnd) {
         if (isNegatedPair(*first, *second)) {
-          first  = conjuncts1.erase(first);
-          second = conjuncts2.erase(second);
+          //first  = conjuncts1.erase(first);
+          //second = conjuncts2.erase(second);
+          *first  = vacuousConjunct;
+          *second = vacuousConjunct;
         }
         if (second->exprID < first->exprID) {
           second++;
@@ -310,6 +325,8 @@ public:
       simplify(first->conjunctIDs, second->conjunctIDs);
     }
     std::sort(disjuncts.begin(),disjuncts.end());
+    llvm::errs() << "\n After pass 2";
+    this->print(llvm::errs());
     return *this;
   }
 

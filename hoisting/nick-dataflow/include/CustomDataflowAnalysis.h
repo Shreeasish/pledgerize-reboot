@@ -366,8 +366,8 @@ public:
       auto* bb = work.take();
 
       // Save a copy of the outgoing abstract state to check for changes.
-      const auto& oldEntryState = results[Direction::getEntryKey(*bb)];
       const auto oldExitState   = results[Direction::getExitKey(*bb)];
+      const auto& oldEntryState = results[Direction::getEntryKey(*bb)];
 
       // Merge the state coming in from all predecessors including the function
       // summary (which contains arguments, etc.)
@@ -383,9 +383,8 @@ public:
       results[bb] = state;
 
       // Propagate through all instructions in the block
-      llvm::outs() << "\nTrace\n";
       for (auto& i : Direction::getInstructions(*bb)) {
-        llvm::outs() << "\n" << i;
+
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
@@ -395,6 +394,13 @@ public:
           applyTransfer(i, state, context);
         //}
 //meet.printState(llvm::outs(),state);
+        llvm::errs() << "\nTrace ";
+        llvm::errs() << "In function " << i.getFunction()->getName() << " \nafter";
+        llvm::errs() << i;
+        llvm::errs() << "\n State:\n";
+        state[nullptr].print(llvm::errs());
+        llvm::errs() << "\n";
+
         results[&i] = state;
       }
 

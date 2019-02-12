@@ -111,9 +111,10 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
+    auto vacuousConjunct = generator->GetVacuousConjunct();
     return Disjunction::unionDisjunctions(s1,s2)
             .simplifyAdjacentNegation()
-            .simplifyNeighbourNegation()
+            .simplifyNeighbourNegation(vacuousConjunct)
             .simplifyImplication()
             .simplifyUnique();
   }
@@ -125,6 +126,7 @@ public:
   Disjunction
   operator()(const Disjunction& toMerge, llvm::Value* branchAsValue, llvm::Value* destination) {
     // Use the label of the basic block of the branch to replace the appropriate operand of the phi
+    llvm::errs() << "\nPerforming edge transforms\n" ;
 
     auto getAssocValue = [&branchAsValue] (llvm::PHINode* const phi) {
       auto* basicBlock = llvm::dyn_cast<llvm::BranchInst>(branchAsValue)->getParent();
@@ -209,8 +211,12 @@ public:
       stripTrues(local);
       return local;
     };
-
-  return edgeOp(toMerge);
+  llvm::errs() << "\n Before EdgeOp";
+  toMerge.print(llvm::errs());
+  auto temp = edgeOp(toMerge);
+  llvm::errs() << "\n After EdgeOp";
+  temp.print(llvm::errs());
+  return temp; //edgeOp(toMerge);
   }
 };
 
@@ -226,30 +232,22 @@ private:
     if (!fun) {
       return false;
     }
+    llvm::errs() << "From CallSite: " << fun->getName();
     if (fun->getName().startswith("llvm.")) {
       return true;
     }
 
-    if (fun->getName().startswith("print")) {
+    if (fun->getName().startswith("wait")) {
       auto vacExpr    = generator->GetVacuousExprID();
-      Disjunct asDisjunct{};
-      asDisjunct.addConjunct({vacExpr, true});
-      state[nullptr].addDisjunct(asDisjunct);
+      Disjunction disjunction{};
+      Disjunct disjunct{};
+      disjunct.addConjunct(generator->GetVacuousConjunct());
+      disjunction.addDisjunct(disjunct);
+      state[nullptr] = disjunction;
       return true;
-    }
-
-    { /// Debug Trace
-      llvm::errs() << "Handling from CallSite \n"
-                   << *(cs.getInstruction()) << "\n\n";
-      for (auto& arg : cs.args()) {
-        llvm::errs() << *arg << "\t";
-      }
-      llvm::errs() << "\nFunction Name " << fun->getName() << "\n";
-      for (auto& arg : fun->args()) {
-        llvm::errs() << arg << "\t";
-      }
-      state[cs.getInstruction()].print(llvm::errs());
-      llvm::errs() << "\n";
+    } 
+    if (fun->isDeclaration()) {
+      return true;
     }
 
     state[nullptr] = state[cs.getInstruction()];
@@ -259,7 +257,6 @@ private:
       for (auto& param : fun->args()) {
         auto* paramAsValue = (llvm::Value*) &param;
         auto arg = cs.getArgument(i);
-        llvm::errs() << "\nCallSite arg " << *arg;
         argPairs.push_back(argParamPair{arg, paramAsValue});
         i++;
       }
@@ -268,15 +265,10 @@ private:
     auto rewritePair = [&](auto* arg, auto* param) {
       auto argExprID   = generator->GetOrCreateExprID(arg);
       auto paramExprID = generator->GetOrCreateExprID(param);
-      llvm::errs() << "\n Param Expr Id " << paramExprID;
-      llvm::errs() << "\n argExprID " << argExprID;
       return generator->rewrite(state[nullptr], paramExprID, argExprID);
     };
 
     for (auto [arg, param] : argPairs) {
-      llvm::errs() << "\n" << "Marshalling"
-                   << "\n" << "arg " << *arg
-                   << "\n" << "param " << *param;
       state[nullptr] = rewritePair(arg, param);
     }
     return true;
@@ -384,7 +376,7 @@ private:
         return AliasResult::MustAlias;
       }
     }
-    llvm_unreachable("Part of the same function, but does not alias");
+    //llvm_unreachable("Part of the same function, but does not alias");
     return AliasResult::NoAlias;
   }
 
@@ -417,10 +409,6 @@ private:
       if (aliasResult == AliasResult::MustAlias) {
         strongLoads.push_back(loadInst);
       } else if (aliasResult == AliasResult::NoAlias) {
-        llvm::errs() << "\n No Alias for";
-        llvm::errs() << "\n" << *storeInst;
-        llvm::errs() << "\n" << *loadInst;
-        llvm::errs() << "\n" << loadInst->getFunction()->getName();
         return; //Discard NoAliases
       } else {
         otherLoads.push_back(loadInst);
@@ -474,14 +462,6 @@ private:
       }
     }
     auto rewritten  = generator->rewrite(forRewrites, loadExprID, valExprID);
-
-    llvm::errs() << "\n For Rewrites";
-    forRewrites.print(llvm::errs());
-    llvm::errs() << "\n For Non Rewrites";
-    noRewrites.print(llvm::errs());
-    llvm::errs() << "\n";
-    llvm::errs() << "\n";
-
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
 
@@ -493,8 +473,6 @@ private:
     if (!storeInst) {
       return false;
     }
-    llvm::errs() << "\nStore Function Name"
-                 << storeInst->getParent()->getParent()->getName();
     std::vector<llvm::LoadInst*> asLoads = getLoads(state);
     auto [strongLoads, weakLoads]        = seperateLoads(storeInst, asLoads);
 
@@ -505,8 +483,6 @@ private:
     for (auto weakLoad : weakLoads) {
       localDisjunction = weakUpdate(localDisjunction, weakLoad, storeInst);
     }
-
-    llvm::errs() << "\n --------------- MEMSSA --------------- \n";
     state[nullptr] = localDisjunction;
     return true;
   }
@@ -552,7 +528,6 @@ private:
     if (!gep) {
       return false;
     }
-    llvm::errs() << "Handling Geps \n" ;
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto gepExprID = generator->GetOrCreateExprID(gep);
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, gepExprID);
@@ -565,23 +540,19 @@ private:
     if (!ret) {
       return false;
     }
+    //llvm::errs() << "\nPrinting return state";
+    //state[ret].print(llvm::errs());
+    //llvm::errs() << "\nPrinting return state";
+
     state[nullptr] = state[ret];
-
-    llvm::errs() << "\nHandling Return " << *ret;
-    llvm::errs() << "\nParent Function " << ret->getParent()->getParent()->getName();
-    state[nullptr].print(llvm::errs());
-
     llvm::Value* callAsValue = nullptr;
     for (auto* inst : context) {
       if (inst != nullptr) {
-        llvm::errs() << "Context" << *inst;
         callAsValue = llvm::dyn_cast<llvm::Value>(inst);
       }
     }
 
     if (!generator->isUsed(callAsValue)) {
-      if (callAsValue)
-        llvm::errs() << *callAsValue << " is not used";
       return true;
     }
 
@@ -601,9 +572,8 @@ private:
     }
     auto oldLeafTableSize = generator->getLeafTableSize();
 
-    llvm::errs() << "\n Handling as Unknown" << *value;
     auto oldExprID = generator->GetOrCreateExprID(value);
-    state[nullptr] = generator->dropConjunct(state[nullptr], oldExprID);
+    state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
 
     assert(oldLeafTableSize == generator->getLeafTableSize() && "New Value at Unknown");
   }
@@ -613,6 +583,13 @@ public:
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
     auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
 
+    llvm::errs() << "\nTrace ";
+    llvm::errs() << "In function " << inst->getFunction()->getName() << " \nBefore";
+    llvm::errs() << *inst;
+    llvm::errs() << "\n State:\n";
+    state[nullptr].print(llvm::errs());
+    llvm::errs() << "\n";
+
     bool handled = false;
     handled |= handlePhi(&value, state);
     handled |= handleCallSite(llvm::CallSite{&value}, state, context);
@@ -621,10 +598,12 @@ public:
     handled |= handleRet(&value, state, context);
 
     if (handled) {
+      //generator->dumpState();
       printer->printState(inst, state[nullptr]);
       return;
     }
     if (!generator->isUsed(&value)) {
+      //generator->dumpState();
       printer->printState(inst, state[nullptr]);
       return;
     }
@@ -635,6 +614,7 @@ public:
     if (!handled) {
       handleUnknown(&value, state);
     }
+    //generator->dumpState();
     printer->printState(inst, state[nullptr]);
     return;
   }
@@ -670,7 +650,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 
   generator = make_unique<Generator>(Generator{});
   resolver  = make_unique<IndirectCallResolver>(IndirectCallResolver{m});
-  printer   = make_unique<Printer>(generator.get(), llvm::errs());
+  printer   = make_unique<Printer>(generator.get(), llvm::outs());
 
 
   for (auto& f : m) {

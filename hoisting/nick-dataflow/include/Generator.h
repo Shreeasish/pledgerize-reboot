@@ -27,6 +27,7 @@ public:
          binaryExprCounter  { reservedBExprBits() },
          constantExprCounter{ reservedCExprBits() } {
       constantSlab.emplace_back(ConstantExprNode{nullptr});
+      constantSlab.emplace_back(ConstantExprNode{nullptr});
       leafTable.insert({nullptr, GetVacuousExprID()});
     }
 
@@ -38,7 +39,7 @@ public:
       llvm::errs() << "\t ExprKey --- (" 
                    << std::get<0>(exprKey) << "|"
                    << std::get<1>(exprKey) << "|" 
-                   << std::get<2>(exprKey) << ")";
+                   << std::get<2>(exprKey) << ")\n";
     }
     llvm::errs() << "\n------------ Leaf Table ---------\n";
     for (auto [value, exprID] : leafTable) {
@@ -47,7 +48,7 @@ public:
         llvm::errs() << "nullptr" ;
       }
       else {
-        llvm::errs() << *value;
+        llvm::errs() << *value << "\n";
       }
     }
     llvm::errs() << "\n------------ Leaf Table ------\n";
@@ -115,6 +116,11 @@ public:
     return ReservedExprIDs::vacuousExprID;
   }
 
+  Conjunct
+  GetVacuousConjunct() {
+    return {ReservedExprIDs::vacuousExprID, true};
+  }
+
   // TODO: Establish whether only binaryExprs are needed
   inline int 
   GetExprType(const ExprID exprID) const {
@@ -128,14 +134,14 @@ public:
 
   const ConstantExprNode&
   GetSpecialExprNode(const ExprID conjunctID) const {
-    assert(!(conjunctID && reservedCExprBits()) && "ConjunctID is not a SpecialID");
+    assert(!(conjunctID & reservedCExprBits()) && "ConjunctID is not a SpecialID");
     auto asIndex = conjunctID;
     return constantSlab[asIndex];
   }
   
   const BinaryExprNode& 
   GetBinaryExprNode(const ExprID conjunctID) const {
-    assert((conjunctID && reservedBExprBits()) && "ConjunctID is not a BinaryExpr");
+    assert((conjunctID & reservedBExprBits()) && "ConjunctID is not a BinaryExpr");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
       auto index = conjunctID & (~reservedBExprBits());
       return index - 1; // Start from 0 // Expr Counters start from 1
@@ -145,7 +151,7 @@ public:
 
   const ConstantExprNode&
   GetConstantExprNode(const ExprID conjunctID) const {
-    assert((conjunctID && reservedCExprBits()) && "ConjunctID is not a ConstantExpr");
+    assert((conjunctID & reservedCExprBits()) && "ConjunctID is not a ConstantExpr");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
       auto index = conjunctID & (~reservedCExprBits());
       return index; // Expr Counter starts from 0, Special case for Vacuous Expr
@@ -155,7 +161,7 @@ public:
 
   const ValueExprNode&
   GetValueExprNode(const ExprID conjunctID) const {
-    assert((conjunctID && reservedVExprBits()) && "ConjunctID is not a ValueExprID");
+    assert((conjunctID & reservedVExprBits()) && "ConjunctID is not a ValueExprID");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
       auto index = conjunctID & (~reservedVExprBits());
       return index - 1; // Start from 0 // Expr Counters start from 1
@@ -262,6 +268,19 @@ public:
     }
     return newDisjunction;
   }
+
+  Disjunction
+  pushToTrue(const Disjunction& disjunction, const ExprID oldExprID) {
+    Disjunction localDisjunction = disjunction;
+    for (auto& disjunct : localDisjunction) {
+      for (auto& conjunct : disjunct) {
+        if (find(conjunct, oldExprID)) {
+          conjunct = {GetVacuousExprID(), true};
+        }
+      }
+    }
+    return localDisjunction;
+  }
   
   bool
   isUsed(llvm::Value* const value) const {
@@ -295,24 +314,9 @@ public:
     return preOrder(conjunct);
   }
 
-  template <class Compare>
-  ExprID
-  findValue(Compare comp) {
-    auto found = std::find_if(valueSlab.rbegin(), valueSlab.rend(), comp);
-    if (found != valueSlab.rend()) {
-      auto* foundValue = found->value;
-      auto  exprID = GetOrCreateExprID(foundValue);
-      return exprID;
-    }
-    return 0;
-  }
-
   template <class Visitor>
   Disjunction
-  worker(const Disjunction disjunction, Visitor visitor) {
-    auto isBinaryExprID = [this](const ExprID exprID) -> bool {
-      return GetExprType(exprID) == ExprNodeType::Binary;
-    };
+  for_each(const Disjunction& disjunction, Visitor visitor) {
     auto preOrder = [&, this](Conjunct& conjunct) {
       std::stack<ExprID> exprStack;
       exprStack.push(conjunct.exprID);
@@ -329,7 +333,6 @@ public:
           exprStack.push(binaryNode->lhs);
           exprStack.push(binaryNode->rhs);
         }
-        return;
       }
     };
 
@@ -340,6 +343,33 @@ public:
       }
     }
     return localDisjunction;
+  }
+
+  template <class Visitor>
+  Conjunct
+  for_each(const Conjunct& conjunct, Visitor visitor) {
+    auto preOrder = [&, this](Conjunct& conjunct) {
+      std::stack<ExprID> exprStack;
+      exprStack.push(conjunct.exprID);
+      while (!exprStack.empty()) {
+        auto exprID = exprStack.top();
+        exprStack.pop();
+
+        auto asVariant = GetExprNode(exprID);
+        // FIXME: I don't like this
+        std::variant<ExprID> exprIDAsVariant{exprID};
+        std::visit(visitor, exprIDAsVariant, asVariant);
+
+        if (auto binaryNode = std::get_if<const BinaryExprNode>(&asVariant)) {
+          exprStack.push(binaryNode->lhs);
+          exprStack.push(binaryNode->rhs);
+        }
+      }
+    };
+    
+    auto localConjunct = conjunct;
+    preOrder(localConjunct);
+    return localConjunct;
   }
 
 private:
