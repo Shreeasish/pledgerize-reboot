@@ -199,6 +199,7 @@ public:
   //TODO: Memoize
   Disjunction
   rewrite(const Disjunction& disjunction, const ExprID oldExprID, const ExprID newExprID) {
+    llvm::errs() << "\nrewriting " << oldExprID << " with " << newExprID;
     //TODO: Make Node types enum
     auto isBinaryExprID = [this](const ExprID exprID) -> bool {
       return GetExprType(exprID) == 2;

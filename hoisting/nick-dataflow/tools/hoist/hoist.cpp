@@ -41,6 +41,7 @@
 #include <memory>
 #include <string>
 #include <variant>
+#include <unordered_set>
 
 
 #include "CustomDataflowAnalysis.h"
@@ -71,7 +72,6 @@ std::unordered_map<std::string, FunctionPledges> libCHandlers;
 std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
 std::unique_ptr<Printer> printer;
-// TODO: Store walkers directly
 llvm::DenseMap<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> functionMemSSAs;
 llvm::DenseMap<const llvm::Function*, llvm::AAResultsWrapperPass*> functionAAs;
 
@@ -126,10 +126,8 @@ public:
   Disjunction
   operator()(const Disjunction& toMerge, llvm::Value* branchAsValue, llvm::Value* destination) {
     // Use the label of the basic block of the branch to replace the appropriate operand of the phi
-    llvm::errs() << "\nPerforming edge transforms\n" ;
-
     auto getAssocValue = [&branchAsValue] (llvm::PHINode* const phi) {
-      auto* basicBlock = llvm::dyn_cast<llvm::BranchInst>(branchAsValue)->getParent();
+      auto* basicBlock = llvm::dyn_cast<llvm::Instruction>(branchAsValue)->getParent();
       return phi->getIncomingValueForBlock(basicBlock);
     };
 
@@ -211,12 +209,7 @@ public:
       stripTrues(local);
       return local;
     };
-  llvm::errs() << "\n Before EdgeOp";
-  toMerge.print(llvm::errs());
-  auto temp = edgeOp(toMerge);
-  llvm::errs() << "\n After EdgeOp";
-  temp.print(llvm::errs());
-  return temp; //edgeOp(toMerge);
+   return edgeOp(toMerge);
   }
 };
 
@@ -317,18 +310,16 @@ private:
     return true;
   }
 
-  /// Store Inst helpers, ordered by call order
-
   std::vector<llvm::LoadInst*>
   getLoads(DisjunctionState& state) {
-    std::vector<llvm::LoadInst*> asLoads;
+    std::unordered_set<llvm::LoadInst*> asLoads;
     auto isBinaryExprID = [](const ExprID exprID) -> bool {
       return generator->GetExprType(exprID) == 2;
     };
     auto insertIfLoad = [&asLoads](const auto binaryNode) {
       if (auto loadInst =
               llvm::dyn_cast<llvm::LoadInst>(binaryNode.instruction)) {
-        asLoads.push_back(loadInst);
+        asLoads.insert(loadInst);
       }
     };
     auto findLoads = [&](const ExprID exprID, auto& findLoads) {
@@ -347,7 +338,7 @@ private:
         findLoads(conjunct.exprID, findLoads);
       }
     }
-    return asLoads;
+    return {asLoads.begin(), asLoads.end()};
   }
 
 
@@ -473,6 +464,8 @@ private:
     if (!storeInst) {
       return false;
     }
+    llvm::errs() << "\n Printing at store";
+    //state[nullptr].print(llvm::errs());
     std::vector<llvm::LoadInst*> asLoads = getLoads(state);
     auto [strongLoads, weakLoads]        = seperateLoads(storeInst, asLoads);
 
@@ -583,12 +576,12 @@ public:
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
     auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
 
-    llvm::errs() << "\nTrace ";
-    llvm::errs() << "In function " << inst->getFunction()->getName() << " \nBefore";
+    //llvm::errs() << "\nTrace ";
+    llvm::errs() << "\nIn function " << inst->getFunction()->getName(); //<< " \nBefore";
     llvm::errs() << *inst;
-    llvm::errs() << "\n State:\n";
-    state[nullptr].print(llvm::errs());
-    llvm::errs() << "\n";
+    //llvm::errs() << "\n State:\n";
+    //state[nullptr].print(llvm::errs());
+    //llvm::errs() << "\n";
 
     bool handled = false;
     handled |= handlePhi(&value, state);
@@ -599,12 +592,12 @@ public:
 
     if (handled) {
       //generator->dumpState();
-      printer->printState(inst, state[nullptr]);
+      //printer->printState(inst, state[nullptr]);
       return;
     }
     if (!generator->isUsed(&value)) {
       //generator->dumpState();
-      printer->printState(inst, state[nullptr]);
+      //printer->printState(inst, state[nullptr]);
       return;
     }
     handled |= handleLoad(&value, state);
@@ -615,7 +608,7 @@ public:
       handleUnknown(&value, state);
     }
     //generator->dumpState();
-    printer->printState(inst, state[nullptr]);
+    //printer->printState(inst, state[nullptr]);
     return;
   }
 };

@@ -255,7 +255,6 @@ public:
     std::set_union(disjuncts1.begin(), disjuncts1.end(),
                    disjuncts2.begin(), disjuncts2.end(),
                    std::back_inserter(dest_disjunct));
-    asDisjunction.print(llvm::errs());
     return asDisjunction;
   }
 
@@ -325,8 +324,6 @@ public:
       simplify(first->conjunctIDs, second->conjunctIDs);
     }
     std::sort(disjuncts.begin(),disjuncts.end());
-    llvm::errs() << "\n After pass 2";
-    this->print(llvm::errs());
     return *this;
   }
 
