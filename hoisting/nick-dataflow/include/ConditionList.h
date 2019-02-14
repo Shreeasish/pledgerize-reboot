@@ -258,6 +258,18 @@ public:
     return asDisjunction;
   }
 
+  Disjunction&
+  simplifyTrues() {
+    for (auto& disjunct : disjuncts) {
+      if (disjunct.conjunctIDs.size() > 1) {
+        if (disjunct.begin()->exprID == ReservedExprIDs::vacuousExprID) {
+          disjunct.conjunctIDs.erase(disjunct.conjunctIDs.begin());
+        }
+      }
+    }
+    return *this;
+  }
+
   // Rename to Horizontal/Vertical Negation
   Disjunction&
   simplifyAdjacentNegation() {
@@ -322,8 +334,9 @@ public:
     auto second = first + 1;
     for ( ; second != disjuncts.end(); first++, second++) {
       simplify(first->conjunctIDs, second->conjunctIDs);
+      std::sort(first->begin(), first->end());
+      std::sort(second->begin(), second->end());
     }
-    std::sort(disjuncts.begin(),disjuncts.end());
     return *this;
   }
 
@@ -437,11 +450,12 @@ Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
 
 void
 Disjunct::print(llvm::raw_ostream& out) const {
+  out << "(";
   for (auto conjunct : conjunctIDs) {
-    out << "(";
     conjunct.print(out);
-    out << ") ";
+    out << ") (";
   }
+  out << ") ";
   return;
 }
 

@@ -394,14 +394,15 @@ public:
           applyTransfer(i, state, context);
         //}
 //meet.printState(llvm::outs(),state);
-        //llvm::errs() << "\nTrace ";
-        //llvm::errs() << "In function " << i.getFunction()->getName() << " \nafter";
-        //llvm::errs() << i;
-        //llvm::errs() << "\n State:\n";
-        //state[nullptr].print(llvm::errs());
-        //llvm::errs() << "\n";
+          llvm::errs() << "\nAfter-------------------------------------";
+          llvm::errs() << "In function " << i.getFunction()->getName()
+                       << " after";
+          llvm::errs() << i;
+          llvm::errs() << "\n State:\n";
+          state[nullptr].print(llvm::errs());
+          llvm::errs() << "\n------------------------------------------";
 
-        results[&i] = state;
+          results[&i] = state;
       }
 
       // If the abstract state for this block did not change, then we are done

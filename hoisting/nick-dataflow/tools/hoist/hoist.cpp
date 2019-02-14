@@ -113,6 +113,7 @@ public:
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
     auto vacuousConjunct = generator->GetVacuousConjunct();
     return Disjunction::unionDisjunctions(s1,s2)
+            .simplifyTrues()
             .simplifyAdjacentNegation()
             .simplifyNeighbourNegation(vacuousConjunct)
             .simplifyImplication()
@@ -124,92 +125,105 @@ public:
 class DisjunctionEdgeTransformer {
 public:
   Disjunction
-  operator()(const Disjunction& toMerge, llvm::Value* branchAsValue, llvm::Value* destination) {
-    // Use the label of the basic block of the branch to replace the appropriate operand of the phi
-    auto getAssocValue = [&branchAsValue] (llvm::PHINode* const phi) {
-      auto* basicBlock = llvm::dyn_cast<llvm::Instruction>(branchAsValue)->getParent();
+  operator()(const Disjunction& toMerge,
+             llvm::Value* branchAsValue,
+             llvm::Value* destination) {
+    // Use the label of the basic block of the branch to replace the appropriate
+    // operand of the phi
+    auto getAssocValue = [&branchAsValue](llvm::PHINode* const phi) {
+      auto* basicBlock =
+          llvm::dyn_cast<llvm::Instruction>(branchAsValue)->getParent();
       return phi->getIncomingValueForBlock(basicBlock);
     };
-
-    auto isUsedPhi = [] (llvm::PHINode& phi) -> bool {
+    auto isUsedPhi = [](llvm::PHINode& phi) -> bool {
       return generator->isUsed(&phi);
     };
+    auto handlePhi =
+        [&getAssocValue, &destination, &isUsedPhi](Disjunction destState) {
+          auto destBlock = llvm::dyn_cast<llvm::BasicBlock>(destination);
+          for (auto& phi : destBlock->phis()) {
+            if (!isUsedPhi(phi)) {
+              continue;
+            }
+            auto phiAsValue    = llvm::dyn_cast<llvm::Value>(&phi);
+            auto phiExprID     = generator->GetOrCreateExprID(phiAsValue);
+            auto phiOperand    = getAssocValue(&phi);
+            auto operandExprID = generator->GetOrCreateExprID(phiOperand);
+            destState = generator->rewrite(destState, phiExprID, operandExprID);
+          }
+          return destState;
+        };
 
-    auto handlePhi = [&getAssocValue, &destination, &isUsedPhi](Disjunction destState) {
-      auto destBlock = llvm::dyn_cast<llvm::BasicBlock>(destination);
-      for (auto& phi : destBlock->phis()) {
-        if (!isUsedPhi(phi)) {
-          continue;
-        }
-        auto phiAsValue    = llvm::dyn_cast<llvm::Value>(&phi);
-        auto phiExprID     = generator->GetOrCreateExprID(phiAsValue);
-        auto phiOperand    = getAssocValue(&phi);
-        auto operandExprID = generator->GetOrCreateExprID(phiOperand);
-        destState = generator->rewrite(destState, phiExprID, operandExprID);
-      }
-      return destState;
-    };
-
-    auto isSwitch = [] (llvm::Instruction* const instruction) {
-      return instruction->getNumOperands() > 3;
-    };
-
-    auto branchOrSwitch = llvm::dyn_cast<llvm::Instruction>(branchAsValue);
-    auto isConditionalJump = [&branchOrSwitch] () {
+    auto branchOrSwitch    = llvm::dyn_cast<llvm::Instruction>(branchAsValue);
+    auto isConditionalJump = [&branchOrSwitch]() {
       return branchOrSwitch->getNumOperands() > 2;
     };
 
-    auto conjunctForm = [&branchOrSwitch, &isSwitch, &destination] () -> bool {
-      if (isSwitch(branchOrSwitch)) {
-        return true;
-      }
-      return destination == branchOrSwitch->getOperand(2);
-    };
-
-    auto getConditionExprID = [&isSwitch, &destination] (llvm::Instruction* const branchOrSwitch) {
-      auto* condition  = branchOrSwitch->getOperand(0);
-      auto  conditionAsExprID = generator->GetOrCreateExprID(condition);
-      if (!isSwitch(branchOrSwitch)) {
-        return conditionAsExprID; // Lazy generation (updated by transfers)
-      }
-
-      // Create synthetic cmp Expr
-      for (auto opIt = branchOrSwitch->op_begin();
-           opIt != branchOrSwitch->op_end();
-           opIt += 2) {
-        if (destination == *(opIt + 1)) {
-          auto caseValueAsExprID = generator->GetOrCreateExprID(*opIt);
-          ExprKey key{conditionAsExprID, OpIDs::switchOp, caseValueAsExprID};
-          return generator->GetOrCreateExprID(key, branchOrSwitch);
-        }
-      }
-      llvm_unreachable("Destination not found in switch");
-    };
-
-    auto stripTrues = [] (auto& disjunction) {
-      for (auto& disjunct : disjunction.disjuncts) {
-        if (disjunct.conjunctIDs.size() > 1) {
-          disjunct.conjunctIDs.erase(disjunct.conjunctIDs.begin());
-        }
-      }
-    };
-    auto edgeOp = [&] (Disjunction destState) {
-      Disjunction local(destState);
-      local = handlePhi(local);
+    auto edgeOp = [&](Disjunction destState) {
+      destState = handlePhi(destState);
       if (!isConditionalJump()) {
-        return local;
+        return destState;
       }
-      if (isSwitch(branchOrSwitch)) {
-        auto emptyDisjunction = Disjunction{};
-        emptyDisjunction.applyConjunct({generator->GetVacuousExprID(), true});
-        return emptyDisjunction;
-      }
-      auto conditionID = getConditionExprID(branchOrSwitch);
-      local.applyConjunct({conditionID, conjunctForm()});
-      stripTrues(local);
-      return local;
+      return handle(branchOrSwitch, destState, destination);
     };
-   return edgeOp(toMerge);
+
+    llvm::errs() << "\n Before edge op";
+    toMerge.print(llvm::errs());
+    auto temp = edgeOp(toMerge);
+    llvm::errs() << "\n After edge op";
+    temp.print(llvm::errs());
+    // return edgeOp(toMerge);
+    return temp;
+  }
+
+private:
+  //TODO: Ask Nick about perfect forwarding
+  Disjunction
+  handle(llvm::Instruction* branchOrSwitch, Disjunction& destState, llvm::Value* destination) {
+    if (auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchOrSwitch)) {
+      return handleAsBranch(branchInst, destState, destination);
+    } else {
+      auto switchInst = llvm::dyn_cast<llvm::SwitchInst>(branchOrSwitch);
+      return handleAsSwitch(switchInst, destState, destination);
+    } 
+    return destState;
+  }
+
+  Disjunction
+  handleAsSwitch(llvm::SwitchInst* switchInst, Disjunction& destState, llvm::Value* destination) {
+    auto getConjunctForm = [&](auto& caseOp) {
+      llvm::BasicBlock* targetBB = caseOp.getCaseSuccessor();
+      return targetBB == llvm::dyn_cast<BasicBlock>(destination);
+    };
+    auto getCaseExprID = [&](auto& caseOp) {
+      llvm::Constant* caseVal = caseOp.getCaseValue();
+      auto caseValueAsExprID  = generator->GetOrCreateExprID(caseVal);
+      auto* condition         = switchInst->getCondition();
+      auto conditionAsExprID  = generator->GetOrCreateExprID(condition);
+
+      ExprKey key{conditionAsExprID, OpIDs::switchOp, caseValueAsExprID};
+      auto form = getConjunctForm(caseOp);
+      return std::make_pair(generator->GetOrCreateExprID(key, switchInst), form);
+    };
+
+    Disjunction combined{};
+    for (auto& caseOp : switchInst->cases()) {
+      auto  stateCopy = destState;
+      auto  [asExprID, form]  = getCaseExprID(caseOp);
+      stateCopy.applyConjunct({asExprID, form});
+      combined = Disjunction::unionDisjunctions(combined, stateCopy);
+    }
+    return combined;
+  }
+  Disjunction
+  handleAsBranch(llvm::BranchInst* branchInst, Disjunction destState, llvm::Value* destination) {
+    auto conjunctForm = [&] ( ) {
+      return destination == branchInst->getOperand(2);
+    };
+    auto* condition        = branchInst->getCondition();
+    auto conditionAsExprID = generator->GetOrCreateExprID(condition);
+    destState.applyConjunct({conditionAsExprID, conjunctForm()});
+    return destState;
   }
 };
 
@@ -225,7 +239,7 @@ private:
     if (!fun) {
       return false;
     }
-    llvm::errs() << "From CallSite: " << fun->getName();
+    llvm::errs() << "\tFrom CallSite: " << fun->getName();
     if (fun->getName().startswith("llvm.")) {
       return true;
     }
@@ -481,7 +495,7 @@ private:
   }
 
   bool
-  handlePhi(llvm::Value* value, DisjunctionState& state) {
+  handlePhiBackEdges(llvm::Value* value, DisjunctionState& state) {
     auto* phi = llvm::dyn_cast<llvm::PHINode>(value);
     if (!phi) {
       return false;
@@ -507,9 +521,9 @@ private:
     if(!isLoopPhi) {
       return true;
     }
-
+    llvm::errs() << "\n Dropping loop conjunct";
     auto phiExprID = generator->GetOrCreateExprID(value);
-    state[nullptr] = generator->dropConjunct(state[nullptr], phiExprID);
+    state[nullptr] = generator->pushToTrue(state[nullptr], phiExprID);
     state[nullptr] = state[nullptr].simplifyImplication();
 
     return true;
@@ -565,6 +579,7 @@ private:
     }
     auto oldLeafTableSize = generator->getLeafTableSize();
 
+    llvm::errs() << "Dropping Unknown";
     auto oldExprID = generator->GetOrCreateExprID(value);
     state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
 
@@ -576,15 +591,16 @@ public:
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
     auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
 
-    //llvm::errs() << "\nTrace ";
-    llvm::errs() << "\nIn function " << inst->getFunction()->getName(); //<< " \nBefore";
+    llvm::errs() << "\nBefore------------------------------------";
+    llvm::errs() << "\nIn function " << inst->getFunction()->getName()
+                 << " \nBefore";
     llvm::errs() << *inst;
-    //llvm::errs() << "\n State:\n";
-    //state[nullptr].print(llvm::errs());
-    //llvm::errs() << "\n";
+    llvm::errs() << "\n State:\n";
+    state[nullptr].print(llvm::errs());
+    llvm::errs() << "\n------------------------------------------";
 
     bool handled = false;
-    handled |= handlePhi(&value, state);
+    handled |= handlePhiBackEdges(&value, state);
     handled |= handleCallSite(llvm::CallSite{&value}, state, context);
     handled |= handleStore(&value, state, context);
     handled |= handleGep(&value, state);

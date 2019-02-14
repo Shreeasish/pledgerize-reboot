@@ -20,7 +20,8 @@ int main() {
     default:
       b = 0;
   }
-  if (b > 2) {
+  
+  if (a > 2) {
     printf("%d", b);
   }
 
