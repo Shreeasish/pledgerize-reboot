@@ -113,11 +113,11 @@ public:
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
     auto vacuousConjunct = generator->GetVacuousConjunct();
     return Disjunction::unionDisjunctions(s1,s2)
-            .simplifyTrues()
             .simplifyAdjacentNegation()
             .simplifyNeighbourNegation(vacuousConjunct)
             .simplifyImplication()
-            .simplifyUnique();
+            .simplifyUnique()
+            .simplifyTrues();
   }
 };
 
@@ -167,13 +167,7 @@ public:
       return handle(branchOrSwitch, destState, destination);
     };
 
-    llvm::errs() << "\n Before edge op";
-    toMerge.print(llvm::errs());
-    auto temp = edgeOp(toMerge);
-    llvm::errs() << "\n After edge op";
-    temp.print(llvm::errs());
-    // return edgeOp(toMerge);
-    return temp;
+    return edgeOp(toMerge);
   }
 
 private:
@@ -190,7 +184,7 @@ private:
   }
 
   Disjunction
-  handleAsSwitch(llvm::SwitchInst* switchInst, Disjunction& destState, llvm::Value* destination) {
+  handleAsSwitch(llvm::SwitchInst* switchInst, Disjunction destState, llvm::Value* destination) {
     auto getConjunctForm = [&](auto& caseOp) {
       llvm::BasicBlock* targetBB = caseOp.getCaseSuccessor();
       return targetBB == llvm::dyn_cast<BasicBlock>(destination);
@@ -206,14 +200,11 @@ private:
       return std::make_pair(generator->GetOrCreateExprID(key, switchInst), form);
     };
 
-    Disjunction combined{};
     for (auto& caseOp : switchInst->cases()) {
-      auto  stateCopy = destState;
       auto  [asExprID, form]  = getCaseExprID(caseOp);
-      stateCopy.applyConjunct({asExprID, form});
-      combined = Disjunction::unionDisjunctions(combined, stateCopy);
+      destState.applyConjunct({asExprID, form});
     }
-    return combined;
+    return destState;
   }
   Disjunction
   handleAsBranch(llvm::BranchInst* branchInst, Disjunction destState, llvm::Value* destination) {

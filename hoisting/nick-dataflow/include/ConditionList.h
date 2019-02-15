@@ -260,19 +260,26 @@ public:
 
   Disjunction&
   simplifyTrues() {
-    for (auto& disjunct : disjuncts) {
-      if (disjunct.conjunctIDs.size() > 1) {
-        if (disjunct.begin()->exprID == ReservedExprIDs::vacuousExprID) {
-          disjunct.conjunctIDs.erase(disjunct.conjunctIDs.begin());
-        }
-      }
-    }
+    llvm::errs() << "\n Before simplify trues";
+    this->print(llvm::errs());
+    auto isTrue =
+        [](auto& disjunct) {
+          return disjunct.conjunctIDs.size() == 1
+                 && disjunct.conjunctIDs.begin()->exprID
+                        == ReservedExprIDs::vacuousExprID;
+        };
+    auto found = find_if(disjuncts.begin(), disjuncts.end(), isTrue);
+    llvm::errs() << "\n After simplify trues";
+    this->print(llvm::errs());
     return *this;
   }
+
 
   // Rename to Horizontal/Vertical Negation
   Disjunction&
   simplifyAdjacentNegation() {
+    llvm::errs() << "\n Before adjacent negation";
+    this->print(llvm::errs());
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
       // The second check is redundant since there should never be adjacent
       // conjuncts with the same exprID
@@ -284,12 +291,11 @@ public:
         = std::adjacent_find(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(), isNegatedPair);
       return found != disjunct.conjunctIDs.end();
     };
-
-
     auto eraseIt = std::remove_if(disjuncts.begin(), disjuncts.end(), hasNegatedPair);
     disjuncts.erase(eraseIt, disjuncts.end());
-
     std::sort(disjuncts.begin(),disjuncts.end());
+    llvm::errs() << "\n After adjacent negation";
+    this->print(llvm::errs());
     return *this;
   }
 
@@ -297,6 +303,9 @@ public:
   // Refactor Later
   Disjunction&
   simplifyNeighbourNegation(Conjunct vacuousConjunct) {
+    llvm::errs() << "\n Before Neighbour negation";
+    this->print(llvm::errs());
+
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
       // The second check is redundant since there should never be adjacent
       // conjuncts with the same exprID
@@ -312,10 +321,8 @@ public:
 
       while (first != firstEnd  && second != secondEnd) {
         if (isNegatedPair(*first, *second)) {
-          //first  = conjuncts1.erase(first);
-          //second = conjuncts2.erase(second);
-          *first  = vacuousConjunct;
-          *second = vacuousConjunct;
+          *first  = vacuousConjunct; // Breaks ordering
+          *second = vacuousConjunct; // Breaks ordering
         }
         if (second->exprID < first->exprID) {
           second++;
@@ -334,14 +341,20 @@ public:
     auto second = first + 1;
     for ( ; second != disjuncts.end(); first++, second++) {
       simplify(first->conjunctIDs, second->conjunctIDs);
-      std::sort(first->begin(), first->end());
-      std::sort(second->begin(), second->end());
     }
+    std::sort(disjuncts.begin(), disjuncts.end()); //Fixes ordering
+    this->stripTrues();
+
+    llvm::errs() << "\n After Neighbour negation";
+    this->print(llvm::errs());
     return *this;
   }
 
   Disjunction& // Should
   simplifyImplication() {
+    llvm::errs() << "\n Before Implication simplification";
+    this->print(llvm::errs());
+
     std::sort(disjuncts.begin(), disjuncts.end(),
         [ ] (const auto& lhs, const auto& rhs) {
           return lhs.conjunctIDs.size() < rhs.conjunctIDs.size();
@@ -360,6 +373,9 @@ public:
 
     disjuncts.erase(end, disjuncts.end());
     std::sort(disjuncts.begin(), disjuncts.end());
+
+    llvm::errs() << "\n After Implication simplification";
+    this->print(llvm::errs());
     return *this;
   }
 
@@ -368,6 +384,22 @@ public:
     auto eraseIt = std::unique(disjuncts.begin(), disjuncts.end());
     disjuncts.erase(eraseIt, disjuncts.end());
     return *this;
+  }
+
+private:
+  void
+  stripTrues() {
+    bool isSingleton = false;
+    auto isVacExpr   = [&isSingleton](auto& conjunct) {
+      return !isSingleton && conjunct.exprID == ReservedExprIDs::vacuousExprID;
+    };
+    for (auto& disjunct : disjuncts) {
+      isSingleton      = !(disjunct.conjunctIDs.size() > 1);
+      auto eraseIt = std::remove_if(
+          disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(), isVacExpr);
+      disjunct.conjunctIDs.erase(eraseIt, disjunct.conjunctIDs.end());
+    }
+    return;
   }
 };
 
