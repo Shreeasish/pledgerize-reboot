@@ -186,14 +186,20 @@ public:
   ConjunctIDs conjunctIDs; // Conjuncts = Exprs
   Disjunct() = default;
 
-  bool operator<(const Disjunct& other) const;
-  bool operator==(const Disjunct& other) const;
-  void operator=(Disjunct);
 
-  void print(llvm::raw_ostream&) const;
-  void addConjunct(const Conjunct&);
   auto findExprID(const ExprID&) const;  // returns an iterator
   bool findAndReplace(const ExprID target, ExprID newID);
+  bool operator<(const Disjunct& other) const;
+  bool operator==(const Disjunct& other) const;
+
+  void addConjunct(const Conjunct&);
+  void operator=(Disjunct);
+  void print(llvm::raw_ostream&) const;
+
+  auto
+  size() const {
+    return conjunctIDs.size();
+  };
 
   auto
   begin() const {
@@ -211,6 +217,24 @@ public:
   auto
   end() {
     return conjunctIDs.end();
+  }
+
+  auto
+  rbegin() const {
+    return conjunctIDs.rbegin();
+  }
+  auto
+  rend() const {
+    return conjunctIDs.rend();
+  }
+
+  auto
+  rbegin() {
+    return conjunctIDs.rbegin();
+  }
+  auto
+  rend() {
+    return conjunctIDs.rend();
   }
 
 };
@@ -258,27 +282,11 @@ public:
     return asDisjunction;
   }
 
-  Disjunction&
-  simplifyTrues() {
-    llvm::errs() << "\n Before simplify trues";
-    this->print(llvm::errs());
-    auto isTrue =
-        [](auto& disjunct) {
-          return disjunct.conjunctIDs.size() == 1
-                 && disjunct.conjunctIDs.begin()->exprID
-                        == ReservedExprIDs::vacuousExprID;
-        };
-    auto found = find_if(disjuncts.begin(), disjuncts.end(), isTrue);
-    llvm::errs() << "\n After simplify trues";
-    this->print(llvm::errs());
-    return *this;
-  }
-
 
   // Rename to Horizontal/Vertical Negation
   Disjunction&
-  simplifyAdjacentNegation() {
-    llvm::errs() << "\n Before adjacent negation";
+  simplifyComplements() {
+    llvm::errs() << "\nBefore simplification";
     this->print(llvm::errs());
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
       // The second check is redundant since there should never be adjacent
@@ -294,88 +302,107 @@ public:
     auto eraseIt = std::remove_if(disjuncts.begin(), disjuncts.end(), hasNegatedPair);
     disjuncts.erase(eraseIt, disjuncts.end());
     std::sort(disjuncts.begin(),disjuncts.end());
-    llvm::errs() << "\n After adjacent negation";
-    this->print(llvm::errs());
     return *this;
   }
 
-
-  // Refactor Later
   Disjunction&
-  simplifyNeighbourNegation(Conjunct vacuousConjunct) {
-    llvm::errs() << "\n Before Neighbour negation";
+  simplifyRedundancies() {
+    llvm::errs() << "\nBefore removing redundancies";
     this->print(llvm::errs());
+    llvm::errs() << "\n";
+    auto prevDisjunct = disjuncts.begin();
 
-    auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
-      // The second check is redundant since there should never be adjacent
-      // conjuncts with the same exprID
-      // Add in as assert. Remove later
-      return a.exprID == b.exprID && (a.notNegated xor b.notNegated);
+    auto isComplementary = [](auto& a, auto& b) -> bool {
+      return a->notNegated xor b->notNegated;
+    };
+    auto checkPrev = [&](auto& iter1, auto& iter2, auto& first, auto& second) {
+      return isComplementary(iter1, iter2) 
+        && std::equal(iter1 + 1,  first.end(),
+                      iter2 + 1, second.end());
     };
 
-    auto simplify = [&isNegatedPair, vacuousConjunct](auto& conjuncts1, auto& conjuncts2) {
-      auto first     = conjuncts1.begin();
-      auto second    = conjuncts2.begin();
-      auto firstEnd  = conjuncts1.end();
-      auto secondEnd = conjuncts2.end();
-
-      while (first != firstEnd  && second != secondEnd) {
-        if (isNegatedPair(*first, *second)) {
-          *first  = vacuousConjunct; // Breaks ordering
-          *second = vacuousConjunct; // Breaks ordering
-        }
-        if (second->exprID < first->exprID) {
-          second++;
-        }
-        else {
-          first++;
+    auto isRedundant = [&] (auto& disjunct) {
+      if (prevDisjunct->size() != disjunct.size()) {
+        prevDisjunct++;
+        return false;
+      }
+      auto iter1 = prevDisjunct->begin();
+      auto iter2 = disjunct.begin();
+      while (iter2 < disjunct.end()) {
+        if (*iter1 == *iter2) {
+          iter1++;
+          iter2++;
+        } else if (checkPrev(iter1, iter2, *prevDisjunct, disjunct)) {
+          llvm::errs() << "\nRemoving ";
+          iter1->print(llvm::errs());
+          llvm::errs() << "from ";
+          prevDisjunct->print(llvm::errs());
+          prevDisjunct->conjunctIDs.erase(iter1);
+          return true;
+        } else {
+          prevDisjunct++;
+          return false;
         }
       }
+      prevDisjunct++;
+      return false;
     };
 
-    if ( disjuncts.empty()) {
-      return *this;
-    }
-
-    auto first  = disjuncts.begin();
-    auto second = first + 1;
-    for ( ; second != disjuncts.end(); first++, second++) {
-      simplify(first->conjunctIDs, second->conjunctIDs);
-    }
-    std::sort(disjuncts.begin(), disjuncts.end()); //Fixes ordering
-    this->stripTrues();
-
-    llvm::errs() << "\n After Neighbour negation";
+    auto from = std::remove_if(disjuncts.begin() + 1, disjuncts.end(), isRedundant);
+    disjuncts.erase(from, disjuncts.end());
+    llvm::errs() << "\nAfter removing redundancies";
     this->print(llvm::errs());
+    llvm::errs() << "\n";
     return *this;
   }
 
   Disjunction& // Should
   simplifyImplication() {
-    llvm::errs() << "\n Before Implication simplification";
+    llvm::errs() << "\nBefore implications";
     this->print(llvm::errs());
+    llvm::errs() << "\n";
 
     std::sort(disjuncts.begin(), disjuncts.end(),
-        [ ] (const auto& lhs, const auto& rhs) {
-          return lhs.conjunctIDs.size() < rhs.conjunctIDs.size();
-        });
+         [ ] (const auto& lhs, const auto& rhs) {
+           return lhs.conjunctIDs.size() < rhs.conjunctIDs.size();
+         });
 
-    auto iter = disjuncts.begin();
+    auto smaller = disjuncts.begin();
     auto end  = disjuncts.end();
-    auto isSubset = [&iter](const Disjunct disjunct) { //iter1 is subset of iter2
-     return std::includes(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(),
-                           iter->conjunctIDs.begin(), iter->conjunctIDs.end());
+    auto isSubset = [&smaller](const Disjunct larger) { //iter1 is subset of iter2
+      llvm::errs() << "\n Compares at implications"
+                   << "\n smaller :";
+      smaller->print(llvm::errs());
+      llvm::errs() << " to larger ";
+      larger.print(llvm::errs());
+
+      auto it1 = larger.begin();
+      auto it2 = smaller->begin();
+      while (it2 < larger.end()) {
+        while (*it1 < *it2 && it1 < larger.end()) {
+          it1++;
+        }
+        if (it1 != it2) {
+          return false;
+        }
+        it2++;
+      }
+      return true;
     };
-    while (iter != end) {
-      end = std::remove_if(iter + 1, end, isSubset);
-      iter++;
+    int count = 0;
+    while (smaller + 1 < end) {
+      end = std::remove_if(smaller + 1, end, isSubset);
+      count++;
+      smaller = disjuncts.begin();
+      std::advance(smaller, count);
     }
 
     disjuncts.erase(end, disjuncts.end());
     std::sort(disjuncts.begin(), disjuncts.end());
 
-    llvm::errs() << "\n After Implication simplification";
+    llvm::errs() << "\nAfter implications";
     this->print(llvm::errs());
+    llvm::errs() << "\n";
     return *this;
   }
 
@@ -386,20 +413,35 @@ public:
     return *this;
   }
 
+  Disjunction&
+  simplifyTrues() {
+    llvm::errs() << "\nAfter simplifications";
+    this->print(llvm::errs());
+    return *this;
+  }
+
 private:
   void
   stripTrues() {
-    bool isSingleton = false;
-    auto isVacExpr   = [&isSingleton](auto& conjunct) {
-      return !isSingleton && conjunct.exprID == ReservedExprIDs::vacuousExprID;
+    bool isUnary = false;
+    auto isVacExpr  = [&isUnary](auto& conjunct) {
+      return !isUnary && conjunct.exprID == ReservedExprIDs::vacuousExprID;
     };
     for (auto& disjunct : disjuncts) {
-      isSingleton      = !(disjunct.conjunctIDs.size() > 1);
+      isUnary = disjunct.conjunctIDs.size() == 1;
       auto eraseIt = std::remove_if(
           disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(), isVacExpr);
       disjunct.conjunctIDs.erase(eraseIt, disjunct.conjunctIDs.end());
     }
     return;
+  }
+
+  void
+  removeEmpties() {
+    auto eraseIt = std::remove_if(disjuncts.begin(), disjuncts.end(), [] (const auto& disjunct) {
+          return disjunct.size() == 0;
+        });
+    disjuncts.erase(eraseIt, disjuncts.end());
   }
 };
 
@@ -445,15 +487,6 @@ Disjunct::addConjunct(const Conjunct& conjunct) {
 
 auto
 Disjunct::findExprID(const ExprID& target) const {
-//  auto position
-//    = std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
-//        [](const Conjunct& conjunct, const ExprID& target) -> bool {
-//          return conjunct.exprID < target;
-//        });
-//  if ( position != conjunctIDs.end() && position->exprID == target) {
-//    return true;
-//  }
-//  return false;
 return std::lower_bound(
     conjunctIDs.begin(),
     conjunctIDs.end(),
@@ -464,7 +497,6 @@ return std::lower_bound(
 }
 
 
-// Deprecate?
 bool
 Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
   auto position = std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
@@ -479,15 +511,16 @@ Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
   return false;
 }
 
-
 void
 Disjunct::print(llvm::raw_ostream& out) const {
-  out << "(";
-  for (auto conjunct : conjunctIDs) {
-    conjunct.print(out);
-    out << ") (";
+  if (conjunctIDs.empty()) {
+    out << "empty disjunct";
   }
-  out << ") ";
+  for (auto conjunct : conjunctIDs) {
+    out << "(";
+    conjunct.print(out);
+    out << ")";
+  }
   return;
 }
 
@@ -520,6 +553,7 @@ Disjunction::applyConjunct(const Conjunct& conjunct) {
   for (auto& disjunct : disjuncts) {
     disjunct.addConjunct(conjunct);
   }
+  this->stripTrues();
   return;
 }
 

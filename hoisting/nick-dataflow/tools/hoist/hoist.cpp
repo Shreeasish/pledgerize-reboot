@@ -111,10 +111,14 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    auto vacuousConjunct = generator->GetVacuousConjunct();
+    //auto vacuousConjunct = generator->GetVacuousConjunct();
+    llvm::errs() << "\nmerging s1:";
+    s1.print(llvm::errs());
+    llvm::errs() << "\n and s2:";
+    s2.print(llvm::errs());
     return Disjunction::unionDisjunctions(s1,s2)
-            .simplifyAdjacentNegation()
-            .simplifyNeighbourNegation(vacuousConjunct)
+            .simplifyComplements()
+            .simplifyRedundancies()
             .simplifyImplication()
             .simplifyUnique()
             .simplifyTrues();
@@ -125,7 +129,7 @@ public:
 class DisjunctionEdgeTransformer {
 public:
   Disjunction
-  operator()(const Disjunction& toMerge,
+  operator()(Disjunction toMerge,
              llvm::Value* branchAsValue,
              llvm::Value* destination) {
     // Use the label of the basic block of the branch to replace the appropriate
@@ -139,7 +143,7 @@ public:
       return generator->isUsed(&phi);
     };
     auto handlePhi =
-        [&getAssocValue, &destination, &isUsedPhi](Disjunction destState) {
+        [&getAssocValue, &destination, &isUsedPhi](Disjunction& destState) {
           auto destBlock = llvm::dyn_cast<llvm::BasicBlock>(destination);
           for (auto& phi : destBlock->phis()) {
             if (!isUsedPhi(phi)) {
@@ -159,20 +163,19 @@ public:
       return branchOrSwitch->getNumOperands() > 2;
     };
 
-    auto edgeOp = [&](Disjunction destState) {
+    auto edgeOp = [&](Disjunction& destState) {
       destState = handlePhi(destState);
       if (!isConditionalJump()) {
         return destState;
       }
       return handle(branchOrSwitch, destState, destination);
     };
-
     return edgeOp(toMerge);
   }
 
 private:
   //TODO: Ask Nick about perfect forwarding
-  Disjunction
+  Disjunction&
   handle(llvm::Instruction* branchOrSwitch, Disjunction& destState, llvm::Value* destination) {
     if (auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchOrSwitch)) {
       return handleAsBranch(branchInst, destState, destination);
@@ -183,8 +186,8 @@ private:
     return destState;
   }
 
-  Disjunction
-  handleAsSwitch(llvm::SwitchInst* switchInst, Disjunction destState, llvm::Value* destination) {
+  Disjunction&
+  handleAsSwitch(llvm::SwitchInst* switchInst, Disjunction& destState, llvm::Value* destination) {
     auto getConjunctForm = [&](auto& caseOp) {
       llvm::BasicBlock* targetBB = caseOp.getCaseSuccessor();
       return targetBB == llvm::dyn_cast<BasicBlock>(destination);
@@ -206,8 +209,8 @@ private:
     }
     return destState;
   }
-  Disjunction
-  handleAsBranch(llvm::BranchInst* branchInst, Disjunction destState, llvm::Value* destination) {
+  Disjunction&
+  handleAsBranch(llvm::BranchInst* branchInst, Disjunction& destState, llvm::Value* destination) {
     auto conjunctForm = [&] ( ) {
       return destination == branchInst->getOperand(2);
     };
@@ -235,7 +238,7 @@ private:
       return true;
     }
 
-    if (fun->getName().startswith("wait")) {
+    if (fun->getName().startswith("printf")) {
       auto vacExpr    = generator->GetVacuousExprID();
       Disjunction disjunction{};
       Disjunct disjunct{};

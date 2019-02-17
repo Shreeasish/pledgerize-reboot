@@ -521,7 +521,6 @@ private:
       // state, meet it with the new one. Otherwise, copy the new value over,
       // implicitly meeting with bottom.
       auto temp = edgeTransformer(valueStatePair.second, branchAsValue, destination);
-
       auto [found, newlyAdded] = destinationState.insert({nullptr,temp});
       if (!newlyAdded) {
       found->second
