@@ -131,7 +131,8 @@ public:
   Disjunction
   operator()(Disjunction toMerge,
              llvm::Value* branchAsValue,
-             llvm::Value* destination) {
+             llvm::Value* destination,
+             bool isSame) {
     // Use the label of the basic block of the branch to replace the appropriate
     // operand of the phi
     auto getAssocValue = [&branchAsValue](llvm::PHINode* const phi) {
@@ -166,6 +167,10 @@ public:
     auto edgeOp = [&](Disjunction& destState) {
       destState = handlePhi(destState);
       if (!isConditionalJump()) {
+        return destState;
+      }
+      if (destState == toMerge && isSame) {
+        llvm::errs() << "skipping conjunct application";
         return destState;
       }
       return handle(branchOrSwitch, destState, destination);
@@ -238,7 +243,7 @@ private:
       return true;
     }
 
-    if (fun->getName().startswith("printf")) {
+    if (fun->getName().startswith("wait")) {
       auto vacExpr    = generator->GetVacuousExprID();
       Disjunction disjunction{};
       Disjunct disjunct{};

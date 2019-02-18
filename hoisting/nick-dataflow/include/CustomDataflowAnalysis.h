@@ -512,15 +512,28 @@ private:
   }
 
 
-  // ska: Customized
   void
-  mergeInState(State& destinationState, const State& toMerge, llvm::Value* destination, llvm::Value* branchAsValue) {
+  mergeInState(State& destinationState,
+               const State& toMerge,
+               llvm::Value* destination,
+               llvm::Value* branchAsValue,
+               bool isSame) {
     EdgeTransformer edgeTransformer;
     for (auto& valueStatePair : toMerge) {
       // If an incoming Value has an AbstractValue in the already merged
       // state, meet it with the new one. Otherwise, copy the new value over,
       // implicitly meeting with bottom.
-      auto temp = edgeTransformer(valueStatePair.second, branchAsValue, destination);
+      //if (valueStatePair.first) {
+      //  llvm::errs() << "\nvalueStatePair.first " << *valueStatePair.first;
+      //} else {
+      //  llvm::errs() << "\nvalueStatePair.first nullptr";
+      //}
+      //llvm::errs() << "\nvalueStatePair.second ";
+      //valueStatePair.second.print(llvm::errs());
+      //llvm::errs() << "\ndestination " << *destination;
+
+      auto temp =
+          edgeTransformer(valueStatePair.second, branchAsValue, destination, isSame);
       auto [found, newlyAdded] = destinationState.insert({nullptr,temp});
       if (!newlyAdded) {
       found->second
@@ -533,13 +546,28 @@ private:
   mergeStateFromPredecessors(llvm::BasicBlock* bb, FunctionResults& results) {
     State mergedState = State{};
     mergeInState(mergedState, results[bb]);
+  
+    std::vector<AbstractState<AbstractValue>*> facts;
+    for (auto* p : Direction::getPredecessors(*bb)) {
+      auto predecessorFacts = results.find(Direction::getExitKey(*p));
+      //llvm::errs() << "\n Exit Key =" << *p;
+      if (results.end() == predecessorFacts) {
+        continue;
+      }
+      facts.push_back(&(predecessorFacts->second));
+    }
+    bool isSame = true;
+    auto prevFact = facts.begin();
+    for (auto* fact : facts) {
+      isSame &= *fact == **prevFact;
+    }
     for (auto* p : Direction::getPredecessors(*bb)) {
       auto predecessorFacts = results.find(Direction::getExitKey(*p));
       if (results.end() == predecessorFacts) {
         continue;
       }
       auto* branchInst = bb->getTerminator();
-      mergeInState(mergedState, predecessorFacts->second, p, branchInst);
+      mergeInState(mergedState, predecessorFacts->second, p, branchInst, isSame);
     }
     return mergedState;
   }
