@@ -523,14 +523,14 @@ private:
       // If an incoming Value has an AbstractValue in the already merged
       // state, meet it with the new one. Otherwise, copy the new value over,
       // implicitly meeting with bottom.
-      //if (valueStatePair.first) {
-      //  llvm::errs() << "\nvalueStatePair.first " << *valueStatePair.first;
-      //} else {
-      //  llvm::errs() << "\nvalueStatePair.first nullptr";
-      //}
-      //llvm::errs() << "\nvalueStatePair.second ";
-      //valueStatePair.second.print(llvm::errs());
-      //llvm::errs() << "\ndestination " << *destination;
+      if (valueStatePair.first) {
+        llvm::errs() << "\nvalueStatePair.first " << *valueStatePair.first;
+      } else {
+        llvm::errs() << "\nvalueStatePair.first nullptr";
+      }
+      llvm::errs() << "\nvalueStatePair.second ";
+      valueStatePair.second.print(llvm::errs());
+      llvm::errs() << "\ndestination " << *destination;
 
       auto temp =
           edgeTransformer(valueStatePair.second, branchAsValue, destination, isSame);
@@ -547,14 +547,14 @@ private:
     State mergedState = State{};
     mergeInState(mergedState, results[bb]);
   
-    std::vector<AbstractState<AbstractValue>*> facts;
+    std::vector<AbstractValue*> facts;
     for (auto* p : Direction::getPredecessors(*bb)) {
       auto predecessorFacts = results.find(Direction::getExitKey(*p));
-      //llvm::errs() << "\n Exit Key =" << *p;
+      llvm::errs() << "\n Exit Key =" << *p;
       if (results.end() == predecessorFacts) {
         continue;
       }
-      facts.push_back(&(predecessorFacts->second));
+      facts.push_back(&(predecessorFacts->second[nullptr]));
     }
     bool isSame = true;
     auto prevFact = facts.begin();

@@ -173,6 +173,14 @@ public:
         llvm::errs() << "skipping conjunct application";
         return destState;
       }
+
+      if (isSame) {
+        llvm::errs() << "incoming dijuncts are the same";
+      }
+      llvm::errs() << "\n Before phi";
+      toMerge.print(llvm::errs());
+      llvm::errs() << "\n After  phi";
+      destState.print(llvm::errs());
       return handle(branchOrSwitch, destState, destination);
     };
     return edgeOp(toMerge);
