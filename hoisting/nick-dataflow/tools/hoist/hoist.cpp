@@ -112,10 +112,6 @@ public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
     //auto vacuousConjunct = generator->GetVacuousConjunct();
-    llvm::errs() << "\nmerging s1:";
-    s1.print(llvm::errs());
-    llvm::errs() << "\n and s2:";
-    s2.print(llvm::errs());
     return Disjunction::unionDisjunctions(s1,s2)
             .simplifyComplements()
             .simplifyRedundancies()
@@ -170,16 +166,16 @@ public:
         return destState;
       }
       if (destState == toMerge && isSame) {
-        llvm::errs() << "skipping conjunct application";
+        //llvm::errs() << "skipping conjunct application";
         return destState;
       }
 
-      if (isSame) {
-        llvm::errs() << "incoming dijuncts are the same";
-      }
-      llvm::errs() << "\n Before phi";
-      toMerge.print(llvm::errs());
-      llvm::errs() << "\n After  phi";
+      //if (isSame) {
+      //  llvm::errs() << "incoming dijuncts are the same";
+      //}
+      //llvm::errs() << "\n Before phi";
+      //toMerge.print(llvm::errs());
+      //llvm::errs() << "\n After  phi";
       destState.print(llvm::errs());
       return handle(branchOrSwitch, destState, destination);
     };
@@ -216,9 +212,12 @@ private:
       return std::make_pair(generator->GetOrCreateExprID(key, switchInst), form);
     };
 
+    auto isDefaultCase = destination == switchInst->getDefaultDest();
     for (auto& caseOp : switchInst->cases()) {
       auto  [asExprID, form]  = getCaseExprID(caseOp);
-      destState.applyConjunct({asExprID, form});
+      if (form || isDefaultCase) {
+        destState.applyConjunct({asExprID, form});
+      }
     }
     return destState;
   }
@@ -485,8 +484,6 @@ private:
     if (!storeInst) {
       return false;
     }
-    llvm::errs() << "\n Printing at store";
-    //state[nullptr].print(llvm::errs());
     std::vector<llvm::LoadInst*> asLoads = getLoads(state);
     auto [strongLoads, weakLoads]        = seperateLoads(storeInst, asLoads);
 
@@ -497,7 +494,14 @@ private:
     for (auto weakLoad : weakLoads) {
       localDisjunction = weakUpdate(localDisjunction, weakLoad, storeInst);
     }
-    state[nullptr] = localDisjunction;
+    //state[nullptr] = localDisjunction;
+    //llvm::errs() << "\n Printing at store";
+    //state[nullptr].print(llvm::errs());
+    //state[nullptr].simplifyComplements()
+    //              .simplifyRedundancies()
+    //              .simplifyImplication();
+    //llvm::errs() << "\n Printing at store after simplification";
+    //state[nullptr].print(llvm::errs());
     return true;
   }
 
@@ -597,6 +601,9 @@ public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
     auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
+    llvm::outs() << "\nIn function " << inst->getFunction()->getName()
+                 << " \nBefore";
+    llvm::outs() << *inst;
 
     llvm::errs() << "\nBefore------------------------------------";
     llvm::errs() << "\nIn function " << inst->getFunction()->getName()
@@ -632,6 +639,10 @@ public:
     }
     //generator->dumpState();
     //printer->printState(inst, state[nullptr]);
+    //
+    state[nullptr].simplifyComplements()
+                  .simplifyRedundancies()
+                  .simplifyImplication();
     return;
   }
 };

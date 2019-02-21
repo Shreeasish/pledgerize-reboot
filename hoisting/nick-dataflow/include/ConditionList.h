@@ -286,8 +286,8 @@ public:
   // Rename to Horizontal/Vertical Negation
   Disjunction&
   simplifyComplements() {
-    llvm::errs() << "\nBefore simplification";
-    this->print(llvm::errs());
+    //llvm::errs() << "\nBefore simplification";
+    //this->print(llvm::errs());
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
       // The second check is redundant since there should never be adjacent
       // conjuncts with the same exprID
@@ -307,9 +307,9 @@ public:
 
   Disjunction&
   simplifyRedundancies() {
-    llvm::errs() << "\nBefore removing redundancies";
-    this->print(llvm::errs());
-    llvm::errs() << "\n";
+    //llvm::errs() << "\nBefore removing redundancies";
+    //this->print(llvm::errs());
+    //llvm::errs() << "\n";
     auto prevDisjunct = disjuncts.begin();
 
     auto isComplementary = [](auto& a, auto& b) -> bool {
@@ -333,10 +333,11 @@ public:
           iter1++;
           iter2++;
         } else if (checkPrev(iter1, iter2, *prevDisjunct, disjunct)) {
-          llvm::errs() << "\nRemoving ";
-          iter1->print(llvm::errs());
-          llvm::errs() << "from ";
-          prevDisjunct->print(llvm::errs());
+          //llvm::errs() << "\nRemoving ";
+          //iter1->print(llvm::errs());
+          //llvm::errs() << "from ";
+          //prevDisjunct->print(llvm::errs());
+          
           prevDisjunct->conjunctIDs.erase(iter1);
           return true;
         } else {
@@ -350,17 +351,18 @@ public:
 
     auto from = std::remove_if(disjuncts.begin() + 1, disjuncts.end(), isRedundant);
     disjuncts.erase(from, disjuncts.end());
-    llvm::errs() << "\nAfter removing redundancies";
-    this->print(llvm::errs());
-    llvm::errs() << "\n";
+    this->removeEmpties();
+    //llvm::errs() << "\nAfter removing redundancies";
+    //this->print(llvm::errs());
+    //llvm::errs() << "\n";
     return *this;
   }
 
   Disjunction& // Should
   simplifyImplication() {
-    llvm::errs() << "\nBefore implications";
-    this->print(llvm::errs());
-    llvm::errs() << "\n";
+    //llvm::errs() << "\nBefore implications";
+    //this->print(llvm::errs());
+    //llvm::errs() << "\n";
 
     std::sort(disjuncts.begin(), disjuncts.end(),
          [ ] (const auto& lhs, const auto& rhs) {
@@ -370,39 +372,41 @@ public:
     auto smaller = disjuncts.begin();
     auto end  = disjuncts.end();
     auto isSubset = [&smaller](const Disjunct larger) { //iter1 is subset of iter2
-      llvm::errs() << "\n Compares at implications"
-                   << "\n smaller :";
-      smaller->print(llvm::errs());
-      llvm::errs() << " to larger ";
-      larger.print(llvm::errs());
+      //llvm::errs() << "\n Compares at implications"
+      //             << "\n smaller :";
+      //smaller->print(llvm::errs());
+      //llvm::errs() << " to larger ";
+      //larger.print(llvm::errs());
 
-      auto it1 = larger.begin();
-      auto it2 = smaller->begin();
-      while (it2 < larger.end()) {
-        while (*it1 < *it2 && it1 < larger.end()) {
+      auto it1    = larger.begin();
+      auto it2    = smaller->begin();
+      while (it2 < smaller->end()) {
+        while (it1 < larger.end() && *it1 < *it2) {
           it1++;
         }
-        if (it1 != it2) {
+        if (it1 == larger.end() || !(*it1 == *it2)) {
           return false;
         }
         it2++;
       }
+      llvm::errs() << "found";
       return true;
     };
-    int count = 0;
+    //int count = 0;
     while (smaller + 1 < end) {
       end = std::remove_if(smaller + 1, end, isSubset);
-      count++;
-      smaller = disjuncts.begin();
-      std::advance(smaller, count);
+      smaller++;
+      //count++;
+      //smaller = disjuncts.begin();
+      //std::advance(smaller, count);
     }
 
     disjuncts.erase(end, disjuncts.end());
     std::sort(disjuncts.begin(), disjuncts.end());
 
-    llvm::errs() << "\nAfter implications";
-    this->print(llvm::errs());
-    llvm::errs() << "\n";
+    //llvm::errs() << "\nAfter implications";
+    //this->print(llvm::errs());
+    //llvm::errs() << "\n";
     return *this;
   }
 

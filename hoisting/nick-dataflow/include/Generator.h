@@ -231,6 +231,8 @@ public:
       std::transform(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(),
                   std::back_inserter(newDisjunct.conjunctIDs), rebuildConjunct);
       std::sort(newDisjunct.conjunctIDs.begin(), newDisjunct.conjunctIDs.end());
+      auto from = std::unique(newDisjunct.begin(), newDisjunct.end());
+      newDisjunct.conjunctIDs.erase(from, newDisjunct.end());
       newDisjunction.addDisjunct(newDisjunct);
     }
     return newDisjunction;
@@ -274,10 +276,14 @@ public:
   pushToTrue(const Disjunction& disjunction, const ExprID oldExprID) {
     Disjunction localDisjunction = disjunction;
     for (auto& disjunct : localDisjunction) {
-      for (auto& conjunct : disjunct) {
-        if (find(conjunct, oldExprID)) {
-          conjunct = {GetVacuousExprID(), true};
-        }
+      auto from = std::remove_if(
+          disjunct.begin(), disjunct.end(), [&](const auto& conjunct) {
+            return find(conjunct, oldExprID);
+          });
+      disjunct.conjunctIDs.erase(from, disjunct.end());
+
+      if (!disjunct.size()) {
+        disjunct.addConjunct({GetVacuousExprID(), true});
       }
     }
     return localDisjunction;
