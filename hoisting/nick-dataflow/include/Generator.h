@@ -11,7 +11,8 @@
 //TODO: Add checks for boundaries between ID types
 //TODO: CamelCase functions
 //TODO: Move traversals to a single function
-using ValueConstOrBinaryExprNode = std::variant<const ValueExprNode, const ConstantExprNode, const BinaryExprNode>;
+using ValueConstOrBinaryExprNode = std::
+    variant<const ValueExprNode, const ConstantExprNode, const BinaryExprNode>;
 
 class Generator {
 public:
@@ -323,7 +324,7 @@ public:
 
   template <class Visitor>
   Disjunction
-  for_each(const Disjunction& disjunction, Visitor visitor) {
+  preOrderFor(const Disjunction& disjunction, Visitor visitor) {
     auto preOrder = [&, this](Conjunct& conjunct) {
       std::stack<ExprID> exprStack;
       exprStack.push(conjunct.exprID);
@@ -354,7 +355,7 @@ public:
 
   template <class Visitor>
   Conjunct
-  for_each(const Conjunct& conjunct, Visitor visitor) {
+  preOrderFor(const Conjunct& conjunct, Visitor visitor) {
     auto preOrder = [&, this](Conjunct& conjunct) {
       std::stack<ExprID> exprStack;
       exprStack.push(conjunct.exprID);
@@ -368,8 +369,8 @@ public:
         std::visit(visitor, exprIDAsVariant, asVariant);
 
         if (auto binaryNode = std::get_if<const BinaryExprNode>(&asVariant)) {
-          exprStack.push(binaryNode->lhs);
           exprStack.push(binaryNode->rhs);
+          exprStack.push(binaryNode->lhs);
         }
       }
     };
@@ -377,6 +378,24 @@ public:
     auto localConjunct = conjunct;
     preOrder(localConjunct);
     return localConjunct;
+  }
+
+  template <class Visitor>
+  Conjunct
+  inOrderFor(const Conjunct& conjunct, Visitor visitor) {
+    auto inOrder = [&, this](const ExprID& exprID, auto inOrder) -> void {
+      auto asVariant   = std::variant<ExprID>(exprID);
+      auto node = GetExprNode(exprID);
+      if (auto binaryNode = std::get_if<const BinaryExprNode>(&node)) {
+        inOrder(binaryNode->lhs, inOrder);
+        std::visit(visitor, asVariant, node);
+        inOrder(binaryNode->rhs, inOrder);
+      } else {
+        std::visit(visitor, asVariant, node);
+      }
+    };
+    inOrder(conjunct.exprID, inOrder);
+    return conjunct;
   }
 
 private:

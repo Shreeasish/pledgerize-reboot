@@ -394,10 +394,10 @@ public:
           applyTransfer(i, state, context);
         //}
 //meet.printState(llvm::outs(),state);
-          llvm::outs() << "\nAfter-------------------------------------";
-          llvm::outs() << "In function " << i.getFunction()->getName()
-                       << " after";
-          llvm::outs() << i;
+          //llvm::outs() << "\nAfter-------------------------------------";
+          //llvm::outs() << "In function " << i.getFunction()->getName()
+          //             << " after";
+          //llvm::outs() << i;
 
           llvm::errs() << "\nAfter-------------------------------------";
           llvm::errs() << "In function " << i.getFunction()->getName()

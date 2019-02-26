@@ -250,7 +250,7 @@ private:
       return true;
     }
 
-    if (fun->getName().startswith("wait")) {
+    if (fun->getName().startswith("printf")) {
       auto vacExpr    = generator->GetVacuousExprID();
       Disjunction disjunction{};
       Disjunct disjunct{};
@@ -590,8 +590,8 @@ private:
     }
     auto oldLeafTableSize = generator->getLeafTableSize();
 
-    llvm::errs() << "Dropping Unknown";
     auto oldExprID = generator->GetOrCreateExprID(value);
+    llvm::errs() << "Dropping Unknown " << oldExprID;
     state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
 
     assert(oldLeafTableSize == generator->getLeafTableSize() && "New Value at Unknown");
@@ -601,9 +601,9 @@ public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
     auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
-    llvm::outs() << "\nIn function " << inst->getFunction()->getName()
-                 << " \nBefore";
-    llvm::outs() << *inst;
+    //llvm::outs() << "\nIn function " << inst->getFunction()->getName()
+    //             << " \nBefore";
+    //llvm::outs() << *inst;
 
     llvm::errs() << "\nBefore------------------------------------";
     llvm::errs() << "\nIn function " << inst->getFunction()->getName()
@@ -621,13 +621,20 @@ public:
     handled |= handleRet(&value, state, context);
 
     if (handled) {
+      llvm::errs() << "\nPrinting Before Simplifications";
+      state[nullptr].print(llvm::errs());
+      state[nullptr].simplifyComplements()
+                    .simplifyRedundancies()
+                    .simplifyImplication();
       //generator->dumpState();
-      //printer->printState(inst, state[nullptr]);
+      printer->printIR(inst, state[nullptr]);
       return;
     }
     if (!generator->isUsed(&value)) {
+      llvm::errs() << "\nPrinting Before Simplifications";
+      state[nullptr].print(llvm::errs());
       //generator->dumpState();
-      //printer->printState(inst, state[nullptr]);
+      printer->printIR(inst, state[nullptr]);
       return;
     }
     handled |= handleLoad(&value, state);
@@ -638,11 +645,13 @@ public:
       handleUnknown(&value, state);
     }
     //generator->dumpState();
-    //printer->printState(inst, state[nullptr]);
-    //
+
+    llvm::errs() << "\nPrinting Before Simplifications";
+    state[nullptr].print(llvm::errs());
     state[nullptr].simplifyComplements()
                   .simplifyRedundancies()
                   .simplifyImplication();
+    printer->printIR(inst, state[nullptr]);
     return;
   }
 };
@@ -712,6 +721,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   //package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
   //libCHandlers   = getLibCHandlerMap(package);
   auto results  = analysis.computeDataflow();
+  generator->dumpState();
 
   return false;
 }

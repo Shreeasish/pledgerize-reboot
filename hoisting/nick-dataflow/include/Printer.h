@@ -18,10 +18,29 @@ public:
     printStateTrees(location, disjunction);
   }
 
+  void // Point of configuration for async queue
+  printIR(llvm::Instruction* const location, const Disjunction& disjunction) {
+    if (disjunction.isEmpty()) {
+      return;
+    }
+    printBasicIR(location, disjunction);
+  }
+
 private: 
+  int counter = 0;
   Generator* generator;
-  unsigned int counter = 0;
   llvm::raw_ostream& out;
+  const char* delimiter = "\\x";
+
+  //Visitor Helpers
+  template <class... Ts>
+  struct overloaded : Ts... {
+    using Ts::operator()...;
+  };
+  template <class... Ts>
+  overloaded(Ts...)->overloaded<Ts...>;
+  //
+
 
   std::string
   getDebugData(llvm::Instruction* const location) const {
@@ -30,61 +49,119 @@ private:
 
   void
   printLineNumber(llvm::Instruction* const inst) const {
+    //out.changeColor(llvm::raw_ostream::Colors::YELLOW);
     if (const llvm::DILocation* debugLoc = inst->getDebugLoc()) {
       out << "At " << debugLoc->getFilename() << " line "
-          << debugLoc->getLine();
+          << debugLoc->getLine() << "  " << *inst << "\n";
     } else {
       out << "At an unknown location"
           << *inst
           << "\n";
-    }       
+    }
+    //out.changeColor(llvm::raw_ostream::Colors::WHITE);
   }
 
-  template <class... Ts>
-  struct overloaded : Ts... {
-    using Ts::operator()...;
-  };
-  template <class... Ts>
-  overloaded(Ts...)->overloaded<Ts...>;
-
   void
-  printTree(const Conjunct conjunct) const {
-    auto visitor = overloaded {
-      [this](ExprID exprID, const ConstantExprNode node) {
-        out << "\t" << exprID;
-        if (node.constant) {
-          out << " [shape=box,label=\"" << *(node.constant) << "\"]\n";
-        } else {
-          out << " [shape=box,label=\"" << " nullptr " << "\"]\n";
-        }
-      },
-      [this](ExprID exprID, const BinaryExprNode node) {
-        auto lhsID = node.lhs;
-        auto rhsID = node.rhs;
-        out << "\t" << exprID 
-            << " -> { " << lhsID << "; " << rhsID << " }\n";
-      },
-      [this](ExprID exprID, const ValueExprNode node) {
-        out << "\t" << exprID
-            << " [shape=box,label=\"" << *(node.value) << "\"]\n";
-      }
-    };
-    generator->for_each(conjunct, visitor);
+  printTree(const Conjunct conjunct,
+            const int disjunctCount,
+            const int conjunctCount) const {
+    auto visitor = overloaded{
+        [&, this](ExprID exprID, const ConstantExprNode node) {
+          out << "\t" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount;
+          if (node.constant) {
+            out << " [shape=box,label=\"" << *(node.constant) << "\"]\n";
+          } else {
+            out << " [shape=box,label=\""
+                << " nullptr "
+                << "\"]\n";
+          }
+        },
+        [&, this](ExprID exprID, const BinaryExprNode node) {
+          auto lhsID = node.lhs;
+          auto rhsID = node.rhs;
+          out << "\t" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount << " -> { " << lhsID << delimiter
+              << disjunctCount << delimiter << conjunctCount << "; " << rhsID
+              << delimiter << disjunctCount << delimiter << conjunctCount
+              << " }\n";
+        },
+        [&, this](ExprID exprID, const ValueExprNode node) {
+          out << "\t" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount << " [shape=box,label=\"" << *(node.value)
+              << "\"]\n";
+        }};
+    generator->preOrderFor(conjunct, visitor);
   }
 
   void
   printStateTrees(llvm::Instruction* const location, const Disjunction disjunction) {
-    for (auto disjunct : disjunction) {
-      for (auto conjunct : disjunct) {
-        out << "\nDigraph " << counter++ << " {\n"
-            << "\tlabel = <";
-        printLineNumber(location);
-        out << ">\n"
-            << "\tlabelloc = \"t\";\n";
-        printTree(conjunct);
-        out << "}\n";
+    int disjunctCount = 0;
+    out << "\nDigraph " << counter++ << " {\n"
+        << "\tlabel = <";
+    printLineNumber(location);
+    out << ">\n" << "\tlabelloc = \"t\";\n";
+    for (auto& disjunct : disjunction) {
+      int conjunctCount = 0;
+      for (auto& conjunct : disjunct) {
+        printTree(conjunct, disjunctCount, conjunctCount);
+        conjunctCount++;
       }
+      disjunctCount++;
     }
+    out << "}\n";
+  }
+
+  void
+  printTreeIR(const Conjunct conjunct) const {
+    auto visitor = overloaded {
+      [&,this](ExprID exprID, const ConstantExprNode node) {
+        //out.changeColor(llvm::raw_ostream::Colors::GREEN);
+        if (!node.constant) {
+          out << "nullptr ";
+        } else {
+          out << *(node.constant);
+        }
+        //out.changeColor(llvm::raw_ostream::Colors::WHITE);
+      },
+      [&,this](ExprID exprID, const BinaryExprNode node) {
+        //out.changeColor(llvm::raw_ostream::Colors::BLUE);
+        out << " " << node.op.opCode << " ";
+        //out.changeColor(llvm::raw_ostream::Colors::WHITE);
+      },
+      [&,this](ExprID exprID, const ValueExprNode node) {
+        //out.changeColor(llvm::raw_ostream::Colors::GREEN);
+        out << *(node.value);
+        //out.changeColor(llvm::raw_ostream::Colors::WHITE);
+      }
+    };
+    generator->inOrderFor(conjunct, visitor);
+  }
+
+  void
+  printBasicIR(llvm::Instruction* const location, const Disjunction disjunction) {
+    printLineNumber(location);
+    bool firstDisjunct = true;
+    for (auto& disjunct : disjunction) {
+      if (firstDisjunct) {
+        out << "{";
+      } else {
+        out << "OR \n{";
+      }
+      bool firstConjunct = true;
+      for (auto& conjunct : disjunct) {
+        if (firstConjunct) {
+          out << "(";
+          firstConjunct = false;
+        } else {
+          out << " AND (";
+        }
+        printTreeIR(conjunct);
+        out << ")";
+      }
+      out << "}\n";
+    }
+    out << "\n";
   }
 
 
