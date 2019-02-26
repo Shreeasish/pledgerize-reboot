@@ -1,24 +1,29 @@
 #ifndef PRINTER_H
-#define PRINTER_H 
+#define PRINTER_H
 
 #include "ConditionList.h"
 #include "Generator.h"
 
+#include <unordered_map>
+#include <string>
+
+
 class Printer {
 public:
-  Printer(Generator* g, llvm::raw_ostream& out) 
-    : generator{g},
-      out{out} {}
+  Printer(Generator* g, llvm::raw_ostream& out) : generator{g}, out{out} {
+    initializeMap();
+  }
 
-  void // Point of configuration for async queue
-  printState(llvm::Instruction* const location, const Disjunction& disjunction) {
+  void  // Point of configuration for async queue
+  printState(llvm::Instruction* const location,
+             const Disjunction& disjunction) {
     if (disjunction.isEmpty()) {
       return;
     }
     printStateTrees(location, disjunction);
   }
 
-  void // Point of configuration for async queue
+  void  // Point of configuration for async queue
   printIR(llvm::Instruction* const location, const Disjunction& disjunction) {
     if (disjunction.isEmpty()) {
       return;
@@ -26,13 +31,15 @@ public:
     printBasicIR(location, disjunction);
   }
 
-private: 
+private:
   int counter = 0;
   Generator* generator;
   llvm::raw_ostream& out;
   const char* delimiter = "\\x";
 
-  //Visitor Helpers
+  llvm::DenseMap<OpKey, const char*> opMap;
+
+  // Visitor Helpers
   template <class... Ts>
   struct overloaded : Ts... {
     using Ts::operator()...;
@@ -49,14 +56,12 @@ private:
 
   void
   printLineNumber(llvm::Instruction* const inst) const {
-    //out.changeColor(llvm::raw_ostream::Colors::YELLOW);
+    //out.changeColor(llvm::raw_ostream::Colors::RED);
     if (const llvm::DILocation* debugLoc = inst->getDebugLoc()) {
-      out << "At " << debugLoc->getFilename() << " line "
-          << debugLoc->getLine() << "  " << *inst << "\n";
+      out << "At " << debugLoc->getFilename() << " line " << debugLoc->getLine()
+          << "  " << *inst << "\n";
     } else {
-      out << "At an unknown location"
-          << *inst
-          << "\n";
+      out << "At an unknown location" << *inst << "\n";
     }
     //out.changeColor(llvm::raw_ostream::Colors::WHITE);
   }
@@ -65,42 +70,44 @@ private:
   printTree(const Conjunct conjunct,
             const int disjunctCount,
             const int conjunctCount) const {
-    auto visitor = overloaded{
-        [&, this](ExprID exprID, const ConstantExprNode node) {
-          out << "\t" << exprID << delimiter << disjunctCount << delimiter
-              << conjunctCount;
-          if (node.constant) {
-            out << " [shape=box,label=\"" << *(node.constant) << "\"]\n";
-          } else {
-            out << " [shape=box,label=\""
-                << " nullptr "
-                << "\"]\n";
-          }
-        },
-        [&, this](ExprID exprID, const BinaryExprNode node) {
-          auto lhsID = node.lhs;
-          auto rhsID = node.rhs;
-          out << "\t" << exprID << delimiter << disjunctCount << delimiter
-              << conjunctCount << " -> { " << lhsID << delimiter
-              << disjunctCount << delimiter << conjunctCount << "; " << rhsID
-              << delimiter << disjunctCount << delimiter << conjunctCount
-              << " }\n";
-        },
-        [&, this](ExprID exprID, const ValueExprNode node) {
-          out << "\t" << exprID << delimiter << disjunctCount << delimiter
-              << conjunctCount << " [shape=box,label=\"" << *(node.value)
+    auto visitor = overloaded {
+      [&, this](ExprID exprID, const ConstantExprNode node) {
+        out << "\t" << exprID << delimiter << disjunctCount << delimiter
+            << conjunctCount;
+        if (node.constant) {
+          out << " [shape=box,label=\"" << *(node.constant) << "\"]\n";
+        } else {
+          out << " [shape=box,label=\""
+              << " nullptr "
               << "\"]\n";
-        }};
+        }
+      },
+      [&, this](ExprID exprID, const BinaryExprNode node) {
+        auto lhsID = node.lhs;
+        auto rhsID = node.rhs;
+        out << "\t" << exprID << delimiter << disjunctCount << delimiter
+            << conjunctCount << " -> { " << lhsID << delimiter
+            << disjunctCount << delimiter << conjunctCount << "; " << rhsID
+            << delimiter << disjunctCount << delimiter << conjunctCount
+            << " }\n";
+      },
+      [&, this](ExprID exprID, const ValueExprNode node) {
+        out << "\t" << exprID << delimiter << disjunctCount << delimiter
+            << conjunctCount << " [shape=box,label=\"" << *(node.value)
+            << "\"]\n";
+      }};
     generator->preOrderFor(conjunct, visitor);
   }
 
   void
-  printStateTrees(llvm::Instruction* const location, const Disjunction disjunction) {
+  printStateTrees(llvm::Instruction* const location,
+                  const Disjunction disjunction) {
     int disjunctCount = 0;
     out << "\nDigraph " << counter++ << " {\n"
         << "\tlabel = <";
     printLineNumber(location);
-    out << ">\n" << "\tlabelloc = \"t\";\n";
+    out << ">\n"
+        << "\tlabelloc = \"t\";\n";
     for (auto& disjunct : disjunction) {
       int conjunctCount = 0;
       for (auto& conjunct : disjunct) {
@@ -115,31 +122,35 @@ private:
   void
   printTreeIR(const Conjunct conjunct) const {
     auto visitor = overloaded {
-      [&,this](ExprID exprID, const ConstantExprNode node) {
-        //out.changeColor(llvm::raw_ostream::Colors::GREEN);
-        if (!node.constant) {
-          out << "nullptr ";
+      [&, this](ExprID exprID, const ConstantExprNode node) {
+        // out.changeColor(llvm::raw_ostream::Colors::GREEN);
+        if (node.constant) {
+          out << "( " << *(node.constant) << " )";
         } else {
-          out << *(node.constant);
+          out << "( " << exprID << " )";
         }
-        //out.changeColor(llvm::raw_ostream::Colors::WHITE);
+        // out.changeColor(llvm::raw_ostream::Colors::WHITE);
       },
-      [&,this](ExprID exprID, const BinaryExprNode node) {
-        //out.changeColor(llvm::raw_ostream::Colors::BLUE);
-        out << " " << node.op.opCode << " ";
-        //out.changeColor(llvm::raw_ostream::Colors::WHITE);
+      [&, this](ExprID exprID, const BinaryExprNode node) {
+        // out.changeColor(llvm::raw_ostream::Colors::BLUE);
+        if (auto it = opMap.find(node.op.opCode); it != opMap.end()) {
+          auto [first, opString] = *it;
+          out << " " << opString << " " ;
+        }
+        // out.changeColor(llvm::raw_ostream::Colors::WHITE);
       },
-      [&,this](ExprID exprID, const ValueExprNode node) {
-        //out.changeColor(llvm::raw_ostream::Colors::GREEN);
-        out << *(node.value);
-        //out.changeColor(llvm::raw_ostream::Colors::WHITE);
-      }
-    };
+      [&, this](ExprID exprID, const ValueExprNode node) {
+        // out.changeColor(llvm::raw_ostream::Colors::GREEN);
+        llvm::errs() << "Printing for " << exprID;
+        out << "( " << *(node.value) << " )";
+        // out.changeColor(llvm::raw_ostream::Colors::WHITE);
+      }};
     generator->inOrderFor(conjunct, visitor);
   }
 
   void
-  printBasicIR(llvm::Instruction* const location, const Disjunction disjunction) {
+  printBasicIR(llvm::Instruction* const location,
+               const Disjunction disjunction) {
     printLineNumber(location);
     bool firstDisjunct = true;
     for (auto& disjunct : disjunction) {
@@ -164,16 +175,24 @@ private:
     out << "\n";
   }
 
+  void
+  initializeMap() {
+    opMap.try_emplace(51, "icmp");
+    #define HANDLE(a,b,c) opMap.try_emplace(a, #b);
+    #include "OperatorStrings.def"
+  }
 
-//Digraph 00 {
-//
-//  label = <The <font color='red'><b>foo</b></font>,<br/> the <font point-size='20'>bar</font> and<br/> the <i>baz</i>>;
-//  labelloc = "t"; // place the label at the top (b seems to be default)
-//
-//  node [shape=plaintext]
-//
-//  FOO -> {BAR, BAZ};
-//}
+
+  // Digraph 00 {
+  //
+  //  label = <The <font color='red'><b>foo</b></font>,<br/> the <font
+  //  point-size='20'>bar</font> and<br/> the <i>baz</i>>; labelloc = "t"; //
+  //  place the label at the top (b seems to be default)
+  //
+  //  node [shape=plaintext]
+  //
+  //  FOO -> {BAR, BAZ};
+  //}
 };
 
 #endif

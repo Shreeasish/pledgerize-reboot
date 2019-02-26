@@ -29,6 +29,8 @@ public:
          constantExprCounter{ reservedCExprBits() } {
       constantSlab.emplace_back(ConstantExprNode{nullptr});
       constantSlab.emplace_back(ConstantExprNode{nullptr});
+      constantExprCounter++;
+      constantExprCounter++;
       leafTable.insert({nullptr, GetVacuousExprID()});
     }
 
@@ -145,7 +147,7 @@ public:
     assert((conjunctID & reservedBExprBits()) && "ConjunctID is not a BinaryExpr");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
       auto index = conjunctID & (~reservedBExprBits());
-      return index - 1; // Start from 0 // Expr Counters start from 1
+      return index; // Start from 0 // Expr Counters start from 1
     };
     return binarySlab[asIndex(conjunctID)];
   }
@@ -165,7 +167,7 @@ public:
     assert((conjunctID & reservedVExprBits()) && "ConjunctID is not a ValueExprID");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
       auto index = conjunctID & (~reservedVExprBits());
-      return index - 1; // Start from 0 // Expr Counters start from 1
+      return index; // Start from 0 // Expr Counters start from 1
     };
     return valueSlab[asIndex(conjunctID)];
   }
@@ -426,26 +428,23 @@ private:
     assert(constant != nullptr);
 
     constantSlab.emplace_back(constant);
-    constantExprCounter++;
     leafTable.insert({constant, constantExprCounter});
-    return constantExprCounter;
+    return constantExprCounter++;
   }
 
   ExprID
   GenerateValueExprID(llvm::Value* const value) {
     valueSlab.emplace_back(value);
-    valueExprCounter++;
     leafTable.insert({value, valueExprCounter});
-    return valueExprCounter;
+    return valueExprCounter++;
   }
 
   ExprID
   GenerateBinaryExprID(ExprKey key, llvm::Instruction* const instruction) {
     binarySlab.emplace_back(BinaryExprNode{
         std::get<0>(key), std::get<1>(key), std::get<2>(key), instruction});
-    binaryExprCounter++;
     exprTable.insert({key, binaryExprCounter});
-    return binaryExprCounter;
+    return binaryExprCounter++;
   }
 
   ExprID
@@ -455,6 +454,7 @@ private:
     auto*  rhs = inst->getOperand(1);
     auto lhsID = GetOrCreateExprID(lhs);
     auto rhsID = GetOrCreateExprID(rhs);
+
     ExprKey key{lhsID, inst->getOpcode(), rhsID};
 
     if (auto found = exprTable.find(key); found != exprTable.end()) {
