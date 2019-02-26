@@ -1,0 +1,87 @@
+#ifndef OPERATORMAP_H
+#define OPERATORMAP_H
+
+HANDLE(1, Ret, ReturnInst)
+HANDLE(2, Br, BranchInst)
+HANDLE(3, Switch, SwitchInst)
+HANDLE(4, IndirectBr, IndirectBrInst)
+HANDLE(5, Invoke, InvokeInst)
+HANDLE(6, Resume, ResumeInst)
+HANDLE(7, Unreachable, UnreachableInst)
+HANDLE(8, CleanupRet, CleanupReturnInst)
+HANDLE(9, CatchRet, CatchReturnInst)
+HANDLE(10, CatchSwitch, CatchSwitchInst)
+
+// Standard binary operators...
+HANDLE(11, Add, BinaryOperator)
+HANDLE(12, FAdd, BinaryOperator)
+HANDLE(13, Sub, BinaryOperator)
+HANDLE(14, FSub, BinaryOperator)
+HANDLE(15, Mul, BinaryOperator)
+HANDLE(16, FMul, BinaryOperator)
+HANDLE(17, UDiv, BinaryOperator)
+HANDLE(18, SDiv, BinaryOperator)
+HANDLE(19, FDiv, BinaryOperator)
+HANDLE(20, URem, BinaryOperator)
+HANDLE(21, SRem, BinaryOperator)
+HANDLE(22, FRem, BinaryOperator)
+
+// Logical operators (integer operands)
+HANDLE(23, Shl, BinaryOperator)   // Shift left  (logical)
+HANDLE(24, LShr, BinaryOperator)  // Shift right (logical)
+HANDLE(25, AShr, BinaryOperator)  // Shift right (arithmetic)
+HANDLE(26, And, BinaryOperator)
+HANDLE(27, Or, BinaryOperator)
+HANDLE(28, Xor, BinaryOperator)
+
+// Memory operators...
+HANDLE(29, Alloca, AllocaInst)  // Stack management
+HANDLE(30, Load, LoadInst)      // Memory manipulation instrs
+HANDLE(31, Store, StoreInst)
+HANDLE(32, GetElementPtr, GetElementPtrInst)
+HANDLE(33, Fence, FenceInst)
+HANDLE(34, AtomicCmpXchg, AtomicCmpXchgInst)
+HANDLE(35, AtomicRMW, AtomicRMWInst)
+
+// Cast operators ...
+// NOTE: The order matters here because CastInst::isEliminableCastPair
+// NOTE: (see Instructions.cpp) encodes a table based on this ordering.
+HANDLE(36, Trunc, TruncInst)                  // Truncate integers
+HANDLE(37, ZExt, ZExtInst)                    // Zero extend integers
+HANDLE(38, SExt, SExtInst)                    // Sign extend integers
+HANDLE(39, FPToUI, FPToUIInst)                // floating point -> UInt
+HANDLE(40, FPToSI, FPToSIInst)                // floating point -> SInt
+HANDLE(41, UIToFP, UIToFPInst)                // UInt -> floating point
+HANDLE(42, SIToFP, SIToFPInst)                // SInt -> floating point
+HANDLE(43, FPTrunc, FPTruncInst)              // Truncate floating point
+HANDLE(44, FPExt, FPExtInst)                  // Extend floating point
+HANDLE(45, PtrToInt, PtrToIntInst)            // Pointer -> Integer
+HANDLE(46, IntToPtr, IntToPtrInst)            // Integer -> Pointer
+HANDLE(47, BitCast, BitCastInst)              // Type cast
+HANDLE(48, AddrSpaceCast, AddrSpaceCastInst)  // addrspace cast
+
+HANDLE(49, CleanupPad, CleanupPadInst)
+HANDLE(50, CatchPad, CatchPadInst)
+
+// Other operators...
+HANDLE(51, ICmp, ICmpInst)        // Integer comparison instruction
+HANDLE(52, FCmp, FCmpInst)        // Floating point comparison instr.
+HANDLE(53, PHI, PHINode)          // PHI node instruction
+HANDLE(54, Call, CallInst)        // Call a function
+HANDLE(55, Select, SelectInst)    // select instruction
+HANDLE(56, UserOp1, Instruction)  // May be used internally in a pass
+HANDLE(57, UserOp2, Instruction)  // Internal to passes only
+HANDLE(58, VAArg, VAArgInst)      // vaarg instruction
+HANDLE(59, ExtractElement, ExtractElementInst)  // extract from vector
+HANDLE(60, InsertElement, InsertElementInst)    // insert into vector
+HANDLE(61, ShuffleVector, ShuffleVectorInst)    // shuffle two vectors.
+HANDLE(62, ExtractValue, ExtractValueInst)      // extract from aggregate
+HANDLE(63, InsertValue, InsertValueInst)        // insert into aggregate
+HANDLE(64, LandingPad, LandingPadInst)          // Landing pad instruction.
+
+HANDLE(100, alias, x)
+HANDLE(101, switchOp, x)
+HANDLE(102, loadOp, x)
+HANDLE(103, lastOp, x)
+
+#endif
