@@ -291,10 +291,21 @@ public:
     }
     return localDisjunction;
   }
-  
+
   bool
   isUsed(llvm::Value* const value) const {
-    return value && leafTable.count(value) > 0;
+    llvm::errs() << "\n Checking use for :" << *value;
+    bool ops =
+        std::any_of(value->use_begin(), value->use_end(), [this](const auto& use) {
+          bool temp = leafTable.count(use.get());
+          llvm::errs() << "\nUse" << *(use.get());
+          if (temp) {
+            llvm::errs() << "\nFound use for" << *(use.get());
+          }
+          return temp;
+          //return leafTable.count(use.get());
+        });
+    return value && leafTable.count(value) > 0 && ops;
   }
 
   bool

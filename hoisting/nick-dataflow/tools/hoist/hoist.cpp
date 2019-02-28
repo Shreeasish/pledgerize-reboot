@@ -237,13 +237,62 @@ private:
 class DisjunctionTransfer {
 private:
   bool
-  handleCallSite(const llvm::CallSite& cs, DisjunctionState& state, const Context& context) {
+  handleBrOrSwitch(llvm::Instruction* inst, bool handled) {
+    return !handled && (llvm::isa<llvm::BranchInst>(inst) 
+      || llvm::isa<llvm::SwitchInst>(inst));
+  }
+
+  bool
+  handlePhiBackEdges(llvm::Value* value, DisjunctionState& state, bool handled) {
+    if (handled) {
+      return true;
+    }
+
+    auto* phi = llvm::dyn_cast<llvm::PHINode>(value);
+    if (!phi) {
+      return false;
+    }
+    auto isFromBackEdge =
+      [&phi](const llvm::BasicBlock* incomingBlock) -> bool {
+      auto* parentBlock    = phi->getParent();
+      auto* parentFunction = parentBlock->getParent();
+      auto backEdges       = getBackedges(parentFunction);
+      auto foundIt         = std::find_if(
+          backEdges.begin(), backEdges.end(), [&](const auto& bbPair) {
+            return bbPair.first == incomingBlock
+                   && bbPair.second == parentBlock;
+          });
+      return foundIt != backEdges.end();
+    };
+
+    bool isLoopPhi = false;
+    for (auto& incomingBlock : phi->blocks()) {
+      isLoopPhi |= isFromBackEdge(incomingBlock);
+    }
+
+    if(!isLoopPhi) {
+      return true;
+    }
+    llvm::errs() << "\n Dropping loop conjunct";
+    auto phiExprID = generator->GetOrCreateExprID(value);
+    state[nullptr] = generator->pushToTrue(state[nullptr], phiExprID);
+    state[nullptr] = state[nullptr].simplifyImplication();
+
+    return true;
+  }
+
+  bool
+  handleCallSite(const llvm::CallSite& cs, DisjunctionState& state, const Context& context, bool handled) {
+    if (handled) {
+      return true;
+    }
+    auto* inst = cs.getInstruction();
     if (!cs.getInstruction()) {
       return false;
     }
-    const auto* fun = getCalledFunction(cs);
+    auto* const fun = getCalledFunction(cs);
     if (!fun) {
-      return false;
+      return true;
     }
     llvm::errs() << "\tFrom CallSite: " << fun->getName();
     if (fun->getName().startswith("llvm.")) {
@@ -258,8 +307,17 @@ private:
       disjunction.addDisjunct(disjunct);
       state[nullptr] = disjunction;
       return true;
-    } 
-    if (fun->isDeclaration()) {
+    }
+
+    if (fun->isDeclaration() && isUnknown(fun)) {
+      for (auto& arg : cs.args()){ 
+        if (!generator->isUsed(arg)) {
+          continue;
+        }
+        llvm::errs() << "Dropping Unknown for" << *arg;
+        auto oldExprID = generator->GetOrCreateExprID(arg);
+        state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      }
       return true;
     }
 
@@ -286,12 +344,132 @@ private:
     }
     return true;
   }
+  
+  
+  bool
+  handleGep(llvm::Value* const value, DisjunctionState& state, bool handled) {
+    // Possibly can be guarded by isUsed
+    if (handled) {
+      return true;
+    }
+    auto* gep = llvm::dyn_cast<llvm::GetElementPtrInst>(value);
+    if (!gep) {
+      return false;
+    }
+    auto oldExprID = generator->GetOrCreateExprID(value);
+    auto gepExprID = generator->GetOrCreateExprID(gep);
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, gepExprID);
+    return true;
+  }
+
+  auto
+  seperateLoads(llvm::StoreInst* const storeInst, std::vector<LoadInst*>& loads) {
+    std::vector<llvm::LoadInst*> otherLoads;
+    std::vector<llvm::LoadInst*> strongLoads;
+
+    auto distill = [&] (llvm::LoadInst* loadInst) {
+      auto aliasResult = getAliasType(storeInst, loadInst);
+      if (aliasResult == AliasResult::MustAlias) {
+        strongLoads.push_back(loadInst);
+      } else if (aliasResult == AliasResult::NoAlias) {
+        return; //Discard NoAliases
+      } else {
+        otherLoads.push_back(loadInst);
+      }
+    };
+
+    for (auto* loadInst : loads) {
+      distill(loadInst);
+    }
+    return std::make_pair(strongLoads, otherLoads);
+  }
 
   bool
-  handleBinaryOperator(llvm::Value* const value, DisjunctionState& state) {
+  handleStore(llvm::Value* const value,
+              DisjunctionState& state,
+              const Context context,
+              bool handled) {
+    if (handled) {
+      return true;
+    }
+
+    auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
+    if (!storeInst) {
+      return false;
+    }
+    std::vector<llvm::LoadInst*> asLoads = getLoads(state);
+    auto [strongLoads, weakLoads]        = seperateLoads(storeInst, asLoads);
+
+    auto localDisjunction = state[nullptr];
+    for (auto* strongLoad : strongLoads) {
+      localDisjunction = strongUpdate(localDisjunction, strongLoad, storeInst);
+    }
+    for (auto weakLoad : weakLoads) {
+      localDisjunction = weakUpdate(localDisjunction, weakLoad, storeInst);
+    }
+    return true;
+  }
+
+
+  bool
+  handleRet(llvm::Value* const value,
+            DisjunctionState& state,
+            const Context context,
+            bool handled) {
+    if (handled) {
+      return true;
+    }
+    auto* ret = llvm::dyn_cast<llvm::ReturnInst>(value);
+    if (!ret) {
+      return false;
+    }
+    state[nullptr] = state[ret];
+    llvm::Value* callAsValue = nullptr;
+    for (auto* inst : context) {
+      if (inst != nullptr) {
+        callAsValue = llvm::dyn_cast<llvm::Value>(inst);
+      }
+    }
+
+    if (callAsValue == nullptr) {
+      return true;
+    }
+    auto* retValue = ret->getReturnValue();
+    auto newExprID = generator->GetOrCreateExprID(retValue);
+    auto oldExprID = generator->GetOrCreateExprID(callAsValue);
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
+    return true;
+  }
+
+  bool
+  handleLoad(llvm::Value* const value, DisjunctionState& state, bool handled) {
+    if (handled) {
+      return true;
+    }
+    auto* loadInst = llvm::dyn_cast<llvm::LoadInst>(value);
+    if (!loadInst) {
+      return false;
+    }
+    if (!generator->isUsed(value)) {
+      return true;
+    }
+    auto oldExprID = generator->GetOrCreateExprID(value);
+    auto newExprID = generator->GetOrCreateExprID(loadInst);
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
+    return true;
+  }
+
+  bool
+  handleBinaryOperator(llvm::Value* const value, DisjunctionState& state, bool handled) {
+    if (handled) {
+      return true;
+    }
     auto* const binOp = llvm::dyn_cast<llvm::BinaryOperator>(value);
     if (!binOp) {
       return false;
+    }
+    if (!generator->isUsed(value)) {
+      return true;
     }
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto exprID    = generator->GetOrCreateExprID(binOp);
@@ -303,12 +481,17 @@ private:
   }
 
   bool
-  handleCmpInst(llvm::Value* const value, DisjunctionState& state) {
+  handleCmpInst(llvm::Value* const value, DisjunctionState& state, bool handled) {
+    if (handled) {
+      return true;
+    }
     auto cmpInst = llvm::dyn_cast<llvm::CmpInst>(value);
     if (!cmpInst) {
       return false;
     }
-
+    if (!generator->isUsed(value)) {
+      return true;
+    }
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto exprID = generator->GetOrCreateExprID(cmpInst);
     if (oldExprID == exprID) {
@@ -318,16 +501,44 @@ private:
     return true;
   }
 
-  bool
-  handleLoad(llvm::Value* const value, DisjunctionState& state) {
-    auto* loadInst = llvm::dyn_cast<llvm::LoadInst>(value);
-    if (!loadInst) {
-      return false;
+
+  void
+  handleUnknown(llvm::Value* const value, DisjunctionState& state, bool handled) {
+    if (handled) {
+      return;
     }
+    llvm::errs() << "Unknown at " << *value;
+    dropOperands(value, state);
+    if (!generator->isUsed(value)) {
+      return;
+    }
+    auto oldLeafTableSize = generator->getLeafTableSize();
+
     auto oldExprID = generator->GetOrCreateExprID(value);
-    auto newExprID = generator->GetOrCreateExprID(loadInst);
-    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
+    llvm::errs() << "Dropping Unknown " << oldExprID;
+    state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+    assert(oldLeafTableSize == generator->getLeafTableSize() && "New Value at Unknown");
+  }
+
+  /// Helpers ///
+  bool
+  isUnknown(llvm::Function* const fun) {
+    //TODO: STUB
     return true;
+  }
+
+  void
+  dropOperands(const llvm::Value* value, DisjunctionState& state) {
+    //Does not work for callsites. Fix later
+    llvm::errs() << "Dropping operands of " << *value;
+    for (auto& op : value->uses()) {
+      if (!generator->isUsed(op.get())) {
+        continue;
+      }
+      llvm::errs() << "Dropping Unknown for" << *(op.get());
+      auto oldExprID = generator->GetOrCreateExprID(op.get());
+      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+    }
   }
 
   std::vector<llvm::LoadInst*>
@@ -410,28 +621,6 @@ private:
     return getMemSSAResults(storeInst, loadInst);
   }
 
-  auto
-  seperateLoads(llvm::StoreInst* const storeInst, std::vector<LoadInst*>& loads) {
-    std::vector<llvm::LoadInst*> otherLoads;
-    std::vector<llvm::LoadInst*> strongLoads;
-
-    auto distill = [&] (llvm::LoadInst* loadInst) {
-      auto aliasResult = getAliasType(storeInst, loadInst);
-      if (aliasResult == AliasResult::MustAlias) {
-        strongLoads.push_back(loadInst);
-      } else if (aliasResult == AliasResult::NoAlias) {
-        return; //Discard NoAliases
-      } else {
-        otherLoads.push_back(loadInst);
-      }
-    };
-
-    for (auto* loadInst : loads) {
-      distill(loadInst);
-    }
-    return std::make_pair(strongLoads, otherLoads);
-  }
-
   Disjunction
   strongUpdate(const Disjunction& disjunction,
                llvm::LoadInst* const loadInst,
@@ -476,135 +665,10 @@ private:
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
 
-  bool
-  handleStore(llvm::Value* const value,
-              DisjunctionState& state,
-              const Context context) {
-    auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
-    if (!storeInst) {
-      return false;
-    }
-    std::vector<llvm::LoadInst*> asLoads = getLoads(state);
-    auto [strongLoads, weakLoads]        = seperateLoads(storeInst, asLoads);
-
-    auto localDisjunction = state[nullptr];
-    for (auto* strongLoad : strongLoads) {
-      localDisjunction = strongUpdate(localDisjunction, strongLoad, storeInst);
-    }
-    for (auto weakLoad : weakLoads) {
-      localDisjunction = weakUpdate(localDisjunction, weakLoad, storeInst);
-    }
-    //state[nullptr] = localDisjunction;
-    //llvm::errs() << "\n Printing at store";
-    //state[nullptr].print(llvm::errs());
-    //state[nullptr].simplifyComplements()
-    //              .simplifyRedundancies()
-    //              .simplifyImplication();
-    //llvm::errs() << "\n Printing at store after simplification";
-    //state[nullptr].print(llvm::errs());
-    return true;
-  }
-
-  bool
-  handlePhiBackEdges(llvm::Value* value, DisjunctionState& state) {
-    auto* phi = llvm::dyn_cast<llvm::PHINode>(value);
-    if (!phi) {
-      return false;
-    }
-    auto isFromBackEdge =
-      [&phi](const llvm::BasicBlock* incomingBlock) -> bool {
-      auto* parentBlock    = phi->getParent();
-      auto* parentFunction = parentBlock->getParent();
-      auto backEdges       = getBackedges(parentFunction);
-      auto foundIt         = std::find_if(
-          backEdges.begin(), backEdges.end(), [&](const auto& bbPair) {
-            return bbPair.first == incomingBlock
-                   && bbPair.second == parentBlock;
-          });
-      return foundIt != backEdges.end();
-    };
-
-    bool isLoopPhi = false;
-    for (auto& incomingBlock : phi->blocks()) {
-      isLoopPhi |= isFromBackEdge(incomingBlock);
-    }
-
-    if(!isLoopPhi) {
-      return true;
-    }
-    llvm::errs() << "\n Dropping loop conjunct";
-    auto phiExprID = generator->GetOrCreateExprID(value);
-    state[nullptr] = generator->pushToTrue(state[nullptr], phiExprID);
-    state[nullptr] = state[nullptr].simplifyImplication();
-
-    return true;
-  }
-
-  bool
-  handleGep(llvm::Value* const value, DisjunctionState& state) {
-    auto* gep = llvm::dyn_cast<llvm::GetElementPtrInst>(value);
-    if (!gep) {
-      return false;
-    }
-    auto oldExprID = generator->GetOrCreateExprID(value);
-    auto gepExprID = generator->GetOrCreateExprID(gep);
-    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, gepExprID);
-    return true;
-  }
-
-  bool
-  handleRet(llvm::Value* const value, DisjunctionState& state, const Context context) {
-    auto* ret = llvm::dyn_cast<llvm::ReturnInst>(value);
-    if (!ret) {
-      return false;
-    }
-    //llvm::errs() << "\nPrinting return state";
-    //state[ret].print(llvm::errs());
-    //llvm::errs() << "\nPrinting return state";
-
-    state[nullptr] = state[ret];
-    llvm::Value* callAsValue = nullptr;
-    for (auto* inst : context) {
-      if (inst != nullptr) {
-        callAsValue = llvm::dyn_cast<llvm::Value>(inst);
-      }
-    }
-
-    if (!generator->isUsed(callAsValue)) {
-      return true;
-    }
-
-
-    auto* retValue = ret->getReturnValue();
-    auto newExprID = generator->GetOrCreateExprID(retValue);
-    auto oldExprID = generator->GetOrCreateExprID(callAsValue);
-    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
-
-    return true;
-  }
-
-  void
-  handleUnknown(llvm::Value* const value, DisjunctionState& state) {
-    if (!generator->isUsed(value)) {
-      return;
-    }
-    auto oldLeafTableSize = generator->getLeafTableSize();
-
-    auto oldExprID = generator->GetOrCreateExprID(value);
-    llvm::errs() << "Dropping Unknown " << oldExprID;
-    state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-
-    assert(oldLeafTableSize == generator->getLeafTableSize() && "New Value at Unknown");
-  }
-
 public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
     auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
-    //llvm::outs() << "\nIn function " << inst->getFunction()->getName()
-    //             << " \nBefore";
-    //llvm::outs() << *inst;
-
     llvm::errs() << "\nBefore------------------------------------";
     llvm::errs() << "\nIn function " << inst->getFunction()->getName()
                  << " \nBefore";
@@ -614,44 +678,43 @@ public:
     llvm::errs() << "\n------------------------------------------";
 
     bool handled = false;
-    handled |= handlePhiBackEdges(&value, state);
-    handled |= handleCallSite(llvm::CallSite{&value}, state, context);
-    handled |= handleStore(&value, state, context);
-    handled |= handleGep(&value, state);
-    handled |= handleRet(&value, state, context);
-
-    if (handled) {
-      llvm::errs() << "\nPrinting Before Simplifications";
-      state[nullptr].print(llvm::errs());
-      state[nullptr].simplifyComplements()
-                    .simplifyRedundancies()
-                    .simplifyImplication();
-      //generator->dumpState();
-      printer->printIR(inst, state[nullptr]);
-      return;
-    }
-    if (!generator->isUsed(&value)) {
-      llvm::errs() << "\nPrinting Before Simplifications";
-      state[nullptr].print(llvm::errs());
-      //generator->dumpState();
-      printer->printIR(inst, state[nullptr]);
-      return;
-    }
-    handled |= handleLoad(&value, state);
-    handled |= handleBinaryOperator(&value, state);
-    handled |= handleCmpInst(&value, state);
-
-    if (!handled) {
-      handleUnknown(&value, state);
-    }
-    //generator->dumpState();
-
-    llvm::errs() << "\nPrinting Before Simplifications";
+    handled |= handleBrOrSwitch(inst, handled);
+    handled |= handlePhiBackEdges(&value, state, handled);
+    handled |= handleCallSite(llvm::CallSite{&value}, state, context, handled);
+    handled |= handleStore(&value, state, context, handled);
+    handled |= handleGep(&value, state, handled);
+    handled |= handleRet(&value, state, context, handled);
+    // Check use
+    handled |= handleLoad(&value, state, handled);
+    handled |= handleBinaryOperator(&value, state, handled);
+    handled |= handleCmpInst(&value, state, handled);
+    handleUnknown(&value, state, handled);
     state[nullptr].print(llvm::errs());
     state[nullptr].simplifyComplements()
                   .simplifyRedundancies()
                   .simplifyImplication();
+    //generator->dumpState();
     printer->printIR(inst, state[nullptr]);
+    return;
+    
+    //llvm::errs() << "At transfer";
+    //if (!generator->isUsed(&value)) {
+    //  //state[nullptr].print(llvm::errs());
+    //  //generator->dumpState();
+    //  printer->printIR(inst, state[nullptr]);
+    //  return;
+    //}
+    //if (!handled) {
+    //  llvm::errs() << "\nNot Handled " << value;
+    //}
+    ////generator->dumpState();
+
+    //llvm::errs() << "\nPrinting Before Simplifications";
+    //state[nullptr].print(llvm::errs());
+    //state[nullptr].simplifyComplements()
+    //              .simplifyRedundancies()
+    //              .simplifyImplication();
+    //printer->printIR(inst, state[nullptr]);
     return;
   }
 };

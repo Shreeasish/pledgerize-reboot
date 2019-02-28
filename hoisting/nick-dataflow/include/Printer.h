@@ -156,19 +156,30 @@ private:
     for (auto& disjunct : disjunction) {
       if (firstDisjunct) {
         out << "{";
+        firstDisjunct = false;
       } else {
         out << "OR \n{";
       }
       bool firstConjunct = true;
       for (auto& conjunct : disjunct) {
         if (firstConjunct) {
-          out << "(";
+          if (conjunct.notNegated) {
+            out << " ";
+          } else {
+            out << "-";
+          }
+          out << "[";
           firstConjunct = false;
         } else {
-          out << " AND (";
+          if (conjunct.notNegated) {
+            out << " ";
+          } else {
+            out << "-";
+          }
+          out << " AND [";
         }
         printTreeIR(conjunct);
-        out << ")";
+        out << "]";
       }
       out << "}\n";
     }
@@ -177,7 +188,6 @@ private:
 
   void
   initializeMap() {
-    opMap.try_emplace(51, "icmp");
     #define HANDLE(a,b,c) opMap.try_emplace(a, #b);
     #include "OperatorStrings.def"
   }
