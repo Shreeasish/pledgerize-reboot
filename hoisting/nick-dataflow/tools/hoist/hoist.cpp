@@ -299,7 +299,7 @@ private:
       return true;
     }
 
-    if (fun->getName().startswith("printf")) {
+    if (fun->getName().startswith("wait")) {
       auto vacExpr    = generator->GetVacuousExprID();
       Disjunction disjunction{};
       Disjunct disjunct{};
@@ -437,11 +437,11 @@ private:
         callAsValue = llvm::dyn_cast<llvm::Value>(inst);
       }
     }
-
-    if (callAsValue == nullptr) {
+    assert(callAsValue && "CallAsValue is not a nullptr");
+    auto* retValue = ret->getReturnValue();
+    if (!retValue) {
       return true;
     }
-    auto* retValue = ret->getReturnValue();
     auto newExprID = generator->GetOrCreateExprID(retValue);
     auto oldExprID = generator->GetOrCreateExprID(callAsValue);
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
