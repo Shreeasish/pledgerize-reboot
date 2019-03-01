@@ -164,19 +164,17 @@ private:
       for (auto& conjunct : disjunct) {
         if (firstConjunct) {
           if (conjunct.notNegated) {
-            out << " ";
+            out << " [";
           } else {
-            out << "-";
+            out << "-[";
           }
-          out << "[";
           firstConjunct = false;
         } else {
           if (conjunct.notNegated) {
-            out << " ";
+            out << " AND  [";
           } else {
-            out << "-";
+            out << " AND -[";
           }
-          out << " AND [";
         }
         printTreeIR(conjunct);
         out << "]";

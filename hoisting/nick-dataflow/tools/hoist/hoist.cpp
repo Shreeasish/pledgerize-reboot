@@ -176,7 +176,7 @@ public:
       //llvm::errs() << "\n Before phi";
       //toMerge.print(llvm::errs());
       //llvm::errs() << "\n After  phi";
-      destState.print(llvm::errs());
+      //destState.print(llvm::errs());
       return handle(branchOrSwitch, destState, destination);
     };
     return edgeOp(toMerge);
@@ -392,21 +392,28 @@ private:
     if (handled) {
       return true;
     }
-
     auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(value);
     if (!storeInst) {
       return false;
     }
+    llvm::errs() << "\n Handling store at " << *value;
     std::vector<llvm::LoadInst*> asLoads = getLoads(state);
     auto [strongLoads, weakLoads]        = seperateLoads(storeInst, asLoads);
 
     auto localDisjunction = state[nullptr];
     for (auto* strongLoad : strongLoads) {
-      localDisjunction = strongUpdate(localDisjunction, strongLoad, storeInst);
+      llvm::errs() << "Strong load for " << *strongLoad;
+      state[nullptr] = strongUpdate(localDisjunction, strongLoad, storeInst);
     }
     for (auto weakLoad : weakLoads) {
-      localDisjunction = weakUpdate(localDisjunction, weakLoad, storeInst);
+      llvm::errs() << "Weak load for " << *weakLoad;
+      state[nullptr] = weakUpdate(localDisjunction, weakLoad, storeInst);
     }
+    //llvm::errs() << "\nlocalDisjunction";
+    //localDisjunction.print(llvm::errs());
+
+    //llvm::errs() << "\nState-nullptr";
+    //state[nullptr].print(llvm::errs());
     return true;
   }
 

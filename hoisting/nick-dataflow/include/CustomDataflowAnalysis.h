@@ -537,12 +537,21 @@ private:
       //llvm::errs() << "\nvalueStatePair.second ";
       //valueStatePair.second.print(llvm::errs());
       //llvm::errs() << "\ndestination " << *destination;
+      
+      if (valueStatePair.first) {
+        llvm::errs() << "\nvalueStatePair.first " << *valueStatePair.first;
+      } else {
+        llvm::errs() << "\nvalueStatePair.first nullptr";
+      }
       auto temp =
           edgeTransformer(valueStatePair.second, branchAsValue, destination, isSame);
-      auto [found, newlyAdded] = destinationState.insert({nullptr,temp});
+      auto [found, newlyAdded] = destinationState.insert({valueStatePair.first,temp});
+      llvm::errs() << "\n after transform temp ";
+      temp.print(llvm::errs());
       if (!newlyAdded) {
-      found->second
-          = meet({found->second, temp});
+        found->second = meet({found->second, temp});
+        llvm::errs() << "\n Suspect ";
+        found->second.print(llvm::errs());
       }
     }
   }
