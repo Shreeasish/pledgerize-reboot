@@ -294,7 +294,7 @@ private:
     if (!fun) {
       return true;
     }
-    llvm::errs() << "\tFrom CallSite: " << fun->getName();
+    llvm::errs() << "\tFrom CallSite: " << fun->getName() << " opcode" << inst->getOpcode();
     if (fun->getName().startswith("llvm.")) {
       return true;
     }
@@ -321,6 +321,7 @@ private:
       return true;
     }
 
+    // CallSites have arguments, functions have paramaters
     state[nullptr] = state[cs.getInstruction()];
     using argParamPair = std::pair<llvm::Value*, llvm::Value*>;
     std::vector<argParamPair> argPairs;
@@ -334,6 +335,11 @@ private:
     };
 
     auto rewritePair = [&](auto* arg, auto* param) {
+      llvm::errs() << "\nRewriting callsite arg " << *arg 
+                   << "\nwith function param " << *param;
+      if (llvm::dyn_cast<llvm::ConstantExpr>(arg)) {
+        llvm::errs () << "\t Found gep as operand";
+      }
       auto argExprID   = generator->GetOrCreateExprID(arg);
       auto paramExprID = generator->GetOrCreateExprID(param);
       return generator->rewrite(state[nullptr], paramExprID, argExprID);
@@ -430,18 +436,24 @@ private:
     if (!ret) {
       return false;
     }
-    state[nullptr] = state[ret];
     llvm::Value* callAsValue = nullptr;
     for (auto* inst : context) {
       if (inst != nullptr) {
         callAsValue = llvm::dyn_cast<llvm::Value>(inst);
       }
     }
-    assert(callAsValue && "CallAsValue is not a nullptr");
+    if (!callAsValue) {
+      return true;
+    }
+    llvm::errs() << "State before pulling context info";
+    state[nullptr].print(llvm::errs());
+    assert(state[nullptr].isEmpty() || !state[nullptr].isEmpty() && state[ret].isEmpty());
+    state[nullptr] = state[ret]; 
     auto* retValue = ret->getReturnValue();
     if (!retValue) {
       return true;
     }
+
     auto newExprID = generator->GetOrCreateExprID(retValue);
     auto oldExprID = generator->GetOrCreateExprID(callAsValue);
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
@@ -701,7 +713,7 @@ public:
                   .simplifyRedundancies()
                   .simplifyImplication();
     //generator->dumpState();
-    printer->printIR(inst, state[nullptr]);
+    //printer->printIR(inst, state[nullptr]);
     return;
     
     //llvm::errs() << "At transfer";
@@ -756,7 +768,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 
   generator = make_unique<Generator>(Generator{});
   resolver  = make_unique<IndirectCallResolver>(IndirectCallResolver{m});
-  printer   = make_unique<Printer>(generator.get(), llvm::outs());
+  printer   = make_unique<Printer>(generator.get(), llvm::outs(), m);
 
 
   for (auto& f : m) {
@@ -790,8 +802,21 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   //AnalysisPackage package;
   //package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
   //libCHandlers   = getLibCHandlerMap(package);
-  auto results  = analysis.computeDataflow();
+  
+  auto getLocationAndState = [&](llvm::Function* function, auto functionResults) {
+    auto* insertionPt = &*(function->getEntryBlock().getFirstInsertionPt());
+    auto&  state = functionResults[insertionPt][nullptr];
+    return std::make_pair(insertionPt, state);
+  };
+
   generator->dumpState();
+  auto results  = analysis.computeDataflow();
+  for (auto& [context, contextResults] : results) {
+    for (auto& [function, functionResults] : contextResults) {
+      auto [loc, state] = getLocationAndState(function, functionResults);
+      printer->printIR(loc, state);
+    }
+  }
 
   return false;
 }

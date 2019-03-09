@@ -4,13 +4,19 @@
 #include "ConditionList.h"
 #include "Generator.h"
 
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/Transforms/Utils/ModuleUtils.h"
+
 #include <unordered_map>
 #include <string>
 
 
 class Printer {
 public:
-  Printer(Generator* g, llvm::raw_ostream& out) : generator{g}, out{out} {
+  Printer(Generator* g, llvm::raw_ostream& out, llvm::Module& m) 
+    : generator{g}, out{out}, module{m} {
     initializeMap();
   }
 
@@ -29,12 +35,14 @@ public:
       return;
     }
     printBasicIR(location, disjunction);
+    //printCall(location, disjunction);
   }
 
 private:
   int counter = 0;
   Generator* generator;
   llvm::raw_ostream& out;
+  llvm::Module& module;
   const char* delimiter = "\\x";
 
   llvm::DenseMap<OpKey, const char*> opMap;
@@ -183,6 +191,17 @@ private:
     }
     out << "\n";
   }
+
+  void
+  printCall(llvm::Instruction* const location,
+            const Disjunction disjunction) {
+    auto& context  = module.getContext();
+    auto* voidTy  = llvm::Type::getVoidTy(context);
+    auto* dropFunc = module.getOrInsertFunction("PlEdGeRiZe_drop", voidTy);
+
+    llvm::IRBuilder<> builder(location);
+    builder.CreateCall(dropFunc);
+  } 
 
   void
   initializeMap() {

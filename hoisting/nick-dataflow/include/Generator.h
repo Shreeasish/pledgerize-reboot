@@ -58,6 +58,30 @@ public:
   }
 
   ExprID
+  GetOrCreateExprID(llvm::Value* const value) {
+    assert(value != nullptr);
+    if (auto* constant = llvm::dyn_cast<llvm::Constant>(value)) {
+      return GetOrCreateExprID(constant);
+    }
+    if (auto found = leafTable.find(value); found != leafTable.end()) {
+      return found->second;
+    } //TODO: Refactor to function
+    return GenerateValueExprID(value);
+  }
+
+  ExprID
+  GetOrCreateExprID(llvm::Constant* const constant) {
+    assert(constant != nullptr);
+    if (auto* asGepOp  = llvm::dyn_cast<llvm::GEPOperator>(constant)) {
+      return GetOrCreateExprID(asGepOp);
+    }
+    if (auto found = leafTable.find(constant); found != leafTable.end()) {
+      return found->second;
+    }
+    return GenerateConstantExprID(constant);
+  }
+
+  ExprID
   GetOrCreateExprID(ExprKey key, llvm::Instruction* const instruction) {
     if (auto found = exprTable.find(key); found != exprTable.end()){
       return found->second;
@@ -77,27 +101,23 @@ public:
   }
 
   ExprID
-  GetOrCreateExprID(llvm::Value* const value) {
-    assert(value != nullptr);
-    if (auto found = leafTable.find(value); found != leafTable.end()) {
-      return found->second;
-    }
-    if (llvm::isa<llvm::Constant>(value)) {
-      return GenerateConstantExprID(llvm::dyn_cast<llvm::Constant>(value));
-    }
-    return GenerateValueExprID(value);
+  GetOrCreateExprID(llvm::GetElementPtrInst* const gep) {
+    assert(gep != nullptr);
+    auto asGepOp = llvm::dyn_cast<GEPOperator>(gep);
+    return GetOrCreateExprID(asGepOp);
   }
 
   ExprID
-  GetOrCreateExprID(llvm::GetElementPtrInst* const gep) {
+  GetOrCreateExprID(llvm::GEPOperator* const gep) {
     assert(gep != nullptr);
-
-    auto* lhs = gep->getPointerOperand();
+    auto* lhs  = gep->getPointerOperand();
     auto lhsID = GetOrCreateExprID(lhs);
-    for (auto& index : gep->indices()) {
-      auto rhsID = GetOrCreateExprID(index);
+    for (auto idxIt = gep->idx_begin(); idxIt < gep->idx_end(); idxIt++) {
+      auto rhsID = GetOrCreateExprID(*idxIt);
       ExprKey key{lhsID, gep->getOpcode(), rhsID};
-      lhsID = GetOrCreateExprID(key, gep);
+      //TODO: Binary gep nodes do not hold the instruction. 
+      //Switch Binary Nodes to hold llvm::Value* instead of llvm::Instruction*
+      lhsID = GetOrCreateExprID(key, nullptr);
     }
     return lhsID;
   }
@@ -294,18 +314,11 @@ public:
 
   bool
   isUsed(llvm::Value* const value) const {
-    llvm::errs() << "\n Checking use for :" << *value;
     bool ops =
-        std::any_of(value->use_begin(), value->use_end(), [this](const auto& use) {
-          bool temp = leafTable.count(use.get());
-          llvm::errs() << "\nUse" << *(use.get());
-          if (temp) {
-            llvm::errs() << "\nFound use for" << *(use.get());
-          }
-          return temp;
-          //return leafTable.count(use.get());
+        std::any_of(value->use_begin(), value->use_end(), [this, value](const auto& use) {
+          return leafTable.count(use.get());
         });
-    return value && leafTable.count(value) > 0 && ops;
+    return (value && leafTable.count(value) > 0) || ops;
   }
 
   bool
@@ -422,7 +435,6 @@ private:
 
   llvm::DenseMap<ExprKey, ExprID> exprTable;
   llvm::DenseMap<llvm::Value*, ExprID> leafTable;
-
   
   constexpr ExprID reservedVExprBits() const {
     return 1 << (typeSize - 3); // -1 for sign bit
