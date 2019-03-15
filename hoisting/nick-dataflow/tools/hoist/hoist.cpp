@@ -71,7 +71,7 @@ static cl::opt<string> inPath{cl::Positional,
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
 std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
-std::unique_ptr<Printer> printer;
+std::unique_ptr<lowering::Printer> printer;
 llvm::DenseMap<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> functionMemSSAs;
 llvm::DenseMap<const llvm::Function*, llvm::AAResultsWrapperPass*> functionAAs;
 
@@ -568,7 +568,7 @@ private:
     };
     auto insertIfLoad = [&asLoads](const auto binaryNode) {
       if (auto loadInst =
-              llvm::dyn_cast<llvm::LoadInst>(binaryNode.instruction)) {
+              llvm::dyn_cast<llvm::LoadInst>(binaryNode.value)) {
         asLoads.insert(loadInst);
       }
     };
@@ -768,7 +768,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 
   generator = make_unique<Generator>(Generator{});
   resolver  = make_unique<IndirectCallResolver>(IndirectCallResolver{m});
-  printer   = make_unique<Printer>(generator.get(), llvm::outs(), m);
+  printer   = make_unique<lowering::Printer>(generator.get(), llvm::outs(), m);
 
 
   for (auto& f : m) {

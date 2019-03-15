@@ -16,8 +16,6 @@
 
 #include <algorithm>
 
-using namespace llvm;
-
 using Privileges = std::bitset<COUNT>;
 using ExprID     = int16_t;  // Deterministic size
 using OpKey      = int16_t;  // Negatives used to hash sentinels
@@ -36,8 +34,10 @@ constexpr ExprID vacuousExprID = 0;
 constexpr ExprID emptyExprID   = 1;
 }  // namespace ReservedExprIDs
 
+using Predicate = llvm::CmpInst::Predicate;
+
 template<>
-struct DenseMapInfo<ExprKey> {
+struct llvm::DenseMapInfo<ExprKey> {
   static inline ExprKey
   getEmptyKey() {
     return {ExprID(-1), OpKey(0), ExprID(-1)};
@@ -79,21 +79,27 @@ getCalledFunction(llvm::CallSite cs) {
 class ExprOp {
 public:
   const OpKey opCode;
+  const Predicate predicate;
   ExprOp() = default;
 
-  explicit ExprOp(OpKey opCode)
-    : opCode{opCode} { }
+  explicit ExprOp(OpKey opCode, Predicate pred)
+    : opCode{opCode}, predicate{pred} {}
 
   bool
   operator==(OpKey opCode) const {
     return this->opCode == opCode;
   }
+
+  bool
+  operator==(int opCode) const {
+    return this->opCode == (OpKey) opCode;
+  }
 };
 
 class ConstantExprNode {
 public:
-  const llvm::Constant* constant;
-  ConstantExprNode (const llvm::Constant* constant)
+  llvm::Constant* const constant;
+  ConstantExprNode (llvm::Constant* const constant)
     : constant{constant} { }
 };
 
@@ -109,12 +115,13 @@ public:
   const ExprID lhs;
   const ExprOp op;
   const ExprID rhs;
-  llvm::Instruction* const instruction = nullptr;
+  llvm::Value* const value = nullptr;
   BinaryExprNode(ExprID lhs,
                  OpKey op,
                  ExprID rhs,
-                 llvm::Instruction* const instruction)
-    : lhs{lhs}, op{op}, rhs{rhs}, instruction{instruction} {}
+                 Predicate pred,
+                 llvm::Value* const val)
+    : lhs{lhs}, op{op, pred}, rhs{rhs}, value{val} {}
 };
 
 

@@ -11,16 +11,20 @@
 
 #include <unordered_map>
 #include <string>
+#include <memory>
 
+namespace lowering {
+class Printer;
+}
 
-class Printer {
+class lowering::Printer {
 public:
-  Printer(Generator* g, llvm::raw_ostream& out, llvm::Module& m) 
+  Printer(Generator* g, llvm::raw_ostream& out, llvm::Module& m)
     : generator{g}, out{out}, module{m} {
     initializeMap();
   }
 
-  void  // Point of configuration for async queue
+  void
   printState(llvm::Instruction* const location,
              const Disjunction& disjunction) {
     if (disjunction.isEmpty()) {
@@ -29,13 +33,14 @@ public:
     printStateTrees(location, disjunction);
   }
 
-  void  // Point of configuration for async queue
+  void
   printIR(llvm::Instruction* const location, const Disjunction& disjunction) {
     if (disjunction.isEmpty()) {
       return;
     }
+    generateIR(disjunction);
     printBasicIR(location, disjunction);
-    //printCall(location, disjunction);
+    // printCall(location, disjunction);
   }
 
 private:
@@ -44,7 +49,6 @@ private:
   llvm::raw_ostream& out;
   llvm::Module& module;
   const char* delimiter = "\\x";
-
   llvm::DenseMap<OpKey, const char*> opMap;
 
   // Visitor Helpers
@@ -64,46 +68,46 @@ private:
 
   void
   printLineNumber(llvm::Instruction* const inst) const {
-    //out.changeColor(llvm::raw_ostream::Colors::RED);
+    // out.changeColor(llvm::raw_ostream::Colors::RED);
     if (const llvm::DILocation* debugLoc = inst->getDebugLoc()) {
       out << "At " << debugLoc->getFilename() << " line " << debugLoc->getLine()
           << "  " << *inst << "\n";
     } else {
       out << "At an unknown location" << *inst << "\n";
     }
-    //out.changeColor(llvm::raw_ostream::Colors::WHITE);
+    // out.changeColor(llvm::raw_ostream::Colors::WHITE);
   }
 
   void
   printTree(const Conjunct conjunct,
             const int disjunctCount,
             const int conjunctCount) const {
-    auto visitor = overloaded {
-      [&, this](ExprID exprID, const ConstantExprNode node) {
-        out << "\t" << exprID << delimiter << disjunctCount << delimiter
-            << conjunctCount;
-        if (node.constant) {
-          out << " [shape=box,label=\"" << *(node.constant) << "\"]\n";
-        } else {
-          out << " [shape=box,label=\""
-              << " nullptr "
+    auto visitor = overloaded{
+        [&, this](ExprID exprID, const ConstantExprNode node) {
+          out << "\t" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount;
+          if (node.constant) {
+            out << " [shape=box,label=\"" << *(node.constant) << "\"]\n";
+          } else {
+            out << " [shape=box,label=\""
+                << " nullptr "
+                << "\"]\n";
+          }
+        },
+        [&, this](ExprID exprID, const BinaryExprNode node) {
+          auto lhsID = node.lhs;
+          auto rhsID = node.rhs;
+          out << "\t" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount << " -> { " << lhsID << delimiter
+              << disjunctCount << delimiter << conjunctCount << "; " << rhsID
+              << delimiter << disjunctCount << delimiter << conjunctCount
+              << " }\n";
+        },
+        [&, this](ExprID exprID, const ValueExprNode node) {
+          out << "\t" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount << " [shape=box,label=\"" << *(node.value)
               << "\"]\n";
-        }
-      },
-      [&, this](ExprID exprID, const BinaryExprNode node) {
-        auto lhsID = node.lhs;
-        auto rhsID = node.rhs;
-        out << "\t" << exprID << delimiter << disjunctCount << delimiter
-            << conjunctCount << " -> { " << lhsID << delimiter
-            << disjunctCount << delimiter << conjunctCount << "; " << rhsID
-            << delimiter << disjunctCount << delimiter << conjunctCount
-            << " }\n";
-      },
-      [&, this](ExprID exprID, const ValueExprNode node) {
-        out << "\t" << exprID << delimiter << disjunctCount << delimiter
-            << conjunctCount << " [shape=box,label=\"" << *(node.value)
-            << "\"]\n";
-      }};
+        }};
     generator->preOrderFor(conjunct, visitor);
   }
 
@@ -129,31 +133,184 @@ private:
 
   void
   printTreeIR(const Conjunct conjunct) const {
-    auto visitor = overloaded {
-      [&, this](ExprID exprID, const ConstantExprNode node) {
-        // out.changeColor(llvm::raw_ostream::Colors::GREEN);
-        if (node.constant) {
-          out << "( " << *(node.constant) << " )";
-        } else {
-          out << "( " << exprID << " )";
-        }
-        // out.changeColor(llvm::raw_ostream::Colors::WHITE);
-      },
-      [&, this](ExprID exprID, const BinaryExprNode node) {
-        // out.changeColor(llvm::raw_ostream::Colors::BLUE);
-        if (auto it = opMap.find(node.op.opCode); it != opMap.end()) {
-          auto [first, opString] = *it;
-          out << " " << opString << " " ;
-        }
-        // out.changeColor(llvm::raw_ostream::Colors::WHITE);
-      },
-      [&, this](ExprID exprID, const ValueExprNode node) {
-        // out.changeColor(llvm::raw_ostream::Colors::GREEN);
-        llvm::errs() << "Printing for " << exprID;
-        out << "( " << *(node.value) << " )";
-        // out.changeColor(llvm::raw_ostream::Colors::WHITE);
-      }};
+    auto visitor = overloaded{
+        [&, this](ExprID exprID, const ConstantExprNode node) {
+          // out.changeColor(llvm::raw_ostream::Colors::GREEN);
+          if (node.constant) {
+            out << "( " << *(node.constant) << " )";
+          } else {
+            out << "( " << exprID << " )";
+          }
+          // out.changeColor(llvm::raw_ostream::Colors::WHITE);
+        },
+        [&, this](ExprID exprID, const BinaryExprNode node) {
+          // out.changeColor(llvm::raw_ostream::Colors::BLUE);
+          if (auto it = opMap.find(node.op.opCode); it != opMap.end()) {
+            auto [first, opString] = *it;
+            out << " " << opString << " ";
+          }
+          // out.changeColor(llvm::raw_ostream::Colors::WHITE);
+        },
+        [&, this](ExprID exprID, const ValueExprNode node) {
+          // out.changeColor(llvm::raw_ostream::Colors::GREEN);
+          out << "( " << *(node.value) << " )";
+          // out.changeColor(llvm::raw_ostream::Colors::WHITE);
+        }};
     generator->inOrderFor(conjunct, visitor);
+  }
+
+  // TODO: Amortize IRBuilder acquisition
+  class Visitor {
+  public:
+    Visitor(llvm::LLVMContext& c) : context{c} {}
+    llvm::Value*
+    operator()(ExprID exprID,
+               BinaryExprNode binaryNode,
+               llvm::Value* lhs,
+               llvm::Value* rhs) {
+      return binaryDispatch(exprID, binaryNode, lhs, rhs);
+    }
+
+    llvm::Value*
+    operator()(ExprID exprID, ConstantExprNode node) {
+      if (node.constant) {
+        llvm::errs() << "\nReturning constant node for " << *(node.constant);
+      } else {
+        llvm::errs() << "\nReturning constant node for " << exprID;
+      }
+      return node.constant;
+    }
+
+    llvm::Value*
+    operator()(ExprID exprID, ValueExprNode node) {
+      if (node.value) {
+        llvm::errs() << "\nReturning constant node for " << *(node.value);
+      } else {
+        llvm::errs() << "\nReturning constant node for " << exprID;
+      }
+      return node.value;
+    }
+
+  private:
+    llvm::LLVMContext& context;
+
+    llvm::Value*
+    binaryDispatch(ExprID exprID,
+                   BinaryExprNode binaryNode,
+                   llvm::Value* lhs,
+                   llvm::Value* rhs) {
+      llvm::errs() << "\n (binaryNode.op.opCode) " << (binaryNode.op.opCode);
+      switch (binaryNode.op.opCode) {
+        case llvm::Instruction::Add:
+          return generateAdd(binaryNode, lhs, rhs);
+          break;
+        case llvm::Instruction::ICmp:
+          return generateIcmp(binaryNode, lhs, rhs);
+          break;
+        case OpIDs::loadOp: return generateLoad(binaryNode, lhs, rhs); break;
+        case OpIDs::switchOp:
+          return generateSwitch(binaryNode, lhs, rhs);
+          break;
+        case llvm::Instruction::GetElementPtr:
+          return generateGEP(binaryNode, lhs, rhs);
+          break;
+        default:
+          llvm::errs() << "\n (binaryNode.op.opCode) "
+                       << (binaryNode.op.opCode);
+          llvm_unreachable("Found unknown instruction");
+          return nullptr;
+          break;
+      }
+    }
+
+    llvm::Value*
+    generateAdd(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      llvm::IRBuilder builder(context);
+      llvm::Value* generated = builder.CreateAdd(lhs, rhs, "add");
+      llvm::errs() << "\nGenerated add instruction" << *generated;
+      return generated;
+    }
+
+    llvm::Value*
+    generateIcmp(BinaryExprNode binaryNode,
+                 llvm::Value* lhs,
+                 llvm::Value* rhs) {
+      llvm::IRBuilder builder(context);
+      llvm::Value* generated = nullptr;
+      switch (binaryNode.op.predicate) {
+        case Predicate::ICMP_EQ:
+          generated = builder.CreateICmpEQ(lhs, rhs, "Icmp_EQ");
+          llvm::errs() << "\nGenerated ICmp_EQ " << *generated;
+          break;
+        default:
+          llvm::errs() << "\n (binaryNode.op.predicate) "
+                       << (binaryNode.op.predicate);
+          llvm_unreachable("Found unknown predicate");
+          break;
+      }
+      return generated;
+    }
+
+
+    llvm::Value*
+    generateLoad(BinaryExprNode binaryNode,
+                 llvm::Value* lhs,
+                 llvm::Value* rhs) {
+      llvm::IRBuilder builder(context);
+      llvm::Value* generated = builder.CreateLoad(rhs, "load");
+      llvm::errs() << "\nGenerated add instruction" << *generated;
+      return generated;
+    }
+
+    llvm::Value*
+    generateSwitch(BinaryExprNode binaryNode,
+                   llvm::Value* lhs,
+                   llvm::Value* rhs) {
+      return generateIcmp(binaryNode, lhs, rhs);
+    }
+
+    llvm::Value*
+    generateGEP(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      llvm::IRBuilder builder(context);
+      using Indices = llvm::ArrayRef<llvm::Value*>;
+
+      auto getAsGep = [&builder](llvm::Value* lhs) -> llvm::Value* {
+        if (auto* gep = llvm::dyn_cast<llvm::GEPOperator>(lhs)) {
+          return lhs;
+        }
+        return builder.CreateGEP(lhs, Indices{}, "gepOp");
+      };
+
+      auto addIdx = [&builder](llvm::Value* gepAsValue,
+                               llvm::Value* rhs) -> llvm::Value* {
+        auto* asGep = llvm::dyn_cast<llvm::GetElementPtrInst>(gepAsValue);
+        std::vector<llvm::Value*> extractedIndices;
+        std::transform(asGep->idx_begin(),
+                       asGep->idx_end(),
+                       extractedIndices.begin(),
+                       [](llvm::Value* idx) { return idx; });
+        extractedIndices.push_back(rhs);
+        Indices indices{extractedIndices};
+        auto* pointer = asGep->getPointerOperand();
+        builder.CreateGEP(pointer, indices, "gepOp");
+      };
+      auto asGep = getAsGep(lhs);
+      // llvm::errs() << "\nGenerated add instruction" << *generated;
+      return nullptr;
+    }
+  };
+
+  // TODO: Handle negations
+  void
+  generateIR(const Disjunction disjunction) {
+    auto& context = module.getContext();
+    Visitor visitor{context};
+    for (auto& disjunct : disjunction) {
+      for (auto& conjunct : disjunct) {
+        auto something = generator->postOrderFor(conjunct, visitor);
+      }
+    }
+    // generator->postOrderFor(
   }
 
   void
@@ -193,33 +350,20 @@ private:
   }
 
   void
-  printCall(llvm::Instruction* const location,
-            const Disjunction disjunction) {
+  printCall(llvm::Instruction* const location, const Disjunction disjunction) {
     auto& context  = module.getContext();
-    auto* voidTy  = llvm::Type::getVoidTy(context);
+    auto* voidTy   = llvm::Type::getVoidTy(context);
     auto* dropFunc = module.getOrInsertFunction("PlEdGeRiZe_drop", voidTy);
 
     llvm::IRBuilder<> builder(location);
     builder.CreateCall(dropFunc);
-  } 
+  }
 
   void
   initializeMap() {
-    #define HANDLE(a,b,c) opMap.try_emplace(a, #b);
-    #include "OperatorStrings.def"
+#define HANDLE(a, b, c) opMap.try_emplace(a, #b);
+#include "OperatorStrings.def"
+#undef HANDLE
   }
-
-
-  // Digraph 00 {
-  //
-  //  label = <The <font color='red'><b>foo</b></font>,<br/> the <font
-  //  point-size='20'>bar</font> and<br/> the <i>baz</i>>; labelloc = "t"; //
-  //  place the label at the top (b seems to be default)
-  //
-  //  node [shape=plaintext]
-  //
-  //  FOO -> {BAR, BAZ};
-  //}
 };
-
 #endif

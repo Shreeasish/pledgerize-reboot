@@ -82,11 +82,11 @@ public:
   }
 
   ExprID
-  GetOrCreateExprID(ExprKey key, llvm::Instruction* const instruction) {
+  GetOrCreateExprID(ExprKey key, llvm::Value* const value) {
     if (auto found = exprTable.find(key); found != exprTable.end()){
       return found->second;
     }
-    return GenerateBinaryExprID(key, instruction);
+    return GenerateBinaryExprID(key, value);
   }
 
 
@@ -103,7 +103,7 @@ public:
   ExprID
   GetOrCreateExprID(llvm::GetElementPtrInst* const gep) {
     assert(gep != nullptr);
-    auto asGepOp = llvm::dyn_cast<GEPOperator>(gep);
+    auto asGepOp = llvm::dyn_cast<llvm::GEPOperator>(gep);
     return GetOrCreateExprID(asGepOp);
   }
 
@@ -115,9 +115,7 @@ public:
     for (auto idxIt = gep->idx_begin(); idxIt < gep->idx_end(); idxIt++) {
       auto rhsID = GetOrCreateExprID(*idxIt);
       ExprKey key{lhsID, gep->getOpcode(), rhsID};
-      //TODO: Binary gep nodes do not hold the instruction. 
-      //Switch Binary Nodes to hold llvm::Value* instead of llvm::Instruction*
-      lhsID = GetOrCreateExprID(key, nullptr);
+      lhsID = GetOrCreateExprID(key, gep);
     }
     return lhsID;
   }
@@ -126,7 +124,7 @@ public:
   GetOrCreateExprID(llvm::LoadInst* const loadInst) {
     auto* pointer      = loadInst->getPointerOperand();
     auto pointerExprID = GetOrCreateExprID(pointer);
-    return GetOrCreateExprID({pointerExprID, OpIDs::loadOp, GetEmptyExprID()}, loadInst);
+    return GetOrCreateExprID({GetEmptyExprID(), OpIDs::loadOp, pointerExprID}, loadInst);
   }
 
   ExprID
@@ -240,7 +238,7 @@ public:
       auto leftID  = postOrderRebuild(binaryNode.lhs, postOrderRebuild);
       auto rightID = postOrderRebuild(binaryNode.rhs, postOrderRebuild);
       return GetOrCreateExprID(
-          {ExprID(leftID), OpKey(binaryNode.op.opCode), ExprID(rightID)}, binaryNode.instruction);
+          {ExprID(leftID), OpKey(binaryNode.op.opCode), ExprID(rightID)}, binaryNode.value);
     };
 
     auto rebuildConjunct = [&postOrderRebuild] (const Conjunct& conjunct) -> Conjunct {
@@ -350,7 +348,7 @@ public:
 
   template <class Visitor>
   Disjunction
-  preOrderFor(const Disjunction& disjunction, Visitor visitor) {
+  preOrderFor(const Disjunction& disjunction, Visitor& visitor) {
     auto preOrder = [&, this](Conjunct& conjunct) {
       std::stack<ExprID> exprStack;
       exprStack.push(conjunct.exprID);
@@ -381,7 +379,7 @@ public:
 
   template <class Visitor>
   Conjunct
-  preOrderFor(const Conjunct& conjunct, Visitor visitor) {
+  preOrderFor(const Conjunct& conjunct, Visitor& visitor) {
     auto preOrder = [&, this](Conjunct& conjunct) {
       std::stack<ExprID> exprStack;
       exprStack.push(conjunct.exprID);
@@ -408,7 +406,7 @@ public:
 
   template <class Visitor>
   Conjunct
-  inOrderFor(const Conjunct& conjunct, Visitor visitor) {
+  inOrderFor(const Conjunct& conjunct, Visitor& visitor) {
     auto inOrder = [&, this](const ExprID& exprID, auto inOrder) -> void {
       auto asVariant   = std::variant<ExprID>(exprID);
       auto node = GetExprNode(exprID);
@@ -420,8 +418,33 @@ public:
         std::visit(visitor, asVariant, node);
       }
     };
+
     inOrder(conjunct.exprID, inOrder);
     return conjunct;
+  }
+
+  //TODO: Fix this unsightly mess
+  template <class Visitor>
+  std::pair<Conjunct, llvm::Value*>
+  postOrderFor(const Conjunct& conjunct, Visitor& visitor) {
+    auto postOrder = [&, this](const ExprID& exprID, auto postOrder) -> llvm::Value* {
+      auto asVariant   = std::variant<ExprID>(exprID);
+      auto node = GetExprNode(exprID);
+      if (auto binaryNode = std::get_if<const BinaryExprNode>(&node)) {
+          llvm::Value* retLhs = postOrder(binaryNode->lhs, postOrder);
+          llvm::Value* retRhs = postOrder(binaryNode->rhs, postOrder);
+          return visitor(exprID, *binaryNode, retLhs, retRhs);  
+      } else if (auto constantNode = std::get_if<const ConstantExprNode>(&node)) {
+          return visitor(exprID, *constantNode);
+      } else if (auto valueExprNode = std::get_if<const ValueExprNode>(&node)) {
+          return visitor(exprID, *valueExprNode);
+      } else {
+        llvm_unreachable("fuck visitors");
+      }
+    };
+
+    auto finalRet = postOrder(conjunct.exprID, postOrder);
+    return std::make_pair(conjunct, finalRet);
   }
 
 private:
@@ -463,9 +486,21 @@ private:
   }
 
   ExprID
-  GenerateBinaryExprID(ExprKey key, llvm::Instruction* const instruction) {
-    binarySlab.emplace_back(BinaryExprNode{
-        std::get<0>(key), std::get<1>(key), std::get<2>(key), instruction});
+  GenerateBinaryExprID(ExprKey key, llvm::Value* const value) {
+    auto getPredicate =
+        [](llvm::Value* const value) -> llvm::CmpInst::Predicate {
+      if ( auto asCmp = llvm::dyn_cast<llvm::CmpInst>(value)) {
+        return asCmp->getPredicate();
+      } else if (auto asSwitch = llvm::dyn_cast<llvm::SwitchInst>(value)) {
+				return Predicate::ICMP_EQ;
+			}
+      return llvm::CmpInst::Predicate::BAD_ICMP_PREDICATE;
+    };
+    binarySlab.emplace_back(BinaryExprNode{std::get<0>(key),
+                                           std::get<1>(key),
+                                           std::get<2>(key),
+                                           getPredicate(value),
+                                           value});
     exprTable.insert({key, binaryExprCounter});
     return binaryExprCounter++;
   }
