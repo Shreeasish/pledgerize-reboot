@@ -14,7 +14,7 @@
 #include <memory>
 
 namespace lowering {
-class Printer;
+  class Printer;
 }
 
 class lowering::Printer {
@@ -207,7 +207,8 @@ private:
         case llvm::Instruction::ICmp:
           return generateIcmp(binaryNode, lhs, rhs);
           break;
-        case OpIDs::loadOp: return generateLoad(binaryNode, lhs, rhs); break;
+        case OpIDs::loadOp: 
+          return generateLoad(binaryNode, lhs, rhs); break;
         case OpIDs::switchOp:
           return generateSwitch(binaryNode, lhs, rhs);
           break;
@@ -271,36 +272,17 @@ private:
 
     llvm::Value*
     generateGEP(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      //TODO: Verify with Nick. Run on custom testcase
       llvm::IRBuilder builder(context);
-      using Indices = llvm::ArrayRef<llvm::Value*>;
-
-      auto getAsGep = [&builder](llvm::Value* lhs) -> llvm::Value* {
-        if (auto* gep = llvm::dyn_cast<llvm::GEPOperator>(lhs)) {
-          return lhs;
-        }
-        return builder.CreateGEP(lhs, Indices{}, "gepOp");
-      };
-
-      auto addIdx = [&builder](llvm::Value* gepAsValue,
-                               llvm::Value* rhs) -> llvm::Value* {
-        auto* asGep = llvm::dyn_cast<llvm::GetElementPtrInst>(gepAsValue);
-        std::vector<llvm::Value*> extractedIndices;
-        std::transform(asGep->idx_begin(),
-                       asGep->idx_end(),
-                       extractedIndices.begin(),
-                       [](llvm::Value* idx) { return idx; });
-        extractedIndices.push_back(rhs);
-        Indices indices{extractedIndices};
-        auto* pointer = asGep->getPointerOperand();
-        builder.CreateGEP(pointer, indices, "gepOp");
-      };
-      auto asGep = getAsGep(lhs);
-      // llvm::errs() << "\nGenerated add instruction" << *generated;
-      return nullptr;
+      auto generated = builder.CreateGEP(lhs, rhs, "created gep");
+      llvm::errs() << "\n Generated GEP" << *generated;
+      return generated;
     }
   };
 
   // TODO: Handle negations
+  // TODO: perform conjunctions
+  // TODO: perform disjunctions
   void
   generateIR(const Disjunction disjunction) {
     auto& context = module.getContext();
@@ -361,9 +343,9 @@ private:
 
   void
   initializeMap() {
-#define HANDLE(a, b, c) opMap.try_emplace(a, #b);
-#include "OperatorStrings.def"
-#undef HANDLE
+    #define HANDLE(a, b, c) opMap.try_emplace(a, #b);
+    #include "OperatorStrings.def"
+    #undef HANDLE
   }
 };
 #endif
