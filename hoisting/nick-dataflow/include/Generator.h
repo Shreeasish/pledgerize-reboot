@@ -128,6 +128,28 @@ public:
   }
 
   ExprID
+  GetOrCreateExprID(llvm::CastInst* const castInst) {
+    // Get first operand
+    llvm::Value* operand = castInst->op_begin()->get();
+    auto opExprID = GetOrCreateExprID(operand);
+    return GetOrCreateExprID({GetEmptyExprID(), OpIDs::castOp, opExprID}, castInst);
+  }
+
+  ExprID
+  GetOrCreateExprID(llvm::CallSite& cs) {
+    auto* fun  = llvm::dyn_cast<llvm::Function>(cs.getCalledValue()->stripPointerCasts());
+    llvm::errs() << "\ninserting function" << *fun;
+    auto lhsID = GetOrCreateExprID(fun);
+    for (auto& arg : cs.args()) {
+      auto rhsID = GetOrCreateExprID(arg);
+      ExprKey key{lhsID, llvm::Instruction::Call, rhsID};
+      lhsID = GetOrCreateExprID(key, cs.getInstruction());
+    }
+    ExprKey withSentinel{lhsID, llvm::Instruction::Call, GetEmptyExprID()};
+    return GetOrCreateExprID(withSentinel, cs.getInstruction());
+  }
+
+  ExprID
   constexpr GetEmptyExprID() {
     return ReservedExprIDs::emptyExprID;
   }
@@ -165,7 +187,7 @@ public:
     assert((conjunctID & reservedBExprBits()) && "ConjunctID is not a BinaryExpr");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
       auto index = conjunctID & (~reservedBExprBits());
-      return index; // Start from 0 // Expr Counters start from 1
+      return index;
     };
     return binarySlab[asIndex(conjunctID)];
   }
@@ -175,7 +197,7 @@ public:
     assert((conjunctID & reservedCExprBits()) && "ConjunctID is not a ConstantExpr");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
       auto index = conjunctID & (~reservedCExprBits());
-      return index; // Expr Counter starts from 0, Special case for Vacuous Expr
+      return index; 
     };
     return constantSlab[asIndex(conjunctID)];
   }
@@ -185,7 +207,7 @@ public:
     assert((conjunctID & reservedVExprBits()) && "ConjunctID is not a ValueExprID");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
       auto index = conjunctID & (~reservedVExprBits());
-      return index; // Start from 0 // Expr Counters start from 1
+      return index;
     };
     return valueSlab[asIndex(conjunctID)];
   }

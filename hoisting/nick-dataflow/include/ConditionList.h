@@ -27,6 +27,7 @@ constexpr OpKey aliasOp{100};
 constexpr OpKey switchOp{101};
 constexpr OpKey loadOp{102};
 constexpr OpKey lastOp{103};
+constexpr OpKey castOp{104};
 }  // namespace OpIDs
 
 namespace ReservedExprIDs {
@@ -267,7 +268,6 @@ public:
   void findAndReplace(const ExprID, const ExprID);
   // Helpers
   void print(llvm::raw_ostream&) const;
-  bool empty() const;
 
   auto begin() const { return disjuncts.begin(); }
   auto end() const { return disjuncts.end(); }
@@ -276,6 +276,8 @@ public:
   auto end() { return disjuncts.end(); }
 
   bool isEmpty() const { return disjuncts.begin() == disjuncts.end(); }
+  bool isVacuouslyTrue() const;
+
   static Disjunction
   unionDisjunctions(const Disjunction& lhs, const Disjunction& rhs) {
     //Invariant: Disjuncts are sets
@@ -367,10 +369,6 @@ public:
 
   Disjunction& // Should
   simplifyImplication() {
-    //llvm::errs() << "\nBefore implications";
-    //this->print(llvm::errs());
-    //llvm::errs() << "\n";
-
     std::sort(disjuncts.begin(), disjuncts.end(),
          [ ] (const auto& lhs, const auto& rhs) {
            return lhs.conjunctIDs.size() < rhs.conjunctIDs.size();
@@ -379,12 +377,6 @@ public:
     auto smaller = disjuncts.begin();
     auto end  = disjuncts.end();
     auto isSubset = [&smaller](const Disjunct larger) { //iter1 is subset of iter2
-      //llvm::errs() << "\n Compares at implications"
-      //             << "\n smaller :";
-      //smaller->print(llvm::errs());
-      //llvm::errs() << " to larger ";
-      //larger.print(llvm::errs());
-
       auto it1    = larger.begin();
       auto it2    = smaller->begin();
       while (it2 < smaller->end()) {
@@ -399,21 +391,13 @@ public:
       llvm::errs() << "found";
       return true;
     };
-    //int count = 0;
     while (smaller + 1 < end) {
       end = std::remove_if(smaller + 1, end, isSubset);
       smaller++;
-      //count++;
-      //smaller = disjuncts.begin();
-      //std::advance(smaller, count);
     }
 
     disjuncts.erase(end, disjuncts.end());
     std::sort(disjuncts.begin(), disjuncts.end());
-
-    //llvm::errs() << "\nAfter implications";
-    //this->print(llvm::errs());
-    //llvm::errs() << "\n";
     return *this;
   }
 
@@ -427,7 +411,13 @@ public:
   //TODO::Finish this
   Disjunction&
   simplifyTrues() {
-    llvm::errs() << "\nAfter simplifications";
+    if (!isVacuouslyTrue()) {
+      return *this;
+    }
+    llvm::errs() << "\n found trivially true" ;
+    disjuncts.erase(this->begin() + 1, this->end());
+    
+    llvm::errs() << "\nAfter simplifications" ;
     this->print(llvm::errs());
     return *this;
   }
@@ -602,11 +592,6 @@ Disjunction::findAndReplace(const ExprID target, const ExprID replacement) {
   }
 }
 
-bool
-Disjunction::empty() const {
-  return disjuncts.empty();
-}
-
 void
 Disjunction::print(llvm::raw_ostream& out) const {
   for (auto& disjunct : disjuncts) {
@@ -614,6 +599,17 @@ Disjunction::print(llvm::raw_ostream& out) const {
     disjunct.print(out);
   }
   return;
+}
+
+bool
+Disjunction::isVacuouslyTrue() const {
+  if (this->isEmpty()) {
+    return false;
+  }
+  const Disjunct& firstDisjunct{*(this->begin())};
+  const Conjunct& firstConjunct{*(firstDisjunct.begin())};
+  return firstConjunct == ReservedExprIDs::vacuousExprID
+         && firstDisjunct.size() == 1;
 }
 
 #endif

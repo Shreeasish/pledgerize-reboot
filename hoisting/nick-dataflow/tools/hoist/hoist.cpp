@@ -281,8 +281,11 @@ private:
     return true;
   }
 
+  //TODO: Function Pointers
+  //TODO: Unknown calls
   bool
-  handleCallSite(const llvm::CallSite& cs, DisjunctionState& state, const Context& context, bool handled) {
+  handleCallSite(llvm::Value* value, DisjunctionState& state, const Context& context, bool handled) {
+    llvm::CallSite cs{value};
     if (handled) {
       return true;
     }
@@ -294,13 +297,14 @@ private:
     if (!fun) {
       return true;
     }
-    llvm::errs() << "\tFrom CallSite: " << fun->getName() << " opcode" << inst->getOpcode();
+
+    llvm::errs() << "\tFrom CallSite: " << fun->getName();
     if (fun->getName().startswith("llvm.")) {
       return true;
     }
 
     if (fun->getName().startswith("wait")) {
-      auto vacExpr    = generator->GetVacuousExprID();
+      auto vacExpr   = generator->GetVacuousExprID();
       Disjunction disjunction{};
       Disjunct disjunct{};
       disjunct.addConjunct(generator->GetVacuousConjunct());
@@ -310,14 +314,10 @@ private:
     }
 
     if (fun->isDeclaration() && isUnknown(fun)) {
-      for (auto& arg : cs.args()){ 
-        if (!generator->isUsed(arg)) {
-          continue;
-        }
-        llvm::errs() << "Dropping Unknown for" << *arg;
-        auto oldExprID = generator->GetOrCreateExprID(arg);
-        state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-      }
+      //Treat as instruction
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      auto newExprID = generator->GetOrCreateExprID(cs);
+      state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
       return true;
     }
 
@@ -415,11 +415,6 @@ private:
       llvm::errs() << "Weak load for " << *weakLoad;
       state[nullptr] = weakUpdate(localDisjunction, weakLoad, storeInst);
     }
-    //llvm::errs() << "\nlocalDisjunction";
-    //localDisjunction.print(llvm::errs());
-
-    //llvm::errs() << "\nState-nullptr";
-    //state[nullptr].print(llvm::errs());
     return true;
   }
 
@@ -445,7 +440,7 @@ private:
     if (!callAsValue) {
       return true;
     }
-    llvm::errs() << "State before pulling context info";
+    //llvm::errs() << "State before pulling context info";
     state[nullptr].print(llvm::errs());
     assert(state[nullptr].isEmpty() || !state[nullptr].isEmpty() && state[ret].isEmpty());
     state[nullptr] = state[ret]; 
@@ -472,6 +467,7 @@ private:
     if (!generator->isUsed(value)) {
       return true;
     }
+    llvm::errs() << "\nGenerating load for " << *value;
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto newExprID = generator->GetOrCreateExprID(loadInst);
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
@@ -493,6 +489,7 @@ private:
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto exprID    = generator->GetOrCreateExprID(binOp);
     if (oldExprID == exprID) {
+      llvm_unreachable("oldExprId == newexprId");
       return false;
     }
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
@@ -517,6 +514,25 @@ private:
       return false;
     }
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
+    return true;
+  }
+
+  bool
+  handleCast(llvm::Value* const value, DisjunctionState& state, bool handled) {
+    if (handled) {
+      return true;
+    }
+    auto* castInst = llvm::dyn_cast<llvm::CastInst>(value);
+    if (!castInst) {
+      return false;
+    }
+    if (!generator->isUsed(value)) {
+      return true;
+    }
+    auto oldExprID = generator->GetOrCreateExprID(value);
+    auto exprID    = generator->GetOrCreateExprID(castInst);
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
+    //llvm::errs() << "Generated cast for " << oldExprID << "to" << exprID;
     return true;
   }
 
@@ -684,6 +700,7 @@ private:
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
 
+
 public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
@@ -699,7 +716,7 @@ public:
     bool handled = false;
     handled |= handleBrOrSwitch(inst, handled);
     handled |= handlePhiBackEdges(&value, state, handled);
-    handled |= handleCallSite(llvm::CallSite{&value}, state, context, handled);
+    handled |= handleCallSite(&value, state, context, handled);
     handled |= handleStore(&value, state, context, handled);
     handled |= handleGep(&value, state, handled);
     handled |= handleRet(&value, state, context, handled);
@@ -707,32 +724,13 @@ public:
     handled |= handleLoad(&value, state, handled);
     handled |= handleBinaryOperator(&value, state, handled);
     handled |= handleCmpInst(&value, state, handled);
+    handled |= handleCast(&value, state, handled);
     handleUnknown(&value, state, handled);
     state[nullptr].print(llvm::errs());
     state[nullptr].simplifyComplements()
                   .simplifyRedundancies()
                   .simplifyImplication();
     //generator->dumpState();
-    //printer->printIR(inst, state[nullptr]);
-    return;
-    
-    //llvm::errs() << "At transfer";
-    //if (!generator->isUsed(&value)) {
-    //  //state[nullptr].print(llvm::errs());
-    //  //generator->dumpState();
-    //  printer->printIR(inst, state[nullptr]);
-    //  return;
-    //}
-    //if (!handled) {
-    //  llvm::errs() << "\nNot Handled " << value;
-    //}
-    ////generator->dumpState();
-
-    //llvm::errs() << "\nPrinting Before Simplifications";
-    //state[nullptr].print(llvm::errs());
-    //state[nullptr].simplifyComplements()
-    //              .simplifyRedundancies()
-    //              .simplifyImplication();
     //printer->printIR(inst, state[nullptr]);
     return;
   }
@@ -769,7 +767,6 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   generator = make_unique<Generator>(Generator{});
   resolver  = make_unique<IndirectCallResolver>(IndirectCallResolver{m});
   printer   = make_unique<lowering::Printer>(generator.get(), llvm::outs(), m);
-
 
   for (auto& f : m) {
     if ( f.isDeclaration()) {
@@ -814,10 +811,13 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   for (auto& [context, contextResults] : results) {
     for (auto& [function, functionResults] : contextResults) {
       auto [loc, state] = getLocationAndState(function, functionResults);
+      if (state.isVacuouslyTrue()) {
+        llvm::errs() << "\nfound vacuously true" ;
+        continue;
+      }
       printer->printIR(loc, state);
     }
   }
-
   return false;
 }
 

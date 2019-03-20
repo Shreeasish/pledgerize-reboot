@@ -38,9 +38,11 @@ public:
     if (disjunction.isEmpty()) {
       return;
     }
-    generateIR(disjunction);
-    printBasicIR(location, disjunction);
-    // printCall(location, disjunction);
+    llvm::IRBuilder<> builder{location};
+    insertIR(disjunction, location, builder);
+    auto* bb = location->getParent();
+    llvm::errs() << "After insertion" ;
+    llvm::errs() << *bb;
   }
 
 private:
@@ -159,10 +161,10 @@ private:
     generator->inOrderFor(conjunct, visitor);
   }
 
-  // TODO: Amortize IRBuilder acquisition
   class Visitor {
   public:
-    Visitor(llvm::LLVMContext& c) : context{c} {}
+    Visitor(llvm::LLVMContext& c, llvm::IRBuilder<>& irb) 
+      : context{c}, builder{irb} { }
     llvm::Value*
     operator()(ExprID exprID,
                BinaryExprNode binaryNode,
@@ -170,29 +172,24 @@ private:
                llvm::Value* rhs) {
       return binaryDispatch(exprID, binaryNode, lhs, rhs);
     }
-
+  
+    //TODO: Handle Special cases
+    // Do not handle a vacuousExprNodes as lowering is guaranteed
+    // at locations where the constraints are not vacuously true
     llvm::Value*
     operator()(ExprID exprID, ConstantExprNode node) {
-      if (node.constant) {
-        llvm::errs() << "\nReturning constant node for " << *(node.constant);
-      } else {
-        llvm::errs() << "\nReturning constant node for " << exprID;
-      }
       return node.constant;
     }
 
     llvm::Value*
     operator()(ExprID exprID, ValueExprNode node) {
-      if (node.value) {
-        llvm::errs() << "\nReturning constant node for " << *(node.value);
-      } else {
-        llvm::errs() << "\nReturning constant node for " << exprID;
-      }
+      llvm::errs() << "\nnot generating a value node for " << *(node.value);
       return node.value;
     }
 
   private:
     llvm::LLVMContext& context;
+    llvm::IRBuilder<>& builder;
 
     llvm::Value*
     binaryDispatch(ExprID exprID,
@@ -208,13 +205,19 @@ private:
           return generateIcmp(binaryNode, lhs, rhs);
           break;
         case OpIDs::loadOp: 
-          return generateLoad(binaryNode, lhs, rhs); break;
+          return generateLoad(binaryNode, lhs, rhs); 
+          break;
         case OpIDs::switchOp:
           return generateSwitch(binaryNode, lhs, rhs);
           break;
         case llvm::Instruction::GetElementPtr:
           return generateGEP(binaryNode, lhs, rhs);
           break;
+        case llvm::Instruction::Call:
+          return generateCall(binaryNode, lhs, rhs);
+          break;
+        case OpIDs::castOp:
+          llvm_unreachable("Found unknown instruction");
         default:
           llvm::errs() << "\n (binaryNode.op.opCode) "
                        << (binaryNode.op.opCode);
@@ -226,9 +229,7 @@ private:
 
     llvm::Value*
     generateAdd(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
-      llvm::IRBuilder builder(context);
-      llvm::Value* generated = builder.CreateAdd(lhs, rhs, "add");
-      llvm::errs() << "\nGenerated add instruction" << *generated;
+      llvm::Value* generated = builder.CreateAdd(lhs, rhs);
       return generated;
     }
 
@@ -236,20 +237,21 @@ private:
     generateIcmp(BinaryExprNode binaryNode,
                  llvm::Value* lhs,
                  llvm::Value* rhs) {
-      llvm::IRBuilder builder(context);
-      llvm::Value* generated = nullptr;
+      llvm::errs() << "\nincoming lhs " << *lhs;
+      llvm::errs() << "\nincoming rhs " << *rhs;
+
       switch (binaryNode.op.predicate) {
         case Predicate::ICMP_EQ:
-          generated = builder.CreateICmpEQ(lhs, rhs, "Icmp_EQ");
-          llvm::errs() << "\nGenerated ICmp_EQ " << *generated;
+          return builder.CreateICmpEQ(lhs, rhs);
           break;
         default:
           llvm::errs() << "\n (binaryNode.op.predicate) "
                        << (binaryNode.op.predicate);
           llvm_unreachable("Found unknown predicate");
+          return nullptr;
           break;
       }
-      return generated;
+      return nullptr;
     }
 
 
@@ -257,10 +259,9 @@ private:
     generateLoad(BinaryExprNode binaryNode,
                  llvm::Value* lhs,
                  llvm::Value* rhs) {
-      llvm::IRBuilder builder(context);
-      llvm::Value* generated = builder.CreateLoad(rhs, "load");
-      llvm::errs() << "\nGenerated add instruction" << *generated;
-      return generated;
+      llvm::errs() << "\ngenerating load ";
+      llvm::errs() << "\nincoming rhs " << *rhs;
+      return builder.CreateLoad(rhs);
     }
 
     llvm::Value*
@@ -273,26 +274,87 @@ private:
     llvm::Value*
     generateGEP(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
       //TODO: Verify with Nick. Run on custom testcase
-      llvm::IRBuilder builder(context);
-      auto generated = builder.CreateGEP(lhs, rhs, "created gep");
-      llvm::errs() << "\n Generated GEP" << *generated;
+      auto* generated = builder.CreateGEP(lhs, rhs, "gep");
+      llvm::errs() << "\ncreated gep "<< *generated;
+      llvm::errs() << "\nrhs" << *rhs;
       return generated;
+    }
+
+    llvm::Value*
+    generateCall(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      llvm::errs() << "\n lhs for CallAST" << *lhs;
+      if (auto* func = llvm::dyn_cast<llvm::Function>(lhs)) {
+        auto* functionType = func->getFunctionType();
+        auto* generated    = builder.CreateCall( functionType, func,
+                                  llvm::ArrayRef<llvm::Value*>{rhs});
+        return generated;
+      } else if (auto* callInst = llvm::dyn_cast<llvm::CallInst>(lhs)) {
+        auto* func = callInst->getCalledFunction();
+        auto* functionType = func->getFunctionType();
+        assert(func);
+        std::vector<llvm::Value*> operands;
+        for (auto& arg : callInst->arg_operands()) {
+          llvm::errs() << "\n found " << *arg << "as operand";
+          operands.push_back(arg);
+        }
+        if (rhs) { // skip sentinel
+          llvm::errs() << "\n rhs for CallAST" << *rhs;
+          operands.push_back(rhs);
+        }
+        auto* generated = builder.CreateCall(functionType, func, llvm::ArrayRef<llvm::Value*>{operands});
+        return generated;
+      } else {
+        llvm::errs() << "\nlhs is unknown " << *lhs;
+        llvm_unreachable("lhs unknown");
+        return nullptr;
+      }
     }
   };
 
-  // TODO: Handle negations
-  // TODO: perform conjunctions
-  // TODO: perform disjunctions
+
   void
-  generateIR(const Disjunction disjunction) {
+  insertIR(const Disjunction& disjunction, llvm::Instruction* location, llvm::IRBuilder<>& builder) {
     auto& context = module.getContext();
-    Visitor visitor{context};
-    for (auto& disjunct : disjunction) {
-      for (auto& conjunct : disjunct) {
-        auto something = generator->postOrderFor(conjunct, visitor);
-      }
-    }
-    // generator->postOrderFor(
+    Visitor visitor{context, builder};
+
+    auto applyForm = [&](const Conjunct& conjunct, llvm::Value* value) -> llvm::Value* {
+      if (!conjunct.notNegated) {
+        return builder.CreateNot(value);
+      } 
+      return value;
+    };
+
+    auto generateDisjunct = [&](const Disjunct& disjunct) -> llvm::Value* {
+      std::vector<llvm::Value*> generatedConjuncts;
+      std::transform(disjunct.begin(), disjunct.end(), 
+                     std::back_inserter(generatedConjuncts),
+           [&] (const Conjunct& conjunct) -> llvm::Value* {
+             auto [retConjunct, generatedIR] = generator->postOrderFor(conjunct, visitor);
+             return applyForm(conjunct, generatedIR);
+           });
+      return 
+        std::accumulate(generatedConjuncts.begin(), generatedConjuncts.end(), 
+                       *generatedConjuncts.begin(),
+        [&] (auto* lhs, auto* rhs) -> llvm::Value* {
+          return builder.CreateAnd(lhs, rhs);
+        });
+    };
+
+    auto generateDisjunction = [&](const Disjunction& disjunction) {
+      std::vector<llvm::Value*> generatedDisjuncts;
+      std::transform(disjunction.begin(), disjunction.end(), 
+                     std::back_inserter(generatedDisjuncts),
+           [&] (const auto& disjunct) {
+             return generateDisjunct(disjunct);
+           });
+      return 
+        std::accumulate(generatedDisjuncts.begin(), generatedDisjuncts.end(), 
+                        *generatedDisjuncts.begin(),
+        [&] (auto* lhs, auto* rhs) -> llvm::Value* {
+           return builder.CreateOr(lhs, rhs);
+        });
+    };
+    generateDisjunction(disjunction);
   }
 
   void
