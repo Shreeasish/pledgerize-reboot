@@ -79,9 +79,8 @@ HANDLE(62, ExtractValue, ExtractValueInst)      // extract from aggregate
 HANDLE(63, InsertValue, InsertValueInst)        // insert into aggregate
 HANDLE(64, LandingPad, LandingPadInst)          // Landing pad instruction.
 
-HANDLE(100, alias, x)
-HANDLE(101, switchOp, x)
-HANDLE(102, loadOp, x)
-HANDLE(103, lastOp, x)
+HANDLE(100, Alias, x)
+HANDLE(101, Cast, x)
+HANDLE(102, Last, x)
 
 #endif

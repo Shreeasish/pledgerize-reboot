@@ -124,7 +124,7 @@ public:
   GetOrCreateExprID(llvm::LoadInst* const loadInst) {
     auto* pointer      = loadInst->getPointerOperand();
     auto pointerExprID = GetOrCreateExprID(pointer);
-    return GetOrCreateExprID({GetEmptyExprID(), OpIDs::loadOp, pointerExprID}, loadInst);
+    return GetOrCreateExprID({GetEmptyExprID(), llvm::Instruction::Load, pointerExprID}, loadInst);
   }
 
   ExprID
@@ -132,7 +132,8 @@ public:
     // Get first operand
     llvm::Value* operand = castInst->op_begin()->get();
     auto opExprID = GetOrCreateExprID(operand);
-    return GetOrCreateExprID({GetEmptyExprID(), OpIDs::castOp, opExprID}, castInst);
+    llvm::errs() << "\n cast handled explicitly";
+    return GetOrCreateExprID({GetEmptyExprID(), OpIDs::Cast, opExprID}, castInst);
   }
 
   ExprID
@@ -147,6 +148,16 @@ public:
     }
     ExprKey withSentinel{lhsID, llvm::Instruction::Call, GetEmptyExprID()};
     return GetOrCreateExprID(withSentinel, cs.getInstruction());
+  }
+
+  ExprID
+  GetOrCreateAliasID(llvm::LoadInst* const load, llvm::StoreInst* const store) {
+    auto storePtr = store->getPointerOperand();
+    auto loadPtr  =  load->getPointerOperand();
+    auto storePtrID = GetOrCreateExprID(storePtr);
+    auto loadPtrID  =  GetOrCreateExprID(loadPtr);
+    ExprKey key{loadPtrID, OpIDs::Alias, storePtrID};
+    return GetOrCreateExprID(key, store);
   }
 
   ExprID
@@ -242,7 +253,6 @@ public:
   //TODO: Memoize
   Disjunction
   rewrite(const Disjunction& disjunction, const ExprID oldExprID, const ExprID newExprID) {
-    //llvm::errs() << "\nrewriting " << oldExprID << " with " << newExprID;
     //TODO: Make Node types enum
     auto isBinaryExprID = [this](const ExprID exprID) -> bool {
       return GetExprType(exprID) == 2;
@@ -335,7 +345,7 @@ public:
   bool
   isUsed(llvm::Value* const value) const {
     bool ops =
-        std::any_of(value->use_begin(), value->use_end(), [this, value](const auto& use) {
+        std::any_of(value->use_begin(), value->use_end(), [this](const auto& use) {
           return leafTable.count(use.get());
         });
     return (value && leafTable.count(value) > 0) || ops;
@@ -450,7 +460,6 @@ public:
   std::pair<Conjunct, llvm::Value*>
   postOrderFor(const Conjunct& conjunct, Visitor& visitor) {
     auto postOrder = [&, this](const ExprID& exprID, auto postOrder) -> llvm::Value* {
-      auto asVariant   = std::variant<ExprID>(exprID);
       auto node = GetExprNode(exprID);
       if (auto binaryNode = std::get_if<const BinaryExprNode>(&node)) {
           llvm::Value* retLhs = postOrder(binaryNode->lhs, postOrder);
@@ -534,7 +543,6 @@ private:
     auto*  rhs = inst->getOperand(1);
     auto lhsID = GetOrCreateExprID(lhs);
     auto rhsID = GetOrCreateExprID(rhs);
-
     ExprKey key{lhsID, inst->getOpcode(), rhsID};
 
     if (auto found = exprTable.find(key); found != exprTable.end()) {

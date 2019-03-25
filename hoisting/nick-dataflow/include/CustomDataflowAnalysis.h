@@ -384,21 +384,23 @@ public:
 
       // Propagate through all instructions in the block
       for (auto& i : Direction::getInstructions(*bb)) {
-
+        llvm::outs() << "\n" << i;
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
         } 
-        // ska: uncomment to skip function calls
-        //else {
-          applyTransfer(i, state, context);
-        //}
-//meet.printState(llvm::outs(),state);
-          //llvm::outs() << "\nAfter-------------------------------------";
-          //llvm::outs() << "In function " << i.getFunction()->getName()
-          //             << " after";
-          //llvm::outs() << i;
+          llvm::errs() << "\nBefore------------------------------------";
+          llvm::errs() << "\nIn function " << i.getFunction()->getName()
+                       << " \nBefore";
+          llvm::errs() << i;
+          llvm::errs() << "\n State:\n";
+          state[nullptr].print(llvm::errs());
+          llvm::errs() << "\n------------------------------------------";
 
+          // ska: uncomment to skip function calls
+          //else {
+          applyTransfer(i, state, context);
+          //}
           llvm::errs() << "\nAfter-------------------------------------";
           llvm::errs() << "In function " << i.getFunction()->getName()
                        << " after";
@@ -409,7 +411,6 @@ public:
 
           results[&i] = state;
       }
-
       // If the abstract state for this block did not change, then we are done
       // with this block. Otherwise, we must update the abstract state and
       // consider changes to successors.
@@ -532,10 +533,10 @@ private:
       auto temp =
           edgeTransformer(valueStatePair.second, branchAsValue, destination, isSame);
       auto [found, newlyAdded] = destinationState.insert({valueStatePair.first,temp});
-      temp.print(llvm::errs());
+      //temp.print(llvm::errs());
       if (!newlyAdded) {
         found->second = meet({found->second, temp});
-        found->second.print(llvm::errs());
+        //found->second.print(llvm::errs());
       }
     }
   }

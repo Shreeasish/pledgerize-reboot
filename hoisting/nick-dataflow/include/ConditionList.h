@@ -23,11 +23,9 @@ using ExprKey    = std::tuple<ExprID, OpKey, ExprID>;
 
 constexpr int typeSize{16};
 namespace OpIDs {
-constexpr OpKey aliasOp{100};
-constexpr OpKey switchOp{101};
-constexpr OpKey loadOp{102};
-constexpr OpKey lastOp{103};
-constexpr OpKey castOp{104};
+constexpr OpKey Alias{100};
+constexpr OpKey Cast{101};
+constexpr OpKey last{102};
 }  // namespace OpIDs
 
 namespace ReservedExprIDs {
@@ -388,7 +386,6 @@ public:
         }
         it2++;
       }
-      llvm::errs() << "found";
       return true;
     };
     while (smaller + 1 < end) {
@@ -408,17 +405,14 @@ public:
     return *this;
   }
 
-  //TODO::Finish this
   Disjunction&
   simplifyTrues() {
     if (!isVacuouslyTrue()) {
       return *this;
     }
-    llvm::errs() << "\n found trivially true" ;
     disjuncts.erase(this->begin() + 1, this->end());
-    
-    llvm::errs() << "\nAfter simplifications" ;
-    this->print(llvm::errs());
+    //llvm::errs() << "\nAfter simplifications" ;
+    //this->print(llvm::errs());
     return *this;
   }
 

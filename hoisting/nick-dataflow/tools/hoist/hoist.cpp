@@ -89,7 +89,7 @@ getBackedges(const llvm::Function* func) {
   return functionBackEdges[func];
 }
 
-
+[[maybe_unused]]
 static void
 setRequiredPrivileges(Privileges requiredPrivileges, llvm::CallSite cs, const Context& context) {
   auto fun = cs.getCalledFunction();
@@ -183,7 +183,6 @@ public:
   }
 
 private:
-  //TODO: Ask Nick about perfect forwarding
   Disjunction&
   handle(llvm::Instruction* branchOrSwitch, Disjunction& destState, llvm::Value* destination) {
     if (auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchOrSwitch)) {
@@ -207,7 +206,7 @@ private:
       auto* condition         = switchInst->getCondition();
       auto conditionAsExprID  = generator->GetOrCreateExprID(condition);
 
-      ExprKey key{conditionAsExprID, OpIDs::switchOp, caseValueAsExprID};
+      ExprKey key{conditionAsExprID, llvm::Instruction::Switch, caseValueAsExprID};
       auto form = getConjunctForm(caseOp);
       return std::make_pair(generator->GetOrCreateExprID(key, switchInst), form);
     };
@@ -289,7 +288,6 @@ private:
     if (handled) {
       return true;
     }
-    auto* inst = cs.getInstruction();
     if (!cs.getInstruction()) {
       return false;
     }
@@ -304,7 +302,6 @@ private:
     }
 
     if (fun->getName().startswith("wait")) {
-      auto vacExpr   = generator->GetVacuousExprID();
       Disjunction disjunction{};
       Disjunct disjunct{};
       disjunct.addConjunct(generator->GetVacuousConjunct());
@@ -314,10 +311,10 @@ private:
     }
 
     if (fun->isDeclaration() && isUnknown(fun)) {
-      //Treat as instruction
       auto oldExprID = generator->GetOrCreateExprID(value);
       auto newExprID = generator->GetOrCreateExprID(cs);
       state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
+      llvm::errs() << "\nCallSite Rewritten to " << newExprID;
       return true;
     }
 
@@ -332,7 +329,7 @@ private:
         argPairs.push_back(argParamPair{arg, paramAsValue});
         i++;
       }
-    };
+    }
 
     auto rewritePair = [&](auto* arg, auto* param) {
       llvm::errs() << "\nRewriting callsite arg " << *arg 
@@ -441,7 +438,7 @@ private:
       return true;
     }
     //llvm::errs() << "State before pulling context info";
-    state[nullptr].print(llvm::errs());
+    //state[nullptr].print(llvm::errs());
     assert(state[nullptr].isEmpty() || !state[nullptr].isEmpty() && state[ret].isEmpty());
     state[nullptr] = state[ret]; 
     auto* retValue = ret->getReturnValue();
@@ -532,7 +529,6 @@ private:
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto exprID    = generator->GetOrCreateExprID(castInst);
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
-    //llvm::errs() << "Generated cast for " << oldExprID << "to" << exprID;
     return true;
   }
 
@@ -542,7 +538,7 @@ private:
     if (handled) {
       return;
     }
-    llvm::errs() << "Unknown at " << *value;
+    llvm::errs() << "\nUnknown at " << *value;
     dropOperands(value, state);
     if (!generator->isUsed(value)) {
       return;
@@ -550,7 +546,7 @@ private:
     auto oldLeafTableSize = generator->getLeafTableSize();
 
     auto oldExprID = generator->GetOrCreateExprID(value);
-    llvm::errs() << "Dropping Unknown " << oldExprID;
+    llvm::errs() << "\nDropping Unknown " << oldExprID;
     state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
     assert(oldLeafTableSize == generator->getLeafTableSize() && "New Value at Unknown");
   }
@@ -565,12 +561,12 @@ private:
   void
   dropOperands(const llvm::Value* value, DisjunctionState& state) {
     //Does not work for callsites. Fix later
-    llvm::errs() << "Dropping operands of " << *value;
+    llvm::errs() << "\nDropping operands of " << *value;
     for (auto& op : value->uses()) {
       if (!generator->isUsed(op.get())) {
         continue;
       }
-      llvm::errs() << "Dropping Unknown for" << *(op.get());
+      llvm::errs() << "\nDropping Unknown for" << *(op.get());
       auto oldExprID = generator->GetOrCreateExprID(op.get());
       state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
     }
@@ -670,18 +666,13 @@ private:
   weakUpdate(const Disjunction& disjunction,
              llvm::LoadInst* const loadInst,
              llvm::StoreInst* const storeInst) {
-    auto storeValue = storeInst->getValueOperand();
-    auto valExprID  = generator->GetOrCreateExprID(storeValue);
-    // TODO: Move aliasConjunct creation to the generator
-    auto aliasConjunct = [&]() {
-      auto* loadPtr  = loadInst->getPointerOperand();
-      auto ptrExprID = generator->GetOrCreateExprID(loadPtr);
-      ExprKey aliasKey{ptrExprID, OpIDs::aliasOp, valExprID};
-      auto aliasExpr = generator->GetOrCreateExprID(aliasKey, storeInst);
+    auto aliasConjunct = [](llvm::LoadInst* const loadInst,
+                            llvm::StoreInst* const storeInst) {
+      auto aliasExpr = generator->GetOrCreateAliasID(loadInst, storeInst);
       return Conjunct(aliasExpr, true);
-    }();
-    auto loadExprID = generator->GetOrCreateExprID(loadInst);
+    }(loadInst, storeInst);
 
+    auto loadExprID = generator->GetOrCreateExprID(loadInst);
     Disjunction forRewrites{};
     Disjunction noRewrites{disjunction};
     for (auto& disjunct : disjunction.disjuncts) {
@@ -696,6 +687,9 @@ private:
         }
       }
     }
+
+    auto storeValue = storeInst->getValueOperand();
+    auto valExprID  = generator->GetOrCreateExprID(storeValue);
     auto rewritten  = generator->rewrite(forRewrites, loadExprID, valExprID);
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
@@ -705,14 +699,6 @@ public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
     auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
-    llvm::errs() << "\nBefore------------------------------------";
-    llvm::errs() << "\nIn function " << inst->getFunction()->getName()
-                 << " \nBefore";
-    llvm::errs() << *inst;
-    llvm::errs() << "\n State:\n";
-    state[nullptr].print(llvm::errs());
-    llvm::errs() << "\n------------------------------------------";
-
     bool handled = false;
     handled |= handleBrOrSwitch(inst, handled);
     handled |= handlePhiBackEdges(&value, state, handled);
@@ -726,7 +712,6 @@ public:
     handled |= handleCmpInst(&value, state, handled);
     handled |= handleCast(&value, state, handled);
     handleUnknown(&value, state, handled);
-    state[nullptr].print(llvm::errs());
     state[nullptr].simplifyComplements()
                   .simplifyRedundancies()
                   .simplifyImplication();
@@ -812,7 +797,6 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     for (auto& [function, functionResults] : contextResults) {
       auto [loc, state] = getLocationAndState(function, functionResults);
       if (state.isVacuouslyTrue()) {
-        llvm::errs() << "\nfound vacuously true" ;
         continue;
       }
       printer->printIR(loc, state);

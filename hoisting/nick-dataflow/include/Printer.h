@@ -38,11 +38,13 @@ public:
     if (disjunction.isEmpty()) {
       return;
     }
+    llvm::errs() << "\nInserting at " << *location 
+                 << "\n parent function " << location->getParent()->getParent()->getName();
     llvm::IRBuilder<> builder{location};
     insertIR(disjunction, location, builder);
-    auto* bb = location->getParent();
-    llvm::errs() << "After insertion" ;
-    llvm::errs() << *bb;
+    //auto* bb = location->getParent();
+    //llvm::errs() << "After insertion" ;
+    //llvm::errs() << *bb;
   }
 
 private:
@@ -163,8 +165,8 @@ private:
 
   class Visitor {
   public:
-    Visitor(llvm::LLVMContext& c, llvm::IRBuilder<>& irb) 
-      : context{c}, builder{irb} { }
+    Visitor(llvm::IRBuilder<>& irb) 
+      : builder{irb} { }
     llvm::Value*
     operator()(ExprID exprID,
                BinaryExprNode binaryNode,
@@ -183,12 +185,10 @@ private:
 
     llvm::Value*
     operator()(ExprID exprID, ValueExprNode node) {
-      llvm::errs() << "\nnot generating a value node for " << *(node.value);
       return node.value;
     }
 
   private:
-    llvm::LLVMContext& context;
     llvm::IRBuilder<>& builder;
 
     llvm::Value*
@@ -196,7 +196,12 @@ private:
                    BinaryExprNode binaryNode,
                    llvm::Value* lhs,
                    llvm::Value* rhs) {
-      llvm::errs() << "\n (binaryNode.op.opCode) " << (binaryNode.op.opCode);
+      llvm::errs() << "\n" << exprID << " (binaryNode.value) " << *(binaryNode.value);
+      llvm::errs() << "\n" << exprID << " (binaryNode.op.opCode) " << (binaryNode.op.opCode);
+      if (lhs && rhs) {
+        llvm::errs() << "\n" << " lhs " << *lhs << "\n rhs " << *rhs
+                     << "\n";
+      }
       switch (binaryNode.op.opCode) {
         case llvm::Instruction::Add:
           return generateAdd(binaryNode, lhs, rhs);
@@ -204,10 +209,10 @@ private:
         case llvm::Instruction::ICmp:
           return generateIcmp(binaryNode, lhs, rhs);
           break;
-        case OpIDs::loadOp: 
+        case llvm::Instruction::Load:
           return generateLoad(binaryNode, lhs, rhs); 
           break;
-        case OpIDs::switchOp:
+        case llvm::Instruction::Switch:
           return generateSwitch(binaryNode, lhs, rhs);
           break;
         case llvm::Instruction::GetElementPtr:
@@ -216,8 +221,13 @@ private:
         case llvm::Instruction::Call:
           return generateCall(binaryNode, lhs, rhs);
           break;
-        case OpIDs::castOp:
+        case OpIDs::Cast:
+          llvm::errs() << "\nFound castOp";
           llvm_unreachable("Found unknown instruction");
+          break;
+        case OpIDs::Alias:
+          return generateAlias(binaryNode, lhs, rhs);
+          break;
         default:
           llvm::errs() << "\n (binaryNode.op.opCode) "
                        << (binaryNode.op.opCode);
@@ -237,12 +247,12 @@ private:
     generateIcmp(BinaryExprNode binaryNode,
                  llvm::Value* lhs,
                  llvm::Value* rhs) {
-      llvm::errs() << "\nincoming lhs " << *lhs;
-      llvm::errs() << "\nincoming rhs " << *rhs;
-
       switch (binaryNode.op.predicate) {
         case Predicate::ICMP_EQ:
           return builder.CreateICmpEQ(lhs, rhs);
+          break;
+        case Predicate::ICMP_SLT:
+          return builder.CreateICmpSLT(lhs, rhs);
           break;
         default:
           llvm::errs() << "\n (binaryNode.op.predicate) "
@@ -259,8 +269,6 @@ private:
     generateLoad(BinaryExprNode binaryNode,
                  llvm::Value* lhs,
                  llvm::Value* rhs) {
-      llvm::errs() << "\ngenerating load ";
-      llvm::errs() << "\nincoming rhs " << *rhs;
       return builder.CreateLoad(rhs);
     }
 
@@ -275,14 +283,11 @@ private:
     generateGEP(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
       //TODO: Verify with Nick. Run on custom testcase
       auto* generated = builder.CreateGEP(lhs, rhs, "gep");
-      llvm::errs() << "\ncreated gep "<< *generated;
-      llvm::errs() << "\nrhs" << *rhs;
       return generated;
     }
 
     llvm::Value*
     generateCall(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
-      llvm::errs() << "\n lhs for CallAST" << *lhs;
       if (auto* func = llvm::dyn_cast<llvm::Function>(lhs)) {
         auto* functionType = func->getFunctionType();
         auto* generated    = builder.CreateCall( functionType, func,
@@ -294,11 +299,10 @@ private:
         assert(func);
         std::vector<llvm::Value*> operands;
         for (auto& arg : callInst->arg_operands()) {
-          llvm::errs() << "\n found " << *arg << "as operand";
           operands.push_back(arg);
         }
         if (rhs) { // skip sentinel
-          llvm::errs() << "\n rhs for CallAST" << *rhs;
+          //llvm::errs() << "\n rhs for CallAST " << *rhs << "with exprID " << binaryNode.rhs;
           operands.push_back(rhs);
         }
         auto* generated = builder.CreateCall(functionType, func, llvm::ArrayRef<llvm::Value*>{operands});
@@ -309,13 +313,17 @@ private:
         return nullptr;
       }
     }
+
+    llvm::Value*
+    generateAlias(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      return builder.CreateICmpEQ(lhs, rhs, "aliasEQ");
+    }
   };
 
 
   void
   insertIR(const Disjunction& disjunction, llvm::Instruction* location, llvm::IRBuilder<>& builder) {
-    auto& context = module.getContext();
-    Visitor visitor{context, builder};
+    Visitor visitor{builder};
 
     auto applyForm = [&](const Conjunct& conjunct, llvm::Value* value) -> llvm::Value* {
       if (!conjunct.notNegated) {
