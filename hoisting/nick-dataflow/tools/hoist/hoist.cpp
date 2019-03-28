@@ -301,7 +301,7 @@ private:
       return true;
     }
 
-    if (fun->getName().startswith("printf")) {
+    if (fun->getName().startswith("wait")) {
       Disjunction disjunction{};
       Disjunct disjunct{};
       disjunct.addConjunct(generator->GetVacuousConjunct());
@@ -675,7 +675,6 @@ private:
     auto aliasConjunct = [](const BinaryExprNode& loadNode,
                             llvm::StoreInst* const storeInst) {
       auto aliasExpr = generator->GetOrCreateAliasID(loadNode, storeInst);
-      llvm::errs() << "created AliasExpr" << aliasExpr;
       return Conjunct(aliasExpr, true);
     }(loadNode, storeInst);
 
@@ -686,7 +685,6 @@ private:
       auto notAliasDisjunct{disjunct};
       for (auto& conjunct : disjunct.conjunctIDs) {
         if (generator->find(conjunct, loadExprID)) {
-          llvm::errs() << "found load exprID " << loadExprID;
           aliasDisjunct.addConjunct(aliasConjunct);
           notAliasDisjunct.addConjunct(!aliasConjunct);
           forRewrites.addDisjunct(aliasDisjunct);
@@ -698,10 +696,7 @@ private:
     auto storeValue = storeInst->getValueOperand();
     auto valExprID  = generator->GetOrCreateExprID(storeValue);
     auto rewritten  = generator->rewrite(forRewrites, loadExprID, valExprID);
-    auto x = Disjunction::unionDisjunctions(rewritten, noRewrites);
-    x.print(llvm::errs());
-    return x;
-    //return Disjunction::unionDisjunctions(rewritten, noRewrites);
+    return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
 
 

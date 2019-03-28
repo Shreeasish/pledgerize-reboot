@@ -360,8 +360,6 @@ public:
       exprStack.push(conjunct.exprID);
       while (!exprStack.empty()) {
         auto exprID = exprStack.top();
-        llvm::errs() << "\nwalking " << exprID;
-        llvm::errs() << "\ntarget  " << targetExprID;
         exprStack.pop();
         if (targetExprID == exprID){
           return true;
