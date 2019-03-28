@@ -301,7 +301,7 @@ private:
       return true;
     }
 
-    if (fun->getName().startswith("wait")) {
+    if (fun->getName().startswith("printf")) {
       Disjunction disjunction{};
       Disjunct disjunct{};
       disjunct.addConjunct(generator->GetVacuousConjunct());
@@ -679,17 +679,23 @@ private:
     }(loadNode, storeInst);
 
     Disjunction forRewrites{};
-    Disjunction noRewrites{disjunction};
+    Disjunction noRewrites{};
     for (auto& disjunct : disjunction.disjuncts) {
       auto aliasDisjunct{disjunct};
       auto notAliasDisjunct{disjunct};
+      auto found = false;
       for (auto& conjunct : disjunct.conjunctIDs) {
         if (generator->find(conjunct, loadExprID)) {
           aliasDisjunct.addConjunct(aliasConjunct);
           notAliasDisjunct.addConjunct(!aliasConjunct);
           forRewrites.addDisjunct(aliasDisjunct);
           noRewrites.addDisjunct(notAliasDisjunct);
+          found = true;
+          break;
         }
+      }
+      if (!found) {
+        noRewrites.addDisjunct(disjunct);
       }
     }
 
@@ -705,6 +711,11 @@ public:
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
     auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
     bool handled = false;
+    if (auto constantExpr = llvm::dyn_cast<llvm::ConstantExpr>(&value)) {
+      llvm::errs() << "\n\n" << value;
+      llvm_unreachable("\nFound constant exprs");
+    }
+
     handled |= handleBrOrSwitch(inst, handled);
     handled |= handlePhiBackEdges(&value, state, handled);
     handled |= handleCallSite(&value, state, context, handled);

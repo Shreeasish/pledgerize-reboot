@@ -293,8 +293,8 @@ public:
   // Rename to Horizontal/Vertical Negation
   Disjunction&
   simplifyComplements() {
-    //llvm::errs() << "\nBefore simplification";
-    //this->print(llvm::errs());
+    llvm::errs() << "\nBefore simplification";
+    this->print(llvm::errs());
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
       // The second check is redundant since there should never be adjacent
       // conjuncts with the same exprID

@@ -72,6 +72,9 @@ public:
   ExprID
   GetOrCreateExprID(llvm::Constant* const constant) {
     assert(constant != nullptr);
+    if (auto constantExpr = llvm::dyn_cast<llvm::ConstantExpr>(constant)) {
+      llvm::errs() << "\n\n Found Constant Expr" << *constant;
+    }
     if (auto* asGepOp  = llvm::dyn_cast<llvm::GEPOperator>(constant)) {
       return GetOrCreateExprID(asGepOp);
     }
@@ -194,7 +197,7 @@ public:
   
   const BinaryExprNode& 
   GetBinaryExprNode(const ExprID conjunctID) const {
-    assert((conjunctID & reservedBExprBits()) && "ConjunctID is not a BinaryExpr");
+    assert((conjunctID & reservedBExprBits()) && "ConjunctID is not a BinaryExprID");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
       auto index = conjunctID & (~reservedBExprBits());
       return index;
@@ -204,7 +207,7 @@ public:
 
   const ConstantExprNode&
   GetConstantExprNode(const ExprID conjunctID) const {
-    assert((conjunctID & reservedCExprBits()) && "ConjunctID is not a ConstantExpr");
+    assert((conjunctID & reservedCExprBits()) && "ConjunctID is not a ConstantExprID");
     auto asIndex = [this](const auto& conjunctID) -> ExprID {
       auto index = conjunctID & (~reservedCExprBits());
       return index; 
