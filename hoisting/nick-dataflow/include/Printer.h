@@ -30,18 +30,22 @@ public:
     if (disjunction.isEmpty()) {
       return;
     }
-    printStateTrees(location, disjunction);
+    printTrees(location, disjunction);
   }
 
   void
-  printIR(llvm::Instruction* const location, const Disjunction& disjunction) {
+  insertIR(llvm::Instruction* const location, const Disjunction& disjunction) {
     if (disjunction.isEmpty()) {
       return;
     }
     llvm::errs() << "\nInserting at " << *location 
                  << "\n parent function " << location->getParent()->getParent()->getName();
+    llvm::outs() << "\nInserting at " << *location 
+                 << "\n parent function " << location->getParent()->getParent()->getName();
     llvm::IRBuilder<> builder{location};
-    insertIR(disjunction, location, builder);
+    //printFlattened(location, disjunction);
+    printState(location, disjunction);
+    //insertIR(disjunction, location, builder);
     //auto* bb = location->getParent();
     //llvm::errs() << "After insertion" ;
     //llvm::errs() << *bb;
@@ -52,7 +56,7 @@ private:
   Generator* generator;
   llvm::raw_ostream& out;
   llvm::Module& module;
-  const char* delimiter = "\\x";
+  const char* delimiter = "x";
   llvm::DenseMap<OpKey, const char*> opMap;
 
   // Visitor Helpers
@@ -71,52 +75,53 @@ private:
   }
 
   void
-  printLineNumber(llvm::Instruction* const inst) const {
-    // out.changeColor(llvm::raw_ostream::Colors::RED);
-    if (const llvm::DILocation* debugLoc = inst->getDebugLoc()) {
-      out << "At " << debugLoc->getFilename() << " line " << debugLoc->getLine()
-          << "  " << *inst << "\n";
-    } else {
-      out << "At an unknown location" << *inst << "\n";
-    }
-    // out.changeColor(llvm::raw_ostream::Colors::WHITE);
-  }
-
-  void
-  printTree(const Conjunct conjunct,
-            const int disjunctCount,
-            const int conjunctCount) const {
-    auto visitor = overloaded{
-        [&, this](ExprID exprID, const ConstantExprNode node) {
-          out << "\t" << exprID << delimiter << disjunctCount << delimiter
-              << conjunctCount;
-          if (node.constant) {
-            out << " [shape=box,label=\"" << *(node.constant) << "\"]\n";
+  printFlattened(llvm::Instruction* const location,
+               const Disjunction disjunction) {
+    printLineNumber(location);
+    bool firstDisjunct = true;
+    for (auto& disjunct : disjunction) {
+      if (firstDisjunct) {
+        out << "{";
+        firstDisjunct = false;
+      } else {
+        out << "OR \n{";
+      }
+      bool firstConjunct = true;
+      for (auto& conjunct : disjunct) {
+        if (firstConjunct) {
+          if (conjunct.notNegated) {
+            out << " [";
           } else {
-            out << " [shape=box,label=\""
-                << " nullptr "
-                << "\"]\n";
+            out << "-[";
           }
-        },
-        [&, this](ExprID exprID, const BinaryExprNode node) {
-          auto lhsID = node.lhs;
-          auto rhsID = node.rhs;
-          out << "\t" << exprID << delimiter << disjunctCount << delimiter
-              << conjunctCount << " -> { " << lhsID << delimiter
-              << disjunctCount << delimiter << conjunctCount << "; " << rhsID
-              << delimiter << disjunctCount << delimiter << conjunctCount
-              << " }\n";
-        },
-        [&, this](ExprID exprID, const ValueExprNode node) {
-          out << "\t" << exprID << delimiter << disjunctCount << delimiter
-              << conjunctCount << " [shape=box,label=\"" << *(node.value)
-              << "\"]\n";
-        }};
-    generator->preOrderFor(conjunct, visitor);
+          firstConjunct = false;
+        } else {
+          if (conjunct.notNegated) {
+            out << " AND  [";
+          } else {
+            out << " AND -[";
+          }
+        }
+        printValues(conjunct);
+        out << "]";
+      }
+      out << "}\n";
+    }
+    out << "\n";
   }
 
   void
-  printStateTrees(llvm::Instruction* const location,
+  printCall(llvm::Instruction* const location, const Disjunction disjunction) {
+    auto& context  = module.getContext();
+    auto* voidTy   = llvm::Type::getVoidTy(context);
+    auto* dropFunc = module.getOrInsertFunction("PlEdGeRiZe_drop", voidTy);
+
+    llvm::IRBuilder<> builder(location);
+    builder.CreateCall(dropFunc);
+  }
+
+  void
+  printTrees(llvm::Instruction* const location,
                   const Disjunction disjunction) {
     int disjunctCount = 0;
     out << "\nDigraph " << counter++ << " {\n"
@@ -127,7 +132,7 @@ private:
     for (auto& disjunct : disjunction) {
       int conjunctCount = 0;
       for (auto& conjunct : disjunct) {
-        printTree(conjunct, disjunctCount, conjunctCount);
+        printGraph(conjunct, disjunctCount, conjunctCount);
         conjunctCount++;
       }
       disjunctCount++;
@@ -136,7 +141,65 @@ private:
   }
 
   void
-  printTreeIR(const Conjunct conjunct) const {
+  printGraph(const Conjunct conjunct,
+            const int disjunctCount,
+            const int conjunctCount) const {
+    auto visitor = overloaded{
+        [&, this](ExprID exprID, const ConstantExprNode node) {
+          out << "\t\"" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount << "\"";
+          if (node.constant) {
+            out << " [shape=box,label=\"" << *(node.constant) << "\"";
+          } else {
+            out << " [shape=box,label=\""
+                << " nullptr " << "\"";
+          }
+          out << ", ID=\"" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount << "\"]\n";
+        },
+        [&, this](ExprID exprID, const BinaryExprNode node) {
+          auto lhsID = node.lhs;
+          auto rhsID = node.rhs;
+          out << "\t\"" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount << "\""
+              << " -> { "
+              << "\"" << lhsID << delimiter << disjunctCount << delimiter
+              << conjunctCount << "\""
+              << "; "
+              << "\"" << rhsID << delimiter << disjunctCount << delimiter
+              << conjunctCount << "\"" << " }\n";
+          
+
+          out << "\t\"" << exprID << delimiter << disjunctCount << delimiter 
+              << conjunctCount << "\"" << " [shape=box,label=\"";
+              if (node.value) {
+                out << *(node.value);
+              } else {
+                out << "nullptr";
+              }
+          out << "\""
+              << ",ID=\"" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount
+              << "\"]\n";
+        },
+        [&, this](ExprID exprID, const ValueExprNode node) {
+          out << "\t\"" << exprID << delimiter << disjunctCount << delimiter 
+              << conjunctCount << "\"" << " [shape=box,label=\"";
+              if (node.value) {
+                out << *(node.value);
+              } else {
+                out << "nullptr";
+              }
+          out << "\""
+              << ",ID=\"" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount
+              << "\"]\n";
+        }};
+    generator->preOrderFor(conjunct, visitor);
+  }
+
+  void
+  printValues(const Conjunct conjunct) const {
     auto visitor = overloaded{
         [&, this](ExprID exprID, const ConstantExprNode node) {
           // out.changeColor(llvm::raw_ostream::Colors::GREEN);
@@ -152,6 +215,7 @@ private:
           if (auto it = opMap.find(node.op.opCode); it != opMap.end()) {
             auto [first, opString] = *it;
             out << " " << opString << " ";
+            out << " (node.value)" << *(node.value) << " ";
           }
           // out.changeColor(llvm::raw_ostream::Colors::WHITE);
         },
@@ -162,6 +226,51 @@ private:
         }};
     generator->inOrderFor(conjunct, visitor);
   }
+
+  void
+  insertIR(const Disjunction& disjunction, llvm::Instruction* location, llvm::IRBuilder<>& builder) {
+    Visitor visitor{builder};
+
+    auto applyForm = [&](const Conjunct& conjunct, llvm::Value* value) -> llvm::Value* {
+      if (!conjunct.notNegated) {
+        return builder.CreateNot(value);
+      } 
+      return value;
+    };
+
+    auto generateDisjunct = [&](const Disjunct& disjunct) -> llvm::Value* {
+      std::vector<llvm::Value*> generatedConjuncts;
+      std::transform(disjunct.begin(), disjunct.end(), 
+                     std::back_inserter(generatedConjuncts),
+           [&] (const Conjunct& conjunct) -> llvm::Value* {
+             auto [retConjunct, generatedIR] = generator->postOrderFor(conjunct, visitor);
+             return applyForm(conjunct, generatedIR);
+           });
+      return 
+        std::accumulate(generatedConjuncts.begin(), generatedConjuncts.end(), 
+                       *generatedConjuncts.begin(),
+        [&] (auto* lhs, auto* rhs) -> llvm::Value* {
+          return builder.CreateAnd(lhs, rhs);
+        });
+    };
+
+    auto generateDisjunction = [&](const Disjunction& disjunction) {
+      std::vector<llvm::Value*> generatedDisjuncts;
+      std::transform(disjunction.begin(), disjunction.end(), 
+                     std::back_inserter(generatedDisjuncts),
+           [&] (const auto& disjunct) {
+             return generateDisjunct(disjunct);
+           });
+      return 
+        std::accumulate(generatedDisjuncts.begin(), generatedDisjuncts.end(), 
+                        *generatedDisjuncts.begin(),
+        [&] (auto* lhs, auto* rhs) -> llvm::Value* {
+           return builder.CreateOr(lhs, rhs);
+        });
+    };
+    generateDisjunction(disjunction);
+  }
+
 
   class Visitor {
   public:
@@ -223,7 +332,8 @@ private:
           break;
         case OpIDs::Cast:
           llvm::errs() << "\nFound castOp";
-          llvm_unreachable("Found unknown instruction");
+          return generateCast(binaryNode, lhs, rhs);
+          //llvm_unreachable("Found unknown instruction");
           break;
         case OpIDs::Alias:
           return generateAlias(binaryNode, lhs, rhs);
@@ -253,6 +363,9 @@ private:
           break;
         case Predicate::ICMP_SLT:
           return builder.CreateICmpSLT(lhs, rhs);
+          break;
+        case Predicate::ICMP_SGT:
+          return builder.CreateICmpSGT(lhs, rhs);
           break;
         default:
           llvm::errs() << "\n (binaryNode.op.predicate) "
@@ -318,97 +431,25 @@ private:
     generateAlias(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
       return builder.CreateICmpEQ(lhs, rhs, "aliasEQ");
     }
+
+    llvm::Value*
+    generateCast(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      auto* castInst = llvm::dyn_cast<llvm::CastInst>(binaryNode.value);
+      auto castType  = castInst->getOpcode();
+      return builder.CreateCast(castType, lhs, castInst->getDestTy());
+    }
   };
 
-
   void
-  insertIR(const Disjunction& disjunction, llvm::Instruction* location, llvm::IRBuilder<>& builder) {
-    Visitor visitor{builder};
-
-    auto applyForm = [&](const Conjunct& conjunct, llvm::Value* value) -> llvm::Value* {
-      if (!conjunct.notNegated) {
-        return builder.CreateNot(value);
-      } 
-      return value;
-    };
-
-    auto generateDisjunct = [&](const Disjunct& disjunct) -> llvm::Value* {
-      std::vector<llvm::Value*> generatedConjuncts;
-      std::transform(disjunct.begin(), disjunct.end(), 
-                     std::back_inserter(generatedConjuncts),
-           [&] (const Conjunct& conjunct) -> llvm::Value* {
-             auto [retConjunct, generatedIR] = generator->postOrderFor(conjunct, visitor);
-             return applyForm(conjunct, generatedIR);
-           });
-      return 
-        std::accumulate(generatedConjuncts.begin(), generatedConjuncts.end(), 
-                       *generatedConjuncts.begin(),
-        [&] (auto* lhs, auto* rhs) -> llvm::Value* {
-          return builder.CreateAnd(lhs, rhs);
-        });
-    };
-
-    auto generateDisjunction = [&](const Disjunction& disjunction) {
-      std::vector<llvm::Value*> generatedDisjuncts;
-      std::transform(disjunction.begin(), disjunction.end(), 
-                     std::back_inserter(generatedDisjuncts),
-           [&] (const auto& disjunct) {
-             return generateDisjunct(disjunct);
-           });
-      return 
-        std::accumulate(generatedDisjuncts.begin(), generatedDisjuncts.end(), 
-                        *generatedDisjuncts.begin(),
-        [&] (auto* lhs, auto* rhs) -> llvm::Value* {
-           return builder.CreateOr(lhs, rhs);
-        });
-    };
-    generateDisjunction(disjunction);
-  }
-
-  void
-  printBasicIR(llvm::Instruction* const location,
-               const Disjunction disjunction) {
-    printLineNumber(location);
-    bool firstDisjunct = true;
-    for (auto& disjunct : disjunction) {
-      if (firstDisjunct) {
-        out << "{";
-        firstDisjunct = false;
-      } else {
-        out << "OR \n{";
-      }
-      bool firstConjunct = true;
-      for (auto& conjunct : disjunct) {
-        if (firstConjunct) {
-          if (conjunct.notNegated) {
-            out << " [";
-          } else {
-            out << "-[";
-          }
-          firstConjunct = false;
-        } else {
-          if (conjunct.notNegated) {
-            out << " AND  [";
-          } else {
-            out << " AND -[";
-          }
-        }
-        printTreeIR(conjunct);
-        out << "]";
-      }
-      out << "}\n";
+  printLineNumber(llvm::Instruction* const inst) const {
+    // out.changeColor(llvm::raw_ostream::Colors::RED);
+    if (const llvm::DILocation* debugLoc = inst->getDebugLoc()) {
+      out << "At " << debugLoc->getFilename() << " line " << debugLoc->getLine()
+          << "  " << *inst;
+    } else {
+      out << "At an unknown location" << *inst;
     }
-    out << "\n";
-  }
-
-  void
-  printCall(llvm::Instruction* const location, const Disjunction disjunction) {
-    auto& context  = module.getContext();
-    auto* voidTy   = llvm::Type::getVoidTy(context);
-    auto* dropFunc = module.getOrInsertFunction("PlEdGeRiZe_drop", voidTy);
-
-    llvm::IRBuilder<> builder(location);
-    builder.CreateCall(dropFunc);
+    // out.changeColor(llvm::raw_ostream::Colors::WHITE);
   }
 
   void

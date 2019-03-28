@@ -133,7 +133,7 @@ public:
     llvm::Value* operand = castInst->op_begin()->get();
     auto opExprID = GetOrCreateExprID(operand);
     llvm::errs() << "\n cast handled explicitly";
-    return GetOrCreateExprID({GetEmptyExprID(), OpIDs::Cast, opExprID}, castInst);
+    return GetOrCreateExprID({opExprID, OpIDs::Cast, GetEmptyExprID()}, castInst);
   }
 
   ExprID
@@ -151,11 +151,10 @@ public:
   }
 
   ExprID
-  GetOrCreateAliasID(llvm::LoadInst* const load, llvm::StoreInst* const store) {
-    auto storePtr = store->getPointerOperand();
-    auto loadPtr  =  load->getPointerOperand();
+  GetOrCreateAliasID(const BinaryExprNode& node, llvm::StoreInst* const store) {
+    auto storePtr   = store->getPointerOperand();
     auto storePtrID = GetOrCreateExprID(storePtr);
-    auto loadPtrID  =  GetOrCreateExprID(loadPtr);
+    auto loadPtrID  = node.rhs;
     ExprKey key{loadPtrID, OpIDs::Alias, storePtrID};
     return GetOrCreateExprID(key, store);
   }
@@ -361,6 +360,8 @@ public:
       exprStack.push(conjunct.exprID);
       while (!exprStack.empty()) {
         auto exprID = exprStack.top();
+        llvm::errs() << "\nwalking " << exprID;
+        llvm::errs() << "\ntarget  " << targetExprID;
         exprStack.pop();
         if (targetExprID == exprID){
           return true;

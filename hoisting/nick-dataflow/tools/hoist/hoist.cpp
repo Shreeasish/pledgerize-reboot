@@ -301,7 +301,7 @@ private:
       return true;
     }
 
-    if (fun->getName().startswith("wait")) {
+    if (fun->getName().startswith("printf")) {
       Disjunction disjunction{};
       Disjunct disjunct{};
       disjunct.addConjunct(generator->GetVacuousConjunct());
@@ -365,24 +365,26 @@ private:
     return true;
   }
 
+  using NodeExprPair = std::pair<BinaryExprNode, ExprID>;
   auto
-  seperateLoads(llvm::StoreInst* const storeInst, std::vector<LoadInst*>& loads) {
-    std::vector<llvm::LoadInst*> otherLoads;
-    std::vector<llvm::LoadInst*> strongLoads;
+  seperateLoads(llvm::StoreInst* const storeInst, std::vector<NodeExprPair>& loads) {
+    std::vector<NodeExprPair> otherLoads;
+    std::vector<NodeExprPair> strongLoads;
 
-    auto distill = [&] (llvm::LoadInst* loadInst) {
+    auto distill = [&] (llvm::LoadInst* loadInst, BinaryExprNode node, ExprID exprID) {
       auto aliasResult = getAliasType(storeInst, loadInst);
       if (aliasResult == AliasResult::MustAlias) {
-        strongLoads.push_back(loadInst);
+        strongLoads.push_back({node, exprID});
       } else if (aliasResult == AliasResult::NoAlias) {
         return; //Discard NoAliases
       } else {
-        otherLoads.push_back(loadInst);
+        otherLoads.push_back({node, exprID});
       }
     };
 
-    for (auto* loadInst : loads) {
-      distill(loadInst);
+    for (auto [loadNode, exprID] : loads) {
+      auto loadInst = llvm::dyn_cast<llvm::LoadInst>(loadNode.value);
+      distill(loadInst, loadNode, exprID);
     }
     return std::make_pair(strongLoads, otherLoads);
   }
@@ -392,6 +394,7 @@ private:
               DisjunctionState& state,
               const Context context,
               bool handled) {
+    using NodeExprPair = std::pair<BinaryExprNode, ExprID>;
     if (handled) {
       return true;
     }
@@ -400,17 +403,17 @@ private:
       return false;
     }
     llvm::errs() << "\n Handling store at " << *value;
-    std::vector<llvm::LoadInst*> asLoads = getLoads(state);
-    auto [strongLoads, weakLoads]        = seperateLoads(storeInst, asLoads);
+    std::vector<NodeExprPair> asLoads = getLoads(state);
+    auto [strongLoads, weakLoads]     = seperateLoads(storeInst, asLoads);
 
     auto localDisjunction = state[nullptr];
-    for (auto* strongLoad : strongLoads) {
-      llvm::errs() << "Strong load for " << *strongLoad;
-      state[nullptr] = strongUpdate(localDisjunction, strongLoad, storeInst);
+    for (auto& [loadNode, exprID] : strongLoads) {
+      llvm::errs() << "\nStrong load for " << *(loadNode.value);
+      state[nullptr] = strongUpdate(localDisjunction, exprID, loadNode, storeInst);
     }
-    for (auto weakLoad : weakLoads) {
-      llvm::errs() << "Weak load for " << *weakLoad;
-      state[nullptr] = weakUpdate(localDisjunction, weakLoad, storeInst);
+    for (auto& [loadNode, exprID] : weakLoads) {
+      llvm::errs() << "\nWeak load for " << *(loadNode.value);
+      state[nullptr] = weakUpdate(localDisjunction, exprID, loadNode, storeInst);
     }
     return true;
   }
@@ -572,24 +575,26 @@ private:
     }
   }
 
-  std::vector<llvm::LoadInst*>
+  std::vector<NodeExprPair>
   getLoads(DisjunctionState& state) {
-    std::unordered_set<llvm::LoadInst*> asLoads;
+    std::unordered_set<ExprID> foundIDs;
+    std::vector<NodeExprPair> asLoads;
     auto isBinaryExprID = [](const ExprID exprID) -> bool {
       return generator->GetExprType(exprID) == 2;
     };
-    auto insertIfLoad = [&asLoads](const auto binaryNode) {
-      if (auto loadInst =
-              llvm::dyn_cast<llvm::LoadInst>(binaryNode.value)) {
-        asLoads.insert(loadInst);
-      }
-    };
-    auto findLoads = [&](const ExprID exprID, auto& findLoads) {
+    auto insertIfLoad =
+        [&](const auto& exprID, const auto& node, const auto* value) {
+          if (llvm::isa<llvm::LoadInst>(value) && foundIDs.count(exprID) == 0) {
+            foundIDs.insert(exprID);
+            asLoads.push_back({node, exprID});
+          }
+        };
+    auto findLoads = [&](const auto& exprID, auto& findLoads) {
       if (!isBinaryExprID(exprID)) {
         return;
       }
       auto& binaryNode = generator->GetBinaryExprNode(exprID);
-      insertIfLoad(binaryNode);
+      insertIfLoad(exprID, binaryNode, binaryNode.value);
       findLoads(binaryNode.lhs, findLoads);
       findLoads(binaryNode.rhs, findLoads);
       return;
@@ -654,9 +659,9 @@ private:
 
   Disjunction
   strongUpdate(const Disjunction& disjunction,
-               llvm::LoadInst* const loadInst,
+               const ExprID& loadExprID,
+               const BinaryExprNode& loadNode,
                llvm::StoreInst* const storeInst) {
-    auto loadExprID = generator->GetOrCreateExprID(loadInst);
     auto operand    = storeInst->getValueOperand();
     auto opExprID   = generator->GetOrCreateExprID(operand);
     return generator->rewrite(disjunction, loadExprID, opExprID);
@@ -664,15 +669,16 @@ private:
 
   Disjunction
   weakUpdate(const Disjunction& disjunction,
-             llvm::LoadInst* const loadInst,
+             const ExprID& loadExprID,
+             const BinaryExprNode& loadNode,
              llvm::StoreInst* const storeInst) {
-    auto aliasConjunct = [](llvm::LoadInst* const loadInst,
+    auto aliasConjunct = [](const BinaryExprNode& loadNode,
                             llvm::StoreInst* const storeInst) {
-      auto aliasExpr = generator->GetOrCreateAliasID(loadInst, storeInst);
+      auto aliasExpr = generator->GetOrCreateAliasID(loadNode, storeInst);
+      llvm::errs() << "created AliasExpr" << aliasExpr;
       return Conjunct(aliasExpr, true);
-    }(loadInst, storeInst);
+    }(loadNode, storeInst);
 
-    auto loadExprID = generator->GetOrCreateExprID(loadInst);
     Disjunction forRewrites{};
     Disjunction noRewrites{disjunction};
     for (auto& disjunct : disjunction.disjuncts) {
@@ -680,6 +686,7 @@ private:
       auto notAliasDisjunct{disjunct};
       for (auto& conjunct : disjunct.conjunctIDs) {
         if (generator->find(conjunct, loadExprID)) {
+          llvm::errs() << "found load exprID " << loadExprID;
           aliasDisjunct.addConjunct(aliasConjunct);
           notAliasDisjunct.addConjunct(!aliasConjunct);
           forRewrites.addDisjunct(aliasDisjunct);
@@ -691,7 +698,10 @@ private:
     auto storeValue = storeInst->getValueOperand();
     auto valExprID  = generator->GetOrCreateExprID(storeValue);
     auto rewritten  = generator->rewrite(forRewrites, loadExprID, valExprID);
-    return Disjunction::unionDisjunctions(rewritten, noRewrites);
+    auto x = Disjunction::unionDisjunctions(rewritten, noRewrites);
+    x.print(llvm::errs());
+    return x;
+    //return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
 
 
@@ -716,7 +726,7 @@ public:
                   .simplifyRedundancies()
                   .simplifyImplication();
     //generator->dumpState();
-    //printer->printIR(inst, state[nullptr]);
+    //printer->insertIR(inst, state[nullptr]);
     return;
   }
 };
@@ -785,21 +795,29 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   //package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
   //libCHandlers   = getLibCHandlerMap(package);
   
-  auto getLocationAndState = [&](llvm::Function* function, auto functionResults) {
-    auto* insertionPt = &*(function->getEntryBlock().getFirstInsertionPt());
-    auto&  state = functionResults[insertionPt][nullptr];
-    return std::make_pair(insertionPt, state);
+  auto getLocationsAndState = [&](llvm::Function* function, auto functionResults) {
+    auto insertIt = function->getEntryBlock().getFirstInsertionPt();
+    auto terminatorIt  = function->getEntryBlock().end();
+    //auto terminatorIt = insertIt++;
+    std::vector<std::pair<llvm::Instruction*, Disjunction>> points;
+    while (insertIt != terminatorIt ) {
+      points.push_back({&*insertIt, functionResults[&(*insertIt)][nullptr]});
+      insertIt++;
+    } 
+    return points;
   };
 
   generator->dumpState();
   auto results  = analysis.computeDataflow();
   for (auto& [context, contextResults] : results) {
     for (auto& [function, functionResults] : contextResults) {
-      auto [loc, state] = getLocationAndState(function, functionResults);
-      if (state.isVacuouslyTrue()) {
-        continue;
+      auto locationStates = getLocationsAndState(function, functionResults);
+      for (auto& [loc, state] : locationStates) {
+        if (state.isVacuouslyTrue()) {
+          continue;
+        }
+        printer->insertIR(loc, state);
       }
-      printer->printIR(loc, state);
     }
   }
   return false;

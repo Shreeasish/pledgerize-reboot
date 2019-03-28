@@ -384,7 +384,7 @@ public:
 
       // Propagate through all instructions in the block
       for (auto& i : Direction::getInstructions(*bb)) {
-        llvm::outs() << "\n" << i;
+        //llvm::outs() << "\n" << i;
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
