@@ -45,7 +45,7 @@ public:
     llvm::IRBuilder<> builder{location};
     //printFlattened(location, disjunction);
     printState(location, disjunction);
-    //insertIR(disjunction, location, builder);
+    insertIR(disjunction, location, builder);
     //auto* bb = location->getParent();
     //llvm::errs() << "After insertion" ;
     //llvm::errs() << *bb;
@@ -168,12 +168,13 @@ private:
               << "; "
               << "\"" << rhsID << delimiter << disjunctCount << delimiter
               << conjunctCount << "\"" << " }\n";
-          
 
-          out << "\t\"" << exprID << delimiter << disjunctCount << delimiter 
-              << conjunctCount << "\"" << " [shape=box,label=\"";
-              if (node.value) {
-                out << *(node.value);
+
+          out << "\t\"" << exprID << delimiter << disjunctCount << delimiter
+              << conjunctCount << "\""
+              << " [shape=box,label=\"{" << opMap.find(node.op.opCode)->second << "} ";
+          if (node.value) {
+            out << *(node.value);
               } else {
                 out << "nullptr";
               }

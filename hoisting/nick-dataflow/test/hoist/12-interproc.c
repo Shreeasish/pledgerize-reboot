@@ -4,8 +4,7 @@ int
 foo(int x) {
   if (x < 5) {
     return 30;
-  }
-  else {
+  } else {
     return 20;
   }
 }

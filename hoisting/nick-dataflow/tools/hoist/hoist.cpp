@@ -52,6 +52,8 @@
 #include "Printer.h"
 #include "IndirectCallResolver.h"
 
+#include "WPA/Andersen.h"
+
 using namespace llvm;
 
 
@@ -69,9 +71,13 @@ static cl::opt<string> inPath{cl::Positional,
 
 
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
+
 std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
 std::unique_ptr<lowering::Printer> printer;
+//std::unique_ptr<AndersenWaveDiffWithType> svfResults;
+AndersenWaveDiffWithType* svfResults;
+
 llvm::DenseMap<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> functionMemSSAs;
 llvm::DenseMap<const llvm::Function*, llvm::AAResultsWrapperPass*> functionAAs;
 
@@ -375,10 +381,15 @@ private:
       auto aliasResult = getAliasType(storeInst, loadInst);
       if (aliasResult == AliasResult::MustAlias) {
         strongLoads.push_back({node, exprID});
+        llvm::errs() << "\n Found must-alias for " << loadInst << " and " << storeInst;
+        return;
       } else if (aliasResult == AliasResult::NoAlias) {
+        llvm::errs() << "\n Found no-alias for " << loadInst << " and " << storeInst;
         return; //Discard NoAliases
       } else {
+        llvm::errs() << "\n Found may-alias for " << loadInst << " and " << storeInst;
         otherLoads.push_back({node, exprID});
+        return;
       }
     };
 
@@ -608,36 +619,43 @@ private:
     return {asLoads.begin(), asLoads.end()};
   }
 
-
+  [[maybe_unused]]
   AliasResult
   getMemSSAResults(llvm::StoreInst* const storeInst,
                    llvm::LoadInst* const loadInst) {
     auto [storeFunc, loadFunc] = [&]() {
       return std::make_pair(storeInst->getFunction(), loadInst->getFunction());
     }();
-    if (storeFunc != loadFunc) {
-      return AliasResult::MayAlias;
-    } // Conservatively assert that mem-ops from different functions alias
+     if (storeFunc != loadFunc) {
+       return AliasResult::MayAlias;
+     } // Conservatively assert that mem-ops from different functions alias
+     auto [walker, memSSA] = [&]() {
+       auto* func = storeInst->getFunction();
+       return std::make_pair(functionMemSSAs[func]->getWalker(),
+                             functionMemSSAs[func].get());
+     }();
+     assert(memSSA != nullptr && "No memSSA for function");
 
-    auto [walker, memSSA] = [&]() {
-      auto* func = storeInst->getFunction();
-      return std::make_pair(functionMemSSAs[func]->getWalker(),
-                            functionMemSSAs[func].get());
-    }();
-    assert(memSSA != nullptr && "No memSSA for function");
-
-    auto* clobber     = walker->getClobberingMemoryAccess(loadInst);
-    auto* storeMemAcc = memSSA->getMemoryAccess(storeInst);
-    auto* storeMemDef = llvm::dyn_cast<llvm::MemoryDef>(storeMemAcc);
-    for (auto memDef = clobber->defs_begin(); memDef != clobber->defs_end(); memDef++) {
-      if (memDef == storeMemDef) {
-        return AliasResult::MustAlias;
-      }
+     auto* clobber     = walker->getClobberingMemoryAccess(loadInst);
+     auto* storeMemAcc = memSSA->getMemoryAccess(storeInst);
+     auto* storeMemDef = llvm::dyn_cast<llvm::MemoryDef>(storeMemAcc);
+     for (auto memDef = clobber->defs_begin(); memDef != clobber->defs_end();
+          memDef++) {
+       if (memDef == storeMemDef) {
+         return AliasResult::MustAlias;
+       }
     }
     //llvm_unreachable("Part of the same function, but does not alias");
     return AliasResult::NoAlias;
   }
 
+  AliasResult
+  getSVFResults(llvm::MemoryLocation& storeAsMemLoc,
+                   llvm::MemoryLocation& loadAsMemLoc) {
+    return svfResults->alias(loadAsMemLoc, storeAsMemLoc);
+  }
+  /* SVF has lower accuracy but filters interprocedural no-aliases 
+   * Use llvm's Aliasing stack for must-aliases and SVF for may-aliases*/
   AliasResult
   getAliasType(llvm::StoreInst* const storeInst,
                llvm::LoadInst* const loadInst) {
@@ -650,12 +668,11 @@ private:
     auto storeAsMemLoc = llvm::MemoryLocation::get(storeInst);
     auto aliasType = AAResults.alias(loadAsMemLoc, storeAsMemLoc);
     if (aliasType == AliasResult::MustAlias
-        /*|| aliasType == AliasResult::NoAlias*/) {
+        || aliasType == AliasResult::NoAlias) {
       return aliasType;
     }
-    //Consult MemSSA for may-alias
-    return getMemSSAResults(storeInst, loadInst);
-  }
+    return getSVFResults(storeAsMemLoc, loadAsMemLoc);
+  }                      
 
   Disjunction
   strongUpdate(const Disjunction& disjunction,
@@ -765,9 +782,11 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     llvm::report_fatal_error("Unable to find main function.");
   }
 
-  generator = make_unique<Generator>(Generator{});
-  resolver  = make_unique<IndirectCallResolver>(IndirectCallResolver{m});
-  printer   = make_unique<lowering::Printer>(generator.get(), llvm::outs(), m);
+  generator = std::make_unique<Generator>(Generator{});
+  resolver  = std::make_unique<IndirectCallResolver>(IndirectCallResolver{m});
+  printer =
+      std::make_unique<lowering::Printer>(generator.get(), llvm::outs(), m);
+  svfResults = AndersenWaveDiffWithType::createAndersenWaveDiffWithType(m);
 
   for (auto& f : m) {
     if ( f.isDeclaration()) {
@@ -780,6 +799,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     llvm::errs() << "\n Get memSSA Tree for " << f.getName() << "\n";
     auto memSSA = std::make_unique<MemorySSA>(f, &AAWrapper->getAAResults(), DT);
     functionAAs.insert({&f, AAWrapper});
+    
 
     functionMemSSAs.try_emplace(&f, std::move(memSSA));
 
@@ -803,8 +823,8 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   
   auto getLocationsAndState = [&](llvm::Function* function, auto functionResults) {
     auto insertIt = function->getEntryBlock().getFirstInsertionPt();
-    auto terminatorIt  = function->getEntryBlock().end();
-    //auto terminatorIt = insertIt++;
+    //auto terminatorIt  = function->getEntryBlock().end();
+    auto terminatorIt = insertIt++;
     std::vector<std::pair<llvm::Instruction*, Disjunction>> points;
     while (insertIt != terminatorIt ) {
       points.push_back({&*insertIt, functionResults[&(*insertIt)][nullptr]});
@@ -826,6 +846,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
       }
     }
   }
+  svfResults->releaseAndersenWaveDiffWithType();
   return false;
 }
 
@@ -834,7 +855,6 @@ BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
   //info.setPreservesAll();
   info.addRequired<DominatorTreeWrapperPass>();
   info.addRequired<AAResultsWrapperPass>();
-  info.addPreserved<AAResultsWrapperPass>();
   //info.addRequired<AliasAnalysis>();
   //info.addRequired<PostDominatorTreeWrapperPass>();
 }

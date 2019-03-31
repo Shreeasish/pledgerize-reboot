@@ -15,7 +15,7 @@ llvm_map_components_to_libnames(REQ_LLVM_LIBRARIES ${LLVM_TARGETS_TO_BUILD}
         analysis support
 )
 
-target_link_libraries(hoist_condition_list ${REQ_LLVM_LIBRARIES})
+target_link_libraries( hoist_condition_list LLVMSvf LLVMCudd ${REQ_LLVM_LIBRARIES})
 
 # Platform dependencies.
 if( WIN32 )

@@ -47,11 +47,29 @@ include_directories(${LLVM_INCLUDE_DIRS})
 link_directories(${LLVM_LIBRARY_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
+############### SVF-CONFIGURATION ##################
+
+if (DEFINED ENV{SVF_HOME})
+    message(STATUS "SVF_HOME: $ENV{SVF_HOME}")
+    set(SVF_HEADER "$ENV{SVF_HOME}/include")
+    set(SVF_LIB "$ENV{SVF_HOME}/Debug-build/lib")
+    if (EXISTS "${SVF_HEADER}" AND EXISTS "${SVF_LIB}")
+        message(STATUS "SVF_HEADER: ${SVF_HEADER}")
+        message(STATUS "SVF_LIB: ${SVF_LIB}")
+    else()
+        message(FATAL_ERROR "${SVF_LIB} or ${SVF_HEADER} not exists")
+    endif()
+    include_directories(${CMAKE_SOURCE_DIR}/include ${SVF_HEADER})
+    link_directories(${LIBRARY_OUTPUT_PATH} ${SVF_LIB} ${SVF_LIB}/CUDD)
+else()
+    message(FATAL_ERROR "Please point SVF_HOME to your SVF source folder")
+endif()
+
 ############## FINAL PROJECT CONFIG #################
 
 # And the project header and library paths
-include_directories(${CMAKE_SOURCE_DIR}/include)
-link_directories(${LIBRARY_OUTPUT_PATH})
+#include_directories(${CMAKE_SOURCE_DIR}/include)
+#link_directories(${LIBRARY_OUTPUT_PATH})
 set(CMAKE_TEMP_LIBRARY_PATH "${PROJECT_BINARY_DIR}/lib")
 # TODO: Add install path to the list....
 
