@@ -24,6 +24,7 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Module.h"
+#include "llvm/IR/Verifier.h"
 
 #include "llvm/IRReader/IRReader.h"
 
@@ -307,7 +308,7 @@ private:
       return true;
     }
 
-    if (fun->getName().startswith("printf")) {
+    if (fun->getName().startswith("wait")) {
       Disjunction disjunction{};
       Disjunct disjunct{};
       disjunct.addConjunct(generator->GetVacuousConjunct());
@@ -379,15 +380,18 @@ private:
 
     auto distill = [&] (llvm::LoadInst* loadInst, BinaryExprNode node, ExprID exprID) {
       auto aliasResult = getAliasType(storeInst, loadInst);
+      if (loadInst->getParent()->getParent() != storeInst->getParent()->getParent()) {
+        llvm::errs() << "\n Interprocedural";
+      }
       if (aliasResult == AliasResult::MustAlias) {
         strongLoads.push_back({node, exprID});
-        llvm::errs() << "\n Found must-alias for " << loadInst << " and " << storeInst;
+        llvm::errs() << "\n Found must-alias for " << *loadInst << " and " << *storeInst;
         return;
       } else if (aliasResult == AliasResult::NoAlias) {
-        llvm::errs() << "\n Found no-alias for " << loadInst << " and " << storeInst;
+        llvm::errs() << "\n Found no-alias for   " << *loadInst << " and " << *storeInst;
         return; //Discard NoAliases
       } else {
-        llvm::errs() << "\n Found may-alias for " << loadInst << " and " << storeInst;
+        llvm::errs() << "\n Found may-alias for  " << *loadInst << " and " << *storeInst;
         otherLoads.push_back({node, exprID});
         return;
       }
@@ -652,6 +656,7 @@ private:
   AliasResult
   getSVFResults(llvm::MemoryLocation& storeAsMemLoc,
                    llvm::MemoryLocation& loadAsMemLoc) {
+    llvm::errs() << "\nSVF Invoked";
     return svfResults->alias(loadAsMemLoc, storeAsMemLoc);
   }
   /* SVF has lower accuracy but filters interprocedural no-aliases 
@@ -667,11 +672,11 @@ private:
     auto loadAsMemLoc  = llvm::MemoryLocation::get(loadInst);
     auto storeAsMemLoc = llvm::MemoryLocation::get(storeInst);
     auto aliasType = AAResults.alias(loadAsMemLoc, storeAsMemLoc);
-    if (aliasType == AliasResult::MustAlias
+    if (aliasType == AliasResult::MayAlias
         || aliasType == AliasResult::NoAlias) {
-      return aliasType;
+      return getSVFResults(storeAsMemLoc, loadAsMemLoc);
     }
-    return getSVFResults(storeAsMemLoc, loadAsMemLoc);
+    return aliasType;
   }                      
 
   Disjunction
@@ -726,6 +731,8 @@ private:
 public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    llvm::errs() << "\n before transfer at -- " << value;
+    state[nullptr].print(llvm::errs());
     auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
     bool handled = false;
     if (auto constantExpr = llvm::dyn_cast<llvm::ConstantExpr>(&value)) {
@@ -748,7 +755,10 @@ public:
     state[nullptr].simplifyComplements()
                   .simplifyRedundancies()
                   .simplifyImplication();
+    llvm::errs() << "\n after transfer at -- " << value;
+    state[nullptr].print(llvm::errs());
     //generator->dumpState();
+    llvm::errs() << "\n =====================" << value;
     //printer->insertIR(inst, state[nullptr]);
     return;
   }
@@ -766,6 +776,8 @@ public:
   StringRef getPassName() const override;
 
   static char ID;
+private:
+  void initializeGlobals(llvm::Module&);
 };
 char BuildPromiseTreePass::ID = 0;
 
@@ -774,14 +786,8 @@ BuildPromiseTreePass::getPassName() const {
   return "BuildPromiseTreePass";
 }
 
-
-bool
-BuildPromiseTreePass::runOnModule(llvm::Module& m) {
-  auto* mainFunction = m.getFunction("main");
-  if (!mainFunction) {
-    llvm::report_fatal_error("Unable to find main function.");
-  }
-
+void
+BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
   generator = std::make_unique<Generator>(Generator{});
   resolver  = std::make_unique<IndirectCallResolver>(IndirectCallResolver{m});
   printer =
@@ -800,13 +806,20 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     auto memSSA = std::make_unique<MemorySSA>(f, &AAWrapper->getAAResults(), DT);
     functionAAs.insert({&f, AAWrapper});
     
-
     functionMemSSAs.try_emplace(&f, std::move(memSSA));
-
-    //memSSA->print(llvm::outs());
     Edges backedges;
     llvm::FindFunctionBackedges(f, backedges);
     functionBackEdges.try_emplace(&f, backedges);
+  }
+  return;
+}
+
+
+bool
+BuildPromiseTreePass::runOnModule(llvm::Module& m) {
+  auto* mainFunction = m.getFunction("main");
+  if (!mainFunction) {
+    llvm::report_fatal_error("Unable to find main function.");
   }
 
 
@@ -820,31 +833,53 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   //AnalysisPackage package;
   //package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
   //libCHandlers   = getLibCHandlerMap(package);
+
+  initializeGlobals(m);
   
+  using LocationStates   = std::vector<std::pair<llvm::Instruction*, Disjunction>;
+  using ContextLocations = std::pair<Context, locationStates>;
   auto getLocationsAndState = [&](llvm::Function* function, auto functionResults) {
     auto insertIt = function->getEntryBlock().getFirstInsertionPt();
+    auto terminatorIt = ++function->getEntryBlock().getFirstInsertionPt();
     //auto terminatorIt  = function->getEntryBlock().end();
-    auto terminatorIt = insertIt++;
     std::vector<std::pair<llvm::Instruction*, Disjunction>> points;
     while (insertIt != terminatorIt ) {
-      points.push_back({&*insertIt, functionResults[&(*insertIt)][nullptr]});
+      auto state = functionResults[&(*insertIt)][nullptr];
+      if (state.isVacuouslyTrue() || state.isEmpty()) {
+        continue; 
+      }
+      points.push_back({&*insertIt, state});
       insertIt++;
     } 
     return points;
   };
-
-  generator->dumpState();
-  auto results  = analysis.computeDataflow();
+  
+  std::vector<ContextLocations> fixConjuncts;
   for (auto& [context, contextResults] : results) {
-    for (auto& [function, functionResults] : contextResults) {
-      auto locationStates = getLocationsAndState(function, functionResults);
-      for (auto& [loc, state] : locationStates) {
-        if (state.isVacuouslyTrue()) {
-          continue;
-        }
-        printer->insertIR(loc, state);
-      }
+    for (auto& [function, functionResults] : results) {
+      auto insertionPoints  = getLocationsAndState(function, functionResults);
+      fixConjuncts.push_back({context, insertionPoints});
     }
+  }
+  
+  //generator->dumpState();
+  //auto results  = analysis.computeDataflow();
+  //for (auto& [context, contextResults] : results) {
+  //  for (auto& [function, functionResults] : contextResults) {
+  //    auto locationStates = getLocationsAndState(function, functionResults);
+  //    for (auto& [loc, state] : locationStates) {
+  //      if (state.isVacuouslyTrue() || state.isEmpty()) {
+  //        continue;
+  //      }
+  //      printer->insertIR(loc, context, state);
+  //    }
+  //  }
+  //}
+  auto ec = std::error_code{};
+  auto fileOuts = llvm::raw_fd_ostream{"/home/shreeasish/pledgerize-reboot/hoisting/build-dataflow/instrumented/fileStream", ec};
+  llvm::errs() << "\n\nRunning Verifier\n";
+  if (!llvm::verifyModule(m, &llvm::errs())) {
+    llvm::WriteBitcodeToFile(m, fileOuts);
   }
   svfResults->releaseAndersenWaveDiffWithType();
   return false;
@@ -871,7 +906,7 @@ instrumentPromiseTree(llvm::Module& m) {
   pm.add(createCFLSteensAAWrapperPass());
   pm.add(new llvm::LoopInfoWrapperPass());
   //pm.add(createPostDomTree());
-  //pm.add(new MemorySSAWrapperPass());
+  pm.add(new MemorySSAWrapperPass());
   pm.add(new DominatorTreeWrapperPass());
   pm.add(createBasicAAWrapperPass());
   pm.add(new AAResultsWrapperPass());

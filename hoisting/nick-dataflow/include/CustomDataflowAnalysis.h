@@ -384,30 +384,29 @@ public:
 
       // Propagate through all instructions in the block
       for (auto& i : Direction::getInstructions(*bb)) {
-        //llvm::outs() << "\n" << i;
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
         } 
-          llvm::errs() << "\nBefore------------------------------------";
-          llvm::errs() << "\nIn function " << i.getFunction()->getName()
-                       << " \nBefore";
-          llvm::errs() << i;
-          llvm::errs() << "\n State:\n";
-          state[nullptr].print(llvm::errs());
-          llvm::errs() << "\n------------------------------------------";
+          //llvm::errs() << "\nBefore------------------------------------";
+          //llvm::errs() << "\nIn function " << i.getFunction()->getName()
+          //             << " \nBefore";
+          //llvm::errs() << i;
+          //llvm::errs() << "\n State:\n";
+          //state[nullptr].print(llvm::errs());
+          //llvm::errs() << "\n------------------------------------------";
 
           // ska: uncomment to skip function calls
           //else {
           applyTransfer(i, state, context);
           //}
-          llvm::errs() << "\nAfter-------------------------------------";
-          llvm::errs() << "In function " << i.getFunction()->getName()
-                       << " after";
-          llvm::errs() << i;
-          llvm::errs() << "\n State:\n";
-          state[nullptr].print(llvm::errs());
-          llvm::errs() << "\n------------------------------------------";
+          //llvm::errs() << "\nAfter-------------------------------------";
+          //llvm::errs() << "In function " << i.getFunction()->getName()
+          //             << " after";
+          //llvm::errs() << i;
+          //llvm::errs() << "\n State:\n";
+          //state[nullptr].print(llvm::errs());
+          //llvm::errs() << "\n------------------------------------------";
 
           results[&i] = state;
       }
