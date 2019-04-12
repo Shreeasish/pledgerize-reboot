@@ -1,4 +1,4 @@
-#Aliasing Writes can interfere with GEPs.
+# Aliasing Writes can interfere with GEPs.
 
 Exemplified Below.
 
@@ -35,7 +35,7 @@ Binary Node 16944 is an abstracted GEP Instruction. The third operand to it is a
 When the analysis rolls over a store to store to register `%116`, it considers it as a may-clobber to register `%137` and consequently rewrites the load in node 16944 with 
 
 ----------------------------------------
-#Lowering instructions with out-of-scope defs
+# Lowering instructions with out-of-scope defs
 
 In order to perform computations, functions require values or instructions from it's caller (parent function). 
 To pass an instruction or value, it must be stored onto a call stack by the parent function and later retrieved from the stack by the callee. 
