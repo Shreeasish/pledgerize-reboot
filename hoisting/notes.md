@@ -1,4 +1,5 @@
 # Aliasing Writes can interfere with GEPs.
+------------------------------------------
 
 Exemplified Below.
 
@@ -22,7 +23,7 @@ store i16 2, i16* %116, align 8, !dbg !7030
  lhs i16 2
  rhs i64 0
 ```
-----------------------------------------
+---------------------
 ```
 Handling store at   store i16 2, i16* %116, align 8
 Weak load for   %43 = load i8*, i8** @csock, align 8
@@ -36,7 +37,6 @@ When the analysis rolls over a store to store to register `%116`, it considers i
 
 ----------------------------------------
 # Lowering instructions with out-of-scope defs
-
 In order to perform computations, functions require values or instructions from it's caller (parent function). 
 To pass an instruction or value, it must be stored onto a call stack by the parent function and later retrieved from the stack by the callee. 
 A convention must also be established such that the callee is aware which elements on the stack correspond to the required values or instructions.
@@ -62,12 +62,134 @@ This bit could be easily pushed into the stack frame for use by the callee.
 An implicit requirement for this technique would be that the disjuncts would need to be broken. Conjuncts which are invarient across function boundaries could be easily transformed to a bit.
 Conjuncts which are transformed further between the considered point of lowering and parent function which holds the def, would have to have their values stored onto the call stack.
 
+-----------------------------
 
+# Selecting points to lower at
+* Points of uncertainty -- Dropping to True
+* Function Boundaries?
+* Changes in State
+  Whenever there are changes in state, especially at locations where the state drops to true.
+* Exclusive Paths
+  Paths may have exclusive regions. Privileges may be dropped in these exclusive regions.
+  The conditional privileges would be the same as unconditional privileges needed in this case.
 
+## Abstract State Behaviours
+###### _An abstract state is a disjunction_
+### Losing Conjuncts (Backwards Flow)
 
+  A disjunction may lose conjuncts while flowing upwards through the program. 
+  Potential causes for this would be: 
+  * Simplifications resulting from new alias information,
+  * Simplifications over control flow merges (backwards),
+  * Conjunct removal due to unknown instructions. (maybe others?)
 
+* Simplifications from alias analysis:
+  Consider a disjunction which holds may-alias information.
+  ```
+  (A aliases B)(B > 5)   finds must alias   (A  aliases B)(B > 5)     simplified to     (B > 5)
+  (A !aiases B)(X > 5)  ------------------> (A !aliases B)(B > 5)   ----------------->
+  ```
+  Benefit to Lowering: Strong Path Guarantees, Simplified Lowering
+  Need to find evidence for this
 
+* Merges in Control Flow (Backwards):
+  Points of merging: Branches and Function Calls (others?)
 
+  **Branches**
+  Backward merges along complementary paths (if with if!) would cause predicates to be dropped
+  ```
+  backward merge   !(A < B)(X > 5)     simplified to  
+  (A < B)(X > 5)  ---------------->  (A < B)(X > 5)   -----------------> (X > 5)
+  ```
+
+  Benefit to Lowering: Demonstrated Successful hoist through diamonds, double diamonds etc.
+  Basic control flow. Guaranteed to happen.
+
+  **Function Calls With Compile Time Bindings**
+  Function Calls are not conditional and it should not affect the semantics of a constraint.
+  Function calls present a logical boundary.
+
+  **Runtime Polymorphic Functions**
+  Presents branching control flow. Could potentially be resolved with alias analysis.
+  Low Priority Concern for now.
+
+  Should essentially be the same as a backward merge in a control flow.
+  Interweaving threads and processes would be intersting. Not a concern for now.
+
+* Dropped Conjuncts
+
+  ```
+  if ... A                                      dropping B
+    if ... B        ---------->   A && B && C  ------------>  A && C
+      if ... C
+        syscall( )
+        /* Needs Privilege X */
+  ```
+
+  Implies that we assume B will not be considered in the evaluation of needed predicates. 
+
+  ```
+  if ... A                                      dropping B
+    if ... B        -----------> A && !B       -------------> A
+      if ... C                                 \ dropping A
+    else ... !B                                 ------------> !B
+      syscall( ) 
+      /* Needs Privilege X */
+  ```
+  Reasons for dropping Conjuncts:
+  * Unknown instructions
+  * Loop Variants
+  * Returns from calls to external/opaque functions
+
+  Semantic Implication:
+  Loss in precision. Lowering before (backwards) a drop would be useful. Generally This defines the boundary of hoisting. 
+
+  Conjunctions/Disjuncts are a set of predicates anded together. Dropping a conjunct in a conjunction essentially means that the conjunction will evaluate to true without regard
+  to that predicate. In terms of the program, a conjunction is a set of chained if statements.
+
+General Trend
+================
+  Aside from when conjuncts in the abstract state are dropped due to unknowns, a decline in the size of the predicates would imply an increase in precision.
+
+------------------------
+### Gaining Conjuncts (Backwards)
+  Potential Reasons:
+  * A merge in the control flow
+    * Increase in conjunctions  -- Nested conditionals
+    * Increase in disjuncts     -- Complementary conditionals
+  * A may-alias store instruction
+  * Function Call
+
+  * **Branches/Switches** (Conjunct Addition):
+    If the abstract states on backward incoming edges of a branch statement are different, a branch condition will introduce a new conjunct (branch condition) to each disjunct 
+    and merge it with the abstract state coming in from another branch (new disjuncts).
+
+    Semantic Implication:
+    Reduction in surface area of attack, lowering after a branch (backwards) is preferred.
+
+  * **Store Instruction**
+    A store instruction may introduce new disjuncts into the abstract state. This introduces potential false positives. 
+    This should not affect the correctness of the analysis as it is still conservative
+    However, this does introduce overheads. 
+
+    Semantic Implication:
+    Reduction in surface area however lowering may not be preferred as it would lead to increase in complexity.
+
+  * **Function Call**
+    A function call would introduce more constraints into the caller from internal constraints picked up
+
+  * **Function Call w/ arguments that change behaviour**
+    Function calls may have arguments which change their behaviour would create new conjuncts. New conjuncts can be introduced to represent this behaviour.
+    A reasonable assumption is that these arguments are hardcoded.
+    Non hardcoded arguments would create implicit branches even in straight line programs.
+
+    Semantic Implication:
+    Reduction in surface area. Function boundries present a logical seperation. Useful to lower before this or after this.
+
+General Trend
+================
+  An increase in  conjuncts generally shows that the analysis has gained precision.
+  Aside from before store instructions.
 
 
 

@@ -276,6 +276,14 @@ public:
 
   bool isEmpty() const { return disjuncts.begin() == disjuncts.end(); }
   bool isVacuouslyTrue() const;
+  
+  size_t conjunctCount() const {
+    return 
+      std::accumulate(disjuncts.begin(), disjuncts.end(), 0, 
+          [](const auto& count, const auto& disjunct) {
+          return disjunct.size() + count;
+        });
+  }
 
   static Disjunction
   unionDisjunctions(const Disjunction& lhs, const Disjunction& rhs) {

@@ -307,36 +307,13 @@ private:
 
     llvm::Value*
     operator()(ExprID exprID, ValueExprNode node) {
-      if (!node.value || isInScope(node.value)) {
-        return node.value;
-      }
-      llvm::Value* asValueGep = getFromShadowStack(node.value); 
-      return asValueGep;
+      return node.value;
     }
 
   private:
     llvm::IRBuilder<>& builder;
     llvm::Instruction* const location;
     Context& context;
-
-    llvm::Value*
-    getFrame(Context& context) {
-      llvm::CallSite callSite{[&]() {
-        llvm::Value* callSite = nullptr;
-        for (auto* cs : context) {
-          if (!cs) {
-            continue;
-          }
-          callSite = cs;
-        }
-        return callSite;
-      }()};
-    }
-
-    llvm::Value*
-    getFromShadowStack(llvm::Value* value) {
-      auto* framePointer = getFrame(context);
-    }
     
     bool
     isInScope(llvm::Value* const value) {

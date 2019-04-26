@@ -142,7 +142,7 @@ public:
   ExprID
   GetOrCreateExprID(llvm::CallSite& cs) {
     auto* fun  = llvm::dyn_cast<llvm::Function>(cs.getCalledValue()->stripPointerCasts());
-    llvm::errs() << "\ninserting function" << *fun;
+    //llvm::errs() << "\ninserting function" << *fun;
     auto lhsID = GetOrCreateExprID(fun);
     for (auto& arg : cs.args()) {
       auto rhsID = GetOrCreateExprID(arg);

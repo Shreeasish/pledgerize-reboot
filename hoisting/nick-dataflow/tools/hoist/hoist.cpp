@@ -52,6 +52,7 @@
 #include "Generator.h"
 #include "Printer.h"
 #include "IndirectCallResolver.h"
+#include "InstructionResolver.h"
 
 #include "WPA/Andersen.h"
 
@@ -303,12 +304,12 @@ private:
       return true;
     }
 
-    llvm::errs() << "\tFrom CallSite: " << fun->getName();
+    //llvm::errs() << "\tFrom CallSite: " << fun->getName();
     if (fun->getName().startswith("llvm.")) {
       return true;
     }
 
-    if (fun->getName().startswith("wait")) {
+    if (fun->getName().startswith("close")) {
       Disjunction disjunction{};
       Disjunct disjunct{};
       disjunct.addConjunct(generator->GetVacuousConjunct());
@@ -321,7 +322,7 @@ private:
       auto oldExprID = generator->GetOrCreateExprID(value);
       auto newExprID = generator->GetOrCreateExprID(cs);
       state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
-      llvm::errs() << "\nCallSite Rewritten to " << newExprID;
+      //llvm::errs() << "\nCallSite Rewritten to " << newExprID;
       return true;
     }
 
@@ -339,11 +340,11 @@ private:
     }
 
     auto rewritePair = [&](auto* arg, auto* param) {
-      llvm::errs() << "\nRewriting callsite arg " << *arg 
-                   << "\nwith function param " << *param;
-      if (llvm::dyn_cast<llvm::ConstantExpr>(arg)) {
-        llvm::errs () << "\t Found gep as operand";
-      }
+      //llvm::errs() << "\nRewriting callsite arg " << *arg 
+      //             << "\nwith function param " << *param;
+      //if (llvm::dyn_cast<llvm::ConstantExpr>(arg)) {
+      //  llvm::errs () << "\t Found gep as operand";
+      //}
       auto argExprID   = generator->GetOrCreateExprID(arg);
       auto paramExprID = generator->GetOrCreateExprID(param);
       return generator->rewrite(state[nullptr], paramExprID, argExprID);
@@ -731,7 +732,8 @@ private:
 public:
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
-    llvm::errs() << "\n before transfer at -- " << value;
+    llvm::errs() << "\n =====================";
+    llvm::errs() << "\n BEFORE transfer at -- " << value;
     state[nullptr].print(llvm::errs());
     auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
     bool handled = false;
@@ -755,10 +757,10 @@ public:
     state[nullptr].simplifyComplements()
                   .simplifyRedundancies()
                   .simplifyImplication();
-    llvm::errs() << "\n after transfer at -- " << value;
+    llvm::errs() << "\n AFTER transfer at -- " << value;
     state[nullptr].print(llvm::errs());
     //generator->dumpState();
-    llvm::errs() << "\n =====================" << value;
+    llvm::errs() << "\n =====================";
     //printer->insertIR(inst, state[nullptr]);
     return;
   }
@@ -798,11 +800,11 @@ BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
     if ( f.isDeclaration()) {
       continue;
     }
-    llvm::errs() << "\n Get Dom Tree for " << f.getName() << "\n";
+    //llvm::errs() << "\n Get Dom Tree for " << f.getName() << "\n";
     auto* DT = &getAnalysis<DominatorTreeWrapperPass>(f).getDomTree();
-    llvm::errs() << "\n Get AA Tree for " << f.getName() << "\n";
+    //llvm::errs() << "\n Get AA Tree for " << f.getName() << "\n";
     auto* AAWrapper = &getAnalysis<AAResultsWrapperPass>(f);
-    llvm::errs() << "\n Get memSSA Tree for " << f.getName() << "\n";
+    //llvm::errs() << "\n Get memSSA Tree for " << f.getName() << "\n";
     auto memSSA = std::make_unique<MemorySSA>(f, &AAWrapper->getAAResults(), DT);
     functionAAs.insert({&f, AAWrapper});
     
@@ -823,6 +825,10 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   }
 
 
+  //AnalysisPackage package;
+  //package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
+  //libCHandlers   = getLibCHandlerMap(package);
+  initializeGlobals(m);
   using Value    = Disjunction;
   using Transfer = DisjunctionTransfer;
   using Meet     = DisjunctionMeet;
@@ -830,43 +836,48 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, EdgeTransformer, analysis::Backward>;
   Analysis analysis{m, mainFunction};
 
-  //AnalysisPackage package;
-  //package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
-  //libCHandlers   = getLibCHandlerMap(package);
+  auto results = analysis.computeDataflow();
+  generator->dumpState();
+  llvm::outs() << "\nFinished";
+  svfResults->releaseAndersenWaveDiffWithType();
 
-  initializeGlobals(m);
-  
-  using LocationStates   = std::vector<std::pair<llvm::Instruction*, Disjunction>;
-  using ContextLocations = std::pair<Context, locationStates>;
-  auto getLocationsAndState = [&](llvm::Function* function, auto functionResults) {
-    auto insertIt = function->getEntryBlock().getFirstInsertionPt();
-    auto terminatorIt = ++function->getEntryBlock().getFirstInsertionPt();
-    //auto terminatorIt  = function->getEntryBlock().end();
-    std::vector<std::pair<llvm::Instruction*, Disjunction>> points;
-    while (insertIt != terminatorIt ) {
-      auto state = functionResults[&(*insertIt)][nullptr];
-      if (state.isVacuouslyTrue() || state.isEmpty()) {
-        continue; 
-      }
-      points.push_back({&*insertIt, state});
-      insertIt++;
-    } 
-    return points;
+  auto getLocationStates = [](llvm::Function* function, auto functionResults) {
+    auto* location = &*(function->getEntryBlock().getFirstInsertionPt());
+    auto state = functionResults[location][nullptr];
+    return std::make_pair(location, state);
+  };
+
+  auto getParent = [](auto& context) -> llvm::Instruction* {
+    llvm::Instruction* parent = nullptr;
+    for (auto* function : context) {
+      parent = function == nullptr ? function : nullptr;
+    }
+    return parent;
   };
   
-  std::vector<ContextLocations> fixConjuncts;
+  using ResolverQueue = std::deque<lowering::LocationState>;
+  ResolverQueue resolverQueue;
   for (auto& [context, contextResults] : results) {
-    for (auto& [function, functionResults] : results) {
-      auto insertionPoints  = getLocationsAndState(function, functionResults);
-      fixConjuncts.push_back({context, insertionPoints});
+    for (auto& [function, functionResults] : contextResults) {
+      auto [location, state] = getLocationStates(function, functionResults);
+      llvm::Instruction* parent = getParent(context);
+      resolverQueue.emplace_back(
+          lowering::LocationState{.parentCallSite = parent,
+                                  .callee         = function,
+                                  .location       = location,
+                                  .state          = state,
+                                  .context        = context});
     }
   }
-  
-  //generator->dumpState();
-  //auto results  = analysis.computeDataflow();
+  lowering::InstructionResolver resolver{m, generator.get()};
+  for (auto& locationState : resolverQueue) {
+    resolver(locationState);
+  }
+
+
   //for (auto& [context, contextResults] : results) {
   //  for (auto& [function, functionResults] : contextResults) {
-  //    auto locationStates = getLocationsAndState(function, functionResults);
+  //    auto locationStates = getLocationStates(function, functionResults);
   //    for (auto& [loc, state] : locationStates) {
   //      if (state.isVacuouslyTrue() || state.isEmpty()) {
   //        continue;
@@ -875,13 +886,14 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   //    }
   //  }
   //}
+
+
   auto ec = std::error_code{};
   auto fileOuts = llvm::raw_fd_ostream{"/home/shreeasish/pledgerize-reboot/hoisting/build-dataflow/instrumented/fileStream", ec};
   llvm::errs() << "\n\nRunning Verifier\n";
   if (!llvm::verifyModule(m, &llvm::errs())) {
     llvm::WriteBitcodeToFile(m, fileOuts);
   }
-  svfResults->releaseAndersenWaveDiffWithType();
   return false;
 }
 
@@ -897,7 +909,7 @@ BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
 
 static void
 instrumentPromiseTree(llvm::Module& m) {
-  llvm::DebugFlag = true;
+  //llvm::DebugFlag = true;
   legacy::PassManager pm;
   pm.add(createTypeBasedAAWrapperPass());
   pm.add(createGlobalsAAWrapperPass());

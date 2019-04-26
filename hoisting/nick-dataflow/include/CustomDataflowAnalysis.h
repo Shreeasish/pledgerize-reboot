@@ -384,6 +384,8 @@ public:
 
       // Propagate through all instructions in the block
       for (auto& i : Direction::getInstructions(*bb)) {
+        llvm::outs() << "\n Working on  " << i;
+        const auto& size = state[nullptr].conjunctCount();
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
@@ -399,6 +401,12 @@ public:
           // ska: uncomment to skip function calls
           //else {
           applyTransfer(i, state, context);
+          const auto& newSize = state[nullptr].conjunctCount();
+          if (newSize > size) {
+            llvm::outs() << "\nIncrease after\n";
+          } else if (newSize < size) {
+            llvm::outs() << "\nDecrease after\n";
+          }
           //}
           //llvm::errs() << "\nAfter-------------------------------------";
           //llvm::errs() << "In function " << i.getFunction()->getName()
