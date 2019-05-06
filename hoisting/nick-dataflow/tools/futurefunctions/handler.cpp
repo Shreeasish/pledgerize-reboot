@@ -30,8 +30,6 @@
 
 static llvm::Function*
 getCalledFunction(llvm::CallSite cs) {
-
-
   if (!cs.getInstruction()) {
     return nullptr;
   }
@@ -39,32 +37,6 @@ getCalledFunction(llvm::CallSite cs) {
   llvm::Value* called = cs.getCalledValue()->stripPointerCasts();
   return llvm::dyn_cast<llvm::Function>(called);
 }
-
-// class  : public PledgeCheckerBase {
-//   tmpanalysis::tmppathResultsTy& tmpResults;
-
-// public:
-//   Handlefread(int n, tmpanalysis::tmppathResultsTy& tresults)
-//     : PledgeCheckerBase(n), tmpResults{tresults} {};
-
-//   FunctionsValue
-//   operator()(const llvm::CallSite cs, const Context& context) override {
-//     auto& contextResults = tmpResults[context];
-//     auto* instr          = cs.getInstruction();
-//     auto& functionResults = contextResults[instr->getFunction()];
-//     auto state            = analysis::getIncomingState(functionResults,
-//     *instr); auto arg              = cs.getArgument(getArgPosition()); auto
-//     isTmp            = state[arg];
-
-//     if (isTmp.test(0)) {
-//       return std::bitset<COUNT>{1 << (PLEDGE_TMPPATH - 1) };
-//     }
-
-//     return 0;
-//   };
-// };
-
-
 
 class CheckMCAST : public PledgeCheckerBase {
 public:

@@ -37,6 +37,7 @@ When the analysis rolls over a store to store to register `%116`, it considers i
 
 ----------------------------------------
 # Lowering instructions with out-of-scope defs
+
 In order to perform computations, functions require values or instructions from it's caller (parent function). 
 To pass an instruction or value, it must be stored onto a call stack by the parent function and later retrieved from the stack by the callee. 
 A convention must also be established such that the callee is aware which elements on the stack correspond to the required values or instructions.
@@ -190,6 +191,36 @@ General Trend
 ================
   An increase in  conjuncts generally shows that the analysis has gained precision.
   Aside from before store instructions.
+
+
+State Relations
+================
+## Deprecated
+`Phi < Phi'` 
+Needs to be defined as an abstract state which happens before another.
+
+Question 1. If `phi < phi'` does `phi -> phi'`.
+Question 2. Assuming the answer to the previous question is yes, i have to define a subset relationship between predicates which shows that one constrains behaviour more than another.
+            _note that this does means that the implementation has to be changed to account for some of this behaviour. Specifically the part about propagating past callsites._
+Question 3. Generating heuristics for finding subset relationships.
+
+Happens before implies that the previous state implies the next state.
+Implication relationships are not what we want to consider.
+What we need is something which can identify that the predicates of an abstract state are stronger than the predicates of another abstract state.
+i.e. an abstract state subsumes another. Therefore given any two abstract states, we can identify where it would be better to lower. This includes abstract states which are not on the same path.
+--------------
+
+## Using Weakest Preconditions and Strongest Postconditions
+
+Simply put,
+For a pair of instructions where `i < j` (`i` happens before `j`), if the strongest postcondition of i is weaker than the weakest precondition of j, then it informs us of the benefits of lowering prior
+to j and ahead of i.
+
+
+
+
+
+
 
 
 

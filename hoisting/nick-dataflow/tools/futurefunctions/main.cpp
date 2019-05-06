@@ -29,7 +29,6 @@ using std::string;
 using std::unique_ptr;
 
 
-
 static cl::OptionCategory futureFunctionsCategory{"future functions options"};
 
 static cl::opt<string> inPath{cl::Positional,
@@ -40,33 +39,35 @@ static cl::opt<string> inPath{cl::Positional,
                               cl::cat{futureFunctionsCategory}};
 
 
-//LibC map here
+// LibC map here
 std::unordered_map<std::string, FunctionPledges> libCHandlers;
 
 
-static const llvm::Function *
+static const llvm::Function*
 getCalledFunction(const llvm::CallSite cs) {
   if (!cs.getInstruction()) {
     return nullptr;
   }
-  const llvm::Value *called = cs.getCalledValue()->stripPointerCasts();
+  const llvm::Value* called = cs.getCalledValue()->stripPointerCasts();
   if (called->getName().contains("llvm")) {
     return nullptr;
   }
-  //llvm::errs() << called->getName() << "\n";
+  // llvm::errs() << called->getName() << "\n";
   return llvm::dyn_cast<llvm::Function>(called);
 }
 
 
 static void
-setRequiredPrivileges(FunctionsValue& requiredPrivileges, llvm::CallSite cs, const Context& context) {
+setRequiredPrivileges(FunctionsValue& requiredPrivileges,
+                      llvm::CallSite cs,
+                      const Context& context) {
   auto functionName = getCalledFunction(cs)->getName().str();
-  auto found = libCHandlers.find(functionName);
+  auto found        = libCHandlers.find(functionName);
 
-  if (found != libCHandlers.end()){
+  if (found != libCHandlers.end()) {
     auto promisesBitset = found->second.getPromisesBitset(cs, context);
     requiredPrivileges |= promisesBitset;
-  } else if(syscallBitsetMap.count(functionName)){
+  } else if (syscallBitsetMap.count(functionName)) {
     requiredPrivileges |= syscallBitsetMap[functionName];
   } else {
     return;
@@ -87,7 +88,6 @@ class FunctionsTransfer {
 public:
   void
   operator()(llvm::Value& v, FunctionsState& state, const Context& context) {
-
     const CallSite cs{&v};
     const auto* fun = getCalledFunction(cs);
 
@@ -109,7 +109,7 @@ public:
 template <typename OutIterator>
 static void
 collectFollowers(FunctionsResult& followerStates, OutIterator followers) {
-  for (auto& [value,state] : followerStates) {
+  for (auto& [value, state] : followerStates) {
     auto* inst = llvm::dyn_cast<llvm::Instruction>(value);
     if (!inst) {
       continue;
@@ -129,8 +129,7 @@ collectFollowers(FunctionsResult& followerStates, OutIterator followers) {
 static void
 printLineNumber(llvm::raw_ostream& out, llvm::Instruction& inst) {
   if (const llvm::DILocation* debugLoc = inst.getDebugLoc()) {
-    out << "At " << debugLoc->getFilename()
-        << " line " << debugLoc->getLine()
+    out << "At " << debugLoc->getFilename() << " line " << debugLoc->getLine()
         << ":\n";
   } else {
     out << "At an unknown location:\n";
@@ -139,18 +138,19 @@ printLineNumber(llvm::raw_ostream& out, llvm::Instruction& inst) {
 
 
 static void
-printFollowers(llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> followers) {
+printFollowers(
+    llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> followers) {
   for (auto& [callsite, after] : followers) {
-    //llvm::outs().changeColor(raw_ostream::Colors::RED);
+    // llvm::outs().changeColor(raw_ostream::Colors::RED);
     printLineNumber(llvm::outs(), *callsite);
 
     auto* called = getCalledFunction(llvm::CallSite{callsite});
-    //llvm::outs().changeColor(raw_ostream::Colors::YELLOW);
+    // llvm::outs().changeColor(raw_ostream::Colors::YELLOW);
     llvm::outs() << "After call to \"" << called->getName() << "\" ";
 
 
-    for (int i = 0; i < COUNT ; i++) {
-      if(after[i]){
+    for (int i = 0; i < COUNT; i++) {
+      if (after[i]) {
         llvm::outs() << PromiseNames[i] << " ";
       }
     }
@@ -158,10 +158,10 @@ printFollowers(llvm::ArrayRef<std::pair<llvm::Instruction*, FunctionsValue>> fol
   }
 
   if (followers.empty()) {
-    //llvm::outs().changeColor(raw_ostream::Colors::GREEN);
+    // llvm::outs().changeColor(raw_ostream::Colors::GREEN);
     llvm::outs() << "No followers collected\n";
   }
-  //llvm::outs().resetColor();
+  // llvm::outs().resetColor();
 }
 
 
@@ -195,7 +195,8 @@ main(int argc, char** argv) {
   using Value    = FunctionsValue;
   using Transfer = FunctionsTransfer;
   using Meet     = FunctionsMeet;
-  using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, analysis::Backward>;
+  using Analysis =
+      analysis::DataflowAnalysis<Value, Transfer, Meet, analysis::Backward>;
   Analysis analysis{*module, mainFunction};
 
   // Get all forward analyses here
@@ -210,14 +211,14 @@ main(int argc, char** argv) {
   for (auto& [context, contextResults] : results) {
     for (auto& [function, functionResults] : contextResults) {
       collectFollowers(functionResults, std::back_inserter(followers));
-      for(auto& [location, state] : functionResults){
+      for (auto& [location, state] : functionResults) {
         auto* inst = llvm::dyn_cast<llvm::Instruction>(location);
-        if(!inst){
+        if (!inst) {
           continue;
         }
         printLineNumber(llvm::outs(), *inst);
-        for (int i = 0; i < COUNT ; i++) {
-          if(state[nullptr][i]){
+        for (int i = 0; i < COUNT; i++) {
+          if (state[nullptr][i]) {
             llvm::outs() << PromiseNames[i] << " ";
           }
         }
@@ -225,6 +226,6 @@ main(int argc, char** argv) {
       }
     }
   }
-    printFollowers(followers);
-    return 0;
-  }
+  printFollowers(followers);
+  return 0;
+}
