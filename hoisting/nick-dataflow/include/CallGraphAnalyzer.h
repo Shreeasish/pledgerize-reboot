@@ -11,7 +11,7 @@
 
 using SyscallBitsetMap = llvm::StringMap<std::bitset<COUNT>>;
 
-static SyscallBitsetMap syscallBitsetMap{
+static SyscallBitsetMap syscallBitsetMap {
     // {"exit", std::bitset<COUNT>().set(PLEDGE_ALWAYS)}, //Set nothing for
     // ALWAYS
     // {"kbind", std::bitset<COUNT>().set(PLEDGE_ALWAYS)},
@@ -149,7 +149,7 @@ static SyscallBitsetMap syscallBitsetMap{
     // {"chdir", std::bitset<COUNT>().set(PLEDGE_RPATH)},
     // {"openat",
     //  std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},
-        //  | std::bitset<COUNT>().set(PLEDGE_WPATH)},
+    //  | std::bitset<COUNT>().set(PLEDGE_WPATH)},
     // {"fstatat",
     // //  std::bitset<COUNT>().set(PLEDGE_RPATH)
     //      | std::bitset<COUNT>().set(PLEDGE_WPATH)},
@@ -161,8 +161,8 @@ static SyscallBitsetMap syscallBitsetMap{
     //      | std::bitset<COUNT>().set(PLEDGE_WPATH)},
     // {"lstat",
     //  std::bitset<COUNT>().set(PLEDGE_RPATH)},
-        //  | std::bitset<COUNT>().set(PLEDGE_WPATH)
-        //  | std::bitset<COUNT>().set(PLEDGE_TMPPATH)},
+    //  | std::bitset<COUNT>().set(PLEDGE_WPATH)
+    //  | std::bitset<COUNT>().set(PLEDGE_TMPPATH)},
     {"truncate", std::bitset<COUNT>().set(PLEDGE_WPATH)},
     // {"rename",
     //  std::bitset<COUNT>().set(PLEDGE_RPATH)
@@ -173,9 +173,8 @@ static SyscallBitsetMap syscallBitsetMap{
     {"linkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
     {"symlink", std::bitset<COUNT>().set(PLEDGE_CPATH)},
     {"symlinkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"unlink",
-     std::bitset<COUNT>().set(PLEDGE_CPATH)},
-        //  | std::bitset<COUNT>().set(PLEDGE_TMPPATH)},
+    {"unlink", std::bitset<COUNT>().set(PLEDGE_CPATH)},
+    //  | std::bitset<COUNT>().set(PLEDGE_TMPPATH)},
     {"unlinkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
     {"mkdir", std::bitset<COUNT>().set(PLEDGE_CPATH)},
     {"mkdirat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
@@ -272,65 +271,90 @@ static SyscallBitsetMap syscallBitsetMap{
 
     // Namei stuff
     {"statfs", std::bitset<COUNT>().set(PLEDGE_RPATH)},  // C2 - namei additions
-    {"mknod", std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
+    {"mknod",
+     std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
     {"mknodat", std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2
-    {"mkfifo", std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
-    {"access", std::bitset<COUNT>().set(PLEDGE_RPATH)
+    {"mkfifo",
+     std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
+    {"access",
+     std::bitset<COUNT>().set(PLEDGE_RPATH)
          | std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"faccessat", std::bitset<COUNT>().set(PLEDGE_RPATH)}, // C2 - faccessat calls dofaccessat, Basis pledge is RPATH, STDIO removed
-    // {"unlink", std::bitset<COUNT>().set(PLEDGE_CPATH)  // C2 - Base pledge set to cpath
-    //   | std::bitset<COUNT>().set(PLEDGE_TMPPATH)}, // cpath or tmppath may be used
-    // {"unlinkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},  // C2 - Base pledge set to cpath
+    {"faccessat",
+     std::bitset<COUNT>().set(
+         PLEDGE_RPATH)},  // C2 - faccessat calls dofaccessat, Basis pledge is
+                          // RPATH, STDIO removed
+    // {"unlink", std::bitset<COUNT>().set(PLEDGE_CPATH)  // C2 - Base pledge
+    // set to cpath
+    //   | std::bitset<COUNT>().set(PLEDGE_TMPPATH)}, // cpath or tmppath may be
+    //   used
+    // {"unlinkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},  // C2 - Base
+    // pledge set to cpath
     //  std::bitset<COUNT>().set(PLEDGE_RPATH)
     //      | std::bitset<COUNT>().set(PLEDGE_WPATH)},
     {"fstat", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"fstatat", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"lstat", std::bitset<COUNT>().set(PLEDGE_RPATH)}, 
-    {"stat", std::bitset<COUNT>().set(PLEDGE_RPATH)
+    {"lstat", std::bitset<COUNT>().set(PLEDGE_RPATH)},
+    {"stat",
+     std::bitset<COUNT>().set(PLEDGE_RPATH)
          | std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"fpathconf", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"pathconf", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"readlink", std::bitset<COUNT>().set(PLEDGE_STDIO)
+    {"readlink",
+     std::bitset<COUNT>().set(PLEDGE_STDIO)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"readlinkat", std::bitset<COUNT>().set(PLEDGE_STDIO)
+    {"readlinkat",
+     std::bitset<COUNT>().set(PLEDGE_STDIO)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
     {"chflags", std::bitset<COUNT>().set(PLEDGE_FATTR)},
     {"chflagsat", std::bitset<COUNT>().set(PLEDGE_FATTR)},
     {"fchflags", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    {"chmod", std::bitset<COUNT>().set(PLEDGE_FATTR)
+    {"chmod",
+     std::bitset<COUNT>().set(PLEDGE_FATTR)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"fchmod", std::bitset<COUNT>().set(PLEDGE_FATTR)
+    {"fchmod",
+     std::bitset<COUNT>().set(PLEDGE_FATTR)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"fchmodat", std::bitset<COUNT>().set(PLEDGE_FATTR)
+    {"fchmodat",
+     std::bitset<COUNT>().set(PLEDGE_FATTR)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"chown", std::bitset<COUNT>().set(PLEDGE_CHOWN)
+    {"chown",
+     std::bitset<COUNT>().set(PLEDGE_CHOWN)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"fchownat", std::bitset<COUNT>().set(PLEDGE_CHOWN)
+    {"fchownat",
+     std::bitset<COUNT>().set(PLEDGE_CHOWN)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"lchown", std::bitset<COUNT>().set(PLEDGE_CHOWN)
+    {"lchown",
+     std::bitset<COUNT>().set(PLEDGE_CHOWN)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
     {"fchown", std::bitset<COUNT>().set(PLEDGE_CHOWN)},
-    {"utimes", std::bitset<COUNT>().set(PLEDGE_FATTR)
+    {"utimes",
+     std::bitset<COUNT>().set(PLEDGE_FATTR)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"utimensat", std::bitset<COUNT>().set(PLEDGE_FATTR)
+    {"utimensat",
+     std::bitset<COUNT>().set(PLEDGE_FATTR)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
     {"futimens", std::bitset<COUNT>().set(PLEDGE_FATTR)},
     {"futimes", std::bitset<COUNT>().set(PLEDGE_FATTR)},
     {"ftruncate", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"truncate", std::bitset<COUNT>().set(PLEDGE_WPATH)
+    {"truncate",
+     std::bitset<COUNT>().set(PLEDGE_WPATH)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)
-         | std::bitset<COUNT>().set(PLEDGE_FATTR)}, 
-    {"rename", std::bitset<COUNT>().set(PLEDGE_CPATH)
+         | std::bitset<COUNT>().set(PLEDGE_FATTR)},
+    {"rename",
+     std::bitset<COUNT>().set(PLEDGE_CPATH)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"renameat", std::bitset<COUNT>().set(PLEDGE_CPATH)
+    {"renameat",
+     std::bitset<COUNT>().set(PLEDGE_CPATH)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"revoke", std::bitset<COUNT>().set(PLEDGE_TTY)
+    {"revoke",
+     std::bitset<COUNT>().set(PLEDGE_TTY)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
     {"chdir", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"open", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)}, // Handle Manually.
-    {"openat", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},};
+    {"open", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},  // Handle Manually.
+    {"openat", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},
+};
 
-static SyscallBitsetMap syscallManMap{
+static SyscallBitsetMap syscallManMap {
     {"clock_getres", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"clock_gettime", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"close", std::bitset<COUNT>().set(PLEDGE_STDIO)},
@@ -421,8 +445,12 @@ static SyscallBitsetMap syscallManMap{
     {"getfsstat", std::bitset<COUNT>().set(PLEDGE_RPATH)},
     {"link", std::bitset<COUNT>().set(PLEDGE_CPATH)},
     {"linkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"symlink", std::bitset<COUNT>().set( PLEDGE_CPATH)},  // C2 - Appropriate pledges already set
-    {"symlinkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},  // C2 - Appropriate pledges already set
+    {"symlink",
+     std::bitset<COUNT>().set(
+         PLEDGE_CPATH)},  // C2 - Appropriate pledges already set
+    {"symlinkat",
+     std::bitset<COUNT>().set(
+         PLEDGE_CPATH)},  // C2 - Appropriate pledges already set
     {"mkdir", std::bitset<COUNT>().set(PLEDGE_CPATH)},
     {"mkdirat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
     {"rmdir", std::bitset<COUNT>().set(PLEDGE_CPATH)},
@@ -523,87 +551,115 @@ static SyscallBitsetMap syscallManMap{
     {"bpf", std::bitset<COUNT>().set(PLEDGE_BPF)},
 
     {"statfs", std::bitset<COUNT>().set(PLEDGE_RPATH)},  // C2 - namei additions
-    {"mknod", std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
+    {"mknod",
+     std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
     {"mknodat", std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2
-    {"mkfifo", std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
-    {"access", std::bitset<COUNT>().set(PLEDGE_RPATH)
+    {"mkfifo",
+     std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
+    {"access",
+     std::bitset<COUNT>().set(PLEDGE_RPATH)
          | std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"faccessat", std::bitset<COUNT>().set(PLEDGE_RPATH)}, // C2 - faccessat calls dofaccessat, Basis pledge is RPATH, STDIO removed
-    {"unlink", std::bitset<COUNT>().set(PLEDGE_CPATH)  // C2 - Base pledge set to cpath
-      | std::bitset<COUNT>().set(PLEDGE_TMPPATH)}, // cpath or tmppath may be used
-    {"unlinkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},  // C2 - Base pledge set to cpath
+    {"faccessat",
+     std::bitset<COUNT>().set(
+         PLEDGE_RPATH)},  // C2 - faccessat calls dofaccessat, Basis pledge is
+                          // RPATH, STDIO removed
+    {"unlink",
+     std::bitset<COUNT>().set(PLEDGE_CPATH)  // C2 - Base pledge set to cpath
+         | std::bitset<COUNT>().set(
+               PLEDGE_TMPPATH)},  // cpath or tmppath may be used
+    {"unlinkat",
+     std::bitset<COUNT>().set(PLEDGE_CPATH)},  // C2 - Base pledge set to cpath
     //  std::bitset<COUNT>().set(PLEDGE_RPATH)
     //      | std::bitset<COUNT>().set(PLEDGE_WPATH)},
     {"fstat", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"fstatat", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"lstat", std::bitset<COUNT>().set(PLEDGE_RPATH)}, 
-    {"stat", std::bitset<COUNT>().set(PLEDGE_RPATH)
+    {"lstat", std::bitset<COUNT>().set(PLEDGE_RPATH)},
+    {"stat",
+     std::bitset<COUNT>().set(PLEDGE_RPATH)
          | std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"fpathconf", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     {"pathconf", std::bitset<COUNT>().set(PLEDGE_RPATH)},
     {"readlinkat",
      std::bitset<COUNT>().set(PLEDGE_RPATH)
          | std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"readlink", std::bitset<COUNT>().set(PLEDGE_STDIO)
+    {"readlink",
+     std::bitset<COUNT>().set(PLEDGE_STDIO)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"readlinkat", std::bitset<COUNT>().set(PLEDGE_STDIO)
+    {"readlinkat",
+     std::bitset<COUNT>().set(PLEDGE_STDIO)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
     // {"readlink", std::bitset<COUNT>().set(PLEDGE_STDIO)},
     // {"readlinkat", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"chflags", std::bitset<COUNT>().set(PLEDGE_FATTR)
+    {"chflags",
+     std::bitset<COUNT>().set(PLEDGE_FATTR)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"chflagsat", std::bitset<COUNT>().set(PLEDGE_FATTR)
+    {"chflagsat",
+     std::bitset<COUNT>().set(PLEDGE_FATTR)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
     {"fchflags", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    {"chmod", std::bitset<COUNT>().set(PLEDGE_FATTR)
+    {"chmod",
+     std::bitset<COUNT>().set(PLEDGE_FATTR)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
     {"fchmod", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-        //  | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"fchmodat", std::bitset<COUNT>().set(PLEDGE_FATTR)
+    //  | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+    {"fchmodat",
+     std::bitset<COUNT>().set(PLEDGE_FATTR)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"chown", std::bitset<COUNT>().set(PLEDGE_CHOWN)
+    {"chown",
+     std::bitset<COUNT>().set(PLEDGE_CHOWN)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"fchownat", std::bitset<COUNT>().set(PLEDGE_CHOWN)
+    {"fchownat",
+     std::bitset<COUNT>().set(PLEDGE_CHOWN)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"lchown", std::bitset<COUNT>().set(PLEDGE_CHOWN)
+    {"lchown",
+     std::bitset<COUNT>().set(PLEDGE_CHOWN)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
     {"fchown", std::bitset<COUNT>().set(PLEDGE_CHOWN)},
-    {"utimes", std::bitset<COUNT>().set(PLEDGE_FATTR)
+    {"utimes",
+     std::bitset<COUNT>().set(PLEDGE_FATTR)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"utimensat", std::bitset<COUNT>().set(PLEDGE_FATTR)
+    {"utimensat",
+     std::bitset<COUNT>().set(PLEDGE_FATTR)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
     {"futimens", std::bitset<COUNT>().set(PLEDGE_FATTR)},
     {"futimes", std::bitset<COUNT>().set(PLEDGE_FATTR)},
     {"ftruncate", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"truncate", std::bitset<COUNT>().set(PLEDGE_WPATH)
+    {"truncate",
+     std::bitset<COUNT>().set(PLEDGE_WPATH)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-        //  | std::bitset<COUNT>().set(PLEDGE_FATTR)}, Doesn't need it even though vfs_syscall has it
-    {"rename", std::bitset<COUNT>().set(PLEDGE_CPATH)
+    //  | std::bitset<COUNT>().set(PLEDGE_FATTR)}, Doesn't need it even though
+    //  vfs_syscall has it
+    {"rename",
+     std::bitset<COUNT>().set(PLEDGE_CPATH)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"renameat", std::bitset<COUNT>().set(PLEDGE_CPATH)
+    {"renameat",
+     std::bitset<COUNT>().set(PLEDGE_CPATH)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"revoke", std::bitset<COUNT>().set(PLEDGE_TTY)
+    {"revoke",
+     std::bitset<COUNT>().set(PLEDGE_TTY)
          | std::bitset<COUNT>().set(PLEDGE_RPATH)},
     {"chdir", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"open", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)}, // Handle Manually.
+    {"open", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},  // Handle Manually.
     {"openat", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},
 };
 // Verify one off error for count. Should be COUNT - 1 for range
+//
+template <typename llvmOStream>
 static void
-printBitset(std::bitset<COUNT> bitv, llvm::raw_fd_ostream& outs) {
+printBitset(std::bitset<COUNT> bitv, llvmOStream& outs) {
   for (int i = COUNT - 1; i >= 0; i--) {
     outs << bitv[i];
   }
   outs.flush();
 };
 
-static void
-printBitset(std::bitset<COUNT> bitv, llvm::raw_ostream& outs) {
-  for (int i = COUNT - 1; i >= 0; i--) {
-    outs << bitv[i];
-  }
-  outs.flush();
-};
+//static void
+//printBitset(std::bitset<COUNT> bitv, llvm::raw_ostream& outs) {
+//  for (int i = COUNT - 1; i >= 0; i--) {
+//    outs << bitv[i];
+//  }
+//  outs.flush();
+//};
 
 
 #endif

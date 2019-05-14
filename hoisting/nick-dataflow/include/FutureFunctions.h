@@ -25,15 +25,14 @@
 #include "PromiseDeclarations.h"
 #include "CallGraphAnalyzer.h"
 
-using PromiseBitset    = std::bitset<COUNT>;
+using PromiseBitset   = std::bitset<COUNT>;
 using FunctionsValue  = PromiseBitset;
 using FunctionsState  = analysis::AbstractState<FunctionsValue>;
 using FunctionsResult = analysis::DataflowResult<FunctionsValue>;
 using Context = std::array<llvm::Instruction*, 2ul>;
 
 
-struct
-AnalysisPackage{
+struct AnalysisPackage {
   tmpanalysis::tmppathResultsTy tmppathResults;
 };
 

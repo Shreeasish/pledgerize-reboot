@@ -20,9 +20,8 @@
 #include <variant>
 #include <unordered_map>
 
-#include "FutureFunctions.h"
+#include "Handler.h"
 #include "DataflowAnalysis.h"
-
 
 // Headers included for checking flags
 #include <netinet/in.h>  //mcast
@@ -30,53 +29,23 @@
 
 static llvm::Function*
 getCalledFunction(llvm::CallSite cs) {
-
-
   if (!cs.getInstruction()) {
     return nullptr;
   }
-
   llvm::Value* called = cs.getCalledValue()->stripPointerCasts();
   return llvm::dyn_cast<llvm::Function>(called);
 }
 
-// class  : public PledgeCheckerBase {
-//   tmpanalysis::tmppathResultsTy& tmpResults;
-
-// public:
-//   Handlefread(int n, tmpanalysis::tmppathResultsTy& tresults)
-//     : PledgeCheckerBase(n), tmpResults{tresults} {};
-
-//   FunctionsValue
-//   operator()(const llvm::CallSite cs, const Context& context) override {
-//     auto& contextResults = tmpResults[context];
-//     auto* instr          = cs.getInstruction();
-//     auto& functionResults = contextResults[instr->getFunction()];
-//     auto state            = analysis::getIncomingState(functionResults,
-//     *instr); auto arg              = cs.getArgument(getArgPosition()); auto
-//     isTmp            = state[arg];
-
-//     if (isTmp.test(0)) {
-//       return std::bitset<COUNT>{1 << (PLEDGE_TMPPATH - 1) };
-//     }
-
-//     return 0;
-//   };
-// };
-
-
-
-class CheckMCAST : public PledgeCheckerBase {
+class CheckMCAST : public PrivilegeCheckerBase {
 public:
-  CheckMCAST(int ap) : PledgeCheckerBase(ap) {}
+  CheckMCAST(int ap) : PrivilegeCheckerBase(ap) {}
 
-  FunctionsValue
+  Privileges
   operator()(const llvm::CallSite cs,
              const Context& context,
              AnalysisPackage* AnalysisPackage) override {
     auto* arg   = cs.getArgument(getArgPosition());
     auto* argInt = llvm::dyn_cast<llvm::ConstantInt>(arg);
-    // llvm::outs() << *argInt;
     if (argInt->getSExtValue() == IP_MULTICAST_IF) {
       return 1 << PLEDGE_MCAST;
     }
@@ -85,118 +54,114 @@ public:
   };
 };
 
-std::unordered_map<std::string, FunctionPledges>
-getLibCHandlerMap(AnalysisPackage& package) {
-  std::unordered_map<std::string, FunctionPledges> libCHandlers;
-
-  libCHandlers.emplace("fread", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace( "setsockopt", FunctionPledgesBuilder(16).add(std::make_unique<CheckMCAST>(2)).build());
-  libCHandlers.emplace("err", FunctionPledgesBuilder(16).build()); //Should only use stderr
-  libCHandlers.emplace("errx",FunctionPledgesBuilder(16).build()); //Like err, also exits the program 
-  libCHandlers.emplace("exit",FunctionPledgesBuilder(0).build());  //Program can always exit
-  libCHandlers.emplace( "fprintf", FunctionPledgesBuilder(16).build()); //Check the first argument(file pointer) for tmppath
-  libCHandlers.emplace("getopt",FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("isdigit",FunctionPledgesBuilder(0).build());
-  libCHandlers.emplace("isspace",FunctionPledgesBuilder(0).build());
-  libCHandlers.emplace("localtime",FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("printf",FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("snprintf",FunctionPledgesBuilder(16).build()); // According to manpage, works on the char * provided
-  libCHandlers.emplace("strptime",FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("strtol",FunctionPledgesBuilder(0).build());
-  libCHandlers.emplace("strtonum",FunctionPledgesBuilder(0).build());
-  libCHandlers.emplace("time",FunctionPledgesBuilder(16).build());
+void
+LibCHandlersMap::buildLibCHandlers(AnalysisPackage& package) {
+  libCHandlers.try_emplace("fread", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace( "setsockopt", FunctionPrivilegesBuilder(16).add(std::make_unique<CheckMCAST>(2)).build());
+  libCHandlers.try_emplace("err", FunctionPrivilegesBuilder(16).build()); //Should only use stderr
+  libCHandlers.try_emplace("errx",FunctionPrivilegesBuilder(16).build()); //Like err, also exits the program 
+  libCHandlers.try_emplace("exit",FunctionPrivilegesBuilder(0).build());  //Program can always exit
+  libCHandlers.try_emplace( "fprintf", FunctionPrivilegesBuilder(16).build()); //Check the first argument(file pointer) for tmppath
+  libCHandlers.try_emplace("getopt",FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("isdigit",FunctionPrivilegesBuilder(0).build());
+  libCHandlers.try_emplace("isspace",FunctionPrivilegesBuilder(0).build());
+  libCHandlers.try_emplace("localtime",FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("printf",FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("snprintf",FunctionPrivilegesBuilder(16).build()); // According to manpage, works on the char * provided
+  libCHandlers.try_emplace("strptime",FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("strtol",FunctionPrivilegesBuilder(0).build());
+  libCHandlers.try_emplace("strtonum",FunctionPrivilegesBuilder(0).build());
+  libCHandlers.try_emplace("time",FunctionPrivilegesBuilder(16).build());
   
-  libCHandlers.emplace("asprintf", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("daemon", FunctionPledgesBuilder(8210).build());
-  libCHandlers.emplace("__errno", FunctionPledgesBuilder(0).build());
-  libCHandlers.emplace("errx", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("execvp", FunctionPledgesBuilder(1048592).build());
-  libCHandlers.emplace("exit", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("fflush", FunctionPledgesBuilder(0).build());
-  libCHandlers.emplace("fork", FunctionPledgesBuilder(8208).build());
-  libCHandlers.emplace("fprintf", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("fputc", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("free", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("getopt", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("getpwnam", FunctionPledgesBuilder(4199418).build());
-  libCHandlers.emplace("inet_pton", FunctionPledgesBuilder(0).build());
-  libCHandlers.emplace("malloc", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("openlog", FunctionPledgesBuilder(0).build());
-  libCHandlers.emplace("setproctitle", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("signal", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("strerror", FunctionPledgesBuilder(0).build());
-  libCHandlers.emplace("strlcpy", FunctionPledgesBuilder(0).build());
-  libCHandlers.emplace("tzset", FunctionPledgesBuilder(18).build());
-  libCHandlers.emplace("vfprintf", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("vsnprintf", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("vsyslog", FunctionPledgesBuilder(16).build());
-  libCHandlers.emplace("wait", FunctionPledgesBuilder(16).build());
+  libCHandlers.try_emplace("asprintf", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("daemon", FunctionPrivilegesBuilder(8210).build());
+  libCHandlers.try_emplace("__errno", FunctionPrivilegesBuilder(0).build());
+  libCHandlers.try_emplace("errx", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("execvp", FunctionPrivilegesBuilder(1048592).build());
+  libCHandlers.try_emplace("exit", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("fflush", FunctionPrivilegesBuilder(0).build());
+  libCHandlers.try_emplace("fork", FunctionPrivilegesBuilder(8208).build());
+  libCHandlers.try_emplace("fprintf", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("fputc", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("free", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("getopt", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("getpwnam", FunctionPrivilegesBuilder(4199418).build());
+  libCHandlers.try_emplace("inet_pton", FunctionPrivilegesBuilder(0).build());
+  libCHandlers.try_emplace("malloc", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("openlog", FunctionPrivilegesBuilder(0).build());
+  libCHandlers.try_emplace("setproctitle", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("signal", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("strerror", FunctionPrivilegesBuilder(0).build());
+  libCHandlers.try_emplace("strlcpy", FunctionPrivilegesBuilder(0).build());
+  libCHandlers.try_emplace("tzset", FunctionPrivilegesBuilder(18).build());
+  libCHandlers.try_emplace("vfprintf", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("vsnprintf", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("vsyslog", FunctionPrivilegesBuilder(16).build());
+  libCHandlers.try_emplace("wait", FunctionPrivilegesBuilder(16).build());
 
-  // PULL the remaining emplaces from the CallgraphAnalyzer.h
-  
-  // libCHandlers.emplace("__sclose", 16);
-  // libCHandlers.emplace("__smakebuf", 16);
-  // libCHandlers.emplace("__swhatbuf", 16);
-  // libCHandlers.emplace("__sseek", 16);
-  // libCHandlers.emplace("__sread", 16);
-  // libCHandlers.emplace("__srefill", 16);
-  // libCHandlers.emplace("__srget", 16);
-  // libCHandlers.emplace("__svfscanf", 16);
-  // libCHandlers.emplace("__swrite", 16);
-  // libCHandlers.emplace("__swsetup", 16);
-  // libCHandlers.emplace("__vfprintf", 16);
-  // libCHandlers.emplace("__vfwprintf", 16);
-  // libCHandlers.emplace("_mktemp", 62);
-  // libCHandlers.emplace("mktemp_internal", 62);
-  // libCHandlers.emplace("asprintf", 16);
-  // libCHandlers.emplace("dprintf", 16);
-  // libCHandlers.emplace("vdprintf", 16);
-  // libCHandlers.emplace("fdopen", 16);
-  // libCHandlers.emplace("fgetln", 16);
-  // libCHandlers.emplace("fgets", 16);
-  // libCHandlers.emplace("fopen", 16);
-  // libCHandlers.emplace("fprintf", 16);
-  // libCHandlers.emplace("vfprintf", 16);
-  // libCHandlers.emplace("freopen", 16);
-  // libCHandlers.emplace("fscanf", 16);
-  // libCHandlers.emplace("vfscanf", 16);
-  // libCHandlers.emplace("fseek", 16);
-  // libCHandlers.emplace("fseeko", 16);
-  // libCHandlers.emplace("fsetpos", 16);
-  // libCHandlers.emplace("fwprintf", 16);
-  // libCHandlers.emplace("vfwprintf", 16);
-  // libCHandlers.emplace("getdelim", 16);
-  // libCHandlers.emplace("getline", 16);
-  // libCHandlers.emplace("getw", 16);
-  // libCHandlers.emplace("mkdtemp", 62);
-  // libCHandlers.emplace("mkostemp", 62);
-  // libCHandlers.emplace("mkostemps", 62);
-  // libCHandlers.emplace("mkstemp", 62);
-  // libCHandlers.emplace("mkstemps", 62);
-  // libCHandlers.emplace("mktemp", 62);
-  // libCHandlers.emplace("perror", 16);
-  // libCHandlers.emplace("printf", 16);
-  // libCHandlers.emplace("remove", 46);
-  // libCHandlers.emplace("rewind", 16);
-  // libCHandlers.emplace("scanf", 16);
-  // libCHandlers.emplace("setbuf", 16);
-  // libCHandlers.emplace("setvbuf", 16);
-  // libCHandlers.emplace("setbuffer", 16);
-  // libCHandlers.emplace("setlinebuf", 16);
-  // libCHandlers.emplace("snprintf", 16);
-  // libCHandlers.emplace("sprintf", 16);
-  // libCHandlers.emplace("sscanf", 16);
-  // libCHandlers.emplace("swprintf", 16);
-  // libCHandlers.emplace("vswprintf", 16);
-  // libCHandlers.emplace("tempnam", 62);
-  // libCHandlers.emplace("tmpnam", 62);
-  // libCHandlers.emplace("vasprintf", 16);
-  // libCHandlers.emplace("vprintf", 16);
-  // libCHandlers.emplace("vscanf", 16);
-  // libCHandlers.emplace("vsnprintf", 16);
-  // libCHandlers.emplace("vsprintf", 16);
-  // libCHandlers.emplace("vsscanf", 16);
-  // libCHandlers.emplace("vwprintf", 16);
-  // libCHandlers.emplace("wprintf", 16);
-  return libCHandlers;
+  // PULL the remaining try_emplaces from the CallgraphAnalyzer.h
+  // libCHandlers.try_emplace("__sclose", 16);
+  // libCHandlers.try_emplace("__smakebuf", 16);
+  // libCHandlers.try_emplace("__swhatbuf", 16);
+  // libCHandlers.try_emplace("__sseek", 16);
+  // libCHandlers.try_emplace("__sread", 16);
+  // libCHandlers.try_emplace("__srefill", 16);
+  // libCHandlers.try_emplace("__srget", 16);
+  // libCHandlers.try_emplace("__svfscanf", 16);
+  // libCHandlers.try_emplace("__swrite", 16);
+  // libCHandlers.try_emplace("__swsetup", 16);
+  // libCHandlers.try_emplace("__vfprintf", 16);
+  // libCHandlers.try_emplace("__vfwprintf", 16);
+  // libCHandlers.try_emplace("_mktemp", 62);
+  // libCHandlers.try_emplace("mktemp_internal", 62);
+  // libCHandlers.try_emplace("asprintf", 16);
+  // libCHandlers.try_emplace("dprintf", 16);
+  // libCHandlers.try_emplace("vdprintf", 16);
+  // libCHandlers.try_emplace("fdopen", 16);
+  // libCHandlers.try_emplace("fgetln", 16);
+  // libCHandlers.try_emplace("fgets", 16);
+  // libCHandlers.try_emplace("fopen", 16);
+  // libCHandlers.try_emplace("fprintf", 16);
+  // libCHandlers.try_emplace("vfprintf", 16);
+  // libCHandlers.try_emplace("freopen", 16);
+  // libCHandlers.try_emplace("fscanf", 16);
+  // libCHandlers.try_emplace("vfscanf", 16);
+  // libCHandlers.try_emplace("fseek", 16);
+  // libCHandlers.try_emplace("fseeko", 16);
+  // libCHandlers.try_emplace("fsetpos", 16);
+  // libCHandlers.try_emplace("fwprintf", 16);
+  // libCHandlers.try_emplace("vfwprintf", 16);
+  // libCHandlers.try_emplace("getdelim", 16);
+  // libCHandlers.try_emplace("getline", 16);
+  // libCHandlers.try_emplace("getw", 16);
+  // libCHandlers.try_emplace("mkdtemp", 62);
+  // libCHandlers.try_emplace("mkostemp", 62);
+  // libCHandlers.try_emplace("mkostemps", 62);
+  // libCHandlers.try_emplace("mkstemp", 62);
+  // libCHandlers.try_emplace("mkstemps", 62);
+  // libCHandlers.try_emplace("mktemp", 62);
+  // libCHandlers.try_emplace("perror", 16);
+  // libCHandlers.try_emplace("printf", 16);
+  // libCHandlers.try_emplace("remove", 46);
+  // libCHandlers.try_emplace("rewind", 16);
+  // libCHandlers.try_emplace("scanf", 16);
+  // libCHandlers.try_emplace("setbuf", 16);
+  // libCHandlers.try_emplace("setvbuf", 16);
+  // libCHandlers.try_emplace("setbuffer", 16);
+  // libCHandlers.try_emplace("setlinebuf", 16);
+  // libCHandlers.try_emplace("snprintf", 16);
+  // libCHandlers.try_emplace("sprintf", 16);
+  // libCHandlers.try_emplace("sscanf", 16);
+  // libCHandlers.try_emplace("swprintf", 16);
+  // libCHandlers.try_emplace("vswprintf", 16);
+  // libCHandlers.try_emplace("tempnam", 62);
+  // libCHandlers.try_emplace("tmpnam", 62);
+  // libCHandlers.try_emplace("vasprintf", 16);
+  // libCHandlers.try_emplace("vprintf", 16);
+  // libCHandlers.try_emplace("vscanf", 16);
+  // libCHandlers.try_emplace("vsnprintf", 16);
+  // libCHandlers.try_emplace("vsprintf", 16);
+  // libCHandlers.try_emplace("vsscanf", 16);
+  // libCHandlers.try_emplace("vwprintf", 16);
+  // libCHandlers.try_emplace("wprintf", 16);
 };

@@ -48,7 +48,6 @@ struct DenseMapInfo<std::array<llvm::Instruction*, Size>> {
 
 namespace analysis {
 
-
 template<typename T>
 class WorkList {
 public:
@@ -301,6 +300,26 @@ public:
 };
 
 
+llvm::Function*
+getCalledFunction(llvm::CallSite cs) {
+  auto* calledValue = cs.getCalledValue()->stripPointerCasts();
+  return llvm::dyn_cast<llvm::Function>(calledValue);
+}
+
+bool
+isAnalyzableCall(llvm::CallSite cs) {
+  if (!cs.getInstruction()) {
+    return false;
+  }
+  auto* called = getCalledFunction(cs);
+  if (!called) {
+    llvm::errs()  << "\n"
+                  << *(cs.getInstruction())
+                  << " is not analyzable";
+  }
+  return called && !called->isDeclaration();
+}
+
 template <typename AbstractValue,
           typename Transfer,
           typename Meet,
@@ -389,34 +408,34 @@ public:
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
-        } 
-          //llvm::errs() << "\nBefore------------------------------------";
-          //llvm::errs() << "\nIn function " << i.getFunction()->getName()
-          //             << " \nBefore";
-          //llvm::errs() << i;
-          //llvm::errs() << "\n State:\n";
-          //state[nullptr].print(llvm::errs());
-          //llvm::errs() << "\n------------------------------------------";
+        }
+        // llvm::errs() << "\nBefore------------------------------------";
+        // llvm::errs() << "\nIn function " << i.getFunction()->getName()
+        //             << " \nBefore";
+        // llvm::errs() << i;
+        // llvm::errs() << "\n State:\n";
+        // state[nullptr].print(llvm::errs());
+        // llvm::errs() << "\n------------------------------------------";
 
-          // ska: uncomment to skip function calls
-          //else {
-          applyTransfer(i, state, context);
-          const auto& newSize = state[nullptr].conjunctCount();
-          if (newSize > size) {
-            llvm::outs() << "\nIncrease after\n";
-          } else if (newSize < size) {
-            llvm::outs() << "\nDecrease after\n";
-          }
-          //}
-          //llvm::errs() << "\nAfter-------------------------------------";
-          //llvm::errs() << "In function " << i.getFunction()->getName()
-          //             << " after";
-          //llvm::errs() << i;
-          //llvm::errs() << "\n State:\n";
-          //state[nullptr].print(llvm::errs());
-          //llvm::errs() << "\n------------------------------------------";
+        // ska: uncomment to skip function calls
+        // else {
+        applyTransfer(i, state, context);
+        const auto& newSize = state[nullptr].conjunctCount();
+        if (newSize > size) {
+          llvm::outs() << "\nIncrease after\n";
+        } else if (newSize < size) {
+          llvm::outs() << "\nDecrease after\n";
+        }
+        //}
+        // llvm::errs() << "\nAfter-------------------------------------";
+        // llvm::errs() << "In function " << i.getFunction()->getName()
+        //             << " after";
+        // llvm::errs() << i;
+        // llvm::errs() << "\n State:\n";
+        // state[nullptr].print(llvm::errs());
+        // llvm::errs() << "\n------------------------------------------";
 
-          results[&i] = state;
+        results[&i] = state;
       }
       // If the abstract state for this block did not change, then we are done
       // with this block. Otherwise, we must update the abstract state and
@@ -451,20 +470,6 @@ public:
     return results;
   }
 
-  llvm::Function*
-  getCalledFunction(llvm::CallSite cs) {
-    auto* calledValue = cs.getCalledValue()->stripPointerCasts();
-    return llvm::dyn_cast<llvm::Function>(calledValue);
-  }
-
-  bool
-  isAnalyzableCall(llvm::CallSite cs) {
-    if (!cs.getInstruction()) {
-      return false;
-    }
-    auto* called = getCalledFunction(cs);
-    return called && !called->isDeclaration();
-  }
 
   void
   analyzeCall(llvm::CallSite cs, State &state, const Context& context) {

@@ -49,7 +49,6 @@ enum PossibleFileValues {
 using FileState  = analysis::AbstractState<FileValue>;
 using FileResult = analysis::DataflowResult<FileValue>;
 
-// Need this
 class FilePolicyMeet : public analysis::Meet<FileValue, FilePolicyMeet> {
 public:
   FileValue
@@ -58,7 +57,6 @@ public:
   }
 };
 
-// NeedThis
 static bool
 isFOpenFamily(llvm::StringRef name) {
   return name == "fopen" || name == "fdopen" || name == "freopen";
@@ -106,6 +104,7 @@ public:
   void
   operator()(llvm::Value& v, FileState& state, const Context& context) {
     // Conservatively model all loaded info as unknown
+    llvm::errs() << "\nTaint Analysis: " << v;
     if (auto* li = dyn_cast<LoadInst>(&v)) {
       state[li].set();
       return;
@@ -150,7 +149,6 @@ public:
   }
 };
 
-// Need
 static bool
 mayBeTemp(FileState& state, Value* arg) {
   const auto found = state.find(arg);
@@ -161,7 +159,7 @@ mayBeTemp(FileState& state, Value* arg) {
 template <typename OutIterator>
 static void
 collectFileRights(FileResult& fileStates, OutIterator tempRW) {
-  for (auto& [value,localState] : fileStates) {
+  for (auto& [value, localState] : fileStates) {
     auto* inst = llvm::dyn_cast<llvm::Instruction>(value);
     if (!inst) {
       continue;
@@ -184,7 +182,6 @@ collectFileRights(FileResult& fileStates, OutIterator tempRW) {
           && mayBeTemp(state, cs.getArgument(0))) {
       *tempRW++ = std::make_pair(inst, 0);
     }
-
   }
 }
 
@@ -253,7 +250,7 @@ tmpanalysis::gettmpAnalysisResults(llvm::Module& module) {
   using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet>;
   Analysis analysis{module, mainFunction};
   auto results = analysis.computeDataflow();
-
+  llvm::errs() << "\n Finished";
   // std::vector<std::pair<llvm::Instruction*, unsigned>> errors;
 
   // for (auto& [context, contextResults] : results) {

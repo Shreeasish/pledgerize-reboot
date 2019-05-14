@@ -235,6 +235,7 @@ public:
         passedAbstract = state.find(passedConcrete);
       }
       auto& arg     = summaryState[&functionArg];
+      llvm::errs() << "\n CallSite From Summary" << *cs.getInstruction();
       auto newState = meet({passedAbstract->second, arg});
       needsUpdate |= !(newState == arg);
       arg = newState;
@@ -360,8 +361,8 @@ public:
       auto* bb = work.take();
 
       // Save a copy of the outgoing abstract state to check for changes.
-      const auto& oldEntryState = results[Direction::getEntryKey(*bb)];
       const auto oldExitState   = results[Direction::getExitKey(*bb)];
+      const auto& oldEntryState = results[Direction::getEntryKey(*bb)];
 
       // Merge the state coming in from all predecessors including the function
       // summary (which contains arguments, etc.)
@@ -516,7 +517,9 @@ private:
         transfer(*value.get(), state, context);
         found = state.find(value.get());
       }
-      phiValue = meet({phiValue, found->second});
+      llvm::errs() << "\n PhiNode" << phi;
+      phiValue = meet({found->second, found->second});
+      //phiValue = meet({phiValue, found->second});
     }
     return phiValue;
   }

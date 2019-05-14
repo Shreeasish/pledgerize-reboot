@@ -1,4 +1,11 @@
 # Notes
+
+The directory /libc-wp/function-closures/ has the specifications for libc calls.
+Sysctl seems to be the latest specification generated (Reading commit logs from github to CallGraphAnalyzer.cpp).
+Refer to Trello Card, [Fixing Specifications](https://trello.com/c/qe84D73L/49-fixing-specifications) for more information.
+
+---------------------------
+
 ```
 cflow command used, indent pattern '    |' (4 spaces with a bar)
 cflow -i _s --level begin='' --level '0=    |' --level '1=    |' --level end0='' --level end1='' *.c | less
@@ -72,11 +79,6 @@ Requires PLEDGE\_TTY and either of PLEDGE\_RPATH or PLEDGE\_WPATH. Conservativel
 3. Verified on OpenBSD with O_RDONLY, O_WRONLY for open.
 4. stat and lstat have a handful of uses inside libc, fstat is more prevalent.
 ----------------------
-
-These programs are demonstrations of how LLVM can be used for (very simple)
-static dataflow analyses (both inter- and intraprocedural). The presentation
-is illustrative and does not demonstrate how to implement scalable analyses.
-
 The provided `filepolicy` analysis identifies simple errors in using fread,
 fwrite, and fclose where they may potentially be called on files that have
 already been closed.
@@ -88,46 +90,3 @@ constant arguments to all function calls in the module.
 The provided `futurefunctions` analysis uses backward dataflow analysis to
 identify the functions that may be called in the future at all call sites
 in a program.
-
-Building with CMake
-==============================================
-1. Clone the repository.
-
-        git clone https://github.com/nsumner/llvm-dataflow-analysis.git
-
-2. Create a new directory for building.
-
-        mkdir dfbuild
-
-3. Change into the new directory.
-
-        cd dfbuild
-
-4. Run CMake with the path to the LLVM source.
-
-        cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=True \
-            -DLLVM_DIR=</path/to/LLVM/build>/lib/cmake/llvm/ ../llvm-dataflow-analysis
-
-5. Run make inside the build directory:
-
-        make
-
-This produces tools called `bin/filepolicy`, `bin/constant-propagation`,
-and `bin/futurefunctions`.
-
-Note, building with a tool like ninja can be done by adding `-G Ninja` to
-the cmake invocation and running ninja instead of make.
-
-Running
-==============================================
-
-First suppose that you have a program compiled to bitcode:
-
-    clang -g -c -O1 -emit-llvm ../llvm-dataflow-analysis/test/filepolicy/c/01straightCorrect.c -o 01.bc
-
-Running the file policy analyzer:
-
-    bin/filepolicy 01.bc
-
-The tests in the `tests` directory can be run using the provided `Makefile`s
-

@@ -3,7 +3,7 @@
 
 #include "llvm/ADT/StringRef.h"
 
-enum 
+enum
 Promises {
   PLEDGE_ALWAYS,
   PLEDGE_RPATH,

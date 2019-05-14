@@ -15,6 +15,7 @@
 #include "llvm/Support/raw_ostream.h"
 
 #include <algorithm>
+#include "PromiseDeclarations.h"
 
 using Privileges = std::bitset<COUNT>;
 using ExprID     = int16_t;  // Deterministic size
@@ -159,11 +160,11 @@ public:
     return newConjunct;
   }
 
-  void
-  operator=(const Conjunct& other) {
-    exprID     = other.exprID;
-    notNegated = other.notNegated;
-  }
+  //void
+  //operator=(const Conjunct& other) {
+  //  exprID     = other.exprID;
+  //  notNegated = other.notNegated;
+  //}
 
   bool
   operator<(const ExprID other) const {
@@ -191,16 +192,15 @@ using ConjunctIDs = std::vector<Conjunct>;
 class Disjunct { // Or a Conjunction
 public:
   ConjunctIDs conjunctIDs; // Conjuncts = Exprs
-  Disjunct() = default;
-
-
+  //Disjunct() = default;
   auto findExprID(const ExprID&) const;  // returns an iterator
   bool findAndReplace(const ExprID target, ExprID newID);
   bool operator<(const Disjunct& other) const;
   bool operator==(const Disjunct& other) const;
 
   void addConjunct(const Conjunct&);
-  void operator=(Disjunct);
+  //void operator=(const Disjunct);
+  //Disjunct& operator=(Disjunct&&);
   void print(llvm::raw_ostream&) const;
 
   auto
@@ -252,12 +252,13 @@ using Disjuncts = std::vector<Disjunct>;
 class Disjunction {
 public:
   Disjuncts disjuncts;
-  Disjunction() = default;
 
   explicit Disjunction (Disjuncts otherDisjuncts)
     : disjuncts{otherDisjuncts} { }
+  Disjunction() = default;
+
   //Operator Overloads
-  void operator=(const Disjunction);
+  //bool operator=(Disjunct&&);
   bool operator==(const Disjunction&) const;
   bool operator<(const Disjunction&) const;
   //Member Functions
@@ -451,6 +452,13 @@ private:
 };
 
 //---------------Method Definitions----------------//
+
+
+/// ---------------------------------------- ///
+/// -----------Disjuncts-------------------- ///
+/// ---------------------------------------- ///
+
+
 bool
 Disjunct::operator<(const Disjunct& other) const {
   return std::lexicographical_compare (
@@ -463,11 +471,11 @@ Disjunct::operator==(const Disjunct& other) const {
   return conjunctIDs == other.conjunctIDs;
 }
 
-void
-Disjunct::operator=(const Disjunct other) {
-  this->conjunctIDs = other.conjunctIDs;
-  return;
-}
+//void
+//Disjunct::operator=(Disjunct&& other) {
+//  
+//  return 
+//}
 
 /// Invariant: The conjunctions will be sorted
 /// Maintains  uniqueness
@@ -542,11 +550,11 @@ Disjunct::print(llvm::raw_ostream& out) const {
 //}
 
 
-void
-Disjunction::operator=(Disjunction other) {
-  this->disjuncts = other.disjuncts;
-  return;
-}
+//void
+//Disjunction::operator=(Disjunction other) {
+//  this->disjuncts = other.disjuncts;
+//  return;
+//}
 
 bool
 Disjunction::operator==(const Disjunction& other) const {

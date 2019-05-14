@@ -9,6 +9,7 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Type.h"
 
+using PossibleTargets = llvm::SmallVector<llvm::Function*, 8>;
 
 class IndirectCallResolver {
 public:

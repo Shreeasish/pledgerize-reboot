@@ -47,7 +47,7 @@
 
 #include "CustomDataflowAnalysis.h"
 #include "TaintAnalysis.h"
-#include "FutureFunctions.h"
+#include "Handler.h"
 #include "ConditionList.h"
 #include "Generator.h"
 #include "Printer.h"
@@ -72,11 +72,10 @@ static cl::opt<string> inPath{cl::Positional,
                               cl::cat{futureFunctionsCategory}};
 
 
-std::unordered_map<std::string, FunctionPledges> libCHandlers;
-
 std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
 std::unique_ptr<lowering::Printer> printer;
+std::unique_ptr<PrivilegeResolver> privilegeResolver;
 //std::unique_ptr<AndersenWaveDiffWithType> svfResults;
 AndersenWaveDiffWithType* svfResults;
 
@@ -91,28 +90,6 @@ using DisjunctionValue  = Disjunction;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
-
-Edges
-getBackedges(const llvm::Function* func) {
-  return functionBackEdges[func];
-}
-
-[[maybe_unused]]
-static void
-setRequiredPrivileges(Privileges requiredPrivileges, llvm::CallSite cs, const Context& context) {
-  auto fun = cs.getCalledFunction();
-  if (!fun) {
-    return;
-  }
-
-  auto functionName = fun->getName().str();
-  auto found = libCHandlers.find(functionName);
-  if(found != libCHandlers.end()) {
-    //Use the context of the current callsite
-    auto promisesBitset = found->second.getPromisesBitset(cs, context);
-    requiredPrivileges |= promisesBitset;
-  }
-}
 
 
 class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet> {
@@ -198,7 +175,7 @@ private:
     } else {
       auto switchInst = llvm::dyn_cast<llvm::SwitchInst>(branchOrSwitch);
       return handleAsSwitch(switchInst, destState, destination);
-    } 
+    }
     return destState;
   }
 
@@ -240,13 +217,25 @@ private:
   }
 };
 
+void
+makeVacuouslyTrue(Disjunction& disjunction) {
+  Disjunct disjunct{};
+  disjunct.addConjunct(generator->GetVacuousConjunct());
+  disjunction.disjuncts = Disjuncts{disjunct};
+}
+
 
 class DisjunctionTransfer {
 private:
   bool
   handleBrOrSwitch(llvm::Instruction* inst, bool handled) {
-    return !handled && (llvm::isa<llvm::BranchInst>(inst) 
+    return !handled && (llvm::isa<llvm::BranchInst>(inst)
       || llvm::isa<llvm::SwitchInst>(inst));
+  }
+
+  Edges
+  getBackedges(const llvm::Function* func) {
+    return functionBackEdges[func];
   }
 
   bool
@@ -260,7 +249,7 @@ private:
       return false;
     }
     auto isFromBackEdge =
-      [&phi](const llvm::BasicBlock* incomingBlock) -> bool {
+      [&phi, this](const llvm::BasicBlock* incomingBlock) -> bool {
       auto* parentBlock    = phi->getParent();
       auto* parentFunction = parentBlock->getParent();
       auto backEdges       = getBackedges(parentFunction);
@@ -288,75 +277,59 @@ private:
     return true;
   }
 
-  //TODO: Function Pointers
-  //TODO: Unknown calls
-  bool
-  handleCallSite(llvm::Value* value, DisjunctionState& state, const Context& context, bool handled) {
-    llvm::CallSite cs{value};
-    if (handled) {
-      return true;
-    }
-    if (!cs.getInstruction()) {
-      return false;
-    }
-    auto* const fun = getCalledFunction(cs);
-    if (!fun) {
-      return true;
-    }
 
-    //llvm::errs() << "\tFrom CallSite: " << fun->getName();
-    if (fun->getName().startswith("llvm.")) {
-      return true;
-    }
-
-    if (fun->getName().startswith("close")) {
-      Disjunction disjunction{};
-      Disjunct disjunct{};
-      disjunct.addConjunct(generator->GetVacuousConjunct());
-      disjunction.addDisjunct(disjunct);
-      state[nullptr] = disjunction;
-      return true;
-    }
-
-    if (fun->isDeclaration() && isUnknown(fun)) {
-      auto oldExprID = generator->GetOrCreateExprID(value);
-      auto newExprID = generator->GetOrCreateExprID(cs);
-      state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
-      //llvm::errs() << "\nCallSite Rewritten to " << newExprID;
-      return true;
-    }
-
+  Disjunction
+  wireCallerState(Disjunction state,
+                  const llvm::CallSite cs,
+                  llvm::Function* const callee) {
     // CallSites have arguments, functions have paramaters
-    state[nullptr] = state[cs.getInstruction()];
-    using argParamPair = std::pair<llvm::Value*, llvm::Value*>;
-    std::vector<argParamPair> argPairs;
-    { int i = 0;
-      for (auto& param : fun->args()) {
-        auto* paramAsValue = (llvm::Value*) &param;
-        auto arg = cs.getArgument(i);
-        argPairs.push_back(argParamPair{arg, paramAsValue});
-        i++;
-      }
+    using argParams = std::pair<llvm::Value*, llvm::Value*>;
+    std::vector<argParams> argPairs;
+    int i = 0;
+    for (auto& param : callee->args()) {
+      auto* paramAsValue = (llvm::Value*) &param;
+      auto arg = cs.getArgument(i);
+      argPairs.push_back(argParams{arg, paramAsValue});
+      i++;
     }
 
     auto rewritePair = [&](auto* arg, auto* param) {
-      //llvm::errs() << "\nRewriting callsite arg " << *arg 
-      //             << "\nwith function param " << *param;
-      //if (llvm::dyn_cast<llvm::ConstantExpr>(arg)) {
-      //  llvm::errs () << "\t Found gep as operand";
-      //}
       auto argExprID   = generator->GetOrCreateExprID(arg);
       auto paramExprID = generator->GetOrCreateExprID(param);
-      return generator->rewrite(state[nullptr], paramExprID, argExprID);
+      return generator->rewrite(state, paramExprID, argExprID);
     };
-
     for (auto [arg, param] : argPairs) {
-      state[nullptr] = rewritePair(arg, param);
+      state = rewritePair(arg, param);
     }
+    return state;
+  }
+
+  /* TODO:
+   * 1. Function Pointers - Modify Dataflow.h
+   * 2. Privileges - 
+   * 3. Stop Hoisting Function Calls */
+  bool
+  handleCallSite(llvm::Value* value,
+                 DisjunctionState& state,
+                 const Context& context,
+                 bool handled) {
+    if (handled 
+        || !analysis::isAnalyzableCall(llvm::CallSite{value})) {
+      if (llvm::CallSite{value}.getInstruction() 
+          && privilegeResolver->hasPrivilege<PLEDGE_STDIO>(llvm::CallSite{value}, context)) {
+        llvm::errs() << "\n FOUND PRIVILEGE FOR"
+                     << *value;
+        makeVacuouslyTrue(state[nullptr]);
+      }
+      return true;
+    }
+
+    llvm::CallSite  callSite{value};
+    llvm::Function* callee = analysis::getCalledFunction(callSite);
+    state[nullptr] = wireCallerState(state[callSite.getInstruction()], callSite, callee); 
     return true;
   }
-  
-  
+
   bool
   handleGep(llvm::Value* const value, DisjunctionState& state, bool handled) {
     // Possibly can be guarded by isUsed
@@ -459,7 +432,7 @@ private:
     //llvm::errs() << "State before pulling context info";
     //state[nullptr].print(llvm::errs());
     assert(state[nullptr].isEmpty() || !state[nullptr].isEmpty() && state[ret].isEmpty());
-    state[nullptr] = state[ret]; 
+    state[nullptr] = state[ret];
     auto* retValue = ret->getReturnValue();
     if (!retValue) {
       return true;
@@ -660,7 +633,7 @@ private:
     llvm::errs() << "\nSVF Invoked";
     return svfResults->alias(loadAsMemLoc, storeAsMemLoc);
   }
-  /* SVF has lower accuracy but filters interprocedural no-aliases 
+  /* SVF has lower accuracy but filters interprocedural no-aliases
    * Use llvm's Aliasing stack for must-aliases and SVF for may-aliases*/
   AliasResult
   getAliasType(llvm::StoreInst* const storeInst,
@@ -678,7 +651,7 @@ private:
       return getSVFResults(storeAsMemLoc, loadAsMemLoc);
     }
     return aliasType;
-  }                      
+  }
 
   Disjunction
   strongUpdate(const Disjunction& disjunction,
@@ -792,8 +765,10 @@ void
 BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
   generator = std::make_unique<Generator>(Generator{});
   resolver  = std::make_unique<IndirectCallResolver>(IndirectCallResolver{m});
+  privilegeResolver = std::make_unique<PrivilegeResolver>(m);
   printer =
       std::make_unique<lowering::Printer>(generator.get(), llvm::outs(), m);
+
   svfResults = AndersenWaveDiffWithType::createAndersenWaveDiffWithType(m);
 
   for (auto& f : m) {
@@ -807,7 +782,7 @@ BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
     //llvm::errs() << "\n Get memSSA Tree for " << f.getName() << "\n";
     auto memSSA = std::make_unique<MemorySSA>(f, &AAWrapper->getAAResults(), DT);
     functionAAs.insert({&f, AAWrapper});
-    
+
     functionMemSSAs.try_emplace(&f, std::move(memSSA));
     Edges backedges;
     llvm::FindFunctionBackedges(f, backedges);
@@ -823,11 +798,6 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   if (!mainFunction) {
     llvm::report_fatal_error("Unable to find main function.");
   }
-
-
-  //AnalysisPackage package;
-  //package.tmppathResults = tmpanalysis::gettmpAnalysisResults(m);
-  //libCHandlers   = getLibCHandlerMap(package);
   initializeGlobals(m);
   using Value    = Disjunction;
   using Transfer = DisjunctionTransfer;
@@ -854,7 +824,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     }
     return parent;
   };
-  
+
   using ResolverQueue = std::deque<lowering::LocationState>;
   ResolverQueue resolverQueue;
   for (auto& [context, contextResults] : results) {

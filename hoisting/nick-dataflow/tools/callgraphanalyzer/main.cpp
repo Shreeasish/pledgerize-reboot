@@ -88,7 +88,7 @@ getCalledFunction(llvm::CallSite cs) {
   };
 
   [[maybe_unused]] auto printCallSiteLocation = [](llvm::CallSite cs) {
-    if (DILocation* Loc = cs->getDebugLoc()) {  // Here I is an LLVM instruction
+    if (DILocation* Loc = cs->getDebugLoc()) {
       unsigned Line  = Loc->getLine();
       StringRef File = Loc->getFilename();
       StringRef Dir  = Loc->getDirectory();
@@ -386,55 +386,53 @@ getfcntlCSPromises(llvm::CallSite& cs) {
 
 std::vector<int>
 getopenCSPromises(llvm::CallSite& cs) {
-
   std::vector<int> returnVec;
-    if (auto* arg = llvm::dyn_cast_or_null<ConstantInt>(cs.getArgument(1));
-        arg) {
-      auto argValue = arg->getSExtValue();
-      // llvm::outs() << "Argument Value:" << argValue << "\n";
+  if (auto* arg = llvm::dyn_cast_or_null<ConstantInt>(cs.getArgument(1)); arg) {
+    auto argValue = arg->getSExtValue();
+    // llvm::outs() << "Argument Value:" << argValue << "\n";
 
-      auto* caller = cs.getParent()->getParent(); 
-      if (caller->getName().equals("daemon")){
-        // llvm::outs() << caller->getName() << "\n";
-        return returnVec;
-      }
-      if (caller->getName().equals("_libc_readpassphrase")){
-        // llvm::outs() << caller->getName() << "\n";
-        returnVec.push_back(PLEDGE_TTY);
-        return returnVec;
-      }
-      
+    auto* caller = cs.getParent()->getParent();
+    if (caller->getName().equals("daemon")) {
+      // llvm::outs() << caller->getName() << "\n";
+      return returnVec;
+    }
+    if (caller->getName().equals("_libc_readpassphrase")) {
+      // llvm::outs() << caller->getName() << "\n";
+      returnVec.push_back(PLEDGE_TTY);
+      return returnVec;
+    }
 
-      switch (argValue) {
-        case 0:  // O_RDONLY
-        {
-          returnVec.push_back(PLEDGE_RPATH);
-          break;
-        }
-        case 2:  // O_RDWR
-        {
-          returnVec.push_back(PLEDGE_RPATH);
-          returnVec.push_back(PLEDGE_WPATH);
-          break;
-        }
-        case 65536: // O_RDONLY|O_CLOEXEC
-        {
-          returnVec.push_back(PLEDGE_RPATH);
-          break;
-        }
-        case 196608:  // O_RDONLY|O_DIRECTORY|O_CLOEXEC
-        {
-          returnVec.push_back(PLEDGE_RPATH);
-          break;
-        }
-        case 1537: // O_WRONLY|O_CREAT|O_TRUNC
-        {
-          returnVec.push_back(PLEDGE_WPATH);
-          returnVec.push_back(PLEDGE_CPATH);
-          break;
-        }
+
+    switch (argValue) {
+      case 0:  // O_RDONLY
+      {
+        returnVec.push_back(PLEDGE_RPATH);
+        break;
+      }
+      case 2:  // O_RDWR
+      {
+        returnVec.push_back(PLEDGE_RPATH);
+        returnVec.push_back(PLEDGE_WPATH);
+        break;
+      }
+      case 65536:  // O_RDONLY|O_CLOEXEC
+      {
+        returnVec.push_back(PLEDGE_RPATH);
+        break;
+      }
+      case 196608:  // O_RDONLY|O_DIRECTORY|O_CLOEXEC
+      {
+        returnVec.push_back(PLEDGE_RPATH);
+        break;
+      }
+      case 1537:  // O_WRONLY|O_CREAT|O_TRUNC
+      {
+        returnVec.push_back(PLEDGE_WPATH);
+        returnVec.push_back(PLEDGE_CPATH);
+        break;
       }
     }
+  }
   return returnVec;
 }
 

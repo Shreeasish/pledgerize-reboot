@@ -17,7 +17,7 @@ plistfname = args.plistfname
 infilename = args.functionsfile
 
 if not kpfilename:
-    kpfilename = 'final-closures' #TODO Change this
+    kpfilename = 'all-closures-stripped-sysctl' #TODO Change this
 if not plistfname:
     plistfname = 'pledge-list'
 
@@ -53,6 +53,5 @@ for fname in functionList:
     for row in krows.iterrows():
         kpledgeset.add(bitsettoString(row[1].get('bitstring').strip()))
         print('libCHandlers.emplace(\"', fname.strip(),'\", FunctionPledgesBuilder(', row[1].get('long'), ').build());', sep ="")
-
 
 #  libCHandlers.emplace("exit",FunctionPledgesBuilder(0).build());  //Program can always exit
