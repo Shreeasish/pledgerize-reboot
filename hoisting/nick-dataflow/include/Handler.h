@@ -1,5 +1,5 @@
-#ifndef FUTUREFUNCTIONS_H
-#define FUTUREFUNCTIONS_H
+#ifndef HANDLER_H
+#define HANDLER_H
 
 #include "llvm/IR/CallSite.h"
 #include "llvm/IR/DebugInfo.h"
@@ -24,7 +24,6 @@
 #include "PromiseDeclarations.h"
 #include "CallGraphAnalyzer.h"
 
-using Privileges = std::bitset<COUNT>;
 using Context    = std::array<llvm::Instruction*, 2ul>;
 
 struct AnalysisPackage {
@@ -138,29 +137,23 @@ public:
       analysisPackage{std::make_unique<AnalysisPackage>(m)},
       mapInterface{std::make_unique<MapInterface>(*analysisPackage.get())} { }
 
-  void
-  setPrivileges(Privileges& requiredPrivileges,
-                llvm::CallSite cs,
-                const Context& context) {
-    //auto* fun         = getCalledFunction(cs);
-    //auto functionName = fun->getName().str();
-    //auto found        = mapInterface.find(functionName);
-
-    //if (found != libCHandlers.end()) {
-
-    //}
-
-    //auto privileges = found->second.getPrivileges(cs, context);
-    //requiredPrivileges |= privileges;
-    return;
-  }
-
   template <Promises promise>
   bool
   hasPrivilege(llvm::CallSite cs, const Context& context) {
     Privileges privs{};
     setPrivileges(privs, cs, context);
     return Privileges{promise} == privs;
+  }
+
+  bool
+  setPrivileges(Privileges& requiredPrivileges,
+                llvm::CallSite cs,
+                const Context& context) {
+    if (auto function = getCalledFunction(cs)) {
+      requiredPrivileges |= mapInterface->getPrivilegesFor(cs, context);
+      return true;
+    }
+    return false;
   }
 
 private:
@@ -178,10 +171,11 @@ private:
     MapInterface(AnalysisPackage& package) 
       : libCHandlers{package} {}
 
-    std::bitset<COUNT>
+    Privileges
     getPrivilegesFor(const llvm::CallSite& cs, const Context& context) {
       // Point of configuration for specifications
-      if (auto privileges = getPrivilegesForImpl(cs, context,syscallBitsetMap)) {
+      if (auto privileges =
+              getPrivilegesForImpl(cs, context, syscallBitsetMap)) {
         return *privileges;
       } else if (auto privileges =
                      getPrivilegesForImpl(cs, context, libCHandlers)) {
@@ -189,7 +183,7 @@ private:
       } else {
         llvm::errs() << "\nNo function found for CallSite "
                      << *cs.getInstruction();
-        llvm_unreachable("FucK");
+        return {};
       }
     }
 
@@ -199,19 +193,27 @@ private:
     getPrivilegesForImpl(const llvm::CallSite& cs, const Context& context,
                                                     StringMapTy stringMap) {
       auto functionName = getFunctionName(cs);
-      return stringMap.find(functionName) == stringMap.end()
-                 ? std::optional{stringMap.find(functionName)->second}
-                 : std::nullopt;
+      //return stringMap.find(functionName) == stringMap.end()
+      //           ? std::optional(stringMap.find(functionName)->second)
+      //           : std::nullopt;
+      if (auto found = stringMap.find(functionName); found != stringMap.end()) {
+        return found->second;
+      } 
+      return {};
     }
 
     std::optional<Privileges>
     getPrivilegesForImpl(const llvm::CallSite& cs, const Context& context,
                                                 LibCHandlersMap& handlers) {
       auto functionName = getFunctionName(cs);
-      return handlers.find(functionName) == handlers.end()
-                 ? std::optional{handlers.find(functionName)
-                                     ->second.getPrivileges(cs, context)}
-                 : std::nullopt;
+      //return handlers.find(functionName) == handlers.end()
+      //           ? std::optional(handlers.find(functionName)
+      //                               ->second.getPrivileges(cs, context))
+      //           : std::nullopt;
+      if (auto found = handlers.find(functionName); found != handlers.end()) {
+        return found->second.getPrivileges(cs, context);
+      } 
+      return {};
     }
 
     llvm::StringRef

@@ -27,14 +27,14 @@
 #include <netinet/in.h>  //mcast
 
 
-static llvm::Function*
-getCalledFunction(llvm::CallSite cs) {
-  if (!cs.getInstruction()) {
-    return nullptr;
-  }
-  llvm::Value* called = cs.getCalledValue()->stripPointerCasts();
-  return llvm::dyn_cast<llvm::Function>(called);
-}
+//static llvm::Function*
+//getCalledFunction(llvm::CallSite cs) {
+//  if (!cs.getInstruction()) {
+//    return nullptr;
+//  }
+//  llvm::Value* called = cs.getCalledValue()->stripPointerCasts();
+//  return llvm::dyn_cast<llvm::Function>(called);
+//}
 
 class CheckMCAST : public PrivilegeCheckerBase {
 public:

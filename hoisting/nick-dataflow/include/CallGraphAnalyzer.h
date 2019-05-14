@@ -10,637 +10,638 @@
 
 
 using SyscallBitsetMap = llvm::StringMap<std::bitset<COUNT>>;
+using Privileges = std::bitset<COUNT>;
 
 static SyscallBitsetMap syscallBitsetMap {
-    // {"exit", std::bitset<COUNT>().set(PLEDGE_ALWAYS)}, //Set nothing for
+    // {"exit", Privileges{}.set(PLEDGE_ALWAYS)}, //Set nothing for
     // ALWAYS
-    // {"kbind", std::bitset<COUNT>().set(PLEDGE_ALWAYS)},
-    // {"__get_tcb", std::bitset<COUNT>().set(PLEDGE_ALWAYS)},
-    // {"__set_tcb", std::bitset<COUNT>().set(PLEDGE_ALWAYS)},
-    // {"pledge", std::bitset<COUNT>().set(PLEDGE_ALWAYS)},
-    // {"sendsyslog", std::bitset<COUNT>().set(PLEDGE_ALWAYS)},
-    // {"thrkill", std::bitset<COUNT>().set(PLEDGE_ALWAYS)},
-    // {"utrace", std::bitset<COUNT>().set(PLEDGE_ALWAYS)},
-    {"getuid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"geteuid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getresuid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getgid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getegid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getresgid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getgroups", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getlogin_r", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getpgrp", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getpgid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getppid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getsid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getthrid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getrlimit", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getrtable", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"gettimeofday", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getdtablecount", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getrusage", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"issetugid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"clock_getres", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"clock_gettime", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getpid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"sysctl", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getentropy", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"madvise", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"minherit", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"mmap", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"mprotect", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"mquery", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"munmap", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"msync", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"break", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"umask", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"read", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"readv", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pread", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"preadv", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"write", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"writev", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pwrite", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pwritev", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"recvmsg", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+    // {"kbind", Privileges{}.set(PLEDGE_ALWAYS)},
+    // {"__get_tcb", Privileges{}.set(PLEDGE_ALWAYS)},
+    // {"__set_tcb", Privileges{}.set(PLEDGE_ALWAYS)},
+    // {"pledge", Privileges{}.set(PLEDGE_ALWAYS)},
+    // {"sendsyslog", Privileges{}.set(PLEDGE_ALWAYS)},
+    // {"thrkill", Privileges{}.set(PLEDGE_ALWAYS)},
+    // {"utrace", Privileges{}.set(PLEDGE_ALWAYS)},
+    {"getuid", Privileges{}.set(PLEDGE_STDIO)},
+    {"geteuid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getresuid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getgid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getegid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getresgid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getgroups", Privileges{}.set(PLEDGE_STDIO)},
+    {"getlogin_r", Privileges{}.set(PLEDGE_STDIO)},
+    {"getpgrp", Privileges{}.set(PLEDGE_STDIO)},
+    {"getpgid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getppid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getsid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getthrid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getrlimit", Privileges{}.set(PLEDGE_STDIO)},
+    {"getrtable", Privileges{}.set(PLEDGE_STDIO)},
+    {"gettimeofday", Privileges{}.set(PLEDGE_STDIO)},
+    {"getdtablecount", Privileges{}.set(PLEDGE_STDIO)},
+    {"getrusage", Privileges{}.set(PLEDGE_STDIO)},
+    {"issetugid", Privileges{}.set(PLEDGE_STDIO)},
+    {"clock_getres", Privileges{}.set(PLEDGE_STDIO)},
+    {"clock_gettime", Privileges{}.set(PLEDGE_STDIO)},
+    {"getpid", Privileges{}.set(PLEDGE_STDIO)},
+    {"sysctl", Privileges{}.set(PLEDGE_STDIO)},
+    {"getentropy", Privileges{}.set(PLEDGE_STDIO)},
+    {"madvise", Privileges{}.set(PLEDGE_STDIO)},
+    {"minherit", Privileges{}.set(PLEDGE_STDIO)},
+    {"mmap", Privileges{}.set(PLEDGE_STDIO)},
+    {"mprotect", Privileges{}.set(PLEDGE_STDIO)},
+    {"mquery", Privileges{}.set(PLEDGE_STDIO)},
+    {"munmap", Privileges{}.set(PLEDGE_STDIO)},
+    {"msync", Privileges{}.set(PLEDGE_STDIO)},
+    {"break", Privileges{}.set(PLEDGE_STDIO)},
+    {"umask", Privileges{}.set(PLEDGE_STDIO)},
+    {"read", Privileges{}.set(PLEDGE_STDIO)},
+    {"readv", Privileges{}.set(PLEDGE_STDIO)},
+    {"pread", Privileges{}.set(PLEDGE_STDIO)},
+    {"preadv", Privileges{}.set(PLEDGE_STDIO)},
+    {"write", Privileges{}.set(PLEDGE_STDIO)},
+    {"writev", Privileges{}.set(PLEDGE_STDIO)},
+    {"pwrite", Privileges{}.set(PLEDGE_STDIO)},
+    {"pwritev", Privileges{}.set(PLEDGE_STDIO)},
+    {"recvmsg", Privileges{}.set(PLEDGE_STDIO)},
     {"recvfrom",
-     std::bitset<COUNT>().set(PLEDGE_STDIO)
-         | std::bitset<COUNT>().set(PLEDGE_YPACTIVE)},
-    // {"ftruncate", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"lseek", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    // {"fpathconf", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_STDIO)
+         | Privileges{}.set(PLEDGE_YPACTIVE)},
+    // {"ftruncate", Privileges{}.set(PLEDGE_STDIO)},
+    {"lseek", Privileges{}.set(PLEDGE_STDIO)},
+    // {"fpathconf", Privileges{}.set(PLEDGE_STDIO)},
     {"sendto",
-     std::bitset<COUNT>().set(PLEDGE_STDIO)
-         | std::bitset<COUNT>().set(PLEDGE_YPACTIVE)},
-    {"sendmsg", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"nanosleep", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"sigaltstack", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"sigprocmask", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"sigsuspend", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"sigaction", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"sigreturn", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"sigpending", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getitimer", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"setitimer", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"poll", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"ppoll", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"kevent", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"kqueue", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"select", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pselect", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    // {"fstat", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fsync", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"setsockopt", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getsockopt", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_STDIO)
+         | Privileges{}.set(PLEDGE_YPACTIVE)},
+    {"sendmsg", Privileges{}.set(PLEDGE_STDIO)},
+    {"nanosleep", Privileges{}.set(PLEDGE_STDIO)},
+    {"sigaltstack", Privileges{}.set(PLEDGE_STDIO)},
+    {"sigprocmask", Privileges{}.set(PLEDGE_STDIO)},
+    {"sigsuspend", Privileges{}.set(PLEDGE_STDIO)},
+    {"sigaction", Privileges{}.set(PLEDGE_STDIO)},
+    {"sigreturn", Privileges{}.set(PLEDGE_STDIO)},
+    {"sigpending", Privileges{}.set(PLEDGE_STDIO)},
+    {"getitimer", Privileges{}.set(PLEDGE_STDIO)},
+    {"setitimer", Privileges{}.set(PLEDGE_STDIO)},
+    {"poll", Privileges{}.set(PLEDGE_STDIO)},
+    {"ppoll", Privileges{}.set(PLEDGE_STDIO)},
+    {"kevent", Privileges{}.set(PLEDGE_STDIO)},
+    {"kqueue", Privileges{}.set(PLEDGE_STDIO)},
+    {"select", Privileges{}.set(PLEDGE_STDIO)},
+    {"pselect", Privileges{}.set(PLEDGE_STDIO)},
+    // {"fstat", Privileges{}.set(PLEDGE_STDIO)},
+    {"fsync", Privileges{}.set(PLEDGE_STDIO)},
+    {"setsockopt", Privileges{}.set(PLEDGE_STDIO)},
+    {"getsockopt", Privileges{}.set(PLEDGE_STDIO)},
     // {"fcntl",
-    //  std::bitset<COUNT>().set(
+    //  Privileges{}.set(
     //      PLEDGE_STDIO)},  // fcntl Intercepted in code, Commented out here
-    {"close", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"dup", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"dup2", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"dup3", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"closefrom", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"shutdown", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fchdir", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pipe", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pipe2", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"socketpair", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"wait4", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"kill", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    // {"ioctl", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    // {"open", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},
-    // {"stat", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    // {"access", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    // {"readlink", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"adjtime", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"adjfreq", std::bitset<COUNT>().set(PLEDGE_SETTIME)},
-    {"settimeofday", std::bitset<COUNT>().set(PLEDGE_SETTIME)},
-    {"__tfork", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"sched_yield", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"futex", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"__thrsleep", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"__thrwakeup", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"__threxit", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"__thrsigdivert", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fork", std::bitset<COUNT>().set(PLEDGE_PROC)},
-    {"vfork", std::bitset<COUNT>().set(PLEDGE_PROC)},
-    {"setpgid", std::bitset<COUNT>().set(PLEDGE_PROC)},
-    {"setsid", std::bitset<COUNT>().set(PLEDGE_PROC)},
+    {"close", Privileges{}.set(PLEDGE_STDIO)},
+    {"dup", Privileges{}.set(PLEDGE_STDIO)},
+    {"dup2", Privileges{}.set(PLEDGE_STDIO)},
+    {"dup3", Privileges{}.set(PLEDGE_STDIO)},
+    {"closefrom", Privileges{}.set(PLEDGE_STDIO)},
+    {"shutdown", Privileges{}.set(PLEDGE_STDIO)},
+    {"fchdir", Privileges{}.set(PLEDGE_STDIO)},
+    {"pipe", Privileges{}.set(PLEDGE_STDIO)},
+    {"pipe2", Privileges{}.set(PLEDGE_STDIO)},
+    {"socketpair", Privileges{}.set(PLEDGE_STDIO)},
+    {"wait4", Privileges{}.set(PLEDGE_STDIO)},
+    {"kill", Privileges{}.set(PLEDGE_STDIO)},
+    // {"ioctl", Privileges{}.set(PLEDGE_STDIO)},
+    // {"open", Privileges{}.set(PLEDGE_SPCL_OPEN)},
+    // {"stat", Privileges{}.set(PLEDGE_STDIO)},
+    // {"access", Privileges{}.set(PLEDGE_STDIO)},
+    // {"readlink", Privileges{}.set(PLEDGE_STDIO)},
+    {"adjtime", Privileges{}.set(PLEDGE_STDIO)},
+    {"adjfreq", Privileges{}.set(PLEDGE_SETTIME)},
+    {"settimeofday", Privileges{}.set(PLEDGE_SETTIME)},
+    {"__tfork", Privileges{}.set(PLEDGE_STDIO)},
+    {"sched_yield", Privileges{}.set(PLEDGE_STDIO)},
+    {"futex", Privileges{}.set(PLEDGE_STDIO)},
+    {"__thrsleep", Privileges{}.set(PLEDGE_STDIO)},
+    {"__thrwakeup", Privileges{}.set(PLEDGE_STDIO)},
+    {"__threxit", Privileges{}.set(PLEDGE_STDIO)},
+    {"__thrsigdivert", Privileges{}.set(PLEDGE_STDIO)},
+    {"fork", Privileges{}.set(PLEDGE_PROC)},
+    {"vfork", Privileges{}.set(PLEDGE_PROC)},
+    {"setpgid", Privileges{}.set(PLEDGE_PROC)},
+    {"setsid", Privileges{}.set(PLEDGE_PROC)},
     {"setrlimit",
-     std::bitset<COUNT>().set(PLEDGE_PROC)
-         | std::bitset<COUNT>().set(PLEDGE_ID)},
+     Privileges{}.set(PLEDGE_PROC)
+         | Privileges{}.set(PLEDGE_ID)},
     {"getpriority",
-     std::bitset<COUNT>().set(PLEDGE_PROC)
-         | std::bitset<COUNT>().set(PLEDGE_ID)},
+     Privileges{}.set(PLEDGE_PROC)
+         | Privileges{}.set(PLEDGE_ID)},
     {"setpriority",
-     std::bitset<COUNT>().set(PLEDGE_PROC)
-         | std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setuid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"seteuid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setreuid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setresuid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setgid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setegid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setregid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setresgid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setgroups", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setlogin", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"execve", std::bitset<COUNT>().set(PLEDGE_EXEC)},
-    // {"chdir", std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_PROC)
+         | Privileges{}.set(PLEDGE_ID)},
+    {"setuid", Privileges{}.set(PLEDGE_ID)},
+    {"seteuid", Privileges{}.set(PLEDGE_ID)},
+    {"setreuid", Privileges{}.set(PLEDGE_ID)},
+    {"setresuid", Privileges{}.set(PLEDGE_ID)},
+    {"setgid", Privileges{}.set(PLEDGE_ID)},
+    {"setegid", Privileges{}.set(PLEDGE_ID)},
+    {"setregid", Privileges{}.set(PLEDGE_ID)},
+    {"setresgid", Privileges{}.set(PLEDGE_ID)},
+    {"setgroups", Privileges{}.set(PLEDGE_ID)},
+    {"setlogin", Privileges{}.set(PLEDGE_ID)},
+    {"execve", Privileges{}.set(PLEDGE_EXEC)},
+    // {"chdir", Privileges{}.set(PLEDGE_RPATH)},
     // {"openat",
-    //  std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},
-    //  | std::bitset<COUNT>().set(PLEDGE_WPATH)},
+    //  Privileges{}.set(PLEDGE_SPCL_OPEN)},
+    //  | Privileges{}.set(PLEDGE_WPATH)},
     // {"fstatat",
-    // //  std::bitset<COUNT>().set(PLEDGE_RPATH)
-    //      | std::bitset<COUNT>().set(PLEDGE_WPATH)},
+    // //  Privileges{}.set(PLEDGE_RPATH)
+    //      | Privileges{}.set(PLEDGE_WPATH)},
     {"faccessat",
-     std::bitset<COUNT>().set(PLEDGE_RPATH)
-         | std::bitset<COUNT>().set(PLEDGE_WPATH)},
+     Privileges{}.set(PLEDGE_RPATH)
+         | Privileges{}.set(PLEDGE_WPATH)},
     // {"readlinkat",
-    //  std::bitset<COUNT>().set(PLEDGE_RPATH)
-    //      | std::bitset<COUNT>().set(PLEDGE_WPATH)},
+    //  Privileges{}.set(PLEDGE_RPATH)
+    //      | Privileges{}.set(PLEDGE_WPATH)},
     // {"lstat",
-    //  std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    //  | std::bitset<COUNT>().set(PLEDGE_WPATH)
-    //  | std::bitset<COUNT>().set(PLEDGE_TMPPATH)},
-    {"truncate", std::bitset<COUNT>().set(PLEDGE_WPATH)},
+    //  Privileges{}.set(PLEDGE_RPATH)},
+    //  | Privileges{}.set(PLEDGE_WPATH)
+    //  | Privileges{}.set(PLEDGE_TMPPATH)},
+    {"truncate", Privileges{}.set(PLEDGE_WPATH)},
     // {"rename",
-    //  std::bitset<COUNT>().set(PLEDGE_RPATH)
-    //      | std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"rmdir", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    // {"renameat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"link", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"linkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"symlink", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"symlinkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"unlink", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    //  | std::bitset<COUNT>().set(PLEDGE_TMPPATH)},
-    {"unlinkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"mkdir", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"mkdirat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    // {"mkfifo", std::bitset<COUNT>().set(PLEDGE_DPATH)},
-    // {"mknod", std::bitset<COUNT>().set(PLEDGE_DPATH)},
-    // {"revoke", std::bitset<COUNT>().set(PLEDGE_TTY)},
+    //  Privileges{}.set(PLEDGE_RPATH)
+    //      | Privileges{}.set(PLEDGE_CPATH)},
+    {"rmdir", Privileges{}.set(PLEDGE_CPATH)},
+    // {"renameat", Privileges{}.set(PLEDGE_CPATH)},
+    {"link", Privileges{}.set(PLEDGE_CPATH)},
+    {"linkat", Privileges{}.set(PLEDGE_CPATH)},
+    {"symlink", Privileges{}.set(PLEDGE_CPATH)},
+    {"symlinkat", Privileges{}.set(PLEDGE_CPATH)},
+    {"unlink", Privileges{}.set(PLEDGE_CPATH)},
+    //  | Privileges{}.set(PLEDGE_TMPPATH)},
+    {"unlinkat", Privileges{}.set(PLEDGE_CPATH)},
+    {"mkdir", Privileges{}.set(PLEDGE_CPATH)},
+    {"mkdirat", Privileges{}.set(PLEDGE_CPATH)},
+    // {"mkfifo", Privileges{}.set(PLEDGE_DPATH)},
+    // {"mknod", Privileges{}.set(PLEDGE_DPATH)},
+    // {"revoke", Privileges{}.set(PLEDGE_TTY)},
     {"__getcwd",
-     std::bitset<COUNT>().set(PLEDGE_RPATH)
-         | std::bitset<COUNT>().set(PLEDGE_WPATH)},
-    {"getdents", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"getfsstat", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    // {"statfs", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"fstatfs", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    // {"pathconf", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    // {"utimes", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    // {"futimes", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    // {"utimensat", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    // {"futimens", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    // {"chmod", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    // {"fchmod", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    // {"fchmodat", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    // {"chflags", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    // {"chflagsat", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    // {"fchflags", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    // {"chown", std::bitset<COUNT>().set(PLEDGE_CHOWN)},
-    // {"fchownat", std::bitset<COUNT>().set(PLEDGE_CHOWN)},
-    // {"lchown", std::bitset<COUNT>().set(PLEDGE_CHOWN)},
-    // {"fchown", std::bitset<COUNT>().set(PLEDGE_CHOWN)},
+     Privileges{}.set(PLEDGE_RPATH)
+         | Privileges{}.set(PLEDGE_WPATH)},
+    {"getdents", Privileges{}.set(PLEDGE_RPATH)},
+    {"getfsstat", Privileges{}.set(PLEDGE_RPATH)},
+    // {"statfs", Privileges{}.set(PLEDGE_RPATH)},
+    {"fstatfs", Privileges{}.set(PLEDGE_RPATH)},
+    // {"pathconf", Privileges{}.set(PLEDGE_RPATH)},
+    // {"utimes", Privileges{}.set(PLEDGE_FATTR)},
+    // {"futimes", Privileges{}.set(PLEDGE_FATTR)},
+    // {"utimensat", Privileges{}.set(PLEDGE_FATTR)},
+    // {"futimens", Privileges{}.set(PLEDGE_FATTR)},
+    // {"chmod", Privileges{}.set(PLEDGE_FATTR)},
+    // {"fchmod", Privileges{}.set(PLEDGE_FATTR)},
+    // {"fchmodat", Privileges{}.set(PLEDGE_FATTR)},
+    // {"chflags", Privileges{}.set(PLEDGE_FATTR)},
+    // {"chflagsat", Privileges{}.set(PLEDGE_FATTR)},
+    // {"fchflags", Privileges{}.set(PLEDGE_FATTR)},
+    // {"chown", Privileges{}.set(PLEDGE_CHOWN)},
+    // {"fchownat", Privileges{}.set(PLEDGE_CHOWN)},
+    // {"lchown", Privileges{}.set(PLEDGE_CHOWN)},
+    // {"fchown", Privileges{}.set(PLEDGE_CHOWN)},
     {"socket",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)
-         | std::bitset<COUNT>().set(PLEDGE_DNS)
-         | std::bitset<COUNT>().set(PLEDGE_YPACTIVE)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)
+         | Privileges{}.set(PLEDGE_DNS)
+         | Privileges{}.set(PLEDGE_YPACTIVE)},
     {"connect",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)
-         | std::bitset<COUNT>().set(PLEDGE_DNS)
-         | std::bitset<COUNT>().set(PLEDGE_YPACTIVE)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)
+         | Privileges{}.set(PLEDGE_DNS)
+         | Privileges{}.set(PLEDGE_YPACTIVE)},
     {"bind",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)
-         | std::bitset<COUNT>().set(PLEDGE_DNS)
-         | std::bitset<COUNT>().set(PLEDGE_YPACTIVE)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)
+         | Privileges{}.set(PLEDGE_DNS)
+         | Privileges{}.set(PLEDGE_YPACTIVE)},
     {"getsockname",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)
-         | std::bitset<COUNT>().set(PLEDGE_DNS)
-         | std::bitset<COUNT>().set(PLEDGE_YPACTIVE)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)
+         | Privileges{}.set(PLEDGE_DNS)
+         | Privileges{}.set(PLEDGE_YPACTIVE)},
     {"listen",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
     {"accept4",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
     {"accept",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
     {"getpeername",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
-    {"flock", std::bitset<COUNT>().set(PLEDGE_FLOCK)},
-    {"swapctl", std::bitset<COUNT>().set(PLEDGE_VMINFO)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
+    {"flock", Privileges{}.set(PLEDGE_FLOCK)},
+    {"swapctl", Privileges{}.set(PLEDGE_VMINFO)},
 
     // Merged from manpledges
     {"getpeername",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
     {"getsockname",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
     {"setsockopt",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)
-         | std::bitset<COUNT>().set(PLEDGE_MCAST)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)
+         | Privileges{}.set(PLEDGE_MCAST)},
     {"getsockopt",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
-    {"getpwnam", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getpwuid", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getpwnam_r", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getpwuid_r", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getpwnam_shadow", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getpwuid_shadow", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"setpassent", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrent", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrnam", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrnam_r", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrgid", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrgid_r", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"setgroupent", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"setgrent", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"endgrent", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrouplist", std::bitset<COUNT>().set(PLEDGE_GETPW)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
+    {"getpwnam", Privileges{}.set(PLEDGE_GETPW)},
+    {"getpwuid", Privileges{}.set(PLEDGE_GETPW)},
+    {"getpwnam_r", Privileges{}.set(PLEDGE_GETPW)},
+    {"getpwuid_r", Privileges{}.set(PLEDGE_GETPW)},
+    {"getpwnam_shadow", Privileges{}.set(PLEDGE_GETPW)},
+    {"getpwuid_shadow", Privileges{}.set(PLEDGE_GETPW)},
+    {"setpassent", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrent", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrnam", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrnam_r", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrgid", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrgid_r", Privileges{}.set(PLEDGE_GETPW)},
+    {"setgroupent", Privileges{}.set(PLEDGE_GETPW)},
+    {"setgrent", Privileges{}.set(PLEDGE_GETPW)},
+    {"endgrent", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrouplist", Privileges{}.set(PLEDGE_GETPW)},
 
     // Namei stuff
-    {"statfs", std::bitset<COUNT>().set(PLEDGE_RPATH)},  // C2 - namei additions
+    {"statfs", Privileges{}.set(PLEDGE_RPATH)},  // C2 - namei additions
     {"mknod",
-     std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
-    {"mknodat", std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2
+     Privileges{}.set(PLEDGE_DPATH)},  // C2 - Present in kernmap
+    {"mknodat", Privileges{}.set(PLEDGE_DPATH)},  // C2
     {"mkfifo",
-     std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
+     Privileges{}.set(PLEDGE_DPATH)},  // C2 - Present in kernmap
     {"access",
-     std::bitset<COUNT>().set(PLEDGE_RPATH)
-         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_RPATH)
+         | Privileges{}.set(PLEDGE_STDIO)},
     {"faccessat",
-     std::bitset<COUNT>().set(
+     Privileges{}.set(
          PLEDGE_RPATH)},  // C2 - faccessat calls dofaccessat, Basis pledge is
                           // RPATH, STDIO removed
-    // {"unlink", std::bitset<COUNT>().set(PLEDGE_CPATH)  // C2 - Base pledge
+    // {"unlink", Privileges{}.set(PLEDGE_CPATH)  // C2 - Base pledge
     // set to cpath
-    //   | std::bitset<COUNT>().set(PLEDGE_TMPPATH)}, // cpath or tmppath may be
+    //   | Privileges{}.set(PLEDGE_TMPPATH)}, // cpath or tmppath may be
     //   used
-    // {"unlinkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},  // C2 - Base
+    // {"unlinkat", Privileges{}.set(PLEDGE_CPATH)},  // C2 - Base
     // pledge set to cpath
-    //  std::bitset<COUNT>().set(PLEDGE_RPATH)
-    //      | std::bitset<COUNT>().set(PLEDGE_WPATH)},
-    {"fstat", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fstatat", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"lstat", std::bitset<COUNT>().set(PLEDGE_RPATH)},
+    //  Privileges{}.set(PLEDGE_RPATH)
+    //      | Privileges{}.set(PLEDGE_WPATH)},
+    {"fstat", Privileges{}.set(PLEDGE_STDIO)},
+    {"fstatat", Privileges{}.set(PLEDGE_RPATH)},
+    {"lstat", Privileges{}.set(PLEDGE_RPATH)},
     {"stat",
-     std::bitset<COUNT>().set(PLEDGE_RPATH)
-         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fpathconf", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pathconf", std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_RPATH)
+         | Privileges{}.set(PLEDGE_STDIO)},
+    {"fpathconf", Privileges{}.set(PLEDGE_STDIO)},
+    {"pathconf", Privileges{}.set(PLEDGE_RPATH)},
     {"readlink",
-     std::bitset<COUNT>().set(PLEDGE_STDIO)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_STDIO)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"readlinkat",
-     std::bitset<COUNT>().set(PLEDGE_STDIO)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"chflags", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    {"chflagsat", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    {"fchflags", std::bitset<COUNT>().set(PLEDGE_FATTR)},
+     Privileges{}.set(PLEDGE_STDIO)
+         | Privileges{}.set(PLEDGE_RPATH)},
+    {"chflags", Privileges{}.set(PLEDGE_FATTR)},
+    {"chflagsat", Privileges{}.set(PLEDGE_FATTR)},
+    {"fchflags", Privileges{}.set(PLEDGE_FATTR)},
     {"chmod",
-     std::bitset<COUNT>().set(PLEDGE_FATTR)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_FATTR)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"fchmod",
-     std::bitset<COUNT>().set(PLEDGE_FATTR)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_FATTR)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"fchmodat",
-     std::bitset<COUNT>().set(PLEDGE_FATTR)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_FATTR)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"chown",
-     std::bitset<COUNT>().set(PLEDGE_CHOWN)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_CHOWN)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"fchownat",
-     std::bitset<COUNT>().set(PLEDGE_CHOWN)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_CHOWN)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"lchown",
-     std::bitset<COUNT>().set(PLEDGE_CHOWN)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"fchown", std::bitset<COUNT>().set(PLEDGE_CHOWN)},
+     Privileges{}.set(PLEDGE_CHOWN)
+         | Privileges{}.set(PLEDGE_RPATH)},
+    {"fchown", Privileges{}.set(PLEDGE_CHOWN)},
     {"utimes",
-     std::bitset<COUNT>().set(PLEDGE_FATTR)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_FATTR)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"utimensat",
-     std::bitset<COUNT>().set(PLEDGE_FATTR)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"futimens", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    {"futimes", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    {"ftruncate", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_FATTR)
+         | Privileges{}.set(PLEDGE_RPATH)},
+    {"futimens", Privileges{}.set(PLEDGE_FATTR)},
+    {"futimes", Privileges{}.set(PLEDGE_FATTR)},
+    {"ftruncate", Privileges{}.set(PLEDGE_STDIO)},
     {"truncate",
-     std::bitset<COUNT>().set(PLEDGE_WPATH)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)
-         | std::bitset<COUNT>().set(PLEDGE_FATTR)},
+     Privileges{}.set(PLEDGE_WPATH)
+         | Privileges{}.set(PLEDGE_RPATH)
+         | Privileges{}.set(PLEDGE_FATTR)},
     {"rename",
-     std::bitset<COUNT>().set(PLEDGE_CPATH)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_CPATH)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"renameat",
-     std::bitset<COUNT>().set(PLEDGE_CPATH)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_CPATH)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"revoke",
-     std::bitset<COUNT>().set(PLEDGE_TTY)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"chdir", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"open", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},  // Handle Manually.
-    {"openat", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},
+     Privileges{}.set(PLEDGE_TTY)
+         | Privileges{}.set(PLEDGE_RPATH)},
+    {"chdir", Privileges{}.set(PLEDGE_RPATH)},
+    {"open", Privileges{}.set(PLEDGE_SPCL_OPEN)},  // Handle Manually.
+    {"openat", Privileges{}.set(PLEDGE_SPCL_OPEN)},
 };
 
 static SyscallBitsetMap syscallManMap {
-    {"clock_getres", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"clock_gettime", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"close", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"closefrom", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"dup", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"dup2", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"dup3", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fchdir", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+    {"clock_getres", Privileges{}.set(PLEDGE_STDIO)},
+    {"clock_gettime", Privileges{}.set(PLEDGE_STDIO)},
+    {"close", Privileges{}.set(PLEDGE_STDIO)},
+    {"closefrom", Privileges{}.set(PLEDGE_STDIO)},
+    {"dup", Privileges{}.set(PLEDGE_STDIO)},
+    {"dup2", Privileges{}.set(PLEDGE_STDIO)},
+    {"dup3", Privileges{}.set(PLEDGE_STDIO)},
+    {"fchdir", Privileges{}.set(PLEDGE_STDIO)},
     {"fcntl",
-     std::bitset<COUNT>().set(PLEDGE_FLOCK)
-         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fsync", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getdents", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getdtablecount", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getegid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getentropy", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"geteuid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getgid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getgroups", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getitimer", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getlogin", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getpgid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getpgrp", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getpid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getppid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getresgid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getresuid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getrlimit", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getrtable", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getsid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getthrid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"gettimeofday", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"getuid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"issetugid", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"kevent", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"kqueue", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"lseek", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"madvise", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"minherit", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_FLOCK)
+         | Privileges{}.set(PLEDGE_STDIO)},
+    {"fsync", Privileges{}.set(PLEDGE_STDIO)},
+    {"getdents", Privileges{}.set(PLEDGE_STDIO)},
+    {"getdtablecount", Privileges{}.set(PLEDGE_STDIO)},
+    {"getegid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getentropy", Privileges{}.set(PLEDGE_STDIO)},
+    {"geteuid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getgid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getgroups", Privileges{}.set(PLEDGE_STDIO)},
+    {"getitimer", Privileges{}.set(PLEDGE_STDIO)},
+    {"getlogin", Privileges{}.set(PLEDGE_STDIO)},
+    {"getpgid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getpgrp", Privileges{}.set(PLEDGE_STDIO)},
+    {"getpid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getppid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getresgid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getresuid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getrlimit", Privileges{}.set(PLEDGE_STDIO)},
+    {"getrtable", Privileges{}.set(PLEDGE_STDIO)},
+    {"getsid", Privileges{}.set(PLEDGE_STDIO)},
+    {"getthrid", Privileges{}.set(PLEDGE_STDIO)},
+    {"gettimeofday", Privileges{}.set(PLEDGE_STDIO)},
+    {"getuid", Privileges{}.set(PLEDGE_STDIO)},
+    {"issetugid", Privileges{}.set(PLEDGE_STDIO)},
+    {"kevent", Privileges{}.set(PLEDGE_STDIO)},
+    {"kqueue", Privileges{}.set(PLEDGE_STDIO)},
+    {"lseek", Privileges{}.set(PLEDGE_STDIO)},
+    {"madvise", Privileges{}.set(PLEDGE_STDIO)},
+    {"minherit", Privileges{}.set(PLEDGE_STDIO)},
     {"mmap",
-     //  std::bitset<COUNT>().set(PLEDGE_PROTEXEC) /* mmap does not need
+     //  Privileges{}.set(PLEDGE_PROTEXEC) /* mmap does not need
      //  PLEDGE_PROTEXEC inside libc */
-     std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_STDIO)},
     {"mprotect",
-     //  std::bitset<COUNT>().set(PLEDGE_PROTEXEC) /* mprotect does not need
+     //  Privileges{}.set(PLEDGE_PROTEXEC) /* mprotect does not need
      //  PLEDGE_PROTEXEC inside libc */
-     std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"mquery", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"munmap", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"nanosleep", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pipe", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pipe2", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"poll", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pread", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"preadv", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pwrite", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pwritev", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"read", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"readv", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_STDIO)},
+    {"mquery", Privileges{}.set(PLEDGE_STDIO)},
+    {"munmap", Privileges{}.set(PLEDGE_STDIO)},
+    {"nanosleep", Privileges{}.set(PLEDGE_STDIO)},
+    {"pipe", Privileges{}.set(PLEDGE_STDIO)},
+    {"pipe2", Privileges{}.set(PLEDGE_STDIO)},
+    {"poll", Privileges{}.set(PLEDGE_STDIO)},
+    {"pread", Privileges{}.set(PLEDGE_STDIO)},
+    {"preadv", Privileges{}.set(PLEDGE_STDIO)},
+    {"pwrite", Privileges{}.set(PLEDGE_STDIO)},
+    {"pwritev", Privileges{}.set(PLEDGE_STDIO)},
+    {"read", Privileges{}.set(PLEDGE_STDIO)},
+    {"readv", Privileges{}.set(PLEDGE_STDIO)},
     {"recvfrom",
-     std::bitset<COUNT>().set(PLEDGE_STDIO)
-         | std::bitset<COUNT>().set(PLEDGE_DNS)},
+     Privileges{}.set(PLEDGE_STDIO)
+         | Privileges{}.set(PLEDGE_DNS)},
     {"recvmsg",
-     std::bitset<COUNT>().set(PLEDGE_RECVFD)
-         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"select", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_RECVFD)
+         | Privileges{}.set(PLEDGE_STDIO)},
+    {"select", Privileges{}.set(PLEDGE_STDIO)},
     {"sendmsg",
-     std::bitset<COUNT>().set(PLEDGE_STDIO)
-         | std::bitset<COUNT>().set(PLEDGE_SENDFD)},
-    {"sendsyslog", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_STDIO)
+         | Privileges{}.set(PLEDGE_SENDFD)},
+    {"sendsyslog", Privileges{}.set(PLEDGE_STDIO)},
     {"sendto",
-     std::bitset<COUNT>().set(PLEDGE_STDIO)
-         | std::bitset<COUNT>().set(PLEDGE_DNS)},
-    {"setitimer", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"shutdown", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"sigaction", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"sigprocmask", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"sigreturn", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"socketpair", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"umask", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"wait4", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"write", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"writev", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_STDIO)
+         | Privileges{}.set(PLEDGE_DNS)},
+    {"setitimer", Privileges{}.set(PLEDGE_STDIO)},
+    {"shutdown", Privileges{}.set(PLEDGE_STDIO)},
+    {"sigaction", Privileges{}.set(PLEDGE_STDIO)},
+    {"sigprocmask", Privileges{}.set(PLEDGE_STDIO)},
+    {"sigreturn", Privileges{}.set(PLEDGE_STDIO)},
+    {"socketpair", Privileges{}.set(PLEDGE_STDIO)},
+    {"umask", Privileges{}.set(PLEDGE_STDIO)},
+    {"wait4", Privileges{}.set(PLEDGE_STDIO)},
+    {"write", Privileges{}.set(PLEDGE_STDIO)},
+    {"writev", Privileges{}.set(PLEDGE_STDIO)},
     {"getcwd",
-     std::bitset<COUNT>().set(PLEDGE_RPATH)
-         | std::bitset<COUNT>().set(PLEDGE_WPATH)},
+     Privileges{}.set(PLEDGE_RPATH)
+         | Privileges{}.set(PLEDGE_WPATH)},
 
-    {"getfsstat", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"link", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"linkat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
+    {"getfsstat", Privileges{}.set(PLEDGE_RPATH)},
+    {"link", Privileges{}.set(PLEDGE_CPATH)},
+    {"linkat", Privileges{}.set(PLEDGE_CPATH)},
     {"symlink",
-     std::bitset<COUNT>().set(
+     Privileges{}.set(
          PLEDGE_CPATH)},  // C2 - Appropriate pledges already set
     {"symlinkat",
-     std::bitset<COUNT>().set(
+     Privileges{}.set(
          PLEDGE_CPATH)},  // C2 - Appropriate pledges already set
-    {"mkdir", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"mkdirat", std::bitset<COUNT>().set(PLEDGE_CPATH)},
-    {"rmdir", std::bitset<COUNT>().set(PLEDGE_CPATH)},
+    {"mkdir", Privileges{}.set(PLEDGE_CPATH)},
+    {"mkdirat", Privileges{}.set(PLEDGE_CPATH)},
+    {"rmdir", Privileges{}.set(PLEDGE_CPATH)},
     {"socket",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)
-         | std::bitset<COUNT>().set(PLEDGE_DNS)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)
+         | Privileges{}.set(PLEDGE_DNS)},
     {"listen",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
     {"bind",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
     {"connect",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)
-         | std::bitset<COUNT>().set(PLEDGE_DNS)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)
+         | Privileges{}.set(PLEDGE_DNS)},
     {"accept4",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
     {"accept",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
     {"getpeername",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
     {"getsockname",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
     {"setsockopt",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)
-         | std::bitset<COUNT>().set(PLEDGE_MCAST)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)
+         | Privileges{}.set(PLEDGE_MCAST)},
     {"getsockopt",
-     std::bitset<COUNT>().set(PLEDGE_INET)
-         | std::bitset<COUNT>().set(PLEDGE_UNIX)},
-    {"flock", std::bitset<COUNT>().set(PLEDGE_FLOCK)},
+     Privileges{}.set(PLEDGE_INET)
+         | Privileges{}.set(PLEDGE_UNIX)},
+    {"flock", Privileges{}.set(PLEDGE_FLOCK)},
     {"lockf",
-     std::bitset<COUNT>().set(
+     Privileges{}.set(
          PLEDGE_FLOCK)},  // lockf Was already here from before
-    {"getpwnam", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getpwuid", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getpwnam_r", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getpwuid_r", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getpwnam_shadow", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getpwuid_shadow", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"setpassent", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrent", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrnam", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrnam_r", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrgid", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrgid_r", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"setgroupent", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"setgrent", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"endgrent", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"getgrouplist", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    {"initgroups", std::bitset<COUNT>().set(PLEDGE_GETPW)},
-    // {"MTIOCG", std::bitset<COUNT>().set(PLEDGE_TAPE)},
-    // {"MTIOCT", std::bitset<COUNT>().set(PLEDGE_TAPE)},
+    {"getpwnam", Privileges{}.set(PLEDGE_GETPW)},
+    {"getpwuid", Privileges{}.set(PLEDGE_GETPW)},
+    {"getpwnam_r", Privileges{}.set(PLEDGE_GETPW)},
+    {"getpwuid_r", Privileges{}.set(PLEDGE_GETPW)},
+    {"getpwnam_shadow", Privileges{}.set(PLEDGE_GETPW)},
+    {"getpwuid_shadow", Privileges{}.set(PLEDGE_GETPW)},
+    {"setpassent", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrent", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrnam", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrnam_r", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrgid", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrgid_r", Privileges{}.set(PLEDGE_GETPW)},
+    {"setgroupent", Privileges{}.set(PLEDGE_GETPW)},
+    {"setgrent", Privileges{}.set(PLEDGE_GETPW)},
+    {"endgrent", Privileges{}.set(PLEDGE_GETPW)},
+    {"getgrouplist", Privileges{}.set(PLEDGE_GETPW)},
+    {"initgroups", Privileges{}.set(PLEDGE_GETPW)},
+    // {"MTIOCG", Privileges{}.set(PLEDGE_TAPE)},
+    // {"MTIOCT", Privileges{}.set(PLEDGE_TAPE)},
     {"ioctl",
-     std::bitset<COUNT>().set(PLEDGE_AUDIO)
-         | std::bitset<COUNT>().set(PLEDGE_PF)
-         | std::bitset<COUNT>().set(PLEDGE_TTY)},
-    {"fork", std::bitset<COUNT>().set(PLEDGE_PROC)},
-    {"vfork", std::bitset<COUNT>().set(PLEDGE_PROC)},
-    {"kill", std::bitset<COUNT>().set(PLEDGE_PROC)},
+     Privileges{}.set(PLEDGE_AUDIO)
+         | Privileges{}.set(PLEDGE_PF)
+         | Privileges{}.set(PLEDGE_TTY)},
+    {"fork", Privileges{}.set(PLEDGE_PROC)},
+    {"vfork", Privileges{}.set(PLEDGE_PROC)},
+    {"kill", Privileges{}.set(PLEDGE_PROC)},
     {"getpriority",
-     std::bitset<COUNT>().set(PLEDGE_PROC)
-         | std::bitset<COUNT>().set(PLEDGE_ID)},
+     Privileges{}.set(PLEDGE_PROC)
+         | Privileges{}.set(PLEDGE_ID)},
     {"setpriority",
-     std::bitset<COUNT>().set(PLEDGE_PROC)
-         | std::bitset<COUNT>().set(PLEDGE_ID)},
+     Privileges{}.set(PLEDGE_PROC)
+         | Privileges{}.set(PLEDGE_ID)},
     {"setrlimit",
-     std::bitset<COUNT>().set(PLEDGE_PROC)
-         | std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setpgid", std::bitset<COUNT>().set(PLEDGE_PROC)},
-    {"setsid", std::bitset<COUNT>().set(PLEDGE_PROC)},
-    {"execve", std::bitset<COUNT>().set(PLEDGE_EXEC)},
-    {"settimeofday", std::bitset<COUNT>().set(PLEDGE_SETTIME)},
-    {"adjtime", std::bitset<COUNT>().set(PLEDGE_SETTIME)},
-    {"adjfreq", std::bitset<COUNT>().set(PLEDGE_SETTIME)},
+     Privileges{}.set(PLEDGE_PROC)
+         | Privileges{}.set(PLEDGE_ID)},
+    {"setpgid", Privileges{}.set(PLEDGE_PROC)},
+    {"setsid", Privileges{}.set(PLEDGE_PROC)},
+    {"execve", Privileges{}.set(PLEDGE_EXEC)},
+    {"settimeofday", Privileges{}.set(PLEDGE_SETTIME)},
+    {"adjtime", Privileges{}.set(PLEDGE_SETTIME)},
+    {"adjfreq", Privileges{}.set(PLEDGE_SETTIME)},
     // {"sysctl",
-    //  std::bitset<COUNT>().set(
+    //  Privileges{}.set(
     //      0)},  // Sysctl is handled on a per flag basis in the system
-    //  std::bitset<COUNT>().set(PLEDGE_PS)
-    //      | std::bitset<COUNT>().set(PLEDGE_VMINFO)},
-    {"setuid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"seteuid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setreuid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setresuid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setgid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setegid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setregid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setresgid", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setgroups", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"setlogin", std::bitset<COUNT>().set(PLEDGE_ID)},
-    {"pf", std::bitset<COUNT>().set(PLEDGE_PF)},
-    {"bpf", std::bitset<COUNT>().set(PLEDGE_BPF)},
+    //  Privileges{}.set(PLEDGE_PS)
+    //      | Privileges{}.set(PLEDGE_VMINFO)},
+    {"setuid", Privileges{}.set(PLEDGE_ID)},
+    {"seteuid", Privileges{}.set(PLEDGE_ID)},
+    {"setreuid", Privileges{}.set(PLEDGE_ID)},
+    {"setresuid", Privileges{}.set(PLEDGE_ID)},
+    {"setgid", Privileges{}.set(PLEDGE_ID)},
+    {"setegid", Privileges{}.set(PLEDGE_ID)},
+    {"setregid", Privileges{}.set(PLEDGE_ID)},
+    {"setresgid", Privileges{}.set(PLEDGE_ID)},
+    {"setgroups", Privileges{}.set(PLEDGE_ID)},
+    {"setlogin", Privileges{}.set(PLEDGE_ID)},
+    {"pf", Privileges{}.set(PLEDGE_PF)},
+    {"bpf", Privileges{}.set(PLEDGE_BPF)},
 
-    {"statfs", std::bitset<COUNT>().set(PLEDGE_RPATH)},  // C2 - namei additions
+    {"statfs", Privileges{}.set(PLEDGE_RPATH)},  // C2 - namei additions
     {"mknod",
-     std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
-    {"mknodat", std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2
+     Privileges{}.set(PLEDGE_DPATH)},  // C2 - Present in kernmap
+    {"mknodat", Privileges{}.set(PLEDGE_DPATH)},  // C2
     {"mkfifo",
-     std::bitset<COUNT>().set(PLEDGE_DPATH)},  // C2 - Present in kernmap
+     Privileges{}.set(PLEDGE_DPATH)},  // C2 - Present in kernmap
     {"access",
-     std::bitset<COUNT>().set(PLEDGE_RPATH)
-         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_RPATH)
+         | Privileges{}.set(PLEDGE_STDIO)},
     {"faccessat",
-     std::bitset<COUNT>().set(
+     Privileges{}.set(
          PLEDGE_RPATH)},  // C2 - faccessat calls dofaccessat, Basis pledge is
                           // RPATH, STDIO removed
     {"unlink",
-     std::bitset<COUNT>().set(PLEDGE_CPATH)  // C2 - Base pledge set to cpath
-         | std::bitset<COUNT>().set(
+     Privileges{}.set(PLEDGE_CPATH)  // C2 - Base pledge set to cpath
+         | Privileges{}.set(
                PLEDGE_TMPPATH)},  // cpath or tmppath may be used
     {"unlinkat",
-     std::bitset<COUNT>().set(PLEDGE_CPATH)},  // C2 - Base pledge set to cpath
-    //  std::bitset<COUNT>().set(PLEDGE_RPATH)
-    //      | std::bitset<COUNT>().set(PLEDGE_WPATH)},
-    {"fstat", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fstatat", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"lstat", std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_CPATH)},  // C2 - Base pledge set to cpath
+    //  Privileges{}.set(PLEDGE_RPATH)
+    //      | Privileges{}.set(PLEDGE_WPATH)},
+    {"fstat", Privileges{}.set(PLEDGE_STDIO)},
+    {"fstatat", Privileges{}.set(PLEDGE_RPATH)},
+    {"lstat", Privileges{}.set(PLEDGE_RPATH)},
     {"stat",
-     std::bitset<COUNT>().set(PLEDGE_RPATH)
-         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"fpathconf", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    {"pathconf", std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_RPATH)
+         | Privileges{}.set(PLEDGE_STDIO)},
+    {"fpathconf", Privileges{}.set(PLEDGE_STDIO)},
+    {"pathconf", Privileges{}.set(PLEDGE_RPATH)},
     {"readlinkat",
-     std::bitset<COUNT>().set(PLEDGE_RPATH)
-         | std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_RPATH)
+         | Privileges{}.set(PLEDGE_STDIO)},
     {"readlink",
-     std::bitset<COUNT>().set(PLEDGE_STDIO)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_STDIO)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"readlinkat",
-     std::bitset<COUNT>().set(PLEDGE_STDIO)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    // {"readlink", std::bitset<COUNT>().set(PLEDGE_STDIO)},
-    // {"readlinkat", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_STDIO)
+         | Privileges{}.set(PLEDGE_RPATH)},
+    // {"readlink", Privileges{}.set(PLEDGE_STDIO)},
+    // {"readlinkat", Privileges{}.set(PLEDGE_STDIO)},
     {"chflags",
-     std::bitset<COUNT>().set(PLEDGE_FATTR)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_FATTR)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"chflagsat",
-     std::bitset<COUNT>().set(PLEDGE_FATTR)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"fchflags", std::bitset<COUNT>().set(PLEDGE_FATTR)},
+     Privileges{}.set(PLEDGE_FATTR)
+         | Privileges{}.set(PLEDGE_RPATH)},
+    {"fchflags", Privileges{}.set(PLEDGE_FATTR)},
     {"chmod",
-     std::bitset<COUNT>().set(PLEDGE_FATTR)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"fchmod", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    //  | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_FATTR)
+         | Privileges{}.set(PLEDGE_RPATH)},
+    {"fchmod", Privileges{}.set(PLEDGE_FATTR)},
+    //  | Privileges{}.set(PLEDGE_RPATH)},
     {"fchmodat",
-     std::bitset<COUNT>().set(PLEDGE_FATTR)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_FATTR)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"chown",
-     std::bitset<COUNT>().set(PLEDGE_CHOWN)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_CHOWN)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"fchownat",
-     std::bitset<COUNT>().set(PLEDGE_CHOWN)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_CHOWN)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"lchown",
-     std::bitset<COUNT>().set(PLEDGE_CHOWN)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"fchown", std::bitset<COUNT>().set(PLEDGE_CHOWN)},
+     Privileges{}.set(PLEDGE_CHOWN)
+         | Privileges{}.set(PLEDGE_RPATH)},
+    {"fchown", Privileges{}.set(PLEDGE_CHOWN)},
     {"utimes",
-     std::bitset<COUNT>().set(PLEDGE_FATTR)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_FATTR)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"utimensat",
-     std::bitset<COUNT>().set(PLEDGE_FATTR)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"futimens", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    {"futimes", std::bitset<COUNT>().set(PLEDGE_FATTR)},
-    {"ftruncate", std::bitset<COUNT>().set(PLEDGE_STDIO)},
+     Privileges{}.set(PLEDGE_FATTR)
+         | Privileges{}.set(PLEDGE_RPATH)},
+    {"futimens", Privileges{}.set(PLEDGE_FATTR)},
+    {"futimes", Privileges{}.set(PLEDGE_FATTR)},
+    {"ftruncate", Privileges{}.set(PLEDGE_STDIO)},
     {"truncate",
-     std::bitset<COUNT>().set(PLEDGE_WPATH)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    //  | std::bitset<COUNT>().set(PLEDGE_FATTR)}, Doesn't need it even though
+     Privileges{}.set(PLEDGE_WPATH)
+         | Privileges{}.set(PLEDGE_RPATH)},
+    //  | Privileges{}.set(PLEDGE_FATTR)}, Doesn't need it even though
     //  vfs_syscall has it
     {"rename",
-     std::bitset<COUNT>().set(PLEDGE_CPATH)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_CPATH)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"renameat",
-     std::bitset<COUNT>().set(PLEDGE_CPATH)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_CPATH)
+         | Privileges{}.set(PLEDGE_RPATH)},
     {"revoke",
-     std::bitset<COUNT>().set(PLEDGE_TTY)
-         | std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"chdir", std::bitset<COUNT>().set(PLEDGE_RPATH)},
-    {"open", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},  // Handle Manually.
-    {"openat", std::bitset<COUNT>().set(PLEDGE_SPCL_OPEN)},
+     Privileges{}.set(PLEDGE_TTY)
+         | Privileges{}.set(PLEDGE_RPATH)},
+    {"chdir", Privileges{}.set(PLEDGE_RPATH)},
+    {"open", Privileges{}.set(PLEDGE_SPCL_OPEN)},  // Handle Manually.
+    {"openat", Privileges{}.set(PLEDGE_SPCL_OPEN)},
 };
 // Verify one off error for count. Should be COUNT - 1 for range
 //
