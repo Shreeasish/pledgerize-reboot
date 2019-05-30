@@ -1,6 +1,4 @@
-
-#ifndef DATAFLOW_ANALYSIS_H
-#define DATAFLOW_ANALYSIS_H
+#pragma once
 
 #include <algorithm>
 #include <deque>
@@ -14,41 +12,42 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/InstIterator.h"
 
-namespace llvm {
+
+//namespace llvm {
+//
+//
+//template<unsigned long Size>
+//struct DenseMapInfo<std::array<llvm::Instruction*, Size>> {
+//  using Context = std::array<llvm::Instruction*, Size>;
+//  static inline Context
+//  getEmptyKey() {
+//    Context c;
+//    std::fill(c.begin(), c.end(),
+//      llvm::DenseMapInfo<llvm::Instruction*>::getEmptyKey());
+//    return c;
+//  }
+//  static inline Context
+//  getTombstoneKey() {
+//    Context c;
+//    std::fill(c.begin(), c.end(),
+//      llvm::DenseMapInfo<llvm::Instruction*>::getTombstoneKey());
+//    return c;
+//  }
+//  static unsigned
+//  getHashValue(const Context& c) {
+//    return llvm::hash_combine_range(c.begin(), c.end());
+//  }
+//  static bool
+//  isEqual(const Context& lhs, const Context& rhs) {
+//    return lhs == rhs;
+//  }
+//};
+//
+//
+//}
 
 
-template<unsigned long Size>
-struct DenseMapInfo<std::array<llvm::Instruction*, Size>> {
-  using Context = std::array<llvm::Instruction*, Size>;
-  static inline Context
-  getEmptyKey() {
-    Context c;
-    std::fill(c.begin(), c.end(),
-      llvm::DenseMapInfo<llvm::Instruction*>::getEmptyKey());
-    return c;
-  }
-  static inline Context
-  getTombstoneKey() {
-    Context c;
-    std::fill(c.begin(), c.end(),
-      llvm::DenseMapInfo<llvm::Instruction*>::getTombstoneKey());
-    return c;
-  }
-  static unsigned
-  getHashValue(const Context& c) {
-    return llvm::hash_combine_range(c.begin(), c.end());
-  }
-  static bool
-  isEqual(const Context& lhs, const Context& rhs) {
-    return lhs == rhs;
-  }
-};
-
-
-}
-
-
-namespace analysis {
+namespace analysisOriginal {
 
 
 template<typename T>
@@ -113,7 +112,7 @@ template <typename AbstractValue>
 using DataflowResult =
   llvm::DenseMap<llvm::Value*, AbstractState<AbstractValue>>;
 
-// ska: Abstract State Comparison
+
 template <typename AbstractValue>
 bool
 operator==(const AbstractState<AbstractValue>& s1,
@@ -147,9 +146,8 @@ getIncomingState(DataflowResult<AbstractValue>& result, llvm::Instruction& i) {
 template <typename AbstractValue>
 class Transfer {
 public:
-  template <typename Context> 
-  void 
-  operator()(llvm::Value& v, AbstractState<AbstractValue>& s, const Context& ) {
+  void
+  operator()(llvm::Value& v, AbstractState<AbstractValue>& s) {
     llvm_unreachable("unimplemented transfer");
   }
 };
@@ -217,21 +215,20 @@ public:
     return llvm::predecessors(&bb);
   }
   static bool shouldMeetPHI() { return true; }
-  template <class State, class Transfer, class Meet, class Context>
+  template <class State, class Transfer, class Meet>
   static bool prepareSummaryState(llvm::CallSite cs,
                                   llvm::Function* callee,
                                   State& state,
                                   State& summaryState,
                                   Transfer& transfer,
-                                  Meet& meet,
-                                  const Context& context) {
+                                  Meet& meet) {
     unsigned index = 0;
     bool needsUpdate = false;
     for (auto& functionArg : callee->args()) {
       auto* passedConcrete = cs.getArgument(index);
       auto passedAbstract = state.find(passedConcrete);
       if (passedAbstract == state.end()) {
-        transfer(*passedConcrete, state, context );
+        transfer(*passedConcrete, state);
         passedAbstract = state.find(passedConcrete);
       }
       auto& arg     = summaryState[&functionArg];
@@ -269,14 +266,13 @@ public:
     return llvm::successors(&bb);
   }
   static bool shouldMeetPHI() { return false; }
-  template <class State, class Transfer, class Meet, class Context>
+  template <class State, class Transfer, class Meet>
   static bool prepareSummaryState(llvm::CallSite cs,
                                   llvm::Function* callee,
                                   State& state,
                                   State& summaryState,
                                   Transfer& transfer,
-                                  Meet& meet,
-                                  const Context& context) {
+                                  Meet& meet) {
     // TODO: This would be better if it checked whether the new state at this
     // function different from the old.
     bool needsUpdate = false;
@@ -382,7 +378,7 @@ public:
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
         } else {
-          applyTransfer(i, state, context);
+          applyTransfer(i, state);
         }
 //meet.printState(llvm::outs(),state);
         results[&i] = state;
@@ -452,7 +448,7 @@ public:
     auto& summaryState = calledState[callee];
     bool needsUpdate   = summaryState.size() == 0;
 
-    needsUpdate |= Direction::prepareSummaryState(cs, callee, state, summaryState, transfer, meet, context);
+    needsUpdate |= Direction::prepareSummaryState(cs, callee, state, summaryState, transfer, meet);
 
     if (!active.count(toCall) && needsUpdate) {
       computeDataflow(*callee, newContext);
@@ -508,12 +504,12 @@ private:
   }
 
   AbstractValue
-  meetOverPHI(State& state, const llvm::PHINode& phi, const Context& context) {
+  meetOverPHI(State& state, const llvm::PHINode& phi) {
     auto phiValue = AbstractValue();
     for (auto& value : phi.incoming_values()) {
       auto found = state.find(value.get());
       if (state.end() == found) {
-        transfer(*value.get(), state, context);
+        transfer(*value.get(), state);
         found = state.find(value.get());
       }
       phiValue = meet({phiValue, found->second});
@@ -522,19 +518,16 @@ private:
   }
 
   void
-  applyTransfer(llvm::Instruction& i, State& state, const Context& context) {
+  applyTransfer(llvm::Instruction& i, State& state) {
     if (auto* phi = llvm::dyn_cast<llvm::PHINode>(&i);
         phi && Direction::shouldMeetPHI()) {
       // Phis can be explicit meet operations
-      state[phi] = meetOverPHI(state, *phi, context);
+      state[phi] = meetOverPHI(state, *phi);
     } else {
-      transfer(i, state, context);
+      transfer(i, state);
     }
   }
 };
 
 
 } // end namespace
-
-
-#endif

@@ -2,12 +2,14 @@ set(SOURCES
   handler.cpp
   hoist.cpp
   taintAnalysis.cpp
+  libeventAnalyzer.cpp
 )
 
 add_executable(hoist_condition_list
   handler.cpp
   hoist.cpp
   taintAnalysis.cpp
+  libeventAnalyzer.cpp
 )
 
 llvm_map_components_to_libnames(REQ_LLVM_LIBRARIES ${LLVM_TARGETS_TO_BUILD}

@@ -312,12 +312,18 @@ isAnalyzableCall(llvm::CallSite cs) {
     return false;
   }
   auto* called = getCalledFunction(cs);
-  if (!called) {
-    llvm::errs()  << "\n"
-                  << *(cs.getInstruction())
-                  << " is not analyzable";
-  }
   return called && !called->isDeclaration();
+}
+
+bool
+isExternalCall(llvm::CallSite cs) {
+  if (!cs.getInstruction()) {
+    return false;
+  }
+  auto* called = getCalledFunction(cs);
+  return called 
+    && called->isDeclaration()
+    && !called->getName().startswith("llvm");
 }
 
 template <typename AbstractValue,

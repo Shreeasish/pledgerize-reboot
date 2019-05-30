@@ -1,4 +1,3 @@
-
 #include "llvm/IR/CallSite.h"
 #include "llvm/IR/DebugInfo.h"
 #include "llvm/IR/LLVMContext.h"
@@ -25,7 +24,6 @@
 
 // Headers included for checking flags
 #include <netinet/in.h>  //mcast
-
 
 //static llvm::Function*
 //getCalledFunction(llvm::CallSite cs) {

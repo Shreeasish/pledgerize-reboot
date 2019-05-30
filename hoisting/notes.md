@@ -194,6 +194,8 @@ General Trend
 
 
 State Relations
+
+
 ================
 ## Deprecated
 `Phi < Phi'` 
@@ -209,18 +211,21 @@ Implication relationships are not what we want to consider.
 What we need is something which can identify that the predicates of an abstract state are stronger than the predicates of another abstract state.
 i.e. an abstract state subsumes another. Therefore given any two abstract states, we can identify where it would be better to lower. This includes abstract states which are not on the same path.
 --------------
-
 ## Using Weakest Preconditions and Strongest Postconditions
 
 Simply put,
-For a pair of instructions where `i < j` (`i` happens before `j`), if the strongest postcondition of i is weaker than the weakest precondition of j, then it informs us of the benefits of lowering prior
-to j and ahead of i.
+For a pair of instructions where `i < j` (`i` happens before `j`), if the 
+strongest postcondition of i is weaker than the weakest precondition of j,
+then it informs us of the benefits of lowering prior to j and ahead of i.
+---------------
+## Formalizing the System
 
+To formally specify the system I can write it out as the specifications
+to a dataflow analysis 
 
+### Formal Grammar
 
+TODO: Copy from notebook
 
-
-
-
-
+### Transfer Functions
 

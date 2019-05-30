@@ -53,6 +53,7 @@
 #include "Printer.h"
 #include "IndirectCallResolver.h"
 #include "InstructionResolver.h"
+#include "LibEventAnalyzer.h"
 
 #include "WPA/Andersen.h"
 
@@ -79,8 +80,10 @@ std::unique_ptr<PrivilegeResolver> privilegeResolver;
 //std::unique_ptr<AndersenWaveDiffWithType> svfResults;
 AndersenWaveDiffWithType* svfResults;
 
-llvm::DenseMap<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> functionMemSSAs;
-llvm::DenseMap<const llvm::Function*, llvm::AAResultsWrapperPass*> functionAAs;
+llvm::DenseMap<const llvm::Function*,
+               std::unique_ptr<llvm::MemorySSA>> functionMemSSAs;
+llvm::DenseMap<const llvm::Function*,
+               llvm::AAResultsWrapperPass*> functionAAs;
 
 using Edge  = std::pair<const llvm::BasicBlock*,const llvm::BasicBlock*>;
 using Edges = llvm::SmallVector<Edge, 10>;
@@ -91,8 +94,8 @@ using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
 
-
-class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet> {
+class DisjunctionMeet
+  : public analysis::Meet<DisjunctionValue, DisjunctionMeet> {
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
@@ -151,17 +154,9 @@ public:
         return destState;
       }
       if (destState == toMerge && isSame) {
-        //llvm::errs() << "skipping conjunct application";
         return destState;
       }
 
-      //if (isSame) {
-      //  llvm::errs() << "incoming dijuncts are the same";
-      //}
-      //llvm::errs() << "\n Before phi";
-      //toMerge.print(llvm::errs());
-      //llvm::errs() << "\n After  phi";
-      //destState.print(llvm::errs());
       return handle(branchOrSwitch, destState, destination);
     };
     return edgeOp(toMerge);
@@ -308,23 +303,31 @@ private:
    * 1. Function Pointers - Modify Dataflow.h
    * 2. Privileges - 
    * 3. Stop Hoisting Function Calls */
+  template<Promises PledgeType>
   bool
   handleCallSite(llvm::Value* value,
                  DisjunctionState& state,
                  const Context& context,
                  bool handled) {
-    if (handled 
-        || !analysis::isAnalyzableCall(llvm::CallSite{value})) {
-      if (llvm::CallSite{value}.getInstruction() 
-          && privilegeResolver->hasPrivilege<PLEDGE_STDIO>(llvm::CallSite{value}, context)) {
-        llvm::errs() << "\n FOUND PRIVILEGE FOR"
-                     << *value;
-        makeVacuouslyTrue(state[nullptr]);
-      }
+    //if (handled 
+    //    || !analysis::isAnalyzableCall(llvm::CallSite{value})) {
+    //  if (llvm::CallSite{value}.getInstruction() 
+    //      && privilegeResolver->hasPrivilege<PLEDGE_STDIO>(llvm::CallSite{value}, context)) {
+    //    llvm::errs() << "\n FOUND PRIVILEGE FOR"
+    //                 << *value;
+    //    makeVacuouslyTrue(state[nullptr]);
+    //  }
+    //  return true;
+    //}
+    
+    llvm::CallSite callSite{value};
+    if (handled || !callSite.getInstruction()) {
+      return handled;
+    } else if (analysis::isExternalCall(callSite)) {
+      privilegeResolver->hasPrivilege<PledgeType>(callSite, context);
       return true;
     }
 
-    llvm::CallSite  callSite{value};
     llvm::Function* callee = analysis::getCalledFunction(callSite);
     state[nullptr] = wireCallerState(state[callSite.getInstruction()], callSite, callee); 
     return true;
@@ -703,21 +706,27 @@ private:
 
 
 public:
+  template<int PledgeCounter>
   void
-  operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
-    llvm::errs() << "\n =====================";
-    llvm::errs() << "\n BEFORE transfer at -- " << value;
-    state[nullptr].print(llvm::errs());
-    auto* inst = llvm::dyn_cast<llvm::Instruction>(&value);
+  callTransfers(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    /* Enable Debug
+     * llvm::errs() << "\n =====================";
+     * llvm::errs() << "\n BEFORE transfer at -- " << value;
+     * state[nullptr].print(llvm::errs());
+     */
+
+
+    auto* inst   = llvm::dyn_cast<llvm::Instruction>(&value);
     bool handled = false;
     if (auto constantExpr = llvm::dyn_cast<llvm::ConstantExpr>(&value)) {
       llvm::errs() << "\n\n" << value;
       llvm_unreachable("\nFound constant exprs");
     }
-
+  
     handled |= handleBrOrSwitch(inst, handled);
     handled |= handlePhiBackEdges(&value, state, handled);
-    handled |= handleCallSite(&value, state, context, handled);
+    handled |= handleCallSite<static_cast<Promises>(PledgeCounter)>(
+        &value, state, context, handled);
     handled |= handleStore(&value, state, context, handled);
     handled |= handleGep(&value, state, handled);
     handled |= handleRet(&value, state, context, handled);
@@ -730,13 +739,37 @@ public:
     state[nullptr].simplifyComplements()
                   .simplifyRedundancies()
                   .simplifyImplication();
-    llvm::errs() << "\n AFTER transfer at -- " << value;
-    state[nullptr].print(llvm::errs());
-    //generator->dumpState();
-    llvm::errs() << "\n =====================";
-    //printer->insertIR(inst, state[nullptr]);
+
+    /* Enable Debug
+     * llvm::errs() << "\n AFTER transfer at -- " << value;
+     * state[nullptr].print(llvm::errs());
+     *  generator->dumpState();
+     * llvm::errs() << "\n =====================";
+     *  printer->insertIR(inst, state[nullptr]); */
     return;
   }
+
+  template <int Counter>
+  void
+  static_for(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    callTransfers<Counter>(value, state, context);
+    static_for<Counter - 1>(value, state, context);
+    return;
+  }
+
+  template<>
+  void
+  static_for<0>(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    return;
+  }
+
+  void
+  operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    static_for<PLEDGE_FLOCK>(value, state, context);
+    return;
+  }
+
+  
 };
 
 
@@ -771,6 +804,7 @@ BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
 
   svfResults = AndersenWaveDiffWithType::createAndersenWaveDiffWithType(m);
 
+  //libEventAnalyzer::getResults(m);
   for (auto& f : m) {
     if ( f.isDeclaration()) {
       continue;
