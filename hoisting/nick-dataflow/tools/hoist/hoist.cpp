@@ -99,13 +99,33 @@ class DisjunctionMeet
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    //auto vacuousConjunct = generator->GetVacuousConjunct();
+    return static_for<10>(s1, s2);
+  }
+
+private:
+  template<Promises promise>
+  DisjunctionValue
+  meetPairImpl(DisjunctionValue& s1, DisjunctionValue& s2) {
     return Disjunction::unionDisjunctions(s1,s2)
             .simplifyComplements()
             .simplifyRedundancies()
             .simplifyImplication()
             .simplifyUnique()
             .simplifyTrues();
+  }
+
+  template<>
+  void
+  static_for<0>(DisjunctionValue& s1, DisjunctionValue& s2) {
+    return;
+  }
+
+  template<Counter>
+  void
+  static_for(DisjunctionValue& s1, DisjunctionValue& s2) {
+    static_for<Counter - 1>(s1, s2);
+    meetPairImpl<static_cast<Promises>(Counter)>(s1, s2);
+    return;
   }
 };
 
@@ -763,6 +783,7 @@ public:
     return;
   }
 
+  // Setting up perfect forwarding for this is more trouble than it's worth
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
     static_for<PLEDGE_FLOCK>(value, state, context);
@@ -833,7 +854,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     llvm::report_fatal_error("Unable to find main function.");
   }
   initializeGlobals(m);
-  using Value    = Disjunction;
+  using Value    = DisjunctionValue;
   using Transfer = DisjunctionTransfer;
   using Meet     = DisjunctionMeet;
   using EdgeTransformer = DisjunctionEdgeTransformer;
