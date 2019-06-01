@@ -89,7 +89,7 @@ using Edge  = std::pair<const llvm::BasicBlock*,const llvm::BasicBlock*>;
 using Edges = llvm::SmallVector<Edge, 10>;
 llvm::DenseMap<const llvm::Function*, Edges> functionBackEdges;
 
-using DisjunctionValue  = Disjunction;
+using DisjunctionValue  = std::array<Disjunction, COUNT - 1>;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
@@ -99,14 +99,15 @@ class DisjunctionMeet
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    return static_for<10>(s1, s2);
+    DisjunctionValue result{};
+    static_for<1>(s1, s2, result);
+    return result;
   }
 
 private:
-  template<Promises promise>
-  DisjunctionValue
-  meetPairImpl(DisjunctionValue& s1, DisjunctionValue& s2) {
-    return Disjunction::unionDisjunctions(s1,s2)
+  Disjunction
+  meetPairImpl(Disjunction& s1, Disjunction& s2) const {
+    return Disjunction::unionDisjunctions(s1, s2)
             .simplifyComplements()
             .simplifyRedundancies()
             .simplifyImplication()
@@ -114,17 +115,18 @@ private:
             .simplifyTrues();
   }
 
-  template<>
+  template<int Counter>
   void
-  static_for<0>(DisjunctionValue& s1, DisjunctionValue& s2) {
-    return;
+  static_for(DisjunctionValue& s1, DisjunctionValue& s2, DisjunctionValue& result) const {
+    static_for<Counter + 1>(s1, s2, result);
+    Promises promise = static_cast<Promises>(Counter);
+    result[promise] = meetPairImpl(s1[promise], s2[promise]);
   }
 
-  template<Counter>
+  template<>
   void
-  static_for(DisjunctionValue& s1, DisjunctionValue& s2) {
-    static_for<Counter - 1>(s1, s2);
-    meetPairImpl<static_cast<Promises>(Counter)>(s1, s2);
+  static_for<10>(DisjunctionValue& s1, DisjunctionValue& s2, DisjunctionValue& result) const {
+    result[10] = meetPairImpl(s1[10], s2[10]);
     return;
   }
 };
@@ -132,8 +134,8 @@ private:
 
 class DisjunctionEdgeTransformer {
 public:
-  Disjunction
-  operator()(Disjunction toMerge,
+  DisjunctionValue
+  operator()(DisjunctionValue toMerge,
              llvm::Value* branchAsValue,
              llvm::Value* destination,
              bool isSame) {
@@ -169,20 +171,53 @@ public:
     };
 
     auto edgeOp = [&](Disjunction& destState) {
+      auto oldState = destState;
       destState = handlePhi(destState);
       if (!isConditionalJump()) {
         return destState;
       }
-      if (destState == toMerge && isSame) {
+      if (destState == oldState && isSame) {
         return destState;
-      }
+      } // TODO: This condition seems odd
 
       return handle(branchOrSwitch, destState, destination);
     };
-    return edgeOp(toMerge);
+
+    //return edgeOp(toMerge);
+    return static_for{edgeOp}(toMerge);
   }
 
 private:
+  template <typename Lambda>
+  struct static_for {
+    Lambda& lambda;
+    DisjunctionValue result;
+
+    static_for(Lambda& lm) 
+      : lambda(lm) { result = DisjunctionValue{}; }
+
+    DisjunctionValue
+    operator()(DisjunctionValue& value) {
+      static_for_impl<10>(value);
+      return result;
+    }
+    
+    template<int Counter>
+    void
+    static_for_impl(DisjunctionValue& value) {
+      result[Counter] = lambda(value[Counter]);
+      static_for_impl<Counter - 1>(value);
+      return;
+    }
+
+    template<>
+    void
+    static_for_impl<0>(DisjunctionValue&) {
+      return;
+    }
+  };
+
+
   Disjunction&
   handle(llvm::Instruction* branchOrSwitch, Disjunction& destState, llvm::Value* destination) {
     if (auto branchInst = llvm::dyn_cast<llvm::BranchInst>(branchOrSwitch)) {
@@ -242,6 +277,20 @@ makeVacuouslyTrue(Disjunction& disjunction) {
 
 class DisjunctionTransfer {
 private:
+  template <Promises promise>
+  struct StateAccessor {
+    StateAccessor(DisjunctionState& sm)
+      : stateMap{sm} { }
+
+    DisjunctionState& stateMap;
+
+    Disjunction&
+    operator[](llvm::Instruction* inst) {
+      return stateMap[inst][promise];
+    }
+  };
+
+
   bool
   handleBrOrSwitch(llvm::Instruction* inst, bool handled) {
     return !handled && (llvm::isa<llvm::BranchInst>(inst)
@@ -253,8 +302,9 @@ private:
     return functionBackEdges[func];
   }
 
+  template <Promises Promise>
   bool
-  handlePhiBackEdges(llvm::Value* value, DisjunctionState& state, bool handled) {
+  handlePhiBackEdges(llvm::Value* value, StateAccessor<Promise>& state, bool handled) {
     if (handled) {
       return true;
     }
@@ -323,10 +373,10 @@ private:
    * 1. Function Pointers - Modify Dataflow.h
    * 2. Privileges - 
    * 3. Stop Hoisting Function Calls */
-  template<Promises PledgeType>
+  template<Promises Promise>
   bool
   handleCallSite(llvm::Value* value,
-                 DisjunctionState& state,
+                 StateAccessor<Promise>& state,
                  const Context& context,
                  bool handled) {
     //if (handled 
@@ -344,7 +394,7 @@ private:
     if (handled || !callSite.getInstruction()) {
       return handled;
     } else if (analysis::isExternalCall(callSite)) {
-      privilegeResolver->hasPrivilege<PledgeType>(callSite, context);
+      privilegeResolver->hasPrivilege<Promise>(callSite, context);
       return true;
     }
 
@@ -353,8 +403,9 @@ private:
     return true;
   }
 
+  template <Promises Promise>
   bool
-  handleGep(llvm::Value* const value, DisjunctionState& state, bool handled) {
+  handleGep(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
     // Possibly can be guarded by isUsed
     if (handled) {
       return true;
@@ -401,9 +452,10 @@ private:
     return std::make_pair(strongLoads, otherLoads);
   }
 
+  template<Promises Promise>
   bool
   handleStore(llvm::Value* const value,
-              DisjunctionState& state,
+              StateAccessor<Promise>& state,
               const Context context,
               bool handled) {
     using NodeExprPair = std::pair<BinaryExprNode, ExprID>;
@@ -430,10 +482,10 @@ private:
     return true;
   }
 
-
+  template<Promises Promise>
   bool
   handleRet(llvm::Value* const value,
-            DisjunctionState& state,
+            StateAccessor<Promise>& state,
             const Context context,
             bool handled) {
     if (handled) {
@@ -467,8 +519,9 @@ private:
     return true;
   }
 
+  template <Promises Promise>
   bool
-  handleLoad(llvm::Value* const value, DisjunctionState& state, bool handled) {
+  handleLoad(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
     if (handled) {
       return true;
     }
@@ -486,8 +539,9 @@ private:
     return true;
   }
 
+  template <Promises Promise>
   bool
-  handleBinaryOperator(llvm::Value* const value, DisjunctionState& state, bool handled) {
+  handleBinaryOperator(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
     if (handled) {
       return true;
     }
@@ -508,8 +562,9 @@ private:
     return true;
   }
 
+  template <Promises Promise>
   bool
-  handleCmpInst(llvm::Value* const value, DisjunctionState& state, bool handled) {
+  handleCmpInst(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
     if (handled) {
       return true;
     }
@@ -529,8 +584,9 @@ private:
     return true;
   }
 
+  template <Promises Promise>
   bool
-  handleCast(llvm::Value* const value, DisjunctionState& state, bool handled) {
+  handleCast(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
     if (handled) {
       return true;
     }
@@ -548,8 +604,9 @@ private:
   }
 
 
+  template <Promises Promise>
   void
-  handleUnknown(llvm::Value* const value, DisjunctionState& state, bool handled) {
+  handleUnknown(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
     if (handled) {
       return;
     }
@@ -573,8 +630,9 @@ private:
     return true;
   }
 
+  template <Promises Promise>
   void
-  dropOperands(const llvm::Value* value, DisjunctionState& state) {
+  dropOperands(const llvm::Value* value, StateAccessor<Promise>& state) {
     //Does not work for callsites. Fix later
     llvm::errs() << "\nDropping operands of " << *value;
     for (auto& op : value->uses()) {
@@ -587,8 +645,9 @@ private:
     }
   }
 
+  template <Promises Promise>
   std::vector<NodeExprPair>
-  getLoads(DisjunctionState& state) {
+  getLoads(StateAccessor<Promise>& state) {
     std::unordered_set<ExprID> foundIDs;
     std::vector<NodeExprPair> asLoads;
     auto isBinaryExprID = [](const ExprID exprID) -> bool {
@@ -728,14 +787,12 @@ private:
 public:
   template<int PledgeCounter>
   void
-  callTransfers(llvm::Value& value, DisjunctionState& state, const Context& context) {
+  callTransfers(llvm::Value& value, DisjunctionState& stateMap, const Context& context) {
     /* Enable Debug
      * llvm::errs() << "\n =====================";
      * llvm::errs() << "\n BEFORE transfer at -- " << value;
      * state[nullptr].print(llvm::errs());
      */
-
-
     auto* inst   = llvm::dyn_cast<llvm::Instruction>(&value);
     bool handled = false;
     if (auto constantExpr = llvm::dyn_cast<llvm::ConstantExpr>(&value)) {
@@ -743,6 +800,9 @@ public:
       llvm_unreachable("\nFound constant exprs");
     }
   
+    constexpr Promises promise = static_cast<Promises>(PledgeCounter);
+    auto state = StateAccessor<promise>{stateMap};
+
     handled |= handleBrOrSwitch(inst, handled);
     handled |= handlePhiBackEdges(&value, state, handled);
     handled |= handleCallSite<static_cast<Promises>(PledgeCounter)>(
@@ -880,24 +940,24 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     return parent;
   };
 
-  using ResolverQueue = std::deque<lowering::LocationState>;
-  ResolverQueue resolverQueue;
-  for (auto& [context, contextResults] : results) {
-    for (auto& [function, functionResults] : contextResults) {
-      auto [location, state] = getLocationStates(function, functionResults);
-      llvm::Instruction* parent = getParent(context);
-      resolverQueue.emplace_back(
-          lowering::LocationState{.parentCallSite = parent,
-                                  .callee         = function,
-                                  .location       = location,
-                                  .state          = state,
-                                  .context        = context});
-    }
-  }
-  lowering::InstructionResolver resolver{m, generator.get()};
-  for (auto& locationState : resolverQueue) {
-    resolver(locationState);
-  }
+  //using ResolverQueue = std::deque<lowering::LocationState>;
+  //ResolverQueue resolverQueue;
+  //for (auto& [context, contextResults] : results) {
+  //  for (auto& [function, functionResults] : contextResults) {
+  //    auto [location, state] = getLocationStates(function, functionResults);
+  //    llvm::Instruction* parent = getParent(context);
+  //    resolverQueue.emplace_back(
+  //        lowering::LocationState{.parentCallSite = parent,
+  //                                .callee         = function,
+  //                                .location       = location,
+  //                                .state          = state,
+  //                                .context        = context});
+  //  }
+  //}
+  //lowering::InstructionResolver resolver{m, generator.get()};
+  //for (auto& locationState : resolverQueue) {
+  //  resolver(locationState);
+  //}
 
 
   //for (auto& [context, contextResults] : results) {
@@ -913,12 +973,15 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   //}
 
 
-  auto ec = std::error_code{};
-  auto fileOuts = llvm::raw_fd_ostream{"/home/shreeasish/pledgerize-reboot/hoisting/build-dataflow/instrumented/fileStream", ec};
-  llvm::errs() << "\n\nRunning Verifier\n";
-  if (!llvm::verifyModule(m, &llvm::errs())) {
-    llvm::WriteBitcodeToFile(m, fileOuts);
-  }
+  // auto ec = std::error_code{};
+  // auto fileOuts =
+  //     llvm::raw_fd_ostream{"/home/shreeasish/pledgerize-reboot/hoisting/"
+  //                          "build-dataflow/instrumented/fileStream",
+  //                          ec};
+  // llvm::errs() << "\n\nRunning Verifier\n";
+  // if (!llvm::verifyModule(m, &llvm::errs())) {
+  //   llvm::WriteBitcodeToFile(m, fileOuts);
+  // }
   return false;
 }
 

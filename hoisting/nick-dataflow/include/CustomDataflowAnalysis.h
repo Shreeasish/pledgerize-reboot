@@ -407,10 +407,17 @@ public:
       }
       results[bb] = state;
 
+      auto getSize = [](auto& state) {
+        size_t size = 0;
+        for (auto& disjunctionMap : state) {
+          size = disjunctionMap.conjunctCount();
+        }
+        return size;
+      };
       // Propagate through all instructions in the block
       for (auto& i : Direction::getInstructions(*bb)) {
         llvm::outs() << "\n Working on  " << i;
-        const auto& size = state[nullptr].conjunctCount();
+        const auto& size = getSize(state[nullptr]); // state[nullptr].conjunctCount();
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
@@ -426,7 +433,7 @@ public:
         // ska: uncomment to skip function calls
         // else {
         applyTransfer(i, state, context);
-        const auto& newSize = state[nullptr].conjunctCount();
+        const auto& newSize = getSize(state[nullptr]); //state[nullptr].conjunctCount();
         if (newSize > size) {
           llvm::outs() << "\nIncrease after\n";
         } else if (newSize < size) {
