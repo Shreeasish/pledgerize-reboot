@@ -541,21 +541,6 @@ Disjunct::print(llvm::raw_ostream& out) const {
 /// ---------- Disjunctions ---------------- ///
 /// ---------------------------------------- ///
 
-
-//void
-//Disjunction::operator<(const Disjunction& other) const {
-//  return std::lexicographical_compare
-//    (this->conjunctIDs.cbegin(), this->conjunctIDs.cend(),
-//     other.conjunctIDs.cbegin(), other.conjunctIDs.cend());
-//}
-
-
-//void
-//Disjunction::operator=(Disjunction other) {
-//  this->disjuncts = other.disjuncts;
-//  return;
-//}
-
 bool
 Disjunction::operator==(const Disjunction& other) const {
   return this->disjuncts == other.disjuncts;
@@ -622,5 +607,58 @@ Disjunction::isVacuouslyTrue() const {
   return firstConjunct == ReservedExprIDs::vacuousExprID
          && firstDisjunct.size() == 1;
 }
+    /* Enable Debug
+     * llvm::errs() << "\n =====================";
+     * llvm::errs() << "\n BEFORE transfer at -- " << value;
+     * state[nullptr].print(llvm::errs());
+     */
+
+    /* Enable Debug
+     * llvm::errs() << "\n AFTER transfer at -- " << value;
+     * state[nullptr].print(llvm::errs());
+     *  generator->dumpState();
+     * llvm::errs() << "\n =====================";
+     *  printer->insertIR(inst, state[nullptr]); */
+
+class TransferDebugger {
+public:
+  TransferDebugger(llvm::Instruction* const inst,
+                   const Disjunction& disj,
+                   const Promises p,
+                   llvm::raw_ostream& ostream = llvm::errs())
+    : inst{inst}, disjunction{disj}, promise{p}, out{ostream} {};
+
+  // TODO: Set on-off switch in constructor as cl option
+  void
+  printBefore() const {
+    out << "\n---- Before ----";
+    out << "\n" << PromiseNames[promise];
+    out << "\n" << *inst;
+    disjunction.print(llvm::errs());
+    return;
+  }
+
+  void
+  printAfter() const {
+    out << "\n----  After ----";
+    out << "\n" << *inst;
+    disjunction.print(out);
+    out << "\n----  End   ----";
+    return;
+  }
+
+  void
+  printActivePrivileges() const {
+    if (!disjunction.isEmpty()) {
+      out << PromiseNames[promise] << " ";
+    }
+  }
+
+private:
+  llvm::Instruction* const inst;
+  const Disjunction& disjunction;
+  const Promises promise;
+  llvm::raw_ostream& out;
+};
 
 #endif

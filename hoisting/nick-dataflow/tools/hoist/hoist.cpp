@@ -178,8 +178,9 @@ public:
       }
       if (destState == oldState && isSame) {
         return destState;
-      } // TODO: This condition seems odd
-
+      }  // TODO: Careful. Phi's concretize values.
+         // This has implications in the forward
+         // as well as backward direction. 
       return handle(branchOrSwitch, destState, destination);
     };
 
@@ -276,6 +277,67 @@ makeVacuouslyTrue(Disjunction& disjunction) {
 
 
 class DisjunctionTransfer {
+public:
+  template<int PledgeCounter>
+  void
+  callTransfers(llvm::Value& value, DisjunctionState& stateMap, const Context& context) {
+    auto* inst   = llvm::dyn_cast<llvm::Instruction>(&value);
+    bool handled = false;
+    if (auto constantExpr = llvm::dyn_cast<llvm::ConstantExpr>(&value)) {
+      llvm::errs() << "\n\n" << value;
+      llvm_unreachable("\nFound constant exprs");
+    }
+
+    constexpr Promises promise = static_cast<Promises>(PledgeCounter);
+    auto state = StateAccessor<promise>{stateMap};
+
+    TransferDebugger debugger{inst, state[nullptr], promise, llvm::errs()};
+    //debugger.printBefore();
+
+    handled |= handleBrOrSwitch(inst, handled);
+    handled |= handlePhiBackEdges(&value, state, handled);
+    handled |= handleCallSite<static_cast<Promises>(PledgeCounter)>(
+        &value, state, context, handled);
+    handled |= handleStore(&value, state, context, handled);
+    handled |= handleGep(&value, state, handled);
+    handled |= handleRet(&value, state, context, handled);
+    // Check use
+    handled |= handleLoad(&value, state, handled);
+    handled |= handleBinaryOperator(&value, state, handled);
+    handled |= handleCmpInst(&value, state, handled);
+    handled |= handleCast(&value, state, handled);
+    handleUnknown(&value, state, handled);
+
+    //debugger.printAfter();
+    debugger.printActivePrivileges();
+    state[nullptr].simplifyComplements()
+                  .simplifyRedundancies()
+                  .simplifyImplication();
+    return;
+  }
+
+  template <int Counter>
+  void
+  static_for(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    callTransfers<Counter>(value, state, context);
+    static_for<Counter - 1>(value, state, context);
+    return;
+  }
+
+  template <>
+  void
+  static_for<0>(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    return;
+  }
+
+  // Setting up perfect forwarding for this is more trouble than it's worth
+  void
+  operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    llvm::errs() << "\nLocation " << value << "\n";
+    static_for<PLEDGE_FLOCK>(value, state, context);
+    return;
+  }
+
 private:
   template <Promises promise>
   struct StateAccessor {
@@ -331,14 +393,13 @@ private:
       isLoopPhi |= isFromBackEdge(incomingBlock);
     }
 
-    if(!isLoopPhi) {
+    if (!isLoopPhi) {
       return true;
     }
-    llvm::errs() << "\n Dropping loop conjunct";
+    //llvm::errs() << "\n Dropping loop conjunct";
     auto phiExprID = generator->GetOrCreateExprID(value);
     state[nullptr] = generator->pushToTrue(state[nullptr], phiExprID);
     state[nullptr] = state[nullptr].simplifyImplication();
-
     return true;
   }
 
@@ -371,8 +432,7 @@ private:
 
   /* TODO:
    * 1. Function Pointers - Modify Dataflow.h
-   * 2. Privileges - 
-   * 3. Stop Hoisting Function Calls */
+   * 2. Privileges - */
   template<Promises Promise>
   bool
   handleCallSite(llvm::Value* value,
@@ -394,7 +454,9 @@ private:
     if (handled || !callSite.getInstruction()) {
       return handled;
     } else if (analysis::isExternalCall(callSite)) {
-      privilegeResolver->hasPrivilege<Promise>(callSite, context);
+      if (privilegeResolver->hasPrivilege<Promise>(callSite, context))  {
+        makeVacuouslyTrue(state[nullptr]);
+      }
       return true;
     }
 
@@ -466,17 +528,17 @@ private:
     if (!storeInst) {
       return false;
     }
-    llvm::errs() << "\n Handling store at " << *value;
+    //llvm::errs() << "\n Handling store at " << *value;
     std::vector<NodeExprPair> asLoads = getLoads(state);
     auto [strongLoads, weakLoads]     = seperateLoads(storeInst, asLoads);
 
     auto localDisjunction = state[nullptr];
     for (auto& [loadNode, exprID] : strongLoads) {
-      llvm::errs() << "\nStrong load for " << *(loadNode.value);
+      //llvm::errs() << "\nStrong load for " << *(loadNode.value);
       state[nullptr] = strongUpdate(localDisjunction, exprID, loadNode, storeInst);
     }
     for (auto& [loadNode, exprID] : weakLoads) {
-      llvm::errs() << "\nWeak load for " << *(loadNode.value);
+      //llvm::errs() << "\nWeak load for " << *(loadNode.value);
       state[nullptr] = weakUpdate(localDisjunction, exprID, loadNode, storeInst);
     }
     return true;
@@ -532,7 +594,7 @@ private:
     if (!generator->isUsed(value)) {
       return true;
     }
-    llvm::errs() << "\nGenerating load for " << *value;
+    //llvm::errs() << "\nGenerating load for " << *value;
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto newExprID = generator->GetOrCreateExprID(loadInst);
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
@@ -610,7 +672,7 @@ private:
     if (handled) {
       return;
     }
-    llvm::errs() << "\nUnknown at " << *value;
+    //llvm::errs() << "\nUnknown at " << *value;
     dropOperands(value, state);
     if (!generator->isUsed(value)) {
       return;
@@ -618,28 +680,22 @@ private:
     auto oldLeafTableSize = generator->getLeafTableSize();
 
     auto oldExprID = generator->GetOrCreateExprID(value);
-    llvm::errs() << "\nDropping Unknown " << oldExprID;
+    //llvm::errs() << "\nDropping Unknown " << oldExprID;
     state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
     assert(oldLeafTableSize == generator->getLeafTableSize() && "New Value at Unknown");
   }
 
   /// Helpers ///
-  bool
-  isUnknown(llvm::Function* const fun) {
-    //TODO: STUB
-    return true;
-  }
-
   template <Promises Promise>
   void
   dropOperands(const llvm::Value* value, StateAccessor<Promise>& state) {
-    //Does not work for callsites. Fix later
-    llvm::errs() << "\nDropping operands of " << *value;
+    //TODO: Does not work for callsites. Fix later
+    //llvm::errs() << "\nDropping operands of " << *value;
     for (auto& op : value->uses()) {
       if (!generator->isUsed(op.get())) {
         continue;
       }
-      llvm::errs() << "\nDropping Unknown for" << *(op.get());
+      //llvm::errs() << "\nDropping Unknown for" << *(op.get());
       auto oldExprID = generator->GetOrCreateExprID(op.get());
       state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
     }
@@ -784,73 +840,6 @@ private:
   }
 
 
-public:
-  template<int PledgeCounter>
-  void
-  callTransfers(llvm::Value& value, DisjunctionState& stateMap, const Context& context) {
-    /* Enable Debug
-     * llvm::errs() << "\n =====================";
-     * llvm::errs() << "\n BEFORE transfer at -- " << value;
-     * state[nullptr].print(llvm::errs());
-     */
-    auto* inst   = llvm::dyn_cast<llvm::Instruction>(&value);
-    bool handled = false;
-    if (auto constantExpr = llvm::dyn_cast<llvm::ConstantExpr>(&value)) {
-      llvm::errs() << "\n\n" << value;
-      llvm_unreachable("\nFound constant exprs");
-    }
-  
-    constexpr Promises promise = static_cast<Promises>(PledgeCounter);
-    auto state = StateAccessor<promise>{stateMap};
-
-    handled |= handleBrOrSwitch(inst, handled);
-    handled |= handlePhiBackEdges(&value, state, handled);
-    handled |= handleCallSite<static_cast<Promises>(PledgeCounter)>(
-        &value, state, context, handled);
-    handled |= handleStore(&value, state, context, handled);
-    handled |= handleGep(&value, state, handled);
-    handled |= handleRet(&value, state, context, handled);
-    // Check use
-    handled |= handleLoad(&value, state, handled);
-    handled |= handleBinaryOperator(&value, state, handled);
-    handled |= handleCmpInst(&value, state, handled);
-    handled |= handleCast(&value, state, handled);
-    handleUnknown(&value, state, handled);
-    state[nullptr].simplifyComplements()
-                  .simplifyRedundancies()
-                  .simplifyImplication();
-
-    /* Enable Debug
-     * llvm::errs() << "\n AFTER transfer at -- " << value;
-     * state[nullptr].print(llvm::errs());
-     *  generator->dumpState();
-     * llvm::errs() << "\n =====================";
-     *  printer->insertIR(inst, state[nullptr]); */
-    return;
-  }
-
-  template <int Counter>
-  void
-  static_for(llvm::Value& value, DisjunctionState& state, const Context& context) {
-    callTransfers<Counter>(value, state, context);
-    static_for<Counter - 1>(value, state, context);
-    return;
-  }
-
-  template<>
-  void
-  static_for<0>(llvm::Value& value, DisjunctionState& state, const Context& context) {
-    return;
-  }
-
-  // Setting up perfect forwarding for this is more trouble than it's worth
-  void
-  operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
-    static_for<PLEDGE_FLOCK>(value, state, context);
-    return;
-  }
-
-  
 };
 
 

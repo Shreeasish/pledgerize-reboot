@@ -135,7 +135,7 @@ public:
     // Get first operand
     llvm::Value* operand = castInst->op_begin()->get();
     auto opExprID = GetOrCreateExprID(operand);
-    llvm::errs() << "\n cast handled explicitly";
+    //llvm::errs() << "\n cast handled explicitly";
     return GetOrCreateExprID({opExprID, OpIDs::Cast, GetEmptyExprID()}, castInst);
   }
 
