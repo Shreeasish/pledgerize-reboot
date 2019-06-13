@@ -57,20 +57,17 @@
 
 #include "WPA/Andersen.h"
 
-using namespace llvm;
-
-
 using std::string;
 using std::unique_ptr;
 
-static cl::OptionCategory futureFunctionsCategory{"future functions options"};
+static llvm::cl::OptionCategory futureFunctionsCategory{"future functions options"};
 
-static cl::opt<string> inPath{cl::Positional,
-                              cl::desc{"<Module to analyze>"},
-                              cl::value_desc{"bitcode filename"},
-                              cl::init(""),
-                              cl::Required,
-                              cl::cat{futureFunctionsCategory}};
+static llvm::cl::opt<string> inPath{llvm::cl::Positional,
+                              llvm::cl::desc{"<Module to analyze>"},
+                              llvm::cl::value_desc{"bitcode filename"},
+                              llvm::cl::init(""),
+                              llvm::cl::Required,
+                              llvm::cl::cat{futureFunctionsCategory}};
 
 
 std::unique_ptr<Generator> generator;
@@ -119,8 +116,8 @@ private:
   void
   static_for(DisjunctionValue& s1, DisjunctionValue& s2, DisjunctionValue& result) const {
     static_for<Counter + 1>(s1, s2, result);
-    Promises promise = static_cast<Promises>(Counter);
-    result[promise] = meetPairImpl(s1[promise], s2[promise]);
+    Promises cePromise = static_cast<Promises>(Counter);
+    result[cePromise] = meetPairImpl(s1[cePromise], s2[cePromise]);
   }
 
   template<>
@@ -180,7 +177,7 @@ public:
         return destState;
       }  // TODO: Careful. Phi's concretize values.
          // This has implications in the forward
-         // as well as backward direction. 
+         // as well as backward direction.
       return handle(branchOrSwitch, destState, destination);
     };
 
@@ -194,7 +191,7 @@ private:
     Lambda& lambda;
     DisjunctionValue result;
 
-    static_for(Lambda& lm) 
+    static_for(Lambda& lm)
       : lambda(lm) { result = DisjunctionValue{}; }
 
     DisjunctionValue
@@ -202,7 +199,7 @@ private:
       static_for_impl<10>(value);
       return result;
     }
-    
+
     template<int Counter>
     void
     static_for_impl(DisjunctionValue& value) {
@@ -234,7 +231,7 @@ private:
   handleAsSwitch(llvm::SwitchInst* switchInst, Disjunction& destState, llvm::Value* destination) {
     auto getConjunctForm = [&](auto& caseOp) {
       llvm::BasicBlock* targetBB = caseOp.getCaseSuccessor();
-      return targetBB == llvm::dyn_cast<BasicBlock>(destination);
+      return targetBB == llvm::dyn_cast<llvm::BasicBlock>(destination);
     };
     auto getCaseExprID = [&](auto& caseOp) {
       llvm::Constant* caseVal = caseOp.getCaseValue();
@@ -275,51 +272,32 @@ makeVacuouslyTrue(Disjunction& disjunction) {
   disjunction.disjuncts = Disjuncts{disjunct};
 }
 
-
-class DisjunctionTransfer {
+template <typename SubClass>
+class TransferBase {
 public:
-  template<int PledgeCounter>
+  template <Promises TPromise>
+  struct StateAccessor {
+    StateAccessor(DisjunctionState& sm)
+      : stateMap{sm} { }
+
+    DisjunctionState& stateMap;
+
+    Disjunction&
+    operator[](llvm::Instruction* inst) {
+      return stateMap[inst][TPromise];
+    }
+  };
+
+  template <int Counter>
   void
-  callTransfers(llvm::Value& value, DisjunctionState& stateMap, const Context& context) {
-    auto* inst   = llvm::dyn_cast<llvm::Instruction>(&value);
-    bool handled = false;
+  static_for(llvm::Value& value, DisjunctionState& state, const Context& context) {
     if (auto constantExpr = llvm::dyn_cast<llvm::ConstantExpr>(&value)) {
       llvm::errs() << "\n\n" << value;
       llvm_unreachable("\nFound constant exprs");
     }
 
-    constexpr Promises promise = static_cast<Promises>(PledgeCounter);
-    auto state = StateAccessor<promise>{stateMap};
-
-    TransferDebugger debugger{inst, state[nullptr], promise, llvm::errs()};
-    //debugger.printBefore();
-
-    handled |= handleBrOrSwitch(inst, handled);
-    handled |= handlePhiBackEdges(&value, state, handled);
-    handled |= handleCallSite<static_cast<Promises>(PledgeCounter)>(
-        &value, state, context, handled);
-    handled |= handleStore(&value, state, context, handled);
-    handled |= handleGep(&value, state, handled);
-    handled |= handleRet(&value, state, context, handled);
-    // Check use
-    handled |= handleLoad(&value, state, handled);
-    handled |= handleBinaryOperator(&value, state, handled);
-    handled |= handleCmpInst(&value, state, handled);
-    handled |= handleCast(&value, state, handled);
-    handleUnknown(&value, state, handled);
-
-    //debugger.printAfter();
-    debugger.printActivePrivileges();
-    state[nullptr].simplifyComplements()
-                  .simplifyRedundancies()
-                  .simplifyImplication();
-    return;
-  }
-
-  template <int Counter>
-  void
-  static_for(llvm::Value& value, DisjunctionState& state, const Context& context) {
-    callTransfers<Counter>(value, state, context);
+    constexpr Promises cePromise = static_cast<Promises>(Counter);
+    this->asSubClass().template callTransfers<cePromise>(value, state, context);
     static_for<Counter - 1>(value, state, context);
     return;
   }
@@ -338,21 +316,53 @@ public:
     return;
   }
 
+  template <Promises TPromise>
+  void
+  callTransfers(llvm::Value& value, DisjunctionState& stateMap, const Context& context)  {
+    llvm_unreachable("unimplemented transfer");
+  }
+
 private:
-  template <Promises promise>
-  struct StateAccessor {
-    StateAccessor(DisjunctionState& sm)
-      : stateMap{sm} { }
+  SubClass& asSubClass() { return static_cast<SubClass&>(*this); }
+};
 
-    DisjunctionState& stateMap;
 
-    Disjunction&
-    operator[](llvm::Instruction* inst) {
-      return stateMap[inst][promise];
-    }
+class BackwardTransfer : public TransferBase<BackwardTransfer> {
+public:
+  template <Promises TPromise>
+  void
+  callTransfers(llvm::Value& value, DisjunctionState& stateMap, const Context& context) {
+    auto* inst   = llvm::dyn_cast<llvm::Instruction>(&value);
+    bool handled = false;
+    // constexpr Promises TPromise = static_cast<Promises>(PledgeCounter);
+    auto state = StateAccessor<TPromise>{stateMap};
+    constexpr Promises asCEPromise = static_cast<Promises>(TPromise);
+    TransferDebugger debugger{inst, state[nullptr], asCEPromise, llvm::errs()};
+    // debugger.printBefore();
+
+    handled |= handleBrOrSwitch(inst, handled);
+    handled |= handlePhiBackEdges(&value, state, handled);
+    handled |= handleCallSite<TPromise>(
+        &value, state, context, handled);
+    handled |= handleStore(&value, state, context, handled);
+    handled |= handleGep(&value, state, handled);
+    handled |= handleRet(&value, state, context, handled);
+    // Check use
+    handled |= handleLoad(&value, state, handled);
+    handled |= handleBinaryOperator(&value, state, handled);
+    handled |= handleCmpInst(&value, state, handled);
+    handled |= handleCast(&value, state, handled);
+    handleUnknown(&value, state, handled);
+
+    //debugger.printAfter();
+    debugger.printActivePrivileges();
+    state[nullptr].simplifyComplements()
+                  .simplifyRedundancies()
+                  .simplifyImplication();
+    return;
   };
 
-
+private:
   bool
   handleBrOrSwitch(llvm::Instruction* inst, bool handled) {
     return !handled && (llvm::isa<llvm::BranchInst>(inst)
@@ -364,9 +374,9 @@ private:
     return functionBackEdges[func];
   }
 
-  template <Promises Promise>
+  template <Promises TPromise>
   bool
-  handlePhiBackEdges(llvm::Value* value, StateAccessor<Promise>& state, bool handled) {
+  handlePhiBackEdges(llvm::Value* value, StateAccessor<TPromise>& state, bool handled) {
     if (handled) {
       return true;
     }
@@ -429,45 +439,49 @@ private:
     }
     return state;
   }
+  
 
-  /* TODO:
-   * 1. Function Pointers - Modify Dataflow.h
-   * 2. Privileges - */
-  template<Promises Promise>
+  template<Promises TPromise>
   bool
   handleCallSite(llvm::Value* value,
-                 StateAccessor<Promise>& state,
+                 StateAccessor<TPromise>& state,
                  const Context& context,
                  bool handled) {
-    //if (handled 
-    //    || !analysis::isAnalyzableCall(llvm::CallSite{value})) {
-    //  if (llvm::CallSite{value}.getInstruction() 
-    //      && privilegeResolver->hasPrivilege<PLEDGE_STDIO>(llvm::CallSite{value}, context)) {
-    //    llvm::errs() << "\n FOUND PRIVILEGE FOR"
-    //                 << *value;
-    //    makeVacuouslyTrue(state[nullptr]);
-    //  }
-    //  return true;
-    //}
-    
+
+    auto isPtrCall = [](const llvm::CallSite& cs) {
+      return cs.getInstruction() 
+        && !analysis::getCalledFunction(cs);
+    };
+
     llvm::CallSite callSite{value};
     if (handled || !callSite.getInstruction()) {
       return handled;
     } else if (analysis::isExternalCall(callSite)) {
-      if (privilegeResolver->hasPrivilege<Promise>(callSite, context))  {
+      if (privilegeResolver->hasPrivilege<TPromise>(callSite, context))  {
         makeVacuouslyTrue(state[nullptr]);
+      }
+    } else if (isPtrCall(callSite)) {
+      // Is an instruction but unable to cast to function.  
+      Andersen::FunctionSet functionSet 
+        = svfResults->getIndCSCallees(callSite);
+      llvm::errs() << "\n found a function pointer " << *value 
+                   << "\n with functions: ";
+      for (auto* f : functionSet) {
+        if (f) {
+          llvm::errs() << f->getName() << " ";
+        }
       }
       return true;
     }
 
     llvm::Function* callee = analysis::getCalledFunction(callSite);
-    state[nullptr] = wireCallerState(state[callSite.getInstruction()], callSite, callee); 
+    state[nullptr] = wireCallerState(state[callSite.getInstruction()], callSite, callee);
     return true;
   }
 
-  template <Promises Promise>
+  template <Promises TPromise>
   bool
-  handleGep(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
+  handleGep(llvm::Value* const value, StateAccessor<TPromise>& state, bool handled) {
     // Possibly can be guarded by isUsed
     if (handled) {
       return true;
@@ -493,11 +507,11 @@ private:
       if (loadInst->getParent()->getParent() != storeInst->getParent()->getParent()) {
         llvm::errs() << "\n Interprocedural";
       }
-      if (aliasResult == AliasResult::MustAlias) {
+      if (aliasResult == llvm::AliasResult::MustAlias) {
         strongLoads.push_back({node, exprID});
         llvm::errs() << "\n Found must-alias for " << *loadInst << " and " << *storeInst;
         return;
-      } else if (aliasResult == AliasResult::NoAlias) {
+      } else if (aliasResult == llvm::AliasResult::NoAlias) {
         llvm::errs() << "\n Found no-alias for   " << *loadInst << " and " << *storeInst;
         return; //Discard NoAliases
       } else {
@@ -514,10 +528,10 @@ private:
     return std::make_pair(strongLoads, otherLoads);
   }
 
-  template<Promises Promise>
+  template<Promises TPromise>
   bool
   handleStore(llvm::Value* const value,
-              StateAccessor<Promise>& state,
+              StateAccessor<TPromise>& state,
               const Context context,
               bool handled) {
     using NodeExprPair = std::pair<BinaryExprNode, ExprID>;
@@ -544,10 +558,10 @@ private:
     return true;
   }
 
-  template<Promises Promise>
+  template<Promises TPromise>
   bool
   handleRet(llvm::Value* const value,
-            StateAccessor<Promise>& state,
+            StateAccessor<TPromise>& state,
             const Context context,
             bool handled) {
     if (handled) {
@@ -581,9 +595,9 @@ private:
     return true;
   }
 
-  template <Promises Promise>
+  template <Promises TPromise>
   bool
-  handleLoad(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
+  handleLoad(llvm::Value* const value, StateAccessor<TPromise>& state, bool handled) {
     if (handled) {
       return true;
     }
@@ -601,9 +615,9 @@ private:
     return true;
   }
 
-  template <Promises Promise>
+  template <Promises TPromise>
   bool
-  handleBinaryOperator(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
+  handleBinaryOperator(llvm::Value* const value, StateAccessor<TPromise>& state, bool handled) {
     if (handled) {
       return true;
     }
@@ -624,9 +638,9 @@ private:
     return true;
   }
 
-  template <Promises Promise>
+  template <Promises TPromise>
   bool
-  handleCmpInst(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
+  handleCmpInst(llvm::Value* const value, StateAccessor<TPromise>& state, bool handled) {
     if (handled) {
       return true;
     }
@@ -646,9 +660,9 @@ private:
     return true;
   }
 
-  template <Promises Promise>
+  template <Promises TPromise>
   bool
-  handleCast(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
+  handleCast(llvm::Value* const value, StateAccessor<TPromise>& state, bool handled) {
     if (handled) {
       return true;
     }
@@ -666,9 +680,9 @@ private:
   }
 
 
-  template <Promises Promise>
+  template <Promises TPromise>
   void
-  handleUnknown(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
+  handleUnknown(llvm::Value* const value, StateAccessor<TPromise>& state, bool handled) {
     if (handled) {
       return;
     }
@@ -686,9 +700,9 @@ private:
   }
 
   /// Helpers ///
-  template <Promises Promise>
+  template <Promises TPromise>
   void
-  dropOperands(const llvm::Value* value, StateAccessor<Promise>& state) {
+  dropOperands(const llvm::Value* value, StateAccessor<TPromise>& state) {
     //TODO: Does not work for callsites. Fix later
     //llvm::errs() << "\nDropping operands of " << *value;
     for (auto& op : value->uses()) {
@@ -701,9 +715,9 @@ private:
     }
   }
 
-  template <Promises Promise>
+  template <Promises TPromise>
   std::vector<NodeExprPair>
-  getLoads(StateAccessor<Promise>& state) {
+  getLoads(StateAccessor<TPromise>& state) {
     std::unordered_set<ExprID> foundIDs;
     std::vector<NodeExprPair> asLoads;
     auto isBinaryExprID = [](const ExprID exprID) -> bool {
@@ -736,14 +750,14 @@ private:
   }
 
   [[maybe_unused]]
-  AliasResult
+  llvm::AliasResult
   getMemSSAResults(llvm::StoreInst* const storeInst,
                    llvm::LoadInst* const loadInst) {
     auto [storeFunc, loadFunc] = [&]() {
       return std::make_pair(storeInst->getFunction(), loadInst->getFunction());
     }();
      if (storeFunc != loadFunc) {
-       return AliasResult::MayAlias;
+       return llvm::AliasResult::MayAlias;
      } // Conservatively assert that mem-ops from different functions alias
      auto [walker, memSSA] = [&]() {
        auto* func = storeInst->getFunction();
@@ -758,14 +772,14 @@ private:
      for (auto memDef = clobber->defs_begin(); memDef != clobber->defs_end();
           memDef++) {
        if (memDef == storeMemDef) {
-         return AliasResult::MustAlias;
+         return llvm::AliasResult::MustAlias;
        }
     }
     //llvm_unreachable("Part of the same function, but does not alias");
-    return AliasResult::NoAlias;
+    return llvm::AliasResult::NoAlias;
   }
 
-  AliasResult
+  llvm::AliasResult
   getSVFResults(llvm::MemoryLocation& storeAsMemLoc,
                    llvm::MemoryLocation& loadAsMemLoc) {
     llvm::errs() << "\nSVF Invoked";
@@ -773,7 +787,7 @@ private:
   }
   /* SVF has lower accuracy but filters interprocedural no-aliases
    * Use llvm's Aliasing stack for must-aliases and SVF for may-aliases*/
-  AliasResult
+  llvm::AliasResult
   getAliasType(llvm::StoreInst* const storeInst,
                llvm::LoadInst* const loadInst) {
     auto* storeFunction = storeInst->getFunction();
@@ -784,8 +798,8 @@ private:
     auto loadAsMemLoc  = llvm::MemoryLocation::get(loadInst);
     auto storeAsMemLoc = llvm::MemoryLocation::get(storeInst);
     auto aliasType = AAResults.alias(loadAsMemLoc, storeAsMemLoc);
-    if (aliasType == AliasResult::MayAlias
-        || aliasType == AliasResult::NoAlias) {
+    if (aliasType == llvm::AliasResult::MayAlias
+        || aliasType == llvm::AliasResult::NoAlias) {
       return getSVFResults(storeAsMemLoc, loadAsMemLoc);
     }
     return aliasType;
@@ -838,10 +852,19 @@ private:
     auto rewritten  = generator->rewrite(forRewrites, loadExprID, valExprID);
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
-
-
 };
 
+
+class ForwardTransfer : public TransferBase<ForwardTransfer> {
+public:
+  template <Promises TPromise>
+  void
+  callTransfer(llvm::Value& value, DisjunctionState& stateMap, const Context& context) {
+		llvm::errs() << "\nThis is from the forward analysis";
+		llvm::errs() << value;
+		return;
+	}
+};
 
 class BuildPromiseTreePass : public llvm::ModulePass {
 public:
@@ -851,7 +874,7 @@ public:
 
   bool runOnModule(llvm::Module& m) override;
   void getAnalysisUsage(llvm::AnalysisUsage &info) const override;
-  StringRef getPassName() const override;
+  llvm::StringRef getPassName() const override;
 
   static char ID;
 private:
@@ -859,7 +882,7 @@ private:
 };
 char BuildPromiseTreePass::ID = 0;
 
-StringRef
+llvm::StringRef
 BuildPromiseTreePass::getPassName() const {
   return "BuildPromiseTreePass";
 }
@@ -880,11 +903,11 @@ BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
       continue;
     }
     //llvm::errs() << "\n Get Dom Tree for " << f.getName() << "\n";
-    auto* DT = &getAnalysis<DominatorTreeWrapperPass>(f).getDomTree();
+    auto* DT = &getAnalysis<llvm::DominatorTreeWrapperPass>(f).getDomTree();
     //llvm::errs() << "\n Get AA Tree for " << f.getName() << "\n";
-    auto* AAWrapper = &getAnalysis<AAResultsWrapperPass>(f);
+    auto* AAWrapper = &getAnalysis<llvm::AAResultsWrapperPass>(f);
     //llvm::errs() << "\n Get memSSA Tree for " << f.getName() << "\n";
-    auto memSSA = std::make_unique<MemorySSA>(f, &AAWrapper->getAAResults(), DT);
+    auto memSSA = std::make_unique<llvm::MemorySSA>(f, &AAWrapper->getAAResults(), DT);
     functionAAs.insert({&f, AAWrapper});
 
     functionMemSSAs.try_emplace(&f, std::move(memSSA));
@@ -903,14 +926,17 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     llvm::report_fatal_error("Unable to find main function.");
   }
   initializeGlobals(m);
-  using Value    = DisjunctionValue;
-  using Transfer = DisjunctionTransfer;
-  using Meet     = DisjunctionMeet;
-  using EdgeTransformer = DisjunctionEdgeTransformer;
-  using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, EdgeTransformer, analysis::Backward>;
-  Analysis analysis{m, mainFunction};
+  using Value            = DisjunctionValue;
+  using BackwardTransfer = TransferBase<BackwardTransfer>;
+  using Meet             = DisjunctionMeet;
+  using BackwardEdgeTransformer   = DisjunctionEdgeTransformer;
+  using BackwardsAnalysis         =
+    analysis::DataflowAnalysis<Value, BackwardTransfer, Meet,
+                               BackwardEdgeTransformer, analysis::Backward>;
 
-  auto results = analysis.computeDataflow();
+  BackwardsAnalysis backwardAnalysis{m, mainFunction};
+  auto results = backwardAnalysis.computeDataflow();
+
   generator->dumpState();
   llvm::outs() << "\nFinished";
   svfResults->releaseAndersenWaveDiffWithType();
@@ -977,8 +1003,8 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 void
 BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
   //info.setPreservesAll();
-  info.addRequired<DominatorTreeWrapperPass>();
-  info.addRequired<AAResultsWrapperPass>();
+  info.addRequired<llvm::DominatorTreeWrapperPass>();
+  info.addRequired<llvm::AAResultsWrapperPass>();
   //info.addRequired<AliasAnalysis>();
   //info.addRequired<PostDominatorTreeWrapperPass>();
 }
@@ -987,18 +1013,18 @@ BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
 static void
 instrumentPromiseTree(llvm::Module& m) {
   //llvm::DebugFlag = true;
-  legacy::PassManager pm;
-  pm.add(createTypeBasedAAWrapperPass());
-  pm.add(createGlobalsAAWrapperPass());
-  pm.add(createSCEVAAWrapperPass());
-  pm.add(createScopedNoAliasAAWrapperPass());
-  pm.add(createCFLSteensAAWrapperPass());
+  llvm::legacy::PassManager pm;
+  pm.add(llvm::createTypeBasedAAWrapperPass());
+  pm.add(llvm::createGlobalsAAWrapperPass());
+  pm.add(llvm::createSCEVAAWrapperPass());
+  pm.add(llvm::createScopedNoAliasAAWrapperPass());
+  pm.add(llvm::createCFLSteensAAWrapperPass());
   pm.add(new llvm::LoopInfoWrapperPass());
   //pm.add(createPostDomTree());
-  pm.add(new MemorySSAWrapperPass());
-  pm.add(new DominatorTreeWrapperPass());
-  pm.add(createBasicAAWrapperPass());
-  pm.add(new AAResultsWrapperPass());
+  pm.add(new llvm::MemorySSAWrapperPass());
+  pm.add(new llvm::DominatorTreeWrapperPass());
+  pm.add(llvm::createBasicAAWrapperPass());
+  pm.add(new llvm::AAResultsWrapperPass());
   pm.add(new BuildPromiseTreePass());
   pm.run(m);
 }
@@ -1009,23 +1035,22 @@ main(int argc, char** argv) {
   // This boilerplate provides convenient stack traces and clean LLVM exit
   // handling. It also initializes the built in support for convenient
   // command line option handling.
-  sys::PrintStackTraceOnErrorSignal(argv[0]);
+  llvm::sys::PrintStackTraceOnErrorSignal(argv[0]);
   llvm::PrettyStackTraceProgram X(argc, argv);
-  llvm_shutdown_obj shutdown;
+  llvm::llvm_shutdown_obj shutdown;
   //cl::HideUnrelatedOptions(futureFunctionsCategory);
-  cl::ParseCommandLineOptions(argc, argv);
+  llvm::cl::ParseCommandLineOptions(argc, argv);
 
   // Construct an IR file from the filename passed on the command line.
-  SMDiagnostic err;
-  LLVMContext context;
-  unique_ptr<Module> module = parseIRFile(inPath.getValue(), err, context);
+  llvm::SMDiagnostic err;
+  llvm::LLVMContext context;
+  unique_ptr<llvm::Module> module = parseIRFile(inPath.getValue(), err, context);
 
   if (!module.get()) {
-    errs() << "Error reading bitcode file: " << inPath << "\n";
-    err.print(argv[0], errs());
+    llvm::errs() << "Error reading bitcode file: " << inPath << "\n";
+    err.print(argv[0], llvm::errs());
     return -1;
   }
-
 
   instrumentPromiseTree(*module);
   return 0;

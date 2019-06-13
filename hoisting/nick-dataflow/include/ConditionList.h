@@ -650,7 +650,7 @@ public:
   void
   printActivePrivileges() const {
     if (!disjunction.isEmpty()) {
-      out << PromiseNames[promise] << " ";
+      out << "PLEDGE_" + PromiseNames[promise] + " ";
     }
   }
 
@@ -660,5 +660,6 @@ private:
   const Promises promise;
   llvm::raw_ostream& out;
 };
+
 
 #endif

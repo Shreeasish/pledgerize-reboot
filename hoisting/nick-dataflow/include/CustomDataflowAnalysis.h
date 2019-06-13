@@ -13,6 +13,8 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/InstIterator.h"
 
+#include "WPA/Andersen.h"
+
 namespace llvm {
 
 template<unsigned long Size>
@@ -522,6 +524,8 @@ private:
   ContextWorklist contextWork;
   llvm::DenseMap<ContextFunction, llvm::DenseSet<ContextFunction>> callers;
   llvm::DenseSet<ContextFunction> active;
+
+  
 
 
   static llvm::Value*
