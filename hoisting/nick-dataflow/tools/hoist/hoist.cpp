@@ -97,7 +97,7 @@ public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
     DisjunctionValue result{};
-    static_for<1>(s1, s2, result);
+    static_for<0>(s1, s2, result);
     return result;
   }
 
@@ -115,15 +115,16 @@ private:
   template<int Counter>
   void
   static_for(DisjunctionValue& s1, DisjunctionValue& s2, DisjunctionValue& result) const {
-    static_for<Counter + 1>(s1, s2, result);
+    //llvm::errs() << "\nMeet unroll :" << Counter;
+    static_for<Counter - 1>(s1, s2, result);
     Promises cePromise = static_cast<Promises>(Counter);
     result[cePromise] = meetPairImpl(s1[cePromise], s2[cePromise]);
   }
 
   template<>
   void
-  static_for<10>(DisjunctionValue& s1, DisjunctionValue& s2, DisjunctionValue& result) const {
-    result[10] = meetPairImpl(s1[10], s2[10]);
+  static_for<0>(DisjunctionValue& s1, DisjunctionValue& s2, DisjunctionValue& result) const {
+    result[0] = meetPairImpl(s1[0], s2[0]);
     return;
   }
 };
@@ -196,13 +197,14 @@ private:
 
     DisjunctionValue
     operator()(DisjunctionValue& value) {
-      static_for_impl<10>(value);
+      static_for_impl<1>(value);
       return result;
     }
 
     template<int Counter>
     void
     static_for_impl(DisjunctionValue& value) {
+      //llvm::errs() << "\nEdge Unroll" << Counter;
       result[Counter] = lambda(value[Counter]);
       static_for_impl<Counter - 1>(value);
       return;
@@ -291,6 +293,7 @@ public:
   template <int Counter>
   void
   static_for(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    //llvm::errs() << "\nTransfer unroll :" << Counter;
     if (auto constantExpr = llvm::dyn_cast<llvm::ConstantExpr>(&value)) {
       llvm::errs() << "\n\n" << value;
       llvm_unreachable("\nFound constant exprs");
@@ -311,8 +314,7 @@ public:
   // Setting up perfect forwarding for this is more trouble than it's worth
   void
   operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
-    llvm::errs() << "\nLocation " << value << "\n";
-    static_for<PLEDGE_FLOCK>(value, state, context);
+    static_for<1>(value, state, context);
     return;
   }
 
@@ -337,7 +339,7 @@ public:
     // constexpr Promises TPromise = static_cast<Promises>(PledgeCounter);
     auto state = StateAccessor<TPromise>{stateMap};
     constexpr Promises asCEPromise = static_cast<Promises>(TPromise);
-    TransferDebugger debugger{inst, state[nullptr], asCEPromise, llvm::errs()};
+    //TransferDebugger debugger{inst, state[nullptr], asCEPromise, llvm::errs()};
     // debugger.printBefore();
 
     handled |= handleBrOrSwitch(inst, handled);
@@ -355,7 +357,7 @@ public:
     handleUnknown(&value, state, handled);
 
     //debugger.printAfter();
-    debugger.printActivePrivileges();
+    //debugger.printActivePrivileges();
     state[nullptr].simplifyComplements()
                   .simplifyRedundancies()
                   .simplifyImplication();
@@ -782,7 +784,6 @@ private:
   llvm::AliasResult
   getSVFResults(llvm::MemoryLocation& storeAsMemLoc,
                    llvm::MemoryLocation& loadAsMemLoc) {
-    llvm::errs() << "\nSVF Invoked";
     return svfResults->alias(loadAsMemLoc, storeAsMemLoc);
   }
   /* SVF has lower accuracy but filters interprocedural no-aliases
@@ -934,7 +935,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     analysis::DataflowAnalysis<Value, BackwardTransfer, Meet,
                                BackwardEdgeTransformer, analysis::Backward>;
 
-  BackwardsAnalysis backwardAnalysis{m, mainFunction};
+  BackwardsAnalysis backwardAnalysis{m, mainFunction, svfResults};
   auto results = backwardAnalysis.computeDataflow();
 
   generator->dumpState();
