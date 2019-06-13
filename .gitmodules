@@ -1,5 +1,5 @@
-[submodule "Openbsd-src"]
-	path = Openbsd-src
+[submodule "OpenBSD-src"]
+	path = OpenBSD-src
 	url = git@github.com:openbsd/src.git
 [submodule "clang-plugins-demo"]
 	path = clang-plugins-demo
