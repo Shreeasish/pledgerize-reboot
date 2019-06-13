@@ -446,6 +446,7 @@ public:
           llvm::errs() << "\nFound Pointer Call";
           llvm::errs() << i;
           for (auto* function : svfResults->getIndCSCallees(cs)) {
+            llvm::errs() << "\nadding call " << function->getName();
             analyzeCall(cs, state, context, getNonConst(function));
           }
         }
