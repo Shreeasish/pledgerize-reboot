@@ -186,6 +186,26 @@ public:
     return static_for{edgeOp}(toMerge);
   }
 
+  DisjunctionValue
+  operator()(DisjunctionValue& toMerge,
+             const llvm::CallSite& caller,
+             llvm::Function* indCallee) {
+    auto getMayCallConjunct = [](const llvm::CallSite& caller,
+                                 llvm::Function* const mayCallee) {
+      auto aliasExpr = generator->GetOrCreateAliasID(caller, mayCallee);
+      return Conjunct(aliasExpr, true);
+    };
+
+    auto callStitcher = [&](Disjunction destState) {
+      auto callConjunct = getMayCallConjunct(caller, indCallee);
+      destState.applyConjunct(callConjunct);
+      return destState;
+    };
+
+    return static_for{callStitcher}(toMerge);
+  }
+
+
 private:
   template <typename Lambda>
   struct static_for {
@@ -344,8 +364,8 @@ public:
 
     handled |= handleBrOrSwitch(inst, handled);
     handled |= handlePhiBackEdges(&value, state, handled);
-    handled |= handleCallSite<TPromise>(
-        &value, state, context, handled);
+    handled |= 
+      handleCallSite<TPromise>(&value, state, context, handled);
     handled |= handleStore(&value, state, context, handled);
     handled |= handleGep(&value, state, handled);
     handled |= handleRet(&value, state, context, handled);
@@ -418,7 +438,7 @@ private:
 
   Disjunction
   wireCallerState(Disjunction state,
-                  const llvm::CallSite cs,
+                  const llvm::CallSite& cs,
                   llvm::Function* const callee) {
     // CallSites have arguments, functions have paramaters
     using argParams = std::pair<llvm::Value*, llvm::Value*>;
@@ -441,7 +461,7 @@ private:
     }
     return state;
   }
-  
+
 
   template<Promises TPromise>
   bool
@@ -449,35 +469,29 @@ private:
                  StateAccessor<TPromise>& state,
                  const Context& context,
                  bool handled) {
-
-    auto isPtrCall = [](const llvm::CallSite& cs) {
-      return cs.getInstruction() 
-        && !analysis::getCalledFunction(cs);
+    auto isIndirectCall = [ ](const llvm::CallSite& cs) {
+      auto* PAG = svfResults->getPAG();
+      return PAG->isIndirectCallSites(cs);
     };
 
     llvm::CallSite callSite{value};
     if (handled || !callSite.getInstruction()) {
       return handled;
     } else if (analysis::isExternalCall(callSite)) {
-      if (privilegeResolver->hasPrivilege<TPromise>(callSite, context))  {
+      if (privilegeResolver->hasPrivilege<TPromise>(callSite, context)) {
         makeVacuouslyTrue(state[nullptr]);
       }
-    } else if (isPtrCall(callSite)) {
-      // Is an instruction but unable to cast to function.  
-      Andersen::FunctionSet functionSet 
-        = svfResults->getIndCSCallees(callSite);
-      llvm::errs() << "\n found a function pointer " << *value 
-                   << "\n with functions: ";
-      for (auto* f : functionSet) {
-        if (f) {
-          llvm::errs() << f->getName() << " ";
-        }
-      }
+      return true;
+    } else if (isIndirectCall(callSite)) {
+      return true;
+    } else if (analysis::getCalledFunction(callSite)
+                           ->getName().startswith("llvm")) {
       return true;
     }
 
     llvm::Function* callee = analysis::getCalledFunction(callSite);
-    state[nullptr] = wireCallerState(state[callSite.getInstruction()], callSite, callee);
+    state[nullptr] 
+      = wireCallerState(state[callSite.getInstruction()], callSite, callee);
     return true;
   }
 
@@ -927,6 +941,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     llvm::report_fatal_error("Unable to find main function.");
   }
   initializeGlobals(m);
+
   using Value            = DisjunctionValue;
   using BackwardTransfer = TransferBase<BackwardTransfer>;
   using Meet             = DisjunctionMeet;
@@ -935,6 +950,12 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     analysis::DataflowAnalysis<Value, BackwardTransfer, Meet,
                                BackwardEdgeTransformer, analysis::Backward>;
 
+  //auto printPAG = [&m]() {
+  //  auto* PAG = svfResults->getPAG();
+  //  PAG->dump("./dot/slaacd");
+  //};
+  //
+  //printPAG();
   BackwardsAnalysis backwardAnalysis{m, mainFunction, svfResults};
   auto results = backwardAnalysis.computeDataflow();
 
