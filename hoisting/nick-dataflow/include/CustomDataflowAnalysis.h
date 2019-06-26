@@ -556,7 +556,6 @@ public:
       auto withCallConjunct = transformer(toMerge, cs, forceEdge);
       state[cs.getInstruction()] = meet({state[cs.getInstruction()], withCallConjunct});
     } else {
-      // TODO: Shouldn't this be a fold anyway?
       state[cs.getInstruction()] = calledState[callee][callee];
     }
     callers[toCall].insert(toUpdate);

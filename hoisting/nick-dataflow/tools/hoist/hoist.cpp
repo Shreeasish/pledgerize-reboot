@@ -479,6 +479,8 @@ private:
     };
 
     llvm::CallSite callSite{value};
+    auto& calleeState = state[callSite.getInstruction()];
+
     if (handled || !callSite.getInstruction()) {
       return handled;
     } else if (analysis::isExternalCall(callSite)) {
@@ -487,6 +489,15 @@ private:
       }
       return true;
     } else if (isIndirectCall(callSite)) {
+      // TODO: Special casing. Remove
+      if ((svfResults->hasIndCSCallees(callSite))) {
+        return true;
+      }
+      llvm::errs() << "\n" << *value;
+      auto csExprID  = generator->GetOrCreateExprID(callSite);
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      // Rewrite the callsite exprs in callee states and merge it in
+      state[nullptr] = generator->rewrite(calleeState, oldExprID, csExprID);
       return true;
     } else if (analysis::getCalledFunction(callSite)
                            ->getName().startswith("llvm")) {
@@ -495,13 +506,15 @@ private:
 
     llvm::Function* callee = analysis::getCalledFunction(callSite);
     state[nullptr] 
-      = this->argRewriter(state[callSite.getInstruction()], callSite, callee);
+      = this->argRewriter(calleeState, callSite, callee);
     return true;
   }
 
   template <Promises TPromise>
   bool
-  handleGep(llvm::Value* const value, StateAccessor<TPromise>& state, bool handled) {
+  handleGep(llvm::Value* const value,
+            StateAccessor<TPromise>& state,
+            bool handled) {
     // Possibly can be guarded by isUsed
     if (handled) {
       return true;
@@ -518,7 +531,8 @@ private:
 
   using NodeExprPair = std::pair<BinaryExprNode, ExprID>;
   auto
-  seperateLoads(llvm::StoreInst* const storeInst, std::vector<NodeExprPair>& loads) {
+  seperateLoads(llvm::StoreInst* const storeInst,
+                std::vector<NodeExprPair>& loads) {
     std::vector<NodeExprPair> otherLoads;
     std::vector<NodeExprPair> strongLoads;
 
