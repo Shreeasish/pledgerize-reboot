@@ -631,9 +631,9 @@ public:
   // TODO: Set on-off switch in constructor as cl option
   void
   printBefore() const {
-    out << "\n---- Before ----";
-    out << "\n" << PromiseNames[promise];
-    out << "\n" << *inst;
+    out << "\n---- Before ---- ";
+    out << PromiseNames[promise];
+    out << "\n@Instruction" << *inst;
     disjunction.print(llvm::errs());
     return;
   }
@@ -641,9 +641,9 @@ public:
   void
   printAfter() const {
     out << "\n----  After ----";
-    out << "\n" << *inst;
-    disjunction.print(out);
-    out << "\n----  End   ----";
+    out << PromiseNames[promise];
+    out << "\n@Instruction" << *inst;
+    disjunction.print(llvm::errs());
     return;
   }
 

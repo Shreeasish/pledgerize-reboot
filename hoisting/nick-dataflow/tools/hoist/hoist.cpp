@@ -308,8 +308,8 @@ public:
     handled |= handleCast(&value, state, handled);
     handleUnknown(&value, state, handled);
 
-    //debugger.printAfter();
-    debugger.printActivePrivileges();
+    debugger.printAfter();
+    //debugger.printActivePrivileges();
     state[nullptr].simplifyComplements()
                   .simplifyRedundancies()
                   .simplifyImplication();
@@ -409,6 +409,7 @@ private:
                   const llvm::CallSite cs,
                   llvm::Function* const callee) {
     // CallSites have arguments, functions have paramaters
+
     using argParams = std::pair<llvm::Value*, llvm::Value*>;
     std::vector<argParams> argPairs;
     int i = 0;
@@ -439,26 +440,26 @@ private:
                  StateAccessor<Promise>& state,
                  const Context& context,
                  bool handled) {
-    //if (handled 
-    //    || !analysis::isAnalyzableCall(llvm::CallSite{value})) {
-    //  if (llvm::CallSite{value}.getInstruction() 
-    //      && privilegeResolver->hasPrivilege<PLEDGE_STDIO>(llvm::CallSite{value}, context)) {
-    //    llvm::errs() << "\n FOUND PRIVILEGE FOR"
-    //                 << *value;
-    //    makeVacuouslyTrue(state[nullptr]);
-    //  }
-    //  return true;
-    //}
+
+    auto isIndCall = [](llvm::CallSite& cs) {
+      auto* PAG = svfResults->getPAG();
+      return PAG->isIndirectCallSites(cs);
+    };
     
     llvm::CallSite callSite{value};
     if (handled || !callSite.getInstruction()) {
       return handled;
+    } else if (isIndCall(callSite)) {
+      return true;
     } else if (analysis::isExternalCall(callSite)) {
       if (privilegeResolver->hasPrivilege<Promise>(callSite, context))  {
         makeVacuouslyTrue(state[nullptr]);
-      }
+      } 
+      return true;
+    } else if (analysis::getCalledFunction(callSite)->getName().startswith("llvm")) {
       return true;
     }
+
 
     llvm::Function* callee = analysis::getCalledFunction(callSite);
     state[nullptr] = wireCallerState(state[callSite.getInstruction()], callSite, callee); 
