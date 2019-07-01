@@ -93,14 +93,15 @@ using DisjunctionValue  = std::array<Disjunction, COUNT - 1>;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
+constexpr int MaxPrivilege{PLEDGE_CPATH};
+constexpr int MinPrivilege{PLEDGE_CPATH};
 
-class DisjunctionMeet
-  : public analysis::Meet<DisjunctionValue, DisjunctionMeet> {
+class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet> {
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
     DisjunctionValue result{};
-    static_for<1>(s1, s2, result);
+    static_for<MaxPrivilege>(s1, s2, result);
     return result;
   }
 
@@ -115,22 +116,151 @@ private:
             .simplifyTrues();
   }
 
-  template<int Counter>
+  template <int Counter>
   void
-  static_for(DisjunctionValue& s1, DisjunctionValue& s2, DisjunctionValue& result) const {
-    static_for<Counter + 1>(s1, s2, result);
+  static_for(DisjunctionValue& s1,
+             DisjunctionValue& s2,
+             DisjunctionValue& result) const {
+    static_for<Counter - 1>(s1, s2, result);
     Promises promise = static_cast<Promises>(Counter);
     result[promise] = meetPairImpl(s1[promise], s2[promise]);
   }
 
-  template<>
+  template <>
   void
-  static_for<10>(DisjunctionValue& s1, DisjunctionValue& s2, DisjunctionValue& result) const {
-    result[10] = meetPairImpl(s1[10], s2[10]);
+  static_for<MinPrivilege>(DisjunctionValue& s1,
+                           DisjunctionValue& s2,
+                           DisjunctionValue& result) const {
+    result[MinPrivilege] = meetPairImpl(s1[MinPrivilege], s2[MinPrivilege]);
     return;
   }
 };
 
+/*--------------------------------------------------------*
+ *                                                        *
+ *--------------------DEBUGGER CLASSS---------------------*
+ *                                                        *
+ * -------------------------------------------------------*/
+llvm::DenseMap<llvm::Instruction*, int> SContributionMap;
+class Debugger {
+public:
+  struct ContributionCounter {
+    ContributionCounter(llvm::Instruction* i)
+      : exprCount{generator->getSize()}, inst{i} {}
+
+    ~ContributionCounter() {
+      SContributionMap[inst] += generator->getSize() - exprCount;
+    }
+  private:
+    size_t exprCount;
+    llvm::Instruction* inst;
+  };
+  
+
+  static bool 
+  checkThreshold(DisjunctionValue state, int p, int threshold = 20000) {
+    auto check = static_cast<Promises>(p);
+    return state[check].conjunctCount() > threshold;
+  }
+
+  Debugger(const DisjunctionValue& disj,
+           int p = PLEDGE_CPATH,
+           llvm::raw_ostream& ostream = llvm::errs())
+    : disjunction{disj}, promise{static_cast<Promises>(p)}, out{ostream} {};
+
+  // TODO: Set on-off switch in constructor as cl option
+  void
+  printBefore(llvm::Instruction* inst) const {
+    out << "\n---- Before ---- ";
+    out << PromiseNames[promise];
+    out << "\n@Instruction" << *inst;
+    disjunction[promise].print(llvm::errs());
+    return;
+  }
+
+  void
+  printAfter(llvm::Instruction* inst) const {
+    out << "\n----  After ----";
+    out << PromiseNames[promise];
+    out << "\n@Instruction" << *inst << "@parent"
+        << inst->getParent()->getParent()->getName();
+    disjunction[promise].print(llvm::errs());
+  }
+
+  template <typename FunctionResults>
+  void
+  dump(llvm::Instruction* inst,
+              Context context,
+              FunctionResults functionResults,
+              int threshold) {
+    auto* currBB       = inst->getParent();
+    auto* currFunction = currBB->getParent();
+
+    auto ec = std::error_code{};
+    std::string fileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
+                           "build-dataflow/logs/cfg.aborted."
+                           + currFunction->getName().str() + ".dot";
+    auto dotFile = llvm::raw_fd_ostream{fileName, ec};
+
+    auto printBasicBlock = [&](llvm::BasicBlock& bb, auto& functionResults) {
+      dotFile << "\n  Node" << &bb << " [shape=record,label=\"<label>\\l";
+      for (auto& inst : bb) {
+        auto& state = functionResults[&inst][nullptr][promise];
+        auto conjunctCount = state.conjunctCount();
+        auto disjunctCount = state.disjunctCount();
+        dotFile << inst << " [CC:" << conjunctCount << "][DC:" << disjunctCount << "]" 
+                        << "[G:" << SContributionMap[&inst] << "]""\\l";
+      }
+      dotFile << "\"];";
+      for (auto* succ : llvm::successors(&bb)) {
+        dotFile << "\n  Node" << &bb << " -> Node" << succ << ";";
+      }
+    };
+
+    dotFile << "digraph \"CFG for function: " << currFunction->getName() << "\"{";
+    dotFile << "\nlabel=\"CFG for function: " << currFunction->getName() << "\";";
+    for (auto& bb : *currFunction) {
+      printBasicBlock(bb, functionResults);
+    }
+    dotFile << "\n}";
+    dotFile.close();
+
+    std::string exprHistFileName =
+        "/home/shreeasish/pledgerize-reboot/hoisting/"
+        "build-dataflow/logs/exprs.histogram."
+        + std::to_string(threshold) + ".csv";
+    auto binExprFile = llvm::raw_fd_ostream{exprHistFileName, ec};
+    generator->dumpExprData(binExprFile);
+    binExprFile.close();
+  }
+
+  static void
+  exit(llvm::Instruction* inst,
+       DisjunctionValue disjunction,
+       int promise,
+       llvm::raw_ostream& ostream) {
+    generator->dumpState(ostream);
+    ostream << "\n----  Exiting At ----";
+    ostream << PromiseNames[promise];
+    ostream << "\n@Instruction" << *inst << "@parent"
+            << inst->getParent()->getParent()->getName();
+    //disjunction[promise].print(ostream);
+    llvm_unreachable("Exiting");
+  }
+
+void
+printActivePrivileges() const {
+  if (!disjunction[promise].isEmpty()) {
+    out << PromiseNames[promise] << " ";
+  }
+}
+
+private:
+  llvm::Module* module;
+  const DisjunctionValue& disjunction;
+  const Promises promise;
+  llvm::raw_ostream& out;
+}; // end Class Transfer Debugger
 
 class DisjunctionEdgeTransformer {
 public:
@@ -150,7 +280,7 @@ public:
       return generator->isUsed(&phi);
     };
     auto handlePhi =
-        [&getAssocValue, &destination, &isUsedPhi](Disjunction& destState) {
+        [&getAssocValue, &destination, &isUsedPhi](Disjunction destState) {
           auto destBlock = llvm::dyn_cast<llvm::BasicBlock>(destination);
           for (auto& phi : destBlock->phis()) {
             if (!isUsedPhi(phi)) {
@@ -165,26 +295,28 @@ public:
           return destState;
         };
 
-    auto branchOrSwitch    = llvm::dyn_cast<llvm::Instruction>(branchAsValue);
+    auto* branchOrSwitch    = llvm::dyn_cast<llvm::Instruction>(branchAsValue);
     auto isConditionalJump = [&branchOrSwitch]() {
       return branchOrSwitch->getNumOperands() > 2;
     };
 
     auto edgeOp = [&](Disjunction& destState) {
       auto oldState = destState;
-      destState = handlePhi(destState);
+      auto withPhi  = handlePhi(destState);
       if (!isConditionalJump()) {
-        return destState;
+        return withPhi;
       }
-      if (destState == oldState && isSame) {
-        return destState;
+      if (isSame) {
+        llvm::errs() << "\nOptimization Applied";
+        return withPhi;
       }  // TODO: Careful. Phi's concretize values.
          // This has implications in the forward
          // as well as backward direction. 
-      return handle(branchOrSwitch, destState, destination);
+      return handle(branchOrSwitch, withPhi, destination);
     };
 
     //return edgeOp(toMerge);
+    Debugger::ContributionCounter counter{branchOrSwitch};
     return static_for{edgeOp}(toMerge);
   }
 
@@ -199,7 +331,7 @@ private:
 
     DisjunctionValue
     operator()(DisjunctionValue& value) {
-      static_for_impl<10>(value);
+      static_for_impl<MaxPrivilege>(value);
       return result;
     }
     
@@ -213,7 +345,8 @@ private:
 
     template<>
     void
-    static_for_impl<0>(DisjunctionValue&) {
+    static_for_impl<MinPrivilege>(DisjunctionValue& value) {
+      result[MinPrivilege] = lambda(value[MinPrivilege]);
       return;
     }
   };
@@ -278,9 +411,11 @@ makeVacuouslyTrue(Disjunction& disjunction) {
 
 class DisjunctionTransfer {
 public:
-  template<int PledgeCounter>
+  template <int PledgeCounter>
   void
-  callTransfers(llvm::Value& value, DisjunctionState& stateMap, const Context& context) {
+  callTransfers(llvm::Value& value,
+                DisjunctionState& stateMap,
+                const Context& context) {
     auto* inst   = llvm::dyn_cast<llvm::Instruction>(&value);
     bool handled = false;
     if (auto constantExpr = llvm::dyn_cast<llvm::ConstantExpr>(&value)) {
@@ -288,11 +423,10 @@ public:
       llvm_unreachable("\nFound constant exprs");
     }
 
+    Debugger::ContributionCounter counter{inst};
+
     constexpr Promises promise = static_cast<Promises>(PledgeCounter);
     auto state = StateAccessor<promise>{stateMap};
-
-    TransferDebugger debugger{inst, state[nullptr], promise, llvm::errs()};
-    //debugger.printBefore();
 
     handled |= handleBrOrSwitch(inst, handled);
     handled |= handlePhiBackEdges(&value, state, handled);
@@ -307,18 +441,22 @@ public:
     handled |= handleCmpInst(&value, state, handled);
     handled |= handleCast(&value, state, handled);
     handleUnknown(&value, state, handled);
-
-    debugger.printAfter();
-    //debugger.printActivePrivileges();
     state[nullptr].simplifyComplements()
                   .simplifyRedundancies()
-                  .simplifyImplication();
+                  .simplifyImplication()
+                  .simplifyUnique()
+                  .simplifyTrues();
+
+    Debugger debugger{stateMap[nullptr], PledgeCounter};
+    debugger.printAfter(llvm::dyn_cast<llvm::Instruction>(&value));
     return;
   }
 
   template <int Counter>
   void
-  static_for(llvm::Value& value, DisjunctionState& state, const Context& context) {
+  static_for(llvm::Value& value,
+             DisjunctionState& state,
+             const Context& context) {
     callTransfers<Counter>(value, state, context);
     static_for<Counter - 1>(value, state, context);
     return;
@@ -326,15 +464,17 @@ public:
 
   template <>
   void
-  static_for<0>(llvm::Value& value, DisjunctionState& state, const Context& context) {
+  static_for<MinPrivilege>(llvm::Value& value, DisjunctionState& state, const Context& context) {
+    callTransfers<MinPrivilege>(value, state, context);
     return;
   }
 
-  // Setting up perfect forwarding for this is more trouble than it's worth
   void
-  operator()(llvm::Value& value, DisjunctionState& state, const Context& context) {
+  operator()(llvm::Value& value,
+             DisjunctionState& state,
+             const Context& context) {
     llvm::errs() << "\nLocation " << value << "\n";
-    static_for<PLEDGE_FLOCK>(value, state, context);
+    static_for<MaxPrivilege>(value, state, context);
     return;
   }
 
@@ -396,10 +536,13 @@ private:
     if (!isLoopPhi) {
       return true;
     }
-    //llvm::errs() << "\n Dropping loop conjunct";
+    //auto oldSize  = state[nullptr].conjunctCount();
     auto phiExprID = generator->GetOrCreateExprID(value);
     state[nullptr] = generator->pushToTrue(state[nullptr], phiExprID);
     state[nullptr] = state[nullptr].simplifyImplication();
+    //auto newsize  = state[nullptr].conjunctCount();
+    //llvm::outs() << "\nDropping loop phi: " << *value << " oldsize - newsize "
+    //             << oldSize << " " << newsize;
     return true;
   }
 
@@ -839,8 +982,6 @@ private:
     auto rewritten  = generator->rewrite(forRewrites, loadExprID, valExprID);
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
-
-
 };
 
 
@@ -897,6 +1038,7 @@ BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
 }
 
 
+
 bool
 BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   auto* mainFunction = m.getFunction("main");
@@ -904,15 +1046,17 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     llvm::report_fatal_error("Unable to find main function.");
   }
   initializeGlobals(m);
-  using Value    = DisjunctionValue;
-  using Transfer = DisjunctionTransfer;
-  using Meet     = DisjunctionMeet;
-  using EdgeTransformer = DisjunctionEdgeTransformer;
-  using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet, EdgeTransformer, analysis::Backward>;
+  using V = DisjunctionValue;
+  using T = DisjunctionTransfer;
+  using M = DisjunctionMeet;
+  using E = DisjunctionEdgeTransformer;
+  using D = Debugger;
+  using Analysis 
+    = analysis::DataflowAnalysis<V, T, M, E, D, analysis::Backward>;
   Analysis analysis{m, mainFunction};
 
   auto results = analysis.computeDataflow();
-  generator->dumpState();
+  //generator->dumpState();
   llvm::outs() << "\nFinished";
   svfResults->releaseAndersenWaveDiffWithType();
 
@@ -1026,7 +1170,6 @@ main(int argc, char** argv) {
     err.print(argv[0], errs());
     return -1;
   }
-
 
   instrumentPromiseTree(*module);
   return 0;

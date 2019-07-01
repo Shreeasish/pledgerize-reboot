@@ -286,6 +286,10 @@ public:
         });
   }
 
+  size_t disjunctCount() const {
+    return disjuncts.size();
+  }
+
   static Disjunction
   unionDisjunctions(const Disjunction& lhs, const Disjunction& rhs) {
     //Invariant: Disjuncts are sets
@@ -620,45 +624,6 @@ Disjunction::isVacuouslyTrue() const {
      * llvm::errs() << "\n =====================";
      *  printer->insertIR(inst, state[nullptr]); */
 
-class TransferDebugger {
-public:
-  TransferDebugger(llvm::Instruction* const inst,
-                   const Disjunction& disj,
-                   const Promises p,
-                   llvm::raw_ostream& ostream = llvm::errs())
-    : inst{inst}, disjunction{disj}, promise{p}, out{ostream} {};
 
-  // TODO: Set on-off switch in constructor as cl option
-  void
-  printBefore() const {
-    out << "\n---- Before ---- ";
-    out << PromiseNames[promise];
-    out << "\n@Instruction" << *inst;
-    disjunction.print(llvm::errs());
-    return;
-  }
-
-  void
-  printAfter() const {
-    out << "\n----  After ----";
-    out << PromiseNames[promise];
-    out << "\n@Instruction" << *inst;
-    disjunction.print(llvm::errs());
-    return;
-  }
-
-  void
-  printActivePrivileges() const {
-    if (!disjunction.isEmpty()) {
-      out << PromiseNames[promise] << " ";
-    }
-  }
-
-private:
-  llvm::Instruction* const inst;
-  const Disjunction& disjunction;
-  const Promises promise;
-  llvm::raw_ostream& out;
-};
 
 #endif

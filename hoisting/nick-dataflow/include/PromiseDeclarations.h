@@ -54,6 +54,7 @@ const llvm::StringRef PromiseNames[]{ //always added for uniformity
     "settime", "fattr", "protexec", "tty",   "sendfd",    "recvfd",  "exec",
     "route",   "mcast", "vminfo",   "ps",    "disklabel", "pf",      "audio",
     "dpath",   "drm",   "vmm",      "chown", "bpf",       "error",   "PLEDGE_USERSET",
-    "PLEDGE_STATLIE", "PLEDGE_YPACTIVE", "PLEDGE_SPCL_SYSCTL", "COUNT" }; //FIXME:PLEDGE_USERSET, PLEDGE_STATLIE, PLEDGE_YPACTIVE, COUNT 
+    "PLEDGE_STATLIE", "PLEDGE_YPACTIVE", "PLEDGE_SPCL_SYSCTL", "COUNT" }; 
+//FIXME:PLEDGE_USERSET, PLEDGE_STATLIE, PLEDGE_YPACTIVE, COUNT 
 
 #endif

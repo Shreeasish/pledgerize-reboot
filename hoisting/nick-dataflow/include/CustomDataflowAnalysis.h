@@ -228,7 +228,7 @@ public:
       auto* passedConcrete = cs.getArgument(index);
       auto passedAbstract = state.find(passedConcrete);
       if (passedAbstract == state.end()) {
-        transfer(*passedConcrete, state, context );
+        transfer(*passedConcrete, state, context);
         passedAbstract = state.find(passedConcrete);
       }
       auto& arg     = summaryState[&functionArg];
@@ -326,10 +326,12 @@ isExternalCall(llvm::CallSite cs) {
     && !called->getName().startswith("llvm");
 }
 
+
 template <typename AbstractValue,
           typename Transfer,
           typename Meet,
           typename EdgeTransformer,
+          typename Debugger,
           typename Direction=Forward,
           unsigned long ContextSize=2ul>
 class DataflowAnalysis {
@@ -407,48 +409,65 @@ public:
       }
       results[bb] = state;
 
-      auto getSize = [](auto& state) {
-        size_t size = 0;
-        for (auto& disjunctionMap : state) {
-          size = disjunctionMap.conjunctCount();
+      //auto getSize = [](auto& state) {
+      //  size_t size = 0;
+      //  for (auto& disjunctionMap : state) {
+      //    size = disjunctionMap.conjunctCount();
+      //  }
+      //  return size;
+      //};
+      
+      [&context](auto* bb) -> void {
+        auto fname = bb->getParent()->getName();
+        llvm::outs() << "\nWorking on :" << fname << " @bb: "<< bb->getName();
+        llvm::outs().changeColor(llvm::raw_ostream::Colors::YELLOW);
+        llvm::outs() << "\nWith Context :";
+        for (auto* func : context) {
+          if (func) {
+            llvm::outs() << *func << "->";
+          } else {
+            llvm::outs() << "nullptr" << "->";
+          }
         }
-        return size;
-      };
+        llvm::outs().resetColor();
+        return;
+      }(bb);
+
       // Propagate through all instructions in the block
       for (auto& i : Direction::getInstructions(*bb)) {
-        llvm::outs() << "\n Working on  " << i;
-        const auto& size = getSize(state[nullptr]); // state[nullptr].conjunctCount();
+        //const auto& size = getSize(state[nullptr]); // state[nullptr].conjunctCount();
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs)) {
           analyzeCall(cs, state, context);
         }
-        // llvm::errs() << "\nBefore------------------------------------";
-        // llvm::errs() << "\nIn function " << i.getFunction()->getName()
-        //             << " \nBefore";
-        // llvm::errs() << i;
-        // llvm::errs() << "\n State:\n";
-        // state[nullptr].print(llvm::errs());
-        // llvm::errs() << "\n------------------------------------------";
-
         // ska: uncomment to skip function calls
         // else {
         applyTransfer(i, state, context);
-        const auto& newSize = getSize(state[nullptr]); //state[nullptr].conjunctCount();
-        if (newSize > size) {
-          llvm::outs() << "\nIncrease after\n";
-        } else if (newSize < size) {
-          llvm::outs() << "\nDecrease after\n";
-        }
-        //}
-        // llvm::errs() << "\nAfter-------------------------------------";
-        // llvm::errs() << "In function " << i.getFunction()->getName()
-        //             << " after";
-        // llvm::errs() << i;
-        // llvm::errs() << "\n State:\n";
-        // state[nullptr].print(llvm::errs());
-        // llvm::errs() << "\n------------------------------------------";
-
         results[&i] = state;
+
+        auto snapShot = [&](int promiseNum) {
+          static std::vector<int> sizes{40000, 20000, 10000, 6000, 1000, 500};
+          auto from = std::remove_if( sizes.begin(), sizes.end(), 
+              [&](auto& size) -> bool {
+                if (Debugger::checkThreshold(state[nullptr], promiseNum, size)) {
+                  Debugger debugger{state[nullptr], promiseNum, llvm::outs()};
+                  debugger.dump(&i, context, results, size);
+                  return true;
+                }
+                return false;
+              });
+          sizes.erase(from, sizes.end());
+        };
+
+        for (int promiseNum = 0; promiseNum < 10; promiseNum++) {
+          snapShot(promiseNum);
+          if (Debugger::checkThreshold(state[nullptr], promiseNum, 40000)) {
+            //Debugger debugger{state[nullptr], promiseNum, llvm::outs()};
+            //debugger.printAfter(&i);
+            //debugger.dump(&i, context, results);
+            Debugger::exit(&i, state[nullptr], promiseNum, llvm::outs());
+          }
+        }
       }
       // If the abstract state for this block did not change, then we are done
       // with this block. Otherwise, we must update the abstract state and

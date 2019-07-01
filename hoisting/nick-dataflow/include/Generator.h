@@ -35,26 +35,34 @@ public:
     }
 
   void
-  dumpState() {
-    llvm::errs() << "\n------------ Binary Table --------\n";
+  dumpState(llvm::raw_ostream& outs) {
+    outs << "\n------------ Binary Table --------\n";
     for (auto [exprKey, exprID] : exprTable) {
-      llvm::errs() << "ID:: " << exprID;
-      llvm::errs() << "\t ExprKey --- (" 
+      outs << "ID:: " << exprID;
+      outs << "\t ExprKey --- (" 
                    << std::get<0>(exprKey) << "|"
                    << std::get<1>(exprKey) << "|" 
                    << std::get<2>(exprKey) << ")\n";
     }
-    llvm::errs() << "\n------------ Leaf Table ---------\n";
+    outs << "\n------------ Leaf Table ---------\n";
     for (auto [value, exprID] : leafTable) {
-      llvm::errs() << "ID:: " << exprID << "\t";
+      outs << "ID:: " << exprID << "\t";
       if (value == nullptr) {
-        llvm::errs() << "nullptr" ;
+        outs << "nullptr" ;
       }
       else {
-        llvm::errs() << *value << "\n";
+        outs << *value << "\n";
       }
     }
-    llvm::errs() << "\n------------ Leaf Table ------\n";
+    outs << "\n------------ Leaf Table ------\n";
+  }
+
+  auto getSize() { return exprTable.size() + leafTable.size();}
+
+  void
+  dumpExprData(llvm::raw_ostream& outs) {
+    debugger.initializeMap();
+    debugger.dumpBinExpr(outs);
   }
 
   ExprID
@@ -520,6 +528,7 @@ private:
 
   ExprID
   GenerateBinaryExprID(ExprKey key, llvm::Value* const value) {
+    debugger.increment(std::get<1>(key));
     auto getPredicate =
         [](llvm::Value* const value) -> llvm::CmpInst::Predicate {
       if ( auto asCmp = llvm::dyn_cast<llvm::CmpInst>(value)) {
@@ -552,6 +561,33 @@ private:
     }
     return GenerateBinaryExprID(key, inst);
   }
-};
+
+  class Debugger {
+  public:
+    std::unordered_map<int, size_t> exprCountMap;
+    std::unordered_map<int, size_t> leafExprCountMap;
+    llvm::DenseMap<OpKey, const char*> opMap;
+
+    void
+    increment(int code) {
+      exprCountMap[code]++;
+    }
+  
+    void
+    dumpBinExpr(llvm::raw_ostream& outs) {
+      for (auto& [code, count] : exprCountMap) {
+        outs << "\n" << opMap[code] << "," << count;
+      }
+    }
+  
+    void
+    initializeMap() {
+      #define HANDLE(a, b, c) opMap.try_emplace(a, #b);
+      #include "OperatorStrings.def"
+      #undef HANDLE
+    }
+  };  // end Debugger
+  Debugger debugger;
+};  // end Generator
 
 #endif

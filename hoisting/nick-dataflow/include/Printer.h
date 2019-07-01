@@ -26,7 +26,6 @@ public:
     initializeMap();
   }
 
-
   void
   printState(llvm::Instruction* const location,
              const Disjunction& disjunction) {

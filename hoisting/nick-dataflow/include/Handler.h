@@ -24,7 +24,7 @@
 #include "PromiseDeclarations.h"
 #include "CallGraphAnalyzer.h"
 
-using Context    = std::array<llvm::Instruction*, 2ul>;
+using Context = std::array<llvm::Instruction*, 2ul>;
 
 struct AnalysisPackage {
 public:
@@ -142,7 +142,7 @@ public:
   hasPrivilege(llvm::CallSite cs, const Context& context) {
     Privileges privs{};
     setPrivileges(privs, cs, context);
-    return Privileges{promise} == privs;
+    return privs.test(promise);
   }
 
   bool
