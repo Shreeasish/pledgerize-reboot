@@ -389,6 +389,23 @@ public:
     auto traversal = Direction::getFunctionTraversal(f);
     BasicBlockWorklist work(traversal.begin(), traversal.end());
 
+    [&context](auto* function) -> void {
+      //auto fname = bb->getParent()->getName();
+      llvm::outs() << "\nWorking on :" << function->getName();// << " @bb: " << bb->getName();
+      llvm::outs().changeColor(llvm::raw_ostream::Colors::YELLOW);
+      llvm::outs() << "\nWith Context :";
+      for (auto* func : context) {
+        if (func) {
+          llvm::outs() << *func << "->";
+        } else {
+          llvm::outs() << "nullptr"
+                       << "->";
+        }
+      }
+      llvm::outs().resetColor();
+      return;
+    }(&f);
+
     while (!work.empty()) {
       auto* bb = work.take();
 
@@ -417,28 +434,14 @@ public:
       //  return size;
       //};
       
-      [&context](auto* bb) -> void {
-        auto fname = bb->getParent()->getName();
-        llvm::outs() << "\nWorking on :" << fname << " @bb: "<< bb->getName();
-        llvm::outs().changeColor(llvm::raw_ostream::Colors::YELLOW);
-        llvm::outs() << "\nWith Context :";
-        for (auto* func : context) {
-          if (func) {
-            llvm::outs() << *func << "->";
-          } else {
-            llvm::outs() << "nullptr" << "->";
-          }
-        }
-        llvm::outs().resetColor();
-        return;
-      }(bb);
 
       // Propagate through all instructions in the block
       for (auto& i : Direction::getInstructions(*bb)) {
         //const auto& size = getSize(state[nullptr]); // state[nullptr].conjunctCount();
         llvm::CallSite cs(&i);
+        /* Turning Off Inter-procedural Analysis */
         if (isAnalyzableCall(cs)) {
-          analyzeCall(cs, state, context);
+          //analyzeCall(cs, state, context);
         }
         // ska: uncomment to skip function calls
         // else {
@@ -458,13 +461,9 @@ public:
               });
           sizes.erase(from, sizes.end());
         };
-
         for (int promiseNum = 0; promiseNum < 10; promiseNum++) {
           snapShot(promiseNum);
           if (Debugger::checkThreshold(state[nullptr], promiseNum, 40000)) {
-            //Debugger debugger{state[nullptr], promiseNum, llvm::outs()};
-            //debugger.printAfter(&i);
-            //debugger.dump(&i, context, results);
             Debugger::exit(&i, state[nullptr], promiseNum, llvm::outs());
           }
         }

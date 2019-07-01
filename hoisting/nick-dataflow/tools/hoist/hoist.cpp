@@ -198,7 +198,7 @@ public:
 
     auto ec = std::error_code{};
     std::string fileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
-                           "build-dataflow/logs/cfg.aborted."
+                           "logs/cfg.aborted."
                            + currFunction->getName().str() + ".dot";
     auto dotFile = llvm::raw_fd_ostream{fileName, ec};
 
@@ -227,7 +227,7 @@ public:
 
     std::string exprHistFileName =
         "/home/shreeasish/pledgerize-reboot/hoisting/"
-        "build-dataflow/logs/exprs.histogram."
+        "logs/exprs.histogram."
         + std::to_string(threshold) + ".csv";
     auto binExprFile = llvm::raw_fd_ostream{exprHistFileName, ec};
     generator->dumpExprData(binExprFile);
@@ -242,7 +242,7 @@ public:
     generator->dumpState(ostream);
     ostream << "\n----  Exiting At ----";
     ostream << PromiseNames[promise];
-    ostream << "\n@Instruction" << *inst << "@parent"
+    ostream << "\n@Instruction" << *inst << "@parent: "
             << inst->getParent()->getParent()->getName();
     //disjunction[promise].print(ostream);
     llvm_unreachable("Exiting");
@@ -443,9 +443,7 @@ public:
     handleUnknown(&value, state, handled);
     state[nullptr].simplifyComplements()
                   .simplifyRedundancies()
-                  .simplifyImplication()
-                  .simplifyUnique()
-                  .simplifyTrues();
+                  .simplifyImplication();
 
     Debugger debugger{stateMap[nullptr], PledgeCounter};
     debugger.printAfter(llvm::dyn_cast<llvm::Instruction>(&value));
@@ -603,9 +601,13 @@ private:
       return true;
     }
 
-
-    llvm::Function* callee = analysis::getCalledFunction(callSite);
-    state[nullptr] = wireCallerState(state[callSite.getInstruction()], callSite, callee); 
+    /* Turning off Intra-Procedural */
+    //llvm::Function* callee = analysis::getCalledFunction(callSite);
+    //auto& calleeState = state[callSite.getInstruction()];
+    //if (!calleeState.isEmpty()) {
+    //  makeVacuouslyTrue(state[nullptr]);
+    //}
+    //state[nullptr] = wireCallerState(state[callSite.getInstruction()], callSite, callee); 
     return true;
   }
 
@@ -701,6 +703,10 @@ private:
     if (!ret) {
       return false;
     }
+    
+    /* Switching Off Intra-procedural */
+    return true;
+
     llvm::Value* callAsValue = nullptr;
     for (auto* inst : context) {
       if (inst != nullptr) {
@@ -1037,15 +1043,8 @@ BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
   return;
 }
 
-
-
-bool
-BuildPromiseTreePass::runOnModule(llvm::Module& m) {
-  auto* mainFunction = m.getFunction("main");
-  if (!mainFunction) {
-    llvm::report_fatal_error("Unable to find main function.");
-  }
-  initializeGlobals(m);
+void
+runAnalysisFor(llvm::Module& m, llvm::ArrayRef<llvm::StringRef> functionNames) {
   using V = DisjunctionValue;
   using T = DisjunctionTransfer;
   using M = DisjunctionMeet;
@@ -1053,11 +1052,26 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   using D = Debugger;
   using Analysis 
     = analysis::DataflowAnalysis<V, T, M, E, D, analysis::Backward>;
-  Analysis analysis{m, mainFunction};
-
-  auto results = analysis.computeDataflow();
+  
+  for (auto fname : functionNames) {
+    auto* entryPoint = m.getFunction(fname);
+    if (!entryPoint) {
+      llvm::report_fatal_error("Unable to find entrypoint" + fname);
+    }
+    Analysis analysis{m, entryPoint};
+    auto results = analysis.computeDataflow();
+    llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
+    llvm::outs() << "\nFinished " << entryPoint->getName();
+    llvm::outs().resetColor();
+  }
   //generator->dumpState();
-  llvm::outs() << "\nFinished";
+}
+
+
+bool
+BuildPromiseTreePass::runOnModule(llvm::Module& m) {
+  initializeGlobals(m);
+  runAnalysisFor(m, {"setfile","copy","copy_file"});
   svfResults->releaseAndersenWaveDiffWithType();
 
   auto getLocationStates = [](llvm::Function* function, auto functionResults) {
