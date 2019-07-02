@@ -254,6 +254,25 @@ public:
     auto binExprFile = llvm::raw_fd_ostream{exprHistFileName, ec};
     generator->dumpExprData(binExprFile);
     binExprFile.close();
+
+    // Annotation Writer
+    std::string llFileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
+                             "logs/" + currFunction->getName().str() + ".ll";
+    auto llFile = llvm::raw_fd_ostream{llFileName, ec};
+
+    auto instPrinter = [&functionResults, promise=this->promise](auto* inst, auto& llOut) {
+      if (functionResults.find(inst) != functionResults.end()) {
+          auto& state = functionResults[&inst][nullptr][promise];
+          auto conjunctCount = state.conjunctCount();
+          auto disjunctCount = state.disjunctCount();
+          llOut << std::to_string(";[CC:") << conjunctCount << "][DC:" << disjunctCount << "]"
+                << "[G:" << SContributionMap[&inst] << "]";
+      } else {
+          llOut << ";[NOT REACHED]";
+      }
+    };
+
+    ConjunctInfoPrinter annotationPrinter{instPrinter};
   }
 
   static void
@@ -286,6 +305,9 @@ private:
   template <typename InstPrinter>
   class ConjunctInfoPrinter : public AssemblyAnnotationWriter {
   public:
+    ConjunctInfoPrinter(InstPrinter& ip)
+      : instPrinter{ip} {}
+
     void
     emitInstructionAnnot(const Instruction* inst,
                          formatted_raw_ostream& ostream) {
@@ -293,9 +315,8 @@ private:
     }
 
   private:
-    llvm::raw_fd_ostream& fileOuts;
-    InstPrinter instPrinter;
-  }
+    InstPrinter& instPrinter;
+  };
 }; // end Class Transfer Debugger
 
 class DisjunctionEdgeTransformer {
