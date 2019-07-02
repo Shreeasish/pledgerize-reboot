@@ -16,6 +16,8 @@
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/Analysis/TypeBasedAliasAnalysis.h"
 
+
+#include "llvm/IR/AssemblyAnnotationWriter.h"
 #include "llvm/IR/CallSite.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DebugInfo.h"
@@ -155,7 +157,6 @@ public:
     size_t exprCount;
     llvm::Instruction* inst;
   };
-  
 
   static bool 
   checkThreshold(DisjunctionValue state, int p, int threshold = 20000) {
@@ -189,11 +190,11 @@ public:
 
   template <typename FunctionResults>
   void
-  dump(llvm::Instruction* inst,
+  dump(llvm::Instruction* currInst,
               Context context,
               FunctionResults functionResults,
               int threshold) {
-    auto* currBB       = inst->getParent();
+    auto* currBB       = currInst->getParent();
     auto* currFunction = currBB->getParent();
 
     auto ec = std::error_code{};
@@ -202,16 +203,37 @@ public:
                            + currFunction->getName().str() + ".dot";
     auto dotFile = llvm::raw_fd_ostream{fileName, ec};
 
+    auto printGraph = [&currInst, &currFunction, this](auto* inst, auto& disjunction) {
+      if (inst != currInst) {
+        return;
+      }
+      std::string graphFileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
+                                  "logs/ast."
+                                  + currFunction->getName().str() + ".dot";
+      auto ec = std::error_code{};
+      auto graphFile = llvm::raw_fd_ostream{graphFileName, ec};
+      lowering::Printer printer{generator.get(), graphFile, *module};
+      printer.printState(currInst, disjunction);
+      graphFile.close();
+      llvm::outs() << "\nPrinted Graph: " << graphFileName;
+    };
+
     auto printBasicBlock = [&](llvm::BasicBlock& bb, auto& functionResults) {
       dotFile << "\n  Node" << &bb << " [shape=record,label=\"<label>\\l";
       for (auto& inst : bb) {
-        auto& state = functionResults[&inst][nullptr][promise];
-        auto conjunctCount = state.conjunctCount();
-        auto disjunctCount = state.disjunctCount();
-        dotFile << inst << " [CC:" << conjunctCount << "][DC:" << disjunctCount << "]" 
-                        << "[G:" << SContributionMap[&inst] << "]""\\l";
+        if (functionResults.find(&inst) != functionResults.end()) {
+          auto& state = functionResults[&inst][nullptr][promise];
+          auto conjunctCount = state.conjunctCount();
+          auto disjunctCount = state.disjunctCount();
+          dotFile << inst << " [CC:" << conjunctCount << "][DC:" << disjunctCount << "]" 
+                          << "[G:" << SContributionMap[&inst] << "]\\l";
+          printGraph(&inst, state);
+        } else {
+          dotFile << inst << "[NOT REACHED]\\l";
+        }
       }
       dotFile << "\"];";
+
       for (auto* succ : llvm::successors(&bb)) {
         dotFile << "\n  Node" << &bb << " -> Node" << succ << ";";
       }
@@ -260,6 +282,20 @@ private:
   const DisjunctionValue& disjunction;
   const Promises promise;
   llvm::raw_ostream& out;
+
+  template <typename InstPrinter>
+  class ConjunctInfoPrinter : public AssemblyAnnotationWriter {
+  public:
+    void
+    emitInstructionAnnot(const Instruction* inst,
+                         formatted_raw_ostream& ostream) {
+      instPrinter(inst, ostream);
+    }
+
+  private:
+    llvm::raw_fd_ostream& fileOuts;
+    InstPrinter instPrinter;
+  }
 }; // end Class Transfer Debugger
 
 class DisjunctionEdgeTransformer {
@@ -593,15 +629,13 @@ private:
     } else if (isIndCall(callSite)) {
       return true;
     } else if (analysis::isExternalCall(callSite)) {
-      if (privilegeResolver->hasPrivilege<Promise>(callSite, context))  {
+      if (privilegeResolver->hasPrivilege<Promise>(callSite, context)) {
         makeVacuouslyTrue(state[nullptr]);
-      } 
+      }
       return true;
     } else if (analysis::getCalledFunction(callSite)->getName().startswith("llvm")) {
       return true;
-    }
-
-    /* Turning off Intra-Procedural */
+    }     /* Turning off Intra-Procedural */
     //llvm::Function* callee = analysis::getCalledFunction(callSite);
     //auto& calleeState = state[callSite.getInstruction()];
     //if (!calleeState.isEmpty()) {
@@ -1017,8 +1051,8 @@ BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
   generator = std::make_unique<Generator>(Generator{});
   resolver  = std::make_unique<IndirectCallResolver>(IndirectCallResolver{m});
   privilegeResolver = std::make_unique<PrivilegeResolver>(m);
-  printer =
-      std::make_unique<lowering::Printer>(generator.get(), llvm::outs(), m);
+  //printer =
+  //    std::make_unique<lowering::Printer>(generator.get(), llvm::outs(), m);
 
   svfResults = AndersenWaveDiffWithType::createAndersenWaveDiffWithType(m);
 
@@ -1052,11 +1086,11 @@ runAnalysisFor(llvm::Module& m, llvm::ArrayRef<llvm::StringRef> functionNames) {
   using D = Debugger;
   using Analysis 
     = analysis::DataflowAnalysis<V, T, M, E, D, analysis::Backward>;
-  
+
   for (auto fname : functionNames) {
     auto* entryPoint = m.getFunction(fname);
     if (!entryPoint) {
-      llvm::report_fatal_error("Unable to find entrypoint" + fname);
+      llvm::report_fatal_error("Unable to find entrypoint " + fname);
     }
     Analysis analysis{m, entryPoint};
     auto results = analysis.computeDataflow();
@@ -1071,7 +1105,15 @@ runAnalysisFor(llvm::Module& m, llvm::ArrayRef<llvm::StringRef> functionNames) {
 bool
 BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   initializeGlobals(m);
-  runAnalysisFor(m, {"setfile","copy","copy_file"});
+
+  //for (auto& function : m) { // All Functions
+  //  if (function.isDeclaration()) {
+  //    continue;
+  //  }
+  //  runAnalysisFor(m, {function.getName()});
+  //}
+  runAnalysisFor(m, {"copy"}); // For cp
+  
   svfResults->releaseAndersenWaveDiffWithType();
 
   auto getLocationStates = [](llvm::Function* function, auto functionResults) {

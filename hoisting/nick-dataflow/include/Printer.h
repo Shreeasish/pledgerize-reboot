@@ -33,6 +33,7 @@ public:
       return;
     }
     printTrees(location, disjunction);
+    return;
   }
 
   void

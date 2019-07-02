@@ -13,6 +13,8 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/InstIterator.h"
 
+#include "PromiseDeclarations.h"
+
 namespace llvm {
 
 template<unsigned long Size>
@@ -449,7 +451,7 @@ public:
         results[&i] = state;
 
         auto snapShot = [&](int promiseNum) {
-          static std::vector<int> sizes{40000, 20000, 10000, 6000, 1000, 500};
+          static std::vector<int> sizes{6000};
           auto from = std::remove_if( sizes.begin(), sizes.end(), 
               [&](auto& size) -> bool {
                 if (Debugger::checkThreshold(state[nullptr], promiseNum, size)) {
@@ -461,12 +463,12 @@ public:
               });
           sizes.erase(from, sizes.end());
         };
-        for (int promiseNum = 0; promiseNum < 10; promiseNum++) {
-          snapShot(promiseNum);
-          if (Debugger::checkThreshold(state[nullptr], promiseNum, 40000)) {
-            Debugger::exit(&i, state[nullptr], promiseNum, llvm::outs());
+        //for (int promiseNum = 0; promiseNum < 10; promiseNum++) {
+          snapShot(PLEDGE_CPATH);
+          if (Debugger::checkThreshold(state[nullptr], PLEDGE_CPATH, 40000)) {
+            Debugger::exit(&i, state[nullptr], PLEDGE_CPATH, llvm::outs());
           }
-        }
+        //}
       }
       // If the abstract state for this block did not change, then we are done
       // with this block. Otherwise, we must update the abstract state and
