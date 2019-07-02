@@ -260,15 +260,18 @@ public:
                              "logs/" + currFunction->getName().str() + ".ll";
     auto llFile = llvm::raw_fd_ostream{llFileName, ec};
 
-    auto instPrinter = [&functionResults, promise=this->promise](auto* inst, auto& llOut) {
+    auto instPrinter = 
+      [&functionResults, promise = this->promise](auto* inst, auto& llOut) {
       if (functionResults.find(inst) != functionResults.end()) {
-          auto& state = functionResults[&inst][nullptr][promise];
-          auto conjunctCount = state.conjunctCount();
-          auto disjunctCount = state.disjunctCount();
-          llOut << std::to_string(";[CC:") << conjunctCount << "][DC:" << disjunctCount << "]"
-                << "[G:" << SContributionMap[&inst] << "]";
+        llvm::Value* val   = llvm::dyn_cast<llvm::Value>(inst);
+        auto& state        = functionResults[val][nullptr][promise];
+        auto conjunctCount = state.conjunctCount();
+        auto disjunctCount = state.disjunctCount();
+        //llOut << llvm::StringRef{";[CC:"} << conjunctCount
+        //      << "][DC:" << disjunctCount << "]"
+        //      << "[G:" << SContributionMap[&inst] << "]";
       } else {
-          llOut << ";[NOT REACHED]";
+        //llOut << llvm::StringRef{";[NOT REACHED]"};
       }
     };
 
@@ -310,7 +313,7 @@ private:
 
     void
     emitInstructionAnnot(const Instruction* inst,
-                         formatted_raw_ostream& ostream) {
+                         formatted_raw_ostream& ostream) override {
       instPrinter(inst, ostream);
     }
 
