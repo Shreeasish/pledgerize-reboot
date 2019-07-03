@@ -2,7 +2,6 @@
 #define GENERATOR_H
 
 #include "ConditionList.h"
-
 #include <stack>
 
 //size_t to exprID?
@@ -32,7 +31,61 @@ public:
       constantExprCounter++;
       constantExprCounter++;
       leafTable.insert({nullptr, GetVacuousExprID()});
+      initializeMap();
     }
+
+  void
+  initializeMap() {
+    #define HANDLE(a, b, c) opMap.try_emplace(a, #b);
+    #include "OperatorStrings.def"
+    #undef HANDLE
+  }
+
+  llvm::DenseMap<OpKey, const char*> opMap;
+
+	template<typename Printer>
+  void
+  dumpToFile() {
+    auto ec = std::error_code{};
+    std::string exprFileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
+                               "logs/ids.binary";
+    auto exprFile = llvm::raw_fd_ostream{exprFileName, ec};
+    exprFile << "id,left,right,opId,opName" ;
+    for (auto [exprKey, exprID] : exprTable) {
+      exprFile << "\n" << exprID               << ","
+                       << std::get<0>(exprKey) << "," //  left
+                       << std::get<2>(exprKey) << "," // right
+                       << std::get<1>(exprKey) << ","
+                       << opMap[std::get<1>(exprKey)];
+    }
+    exprFile.close();
+
+    std::string leafFileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
+                               "logs/ids.leaves";
+    auto leafFile = llvm::raw_fd_ostream{leafFileName, ec};
+    leafFile <<  "id|:string";
+    leafFile << "\n1|:nullptr"; // SPECIALCASE: Empty ExprID has value 1
+    for (auto [value, exprID] : leafTable) {
+      if (value == nullptr) {
+        leafFile << "\n" << exprID << "|:nullptr" ;
+      }
+      else {
+        leafFile << "\n" << exprID << "|:" << *value;
+      }
+    }
+    leafFile.close();
+
+    std::string astFileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
+                               "logs/ids.flattened";
+    auto astFile = llvm::raw_fd_ostream{astFileName, ec};
+    astFile <<  "id|:aststring";
+    Printer printer{this, astFile};
+    for (auto [exprKey, exprID] : exprTable) {
+      astFile << "\n" << exprID << "|:";
+      printer.printFlattened(exprID, astFile);
+    }
+    astFile.close();
+  }
 
   void
   dumpState(llvm::raw_ostream& outs) {
@@ -447,9 +500,9 @@ public:
   }
 
   template <class Visitor>
-  Conjunct
-  inOrderFor(const Conjunct& conjunct, Visitor& visitor) {
-    auto inOrder = [&, this](const ExprID& exprID, auto inOrder) -> void {
+  void 
+  inOrderFor(const ExprID exprID, Visitor& visitor) {
+    auto inOrder = [&visitor, this](const ExprID& exprID, auto inOrder) -> void {
       auto asVariant   = std::variant<ExprID>(exprID);
       auto node = GetExprNode(exprID);
       if (auto binaryNode = std::get_if<const BinaryExprNode>(&node)) {
@@ -461,8 +514,8 @@ public:
       }
     };
 
-    inOrder(conjunct.exprID, inOrder);
-    return conjunct;
+    inOrder(exprID, inOrder);
+    return;
   }
 
   //TODO: Fix this unsightly mess

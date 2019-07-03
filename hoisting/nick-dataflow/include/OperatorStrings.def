@@ -35,7 +35,8 @@ HANDLE(28, Xor, BinaryOperator)
 HANDLE(29, Alloca, AllocaInst)  // Stack management
 HANDLE(30, Load, LoadInst)      // Memory manipulation instrs
 HANDLE(31, Store, StoreInst)
-HANDLE(32, GetElementPtr, GetElementPtrInst)
+//HANDLE(32, GetElementPtr, GetElementPtrInst)
+HANDLE(32, GEP, GetElementPtrInst)
 HANDLE(33, Fence, FenceInst)
 HANDLE(34, AtomicCmpXchg, AtomicCmpXchgInst)
 HANDLE(35, AtomicRMW, AtomicRMWInst)

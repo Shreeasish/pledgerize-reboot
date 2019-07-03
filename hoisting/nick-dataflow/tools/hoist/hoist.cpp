@@ -203,7 +203,7 @@ public:
                            + currFunction->getName().str() + ".dot";
     auto dotFile = llvm::raw_fd_ostream{fileName, ec};
 
-    auto printGraph = [&currInst, &currFunction, this](auto* inst, auto& disjunction) {
+    auto printGraph = [&currInst, &currFunction](auto* inst, auto& disjunction) {
       if (inst != currInst) {
         return;
       }
@@ -212,7 +212,7 @@ public:
                                   + currFunction->getName().str() + ".dot";
       auto ec = std::error_code{};
       auto graphFile = llvm::raw_fd_ostream{graphFileName, ec};
-      lowering::Printer printer{generator.get(), graphFile, *module};
+      lowering::Printer printer{generator.get(), graphFile};
       printer.printState(currInst, disjunction);
       graphFile.close();
       llvm::outs() << "\nPrinted Graph: " << graphFileName;
@@ -1081,10 +1081,11 @@ runAnalysisFor(llvm::Module& m, llvm::ArrayRef<llvm::StringRef> functionNames) {
     Analysis analysis{m, entryPoint};
     auto results = analysis.computeDataflow();
     llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
-    llvm::outs() << "\nFinished " << entryPoint->getName();
+    llvm::outs() << "\nFinished " << entryPoint->getName() << "\n";
     llvm::outs().resetColor();
   }
-  //generator->dumpState();
+  generator->dumpToFile<lowering::Printer>();
+  //lowering::Printer endLogs{generator.get(), llvm::outs(), m};
 }
 
 

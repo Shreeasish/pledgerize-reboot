@@ -178,7 +178,7 @@ public:
 
   void print(llvm::raw_ostream& out) const {
     if (!notNegated) {
-      out << "!";
+      out << "-";
     }
     out << exprID;
     return;
@@ -534,9 +534,10 @@ Disjunct::print(llvm::raw_ostream& out) const {
     out << "empty disjunct";
   }
   for (auto conjunct : conjunctIDs) {
-    out << "(";
+    //out << "(";
     conjunct.print(out);
-    out << ")";
+    //out << ")";
+    out << ",";
   }
   return;
 }

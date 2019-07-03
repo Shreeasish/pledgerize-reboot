@@ -4,11 +4,12 @@
 #include "ConditionList.h"
 #include "Generator.h"
 
+#include "llvm/Bitcode/BitcodeWriter.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/InstVisitor.h"
 #include "llvm/Transforms/Utils/ModuleUtils.h"
-#include "llvm/Bitcode/BitcodeWriter.h"
 #include "CustomDataflowAnalysis.h"
 
 #include <unordered_map>
@@ -21,8 +22,8 @@ namespace lowering {
 
 class lowering::Printer {
 public:
-  Printer(Generator* const g, llvm::raw_ostream& out, llvm::Module& m)
-    : generator{g}, out{out}, module{m} {
+  Printer(Generator* const g, llvm::raw_ostream& out)
+    : generator{g}, out{out} {
     initializeMap();
   }
 
@@ -49,7 +50,6 @@ public:
     llvm::outs() << "\nInserting at " << *location 
                  << "\n parent function " << location->getParent()->getParent()->getName();
     llvm::IRBuilder<> builder{location};
-  //printFlattened(location, disjunction);
     insertIR(location, context, disjunction, builder);
     printState(location, disjunction);
     auto* bb = location->getParent();
@@ -57,10 +57,14 @@ public:
     llvm::errs() << *bb;
   }
 
+  void
+  printFlattened(ExprID exprID, llvm::raw_ostream& ostream) {
+    ostream << asFlatAST(exprID);
+  }
+
 private:
   Generator* const generator;
   llvm::raw_ostream& out;
-  llvm::Module& module;
 
   llvm::DenseMap<OpKey, const char*> opMap;
   const char* delimiter = "x";
@@ -80,51 +84,16 @@ private:
     return location->getName();
   }
 
-  void
-  printFlattened(llvm::Instruction* const location,
-               const Disjunction disjunction) {
-    printLineNumber(location);
-    bool firstDisjunct = true;
-    for (auto& disjunct : disjunction) {
-      if (firstDisjunct) {
-        out << "{";
-        firstDisjunct = false;
-      } else {
-        out << "OR \n{";
-      }
-      bool firstConjunct = true;
-      for (auto& conjunct : disjunct) {
-        if (firstConjunct) {
-          if (conjunct.notNegated) {
-            out << " [";
-          } else {
-            out << "-[";
-          }
-          firstConjunct = false;
-        } else {
-          if (conjunct.notNegated) {
-            out << " AND  [";
-          } else {
-            out << " AND -[";
-          }
-        }
-        printValues(conjunct);
-        out << "]";
-      }
-      out << "}\n";
-    }
-    out << "\n";
-  }
 
-  void
-  printCall(llvm::Instruction* const location, const Disjunction disjunction) {
-    auto& context  = module.getContext();
-    auto* voidTy   = llvm::Type::getVoidTy(context);
-    auto* dropFunc = module.getOrInsertFunction("PlEdGeRiZe_drop", voidTy);
+  //void
+  //printCall(llvm::Instruction* const location, const Disjunction disjunction) {
+  //  auto& context  = module.getContext();
+  //  auto* voidTy   = llvm::Type::getVoidTy(context);
+  //  auto* dropFunc = module.getOrInsertFunction("PlEdGeRiZe_drop", voidTy);
 
-    llvm::IRBuilder<> builder(location);
-    builder.CreateCall(dropFunc);
-  }
+  //  llvm::IRBuilder<> builder(location);
+  //  builder.CreateCall(dropFunc);
+  //}
 
   void
   printTrees(llvm::Instruction* const location,
@@ -205,33 +174,72 @@ private:
     generator->preOrderFor(conjunct, visitor);
   }
 
-  void
-  printValues(const Conjunct conjunct) const {
+  std::string
+  asFlatAST(ExprID exprID) const {
+    struct PrettyPrinter : public llvm::InstVisitor<PrettyPrinter, std::string> {
+      std::string
+      visitInstruction(llvm::Instruction& I) {
+        std::string ret;
+        llvm::raw_string_ostream rso(ret);
+				rso << I.getOpcodeName();
+        return ret;
+      }
+
+      std::string
+      visitICmpInst(llvm::ICmpInst& I) {
+        // Actual Predicates can be dealt with later
+        return {"ICmp"};
+      }
+      std::string
+      visitLoadInst(llvm::LoadInst& loadInst) {
+        std::string ret;
+        llvm::raw_string_ostream rso(ret);
+        rso << *(loadInst.getPointerOperand());
+        return ret;
+      }
+
+      std::string
+      visitGetElementPtrInst(llvm::GetElementPtrInst& gep) {
+        std::string ret;
+        llvm::raw_string_ostream rso(ret);
+        rso << "GEP " << *(gep.getPointerOperand());
+        return ret;
+      }
+
+      //std::string
+      //visitPHINode(llvm::PHINode& phiNode) {
+
+      //  return ret;
+      //}
+    };
+  
+    std::string flatAST;
+    llvm::raw_string_ostream rso{flatAST};
+		int depth = 0;
     auto visitor = overloaded{
-        [&, this](ExprID exprID, const ConstantExprNode node) {
-          // out.changeColor(llvm::raw_ostream::Colors::GREEN);
+        [this, &rso](ExprID exprID, const ConstantExprNode node) {
+          // Constants are small; print as is
           if (node.constant) {
-            out << "( " << *(node.constant) << " )";
+            rso << "[" << *(node.constant) << "]";
           } else {
-            out << "( " << exprID << " )";
-          }
-          // out.changeColor(llvm::raw_ostream::Colors::WHITE);
+             rso << "[END]";
+           }
         },
-        [&, this](ExprID exprID, const BinaryExprNode node) {
-          // out.changeColor(llvm::raw_ostream::Colors::BLUE);
+        [this, &rso, &depth](ExprID exprID, const BinaryExprNode node) {
           if (auto it = opMap.find(node.op.opCode); it != opMap.end()) {
             auto [first, opString] = *it;
-            out << " " << opString << " ";
-            out << " (node.value)" << *(node.value) << " ";
+            rso << " " << depth++ <<"_op_" << opString << " ";
+            //rso << " (node.value)" << *(node.value) << " ";
           }
-          // out.changeColor(llvm::raw_ostream::Colors::WHITE);
         },
-        [&, this](ExprID exprID, const ValueExprNode node) {
-          // out.changeColor(llvm::raw_ostream::Colors::GREEN);
-          out << "( " << *(node.value) << " )";
-          // out.changeColor(llvm::raw_ostream::Colors::WHITE);
+        [this, &rso](ExprID exprID, const ValueExprNode node) {
+          // Print Value Type and pretty print
+					PrettyPrinter printer;
+					auto* asInst = llvm::dyn_cast<llvm::Instruction>(node.value);
+					rso << "(" << printer.visit(*asInst) << ")";
         }};
-    generator->inOrderFor(conjunct, visitor);
+    generator->inOrderFor(exprID, visitor);
+    return flatAST;
   }
 
   void
