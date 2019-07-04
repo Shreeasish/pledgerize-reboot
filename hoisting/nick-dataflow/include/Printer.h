@@ -117,8 +117,8 @@ private:
 
   void
   printGraph(const Conjunct conjunct,
-            const int disjunctCount,
-            const int conjunctCount) const {
+             const int disjunctCount,
+             const int conjunctCount) const {
     auto visitor = overloaded{
         [&, this](ExprID exprID, const ConstantExprNode node) {
           out << "\t\"" << exprID << delimiter << disjunctCount << delimiter
@@ -188,27 +188,22 @@ private:
       std::string
       visitICmpInst(llvm::ICmpInst& I) {
         // Actual Predicates can be dealt with later
+				assert("False");
         return {"ICmp"};
       }
-      std::string
-      visitLoadInst(llvm::LoadInst& loadInst) {
-        std::string ret;
-        llvm::raw_string_ostream rso(ret);
-        rso << *(loadInst.getPointerOperand());
-        return ret;
-      }
-
-      std::string
-      visitGetElementPtrInst(llvm::GetElementPtrInst& gep) {
-        std::string ret;
-        llvm::raw_string_ostream rso(ret);
-        rso << "GEP " << *(gep.getPointerOperand());
-        return ret;
-      }
+      //std::string
+      //visitLoadInst(llvm::LoadInst& loadInst) {
+      //  std::string ret;
+      //  llvm::raw_string_ostream rso(ret);
+      //  rso << *(loadInst.getPointerOperand());
+      //  return ret;
+      //}
 
       //std::string
-      //visitPHINode(llvm::PHINode& phiNode) {
-
+      //visitGetElementPtrInst(llvm::GetElementPtrInst& gep) {
+      //  std::string ret;
+      //  llvm::raw_string_ostream rso(ret);
+      //  rso << "GEP " << *(gep.getPointerOperand());
       //  return ret;
       //}
     };
@@ -217,26 +212,40 @@ private:
     llvm::raw_string_ostream rso{flatAST};
 		int depth = 0;
     auto visitor = overloaded{
-        [this, &rso](ExprID exprID, const ConstantExprNode node) {
+        [&rso, &depth](ExprID exprID, const ConstantExprNode node) {
           // Constants are small; print as is
           if (node.constant) {
             rso << "[" << *(node.constant) << "]";
           } else {
-             rso << "[END]";
-           }
+            rso << "[END]";
+          }
         },
-        [this, &rso, &depth](ExprID exprID, const BinaryExprNode node) {
+        [this,&rso, &depth](ExprID exprID, const BinaryExprNode node) {
           if (auto it = opMap.find(node.op.opCode); it != opMap.end()) {
             auto [first, opString] = *it;
-            rso << " " << depth++ <<"_op_" << opString << " ";
+            rso << "_op_" << opString << "_";
             //rso << " (node.value)" << *(node.value) << " ";
           }
         },
-        [this, &rso](ExprID exprID, const ValueExprNode node) {
-          // Print Value Type and pretty print
-					PrettyPrinter printer;
-					auto* asInst = llvm::dyn_cast<llvm::Instruction>(node.value);
-					rso << "(" << printer.visit(*asInst) << ")";
+        [&rso, &depth](ExprID exprID, const ValueExprNode node) {
+          PrettyPrinter printer;
+					if (!node.value) {
+						llvm::outs().changeColor(llvm::raw_ostream::Colors::RED);
+						llvm::outs() << "\nFor ExprID:" << exprID
+												 << "\nValue is null" ;
+						llvm::outs().resetColor();
+						assert(false);
+					}
+          if (auto* asInst = llvm::dyn_cast<llvm::Instruction>(node.value)) {
+            rso << "(_" << depth << "_" << printer.visit(*asInst) << ")";
+          } else if (node.value) {
+						rso << "(_" << depth << "_" << *node.value << ")";
+            llvm::outs().changeColor(llvm::raw_ostream::Colors::RED);
+            llvm::outs() << "\nFor ExprID:" << exprID
+                         << "\nValue is not an Instruction: " 
+												 << "\nNode.Value:" << *node.value;
+            llvm::outs().resetColor();
+          }
         }};
     generator->inOrderFor(exprID, visitor);
     return flatAST;

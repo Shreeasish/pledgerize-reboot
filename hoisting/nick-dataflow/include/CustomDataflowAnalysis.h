@@ -455,7 +455,7 @@ public:
           auto from = std::remove_if( sizes.begin(), sizes.end(), 
               [&](auto& size) -> bool {
                 if (Debugger::checkThreshold(state[nullptr], promiseNum, size)) {
-                  Debugger debugger{state[nullptr], promiseNum, llvm::outs()};
+                  Debugger debugger{promiseNum, llvm::outs()};
                   debugger.dump(&i, context, results, size);
                   return true;
                 }

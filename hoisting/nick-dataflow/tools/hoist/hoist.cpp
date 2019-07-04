@@ -164,14 +164,13 @@ public:
     return state[check].conjunctCount() > threshold;
   }
 
-  Debugger(const DisjunctionValue& disj,
-           int p = PLEDGE_CPATH,
+  Debugger( int p = PLEDGE_CPATH,
            llvm::raw_ostream& ostream = llvm::errs())
-    : disjunction{disj}, promise{static_cast<Promises>(p)}, out{ostream} {};
+    :  promise{static_cast<Promises>(p)}, out{ostream} {};
 
   // TODO: Set on-off switch in constructor as cl option
   void
-  printBefore(llvm::Instruction* inst) const {
+  printBefore(DisjunctionValue disjunction, llvm::Instruction* inst) const {
     out << "\n---- Before ---- ";
     out << PromiseNames[promise];
     out << "\n@Instruction" << *inst;
@@ -180,7 +179,7 @@ public:
   }
 
   void
-  printAfter(llvm::Instruction* inst) const {
+  printAfter(DisjunctionValue disjunction, llvm::Instruction* inst) const {
     out << "\n----  After ----";
     out << PromiseNames[promise];
     out << "\n@Instruction" << *inst << "@parent"
@@ -271,7 +270,7 @@ public:
   }
 
 void
-printActivePrivileges() const {
+printActivePrivileges(DisjunctionValue disjunction) const {
   if (!disjunction[promise].isEmpty()) {
     out << PromiseNames[promise] << " ";
   }
@@ -279,7 +278,6 @@ printActivePrivileges() const {
 
 private:
   llvm::Module* module;
-  const DisjunctionValue& disjunction;
   const Promises promise;
   llvm::raw_ostream& out;
 }; // end Class Transfer Debugger
@@ -467,8 +465,8 @@ public:
                   .simplifyRedundancies()
                   .simplifyImplication();
 
-    Debugger debugger{stateMap[nullptr], PledgeCounter};
-    debugger.printAfter(llvm::dyn_cast<llvm::Instruction>(&value));
+    Debugger debugger{PledgeCounter};
+    debugger.printAfter(stateMap[nullptr],llvm::dyn_cast<llvm::Instruction>(&value));
     return;
   }
 
@@ -493,7 +491,6 @@ public:
   operator()(llvm::Value& value,
              DisjunctionState& state,
              const Context& context) {
-    llvm::errs() << "\nLocation " << value << "\n";
     static_for<MaxPrivilege>(value, state, context);
     return;
   }
@@ -617,6 +614,9 @@ private:
     } else if (analysis::isExternalCall(callSite)) {
       if (privilegeResolver->hasPrivilege<Promise>(callSite, context)) {
         makeVacuouslyTrue(state[nullptr]);
+      } else if (generator->isUsed(value)) {
+        auto oldExprID = generator->GetOrCreateExprID(value);
+        state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
       }
       return true;
     } else if (analysis::getCalledFunction(callSite)->getName().startswith("llvm")) {

@@ -46,6 +46,7 @@ public:
 	template<typename Printer>
   void
   dumpToFile() {
+		llvm::outs() << "\nDumping Expr Table -- Size :" << exprTable.size();
     auto ec = std::error_code{};
     std::string exprFileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
                                "logs/ids.binary";
@@ -85,6 +86,7 @@ public:
       printer.printFlattened(exprID, astFile);
     }
     astFile.close();
+		llvm::outs() << "\nDumping Expr Table -- Size :" << exprTable.size();
   }
 
   void
@@ -137,6 +139,10 @@ public:
       llvm::errs() << "\n\n Found Constant Expr" << *constant;
     }
     if (auto* asGepOp  = llvm::dyn_cast<llvm::GEPOperator>(constant)) {
+      llvm::outs().changeColor(llvm::raw_ostream::Colors::RED);
+      llvm::outs() << "\nFound ConstExpr GEP:"
+                   << *constant;
+      llvm::outs().resetColor();
       return GetOrCreateExprID(asGepOp);
     }
     if (auto found = leafTable.find(constant); found != leafTable.end()) {
