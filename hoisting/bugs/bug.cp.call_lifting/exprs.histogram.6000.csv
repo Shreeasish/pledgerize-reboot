@@ -1,0 +1,13 @@
+
+Shl,1
+AShr,1
+Load,82
+Or,3
+ICmp,190
+GEP,110
+Cast,127
+LShr,14
+Sub,86
+Add,112
+Switch,108
+And,24
