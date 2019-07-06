@@ -321,8 +321,6 @@ public:
     auto eraseIt = std::remove_if(disjuncts.begin(), disjuncts.end(), hasNegatedPair);
     disjuncts.erase(eraseIt, disjuncts.end());
     std::sort(disjuncts.begin(),disjuncts.end());
-    llvm::errs() << "\nAfter complements";
-    this->print(llvm::errs());
     return *this;
   }
 
@@ -375,8 +373,6 @@ public:
       this->addDisjunct(vacuousDisjunct);
     }
 
-    llvm::errs() << "\nAfter redundancies";
-    this->print(llvm::errs());
     return *this;
   }
 
@@ -411,8 +407,6 @@ public:
     disjuncts.erase(end, disjuncts.end());
     std::sort(disjuncts.begin(), disjuncts.end());
 
-    llvm::errs() << "\nAfter Implications";
-    this->print(llvm::errs());
     return *this;
   }
 

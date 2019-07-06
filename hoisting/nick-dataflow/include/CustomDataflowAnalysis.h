@@ -427,14 +427,12 @@ public:
       //  return size;
       //};
 
-
-
       // Propagate through all instructions in the block
       for (auto& i : Direction::getInstructions(*bb)) {
         [&context](auto* instruction) -> void {
           // auto fname = bb->getParent()->getName();
           auto fname = instruction->getParent()->getParent()->getName();
-          llvm::outs() << "\nWorking on :" << instruction->getName()
+          llvm::outs() << "\nWorking on :" << *instruction
                        << " @inFunction: " << fname;
           llvm::outs().changeColor(llvm::raw_ostream::Colors::YELLOW);
           llvm::outs() << "\nWith Context :";
@@ -497,8 +495,6 @@ public:
         auto* summary = getSummaryKey(f);
         // results[&f][summary] = meet({results[&f][summary], state[key]});
         results[&f][summary] = meet({results[&f][summary], state[nullptr]});
-        llvm::errs() << "\nFunction summary from " << f.getName();
-        state[nullptr][PLEDGE_CPATH].print(llvm::errs());
         Debugger debugger{PLEDGE_CPATH, llvm::outs()};
         debugger.dump(llvm::dyn_cast<llvm::Instruction>(key), context, results, 0);
       }

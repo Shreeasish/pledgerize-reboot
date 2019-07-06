@@ -196,7 +196,6 @@ private:
 
     void
     dumpUnknowns() {
-      llvm::outs() << "\nDestroying MapInterface";
       auto ec = std::error_code{};
       std::string unknownsFileName =
           "/home/shreeasish/pledgerize-reboot/hoisting/"

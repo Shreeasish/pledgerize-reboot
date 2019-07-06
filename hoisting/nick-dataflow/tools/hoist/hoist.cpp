@@ -276,6 +276,17 @@ public:
     }
   }
 
+  void
+  printCalleeStats(llvm::CallSite& cs, llvm::raw_ostream& outs) {
+    llvm::Function* callee = analysis::getCalledFunction(cs);
+
+    outs << "\nPulling in state from: " << callee->getName();
+    outs << "\nState from " << callee->getName() << ":--------------------";
+    state[callSite.getInstruction()].print(outs);
+    outs << "\n------------------------------------------------END";
+
+  }
+
 private:
   llvm::Module* module;
   const Promises promise;
@@ -462,15 +473,10 @@ public:
     handled |= handleCast(&value, state, handled);
     handleUnknown(&value, state, handled);
 
-    llvm::errs() << "\n Before Transfer Simplifications";
-    state[nullptr].print(llvm::errs());
-
     state[nullptr]
         .simplifyComplements()
         .simplifyRedundancies(generator->GetVacuousConjunct())
         .simplifyImplication();
-    llvm::errs() << "\n After Transfer Simplifications";
-    state[nullptr].print(llvm::errs());
 
     Debugger debugger{PledgeCounter};
     debugger.printAfter(stateMap[nullptr],llvm::dyn_cast<llvm::Instruction>(&value));
@@ -627,15 +633,12 @@ private:
       }
       return true;
     } else if (analysis::getCalledFunction(callSite)
-                         ->getName().startswith( "llvm")) {
+                         ->getName().startswith("llvm")) {
       return true;
     }
-
+    
+    printCalleeStats(callSite, llvm::errs());
     llvm::Function* callee = analysis::getCalledFunction(callSite);
-    llvm::errs() << "\nPulling in state from: " << callee->getName();
-    llvm::errs() << "\nState is :-----------------------------------------";
-    state[callSite.getInstruction()].print(llvm::errs());
-    llvm::errs() << "\n------------------------------------------------END";
     auto& calleeState = state[callSite.getInstruction()];
     state[nullptr] =
         wireCallerState(state[callSite.getInstruction()], callSite, callee);

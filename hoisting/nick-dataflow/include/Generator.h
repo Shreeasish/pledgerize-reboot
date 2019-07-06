@@ -408,12 +408,6 @@ public:
         disjunct.addConjunct({GetVacuousExprID(), true});
       }
     }
-    llvm::errs() << "\nPUSHING TO TRUE ---- "; 
-    llvm::errs() << "Before:";
-    disjunction.print(llvm::errs());
-    llvm::errs() << "\n---------------------- After:";
-    localDisjunction.print(llvm::errs());
-    llvm::errs() << "\n-----------------------------";
     return localDisjunction;
   }
 
