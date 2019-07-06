@@ -307,8 +307,6 @@ public:
   // Rename to Horizontal/Vertical Negation
   Disjunction&
   simplifyComplements() {
-    //llvm::errs() << "\nBefore simplification";
-    //this->print(llvm::errs());
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
       // The second check is redundant since there should never be adjacent
       // conjuncts with the same exprID
@@ -323,25 +321,27 @@ public:
     auto eraseIt = std::remove_if(disjuncts.begin(), disjuncts.end(), hasNegatedPair);
     disjuncts.erase(eraseIt, disjuncts.end());
     std::sort(disjuncts.begin(),disjuncts.end());
+    llvm::errs() << "\nAfter complements";
+    this->print(llvm::errs());
     return *this;
   }
 
+
   Disjunction&
-  simplifyRedundancies() {
-    //llvm::errs() << "\nBefore removing redundancies";
-    //this->print(llvm::errs());
-    //llvm::errs() << "\n";
-    auto prevDisjunct = disjuncts.begin();
+  simplifyRedundancies(Conjunct vacuous) {
 
     auto isComplementary = [](auto& a, auto& b) -> bool {
       return a->notNegated xor b->notNegated;
     };
+
     auto checkPrev = [&](auto& iter1, auto& iter2, auto& first, auto& second) {
       return isComplementary(iter1, iter2) 
         && std::equal(iter1 + 1,  first.end(),
                       iter2 + 1, second.end());
     };
 
+    bool removed = false;
+    auto prevDisjunct = disjuncts.begin();
     auto isRedundant = [&] (auto& disjunct) {
       if (prevDisjunct->size() != disjunct.size()) {
         prevDisjunct++;
@@ -354,13 +354,9 @@ public:
           iter1++;
           iter2++;
         } else if (checkPrev(iter1, iter2, *prevDisjunct, disjunct)) {
-          //llvm::errs() << "\nRemoving ";
-          //iter1->print(llvm::errs());
-          //llvm::errs() << "from ";
-          //prevDisjunct->print(llvm::errs());
-          
           prevDisjunct->conjunctIDs.erase(iter1);
-          return true;
+          removed |= true;
+          return true; // This removes the current disjunct
         } else {
           prevDisjunct++;
           return false;
@@ -373,9 +369,14 @@ public:
     auto from = std::remove_if(disjuncts.begin() + 1, disjuncts.end(), isRedundant);
     disjuncts.erase(from, disjuncts.end());
     this->removeEmpties();
-    //llvm::errs() << "\nAfter removing redundancies";
-    //this->print(llvm::errs());
-    //llvm::errs() << "\n";
+    if (this->isEmpty() && removed) {
+      Disjunct vacuousDisjunct{};
+      vacuousDisjunct.addConjunct(vacuous);
+      this->addDisjunct(vacuousDisjunct);
+    }
+
+    llvm::errs() << "\nAfter redundancies";
+    this->print(llvm::errs());
     return *this;
   }
 
@@ -409,6 +410,9 @@ public:
 
     disjuncts.erase(end, disjuncts.end());
     std::sort(disjuncts.begin(), disjuncts.end());
+
+    llvm::errs() << "\nAfter Implications";
+    this->print(llvm::errs());
     return *this;
   }
 

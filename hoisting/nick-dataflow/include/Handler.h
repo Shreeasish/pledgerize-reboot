@@ -127,7 +127,8 @@ public:
 private:
   void buildLibCHandlers(AnalysisPackage& package);
   Handlers libCHandlers;
-};
+}; // end class LibCHandlersMap
+
 
 
 class PrivilegeResolver {
@@ -155,6 +156,11 @@ public:
     }
     return false;
   }
+  
+  auto
+  dumpToFile() {
+    mapInterface->dumpUnknowns();
+  }
 
 private:
   LibCHandlersMap& buildLibCHandlers(AnalysisPackage&); // Handler.cpp
@@ -181,10 +187,23 @@ private:
                      getPrivilegesForImpl(cs, context, libCHandlers)) {
         return *privileges;
       } else {
-        llvm::errs() << "\nNo function found for CallSite "
-                     << *cs.getInstruction();
+        addToUnknowns(cs);
+        //llvm::errs() << "\nNo function found for CallSite "
+        //             << *cs.getInstruction();
         return {};
       }
+    }
+
+    void
+    dumpUnknowns() {
+      llvm::outs() << "\nDestroying MapInterface";
+      auto ec = std::error_code{};
+      std::string unknownsFileName =
+          "/home/shreeasish/pledgerize-reboot/hoisting/"
+          "/logs/ext_unknown";
+      auto unknownsFile = llvm::raw_fd_ostream{unknownsFileName, ec};
+      dumpUnknownFunctions(unknownsFile);
+      unknownsFile.close();
     }
 
   private:
@@ -222,11 +241,34 @@ private:
     }
 
     LibCHandlersMap libCHandlers;
+    
+    // Logging Helpers
+    void
+    dumpUnknownFunctions(llvm::raw_ostream& outs) {
+      outs << "name, callingInstruction, caller";
+      auto dump = [&outs](auto* inst, llvm::StringRef name) {
+        auto* caller = inst->getParent()->getParent();
+        outs << "\n" << name << "|:" << *inst << "|:" << caller->getName();
+      };
+
+      for (auto [inst, name] : unknownFunctions) {
+        dump(inst, name);
+      }
+      return;
+    }
+
+    void
+    addToUnknowns(const llvm::CallSite& cs) {
+      auto* value = cs.getInstruction();
+      unknownFunctions[value] = getFunctionName(cs);
+    }
+    llvm::DenseMap<llvm::Instruction*, llvm::StringRef> unknownFunctions;
   };
 
   llvm::Module& module;
   std::unique_ptr<AnalysisPackage> analysisPackage;
   std::unique_ptr<MapInterface>    mapInterface;
+
 };
 
 // std::unordered_map<std::string, FunctionPledges>

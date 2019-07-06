@@ -284,7 +284,7 @@ public:
     auto& passedAbstract = state.FindAndConstruct(nullptr);
     //auto& passedAbstract = state[nullptr];
 
-
+    /*Marshalling abstract state into functions*/
     for (auto& bb : *callee) {
       if (auto* ret = llvm::dyn_cast<llvm::ReturnInst>(bb.getTerminator());
           ret /*&& ret->getReturnValue()*/ ) {
@@ -297,6 +297,14 @@ public:
         retState = newState;
       }
     }
+   // 
+   // /*The top inst should hold final state computed for the function*/
+   // llvm::Instruction* topInst = *(callee->getEntryBlock().begin());
+   // /* The function summary should finally be kept at summaryState[nullptr]
+   //  * i.e. allResults[context][callee][function][nullptr] */
+   // auto newState = meet({summaryState[nullptr], calledState[topInst][nullptr]});
+   // needsUpdate |= !(newState == summaryState[nullptr]);
+   // summaryState[nullptr] = meet({summaryState[nullptr], calledState[topInst][nullptr]});
     return needsUpdate;
   }
 };
@@ -391,23 +399,6 @@ public:
     auto traversal = Direction::getFunctionTraversal(f);
     BasicBlockWorklist work(traversal.begin(), traversal.end());
 
-    [&context](auto* function) -> void {
-      //auto fname = bb->getParent()->getName();
-      llvm::outs() << "\nWorking on :" << function->getName();// << " @bb: " << bb->getName();
-      llvm::outs().changeColor(llvm::raw_ostream::Colors::YELLOW);
-      llvm::outs() << "\nWith Context :";
-      for (auto* func : context) {
-        if (func) {
-          llvm::outs() << *func << "->";
-        } else {
-          llvm::outs() << "nullptr"
-                       << "->";
-        }
-      }
-      llvm::outs().resetColor();
-      return;
-    }(&f);
-
     while (!work.empty()) {
       auto* bb = work.take();
 
@@ -435,40 +426,60 @@ public:
       //  }
       //  return size;
       //};
-      
+
+
 
       // Propagate through all instructions in the block
       for (auto& i : Direction::getInstructions(*bb)) {
-        //const auto& size = getSize(state[nullptr]); // state[nullptr].conjunctCount();
+        [&context](auto* instruction) -> void {
+          // auto fname = bb->getParent()->getName();
+          auto fname = instruction->getParent()->getParent()->getName();
+          llvm::outs() << "\nWorking on :" << instruction->getName()
+                       << " @inFunction: " << fname;
+          llvm::outs().changeColor(llvm::raw_ostream::Colors::YELLOW);
+          llvm::outs() << "\nWith Context :";
+          for (auto* func : context) {
+            if (func) {
+              llvm::outs() << *func << "->";
+            } else {
+              llvm::outs() << "nullptr"
+                           << "->";
+            }
+          }
+          llvm::outs().resetColor();
+          return;
+        }(&i);
+        // const auto& size = getSize(state[nullptr]); //
+        // state[nullptr].conjunctCount();
         llvm::CallSite cs(&i);
         /* Turning Off Inter-procedural Analysis */
         if (isAnalyzableCall(cs)) {
-          //analyzeCall(cs, state, context);
+          analyzeCall(cs, state, context);
         }
         // ska: uncomment to skip function calls
         // else {
         applyTransfer(i, state, context);
         results[&i] = state;
 
-        auto snapShot = [&](int promiseNum) {
-          static std::vector<int> sizes{6000};
-          auto from = std::remove_if( sizes.begin(), sizes.end(), 
-              [&](auto& size) -> bool {
-                if (Debugger::checkThreshold(state[nullptr], promiseNum, size)) {
-                  Debugger debugger{promiseNum, llvm::outs()};
-                  debugger.dump(&i, context, results, size);
-                  return true;
-                }
-                return false;
-              });
-          sizes.erase(from, sizes.end());
-        };
-        //for (int promiseNum = 0; promiseNum < 10; promiseNum++) {
-          snapShot(PLEDGE_CPATH);
-          if (Debugger::checkThreshold(state[nullptr], PLEDGE_CPATH, 40000)) {
-            Debugger::exit(&i, state[nullptr], PLEDGE_CPATH, llvm::outs());
-          }
-        //}
+        //auto snapShot = [&](int promiseNum) {
+        //  static std::vector<int> sizes{1000};
+        //  auto from = std::remove_if( sizes.begin(), sizes.end(), 
+        //      [&](auto& size) -> bool {
+        //        if (Debugger::checkThreshold(state[nullptr], promiseNum, size)) {
+        //          Debugger debugger{promiseNum, llvm::outs()};
+        //          debugger.dump(&i, context, results, size);
+        //          return true;
+        //        }
+        //        return false;
+        //      });
+        //  sizes.erase(from, sizes.end());
+        //};
+        ////for (int promiseNum = 0; promiseNum < 10; promiseNum++) {
+        // snapShot(PLEDGE_CPATH);
+        // if (Debugger::checkThreshold(state[nullptr], PLEDGE_CPATH, 40000)) {
+        //   Debugger::exit(&i, state[nullptr], PLEDGE_CPATH, llvm::outs());
+        // }
+        ////}
       }
       // If the abstract state for this block did not change, then we are done
       // with this block. Otherwise, we must update the abstract state and
@@ -480,11 +491,16 @@ public:
       for (auto* s : Direction::getSuccessors(*bb)) {
         work.add(s);
       }
-
+      
+      /* abstract function summary update */ 
       if (auto* key = Direction::getFunctionValueKey(*bb)) {
         auto* summary = getSummaryKey(f);
-        //results[&f][summary] = meet({results[&f][summary], state[key]});
+        // results[&f][summary] = meet({results[&f][summary], state[key]});
         results[&f][summary] = meet({results[&f][summary], state[nullptr]});
+        llvm::errs() << "\nFunction summary from " << f.getName();
+        state[nullptr][PLEDGE_CPATH].print(llvm::errs());
+        Debugger debugger{PLEDGE_CPATH, llvm::outs()};
+        debugger.dump(llvm::dyn_cast<llvm::Instruction>(key), context, results, 0);
       }
     }
 
@@ -521,13 +537,16 @@ public:
     auto& summaryState = calledState[callee];
     bool needsUpdate   = summaryState.size() == 0;
 
-    needsUpdate |= Direction::prepareSummaryState(cs, callee, state, summaryState, transfer, meet, context);
+    needsUpdate 
+      |= Direction::prepareSummaryState(cs, callee, state,
+                                        summaryState, transfer, 
+                                        meet, context);
 
     if (!active.count(toCall) && needsUpdate) {
       computeDataflow(*callee, newContext);
     }
 
-    state[cs.getInstruction()] = calledState[callee][callee];
+    state[cs.getInstruction()] = calledState[callee][callee]; // getSummaryKey()
     callers[toCall].insert(toUpdate);
   }
 

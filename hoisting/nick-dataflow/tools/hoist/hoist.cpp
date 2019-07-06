@@ -112,7 +112,7 @@ private:
   meetPairImpl(Disjunction& s1, Disjunction& s2) const {
     return Disjunction::unionDisjunctions(s1, s2)
             .simplifyComplements()
-            .simplifyRedundancies()
+            .simplifyRedundancies(generator->GetVacuousConjunct())
             .simplifyImplication()
             .simplifyUnique()
             .simplifyTrues();
@@ -143,7 +143,7 @@ private:
  *--------------------DEBUGGER CLASSS---------------------*
  *                                                        *
  * -------------------------------------------------------*/
-llvm::DenseMap<llvm::Instruction*, int> SContributionMap;
+llvm::DenseMap<llvm::Instruction*, int> SContributionMap; // Global Counters
 class Debugger {
 public:
   struct ContributionCounter {
@@ -198,7 +198,7 @@ public:
 
     auto ec = std::error_code{};
     std::string fileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
-                           "logs/cfg.aborted."
+                           "logs/cfg.dump."
                            + currFunction->getName().str() + ".dot";
     auto dotFile = llvm::raw_fd_ostream{fileName, ec};
 
@@ -269,12 +269,12 @@ public:
     llvm_unreachable("Exiting");
   }
 
-void
-printActivePrivileges(DisjunctionValue disjunction) const {
-  if (!disjunction[promise].isEmpty()) {
-    out << PromiseNames[promise] << " ";
+  void
+  printActivePrivileges(DisjunctionValue disjunction) const {
+    if (!disjunction[promise].isEmpty()) {
+      out << PromiseNames[promise] << " ";
+    }
   }
-}
 
 private:
   llvm::Module* module;
@@ -327,7 +327,7 @@ public:
         return withPhi;
       }
       if (isSame) {
-        llvm::errs() << "\nOptimization Applied";
+        //llvm::errs() << "\nOptimization Applied";
         return withPhi;
       }  // TODO: Careful. Phi's concretize values.
          // This has implications in the forward
@@ -461,9 +461,16 @@ public:
     handled |= handleCmpInst(&value, state, handled);
     handled |= handleCast(&value, state, handled);
     handleUnknown(&value, state, handled);
-    state[nullptr].simplifyComplements()
-                  .simplifyRedundancies()
-                  .simplifyImplication();
+
+    llvm::errs() << "\n Before Transfer Simplifications";
+    state[nullptr].print(llvm::errs());
+
+    state[nullptr]
+        .simplifyComplements()
+        .simplifyRedundancies(generator->GetVacuousConjunct())
+        .simplifyImplication();
+    llvm::errs() << "\n After Transfer Simplifications";
+    state[nullptr].print(llvm::errs());
 
     Debugger debugger{PledgeCounter};
     debugger.printAfter(stateMap[nullptr],llvm::dyn_cast<llvm::Instruction>(&value));
@@ -614,20 +621,24 @@ private:
     } else if (analysis::isExternalCall(callSite)) {
       if (privilegeResolver->hasPrivilege<Promise>(callSite, context)) {
         makeVacuouslyTrue(state[nullptr]);
-      } else if (generator->isUsed(value)) {
-        auto oldExprID = generator->GetOrCreateExprID(value);
+      } else if (generator->isUsed(value)) { /* Does not model heap clobbers */
+        auto oldExprID = generator->GetOrCreateExprID(value); 
         state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
       }
       return true;
-    } else if (analysis::getCalledFunction(callSite)->getName().startswith("llvm")) {
+    } else if (analysis::getCalledFunction(callSite)
+                         ->getName().startswith( "llvm")) {
       return true;
-    }     /* Turning off Intra-Procedural */
-    //llvm::Function* callee = analysis::getCalledFunction(callSite);
-    //auto& calleeState = state[callSite.getInstruction()];
-    //if (!calleeState.isEmpty()) {
-    //  makeVacuouslyTrue(state[nullptr]);
-    //}
-    //state[nullptr] = wireCallerState(state[callSite.getInstruction()], callSite, callee); 
+    }
+
+    llvm::Function* callee = analysis::getCalledFunction(callSite);
+    llvm::errs() << "\nPulling in state from: " << callee->getName();
+    llvm::errs() << "\nState is :-----------------------------------------";
+    state[callSite.getInstruction()].print(llvm::errs());
+    llvm::errs() << "\n------------------------------------------------END";
+    auto& calleeState = state[callSite.getInstruction()];
+    state[nullptr] =
+        wireCallerState(state[callSite.getInstruction()], callSite, callee);
     return true;
   }
 
@@ -738,7 +749,8 @@ private:
     }
     //llvm::errs() << "State before pulling context info";
     //state[nullptr].print(llvm::errs());
-    assert(state[nullptr].isEmpty() || !state[nullptr].isEmpty() && state[ret].isEmpty());
+    assert(state[nullptr].isEmpty() 
+        || !state[nullptr].isEmpty() && state[ret].isEmpty());
     state[nullptr] = state[ret];
     auto* retValue = ret->getReturnValue();
     if (!retValue) {
@@ -1064,6 +1076,12 @@ BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
 }
 
 void
+dumpGlobals() {
+  generator->dumpToFile<lowering::Printer>();
+  privilegeResolver->dumpToFile();
+}
+
+void
 runAnalysisFor(llvm::Module& m, llvm::ArrayRef<llvm::StringRef> functionNames) {
   using V = DisjunctionValue;
   using T = DisjunctionTransfer;
@@ -1072,6 +1090,16 @@ runAnalysisFor(llvm::Module& m, llvm::ArrayRef<llvm::StringRef> functionNames) {
   using D = Debugger;
   using Analysis 
     = analysis::DataflowAnalysis<V, T, M, E, D, analysis::Backward>;
+
+
+  auto dumpAnnotatedCFG = [](llvm::Function* function,
+                             Context context,
+                             auto& results) {
+    auto functionResults = results[context][function];
+    llvm::Instruction& inst = *(function->getEntryBlock().getFirstInsertionPt());
+    Debugger debugger{MaxPrivilege, llvm::outs()};
+    debugger.dump(&inst, context, functionResults, 0);
+  };
 
   for (auto fname : functionNames) {
     auto* entryPoint = m.getFunction(fname);
@@ -1083,9 +1111,9 @@ runAnalysisFor(llvm::Module& m, llvm::ArrayRef<llvm::StringRef> functionNames) {
     llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
     llvm::outs() << "\nFinished " << entryPoint->getName() << "\n";
     llvm::outs().resetColor();
+    dumpAnnotatedCFG(entryPoint, {nullptr, nullptr}, results);
   }
-  generator->dumpToFile<lowering::Printer>();
-  //lowering::Printer endLogs{generator.get(), llvm::outs(), m};
+  dumpGlobals();
 }
 
 
@@ -1099,7 +1127,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   //  }
   //  runAnalysisFor(m, {function.getName()});
   //}
-  runAnalysisFor(m, {"copy"}); // For cp
+  runAnalysisFor(m, {"main"}); // For cp
   
   svfResults->releaseAndersenWaveDiffWithType();
 
