@@ -459,6 +459,7 @@ public:
 
     constexpr Promises promise = static_cast<Promises>(PledgeCounter);
     auto state = StateAccessor<promise>{stateMap};
+    bool notEmpty = !state[nullptr].isEmpty();
 
     handled |= handleBrOrSwitch(inst, handled);
     handled |= handlePhiBackEdges(&value, state, handled);
@@ -479,6 +480,7 @@ public:
         .simplifyRedundancies(generator->GetVacuousConjunct())
         .simplifyImplication();
 
+    assert(!(notEmpty && state[nullptr].isEmpty()));
     Debugger debugger{PledgeCounter};
     debugger.printAfter(stateMap[nullptr],llvm::dyn_cast<llvm::Instruction>(&value));
     return;
