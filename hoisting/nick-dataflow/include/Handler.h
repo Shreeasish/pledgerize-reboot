@@ -34,7 +34,6 @@ private:
   tmpanalysis::tmppathResultsTy tmppathResults;
 };
 
-
 class PrivilegeCheckerBase {
 public:
   PrivilegeCheckerBase(int ap) : argposition{ap} {}
@@ -157,6 +156,17 @@ public:
     return false;
   }
   
+  template <typename Worker>
+  void
+  handleStubs(Worker& worker, llvm::CallSite& cs) {
+    /* bool isWhiteListed  = mapInterface->isWhiteListed(cs);
+     * bool isValueClobber = !isWhiteListed && mapInterface->isValueClobber(cs);
+     * worker(isWhiteListed, isValueClobber); */
+    bool isWhiteListed = mapInterface->hasSpecifications(cs); /*||hasWhiteListEntry();*/
+    worker(isWhiteListed); 
+    return;
+  }
+  
   auto
   dumpToFile() {
     mapInterface->dumpUnknowns();
@@ -194,6 +204,13 @@ private:
       }
     }
 
+    bool
+    hasSpecifications(llvm::CallSite& cs) {
+      auto name = getFunctionName(cs);
+      return libCHandlers.find(name) != libCHandlers.end()
+          || syscallBitsetMap.find(name) != syscallBitsetMap.end();
+    }
+
     void
     dumpUnknowns() {
       auto ec = std::error_code{};
@@ -224,10 +241,6 @@ private:
     getPrivilegesForImpl(const llvm::CallSite& cs, const Context& context,
                                                 LibCHandlersMap& handlers) {
       auto functionName = getFunctionName(cs);
-      //return handlers.find(functionName) == handlers.end()
-      //           ? std::optional(handlers.find(functionName)
-      //                               ->second.getPrivileges(cs, context))
-      //           : std::nullopt;
       if (auto found = handlers.find(functionName); found != handlers.end()) {
         return found->second.getPrivileges(cs, context);
       } 
@@ -238,6 +251,7 @@ private:
     getFunctionName(const llvm::CallSite& cs) const {
       return getCalledFunction(cs)->getName();
     }
+    
 
     LibCHandlersMap libCHandlers;
     
@@ -262,7 +276,7 @@ private:
       unknownFunctions[value] = getFunctionName(cs);
     }
     llvm::DenseMap<llvm::Instruction*, llvm::StringRef> unknownFunctions;
-  };
+  }; // End Class MapInterface
 
   llvm::Module& module;
   std::unique_ptr<AnalysisPackage> analysisPackage;

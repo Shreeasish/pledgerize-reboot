@@ -95,8 +95,8 @@ using DisjunctionValue  = std::array<Disjunction, COUNT - 1>;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
-constexpr int MaxPrivilege{PLEDGE_CPATH};
-constexpr int MinPrivilege{PLEDGE_CPATH};
+constexpr int MaxPrivilege{10};
+constexpr int MinPrivilege{0};
 
 class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet> {
 public:
@@ -275,14 +275,15 @@ public:
       out << PromiseNames[promise] << " ";
     }
   }
-
-  void
-  printCalleeStats(llvm::CallSite& cs, llvm::raw_ostream& outs) {
+  
+  template <typename State>
+  static void
+  printCalleeStats(llvm::CallSite& cs, llvm::raw_ostream& outs, State& state) {
     llvm::Function* callee = analysis::getCalledFunction(cs);
 
     outs << "\nPulling in state from: " << callee->getName();
     outs << "\nState from " << callee->getName() << ":--------------------";
-    state[callSite.getInstruction()].print(outs);
+    state[cs.getInstruction()].print(outs);
     outs << "\n------------------------------------------------END";
 
   }
@@ -603,45 +604,112 @@ private:
     }
     return state;
   }
+  
+  enum class CallType {
+    IndCall,
+    ExternalCall,
+    LLVMSpecific,
+    Internal
+  };
 
-  /* TODO:
-   * 1. Function Pointers - Modify Dataflow.h
-   * 2. Privileges - */
+  CallType
+  getCallType(llvm::CallSite& cs) {
+    bool isIndCall = [&cs]() {
+      auto* PAG = svfResults->getPAG();
+      return PAG->isIndirectCallSites(cs);
+    }();
+
+    bool isExtCall = [&cs, &isIndCall]() {
+      return !isIndCall && analysis::isExternalCall(cs);
+    }();
+
+    bool isLLVMCall = [&cs, &isIndCall]() {
+      return !isIndCall
+             && analysis::getCalledFunction(cs)->getName().startswith("llvm");
+    }();
+
+    if (isIndCall) {
+      return CallType::IndCall;
+    } else if (isExtCall) {
+      return CallType::ExternalCall;
+    } else if (isLLVMCall) {
+      return CallType::LLVMSpecific;
+    } else {
+      return CallType::Internal;
+    }
+  }
+
+
   template<Promises Promise>
   bool
   handleCallSite(llvm::Value* value,
                  StateAccessor<Promise>& state,
                  const Context& context,
                  bool handled) {
-
-    auto isIndCall = [](llvm::CallSite& cs) {
-      auto* PAG = svfResults->getPAG();
-      return PAG->isIndirectCallSites(cs);
-    };
     
     llvm::CallSite callSite{value};
     if (handled || !callSite.getInstruction()) {
       return handled;
-    } else if (isIndCall(callSite)) {
-      return true;
-    } else if (analysis::isExternalCall(callSite)) {
-      if (privilegeResolver->hasPrivilege<Promise>(callSite, context)) {
+    } 
+
+    auto handleIndCall = [&state, &callSite] {
+      return;
+    };
+
+    auto stubWorker = [&state, &value](bool isWhiteListed) {
+      if (!isWhiteListed) {
         makeVacuouslyTrue(state[nullptr]);
-      } else if (generator->isUsed(value)) { /* Does not model heap clobbers */
-        auto oldExprID = generator->GetOrCreateExprID(value); 
+      } else if (isWhiteListed && generator->isUsed(value)) {
+        auto oldExprID = generator->GetOrCreateExprID(value);
         state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
       }
-      return true;
-    } else if (analysis::getCalledFunction(callSite)
-                         ->getName().startswith("llvm")) {
-      return true;
+    };
+
+    auto handleExternalCall = [&state, &callSite, &context, &stubWorker] {
+      if (privilegeResolver->hasPrivilege<Promise>(callSite, context)) {
+        makeVacuouslyTrue(state[nullptr]);
+      } else {
+        privilegeResolver->handleStubs(stubWorker, callSite);
+      }
+    };
+
+    auto handleInternal = [&state, &callSite, this] {
+      Debugger::printCalleeStats(callSite, llvm::errs(), state);
+
+      llvm::Function* callee = analysis::getCalledFunction(callSite);
+      auto& calleeState      = state[callSite.getInstruction()];
+      state[nullptr] =
+          wireCallerState(state[callSite.getInstruction()], callSite, callee);
+    };
+
+    switch (getCallType(callSite)) {
+      case CallType::IndCall:
+        // handleIndCall();
+        return true;
+        break;
+      case CallType::ExternalCall:
+        handleExternalCall();
+        break;
+      case CallType::LLVMSpecific:
+        /*TODO: llvm versions of memcpy etc will need to be managed*/
+        return true; 
+        break;
+      case CallType::Internal:
+        handleInternal();
+        return true;
+        break;
     }
+    assert(false && "Broken Casing");
     
-    printCalleeStats(callSite, llvm::errs());
-    llvm::Function* callee = analysis::getCalledFunction(callSite);
-    auto& calleeState = state[callSite.getInstruction()];
-    state[nullptr] =
-        wireCallerState(state[callSite.getInstruction()], callSite, callee);
+    //else if (isIndCall(callSite)) {
+    //  return true;
+    //} else if (analysis::isExternalCall(callSite)) {
+    //  return true;
+    //} else if (analysis::getCalledFunction(callSite)
+    //                     ->getName().startswith("llvm")) {
+    //  return true;
+    //}
+    
     return true;
   }
 
