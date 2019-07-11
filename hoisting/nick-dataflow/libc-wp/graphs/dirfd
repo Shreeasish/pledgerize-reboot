@@ -1,4 +1,0 @@
-digraph _libc_dirfd {
-node [shape = record];
-rankdir = LR;
-}

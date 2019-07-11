@@ -1,4 +1,0 @@
-digraph __rshift_D2A {
-node [shape = record];
-rankdir = LR;
-}

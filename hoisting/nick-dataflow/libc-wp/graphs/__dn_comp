@@ -1,4 +1,0 @@
-digraph __dn_comp {
-node [shape = record];
-rankdir = LR;
-}

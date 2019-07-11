@@ -1,4 +1,0 @@
-digraph llvm.bswap.i32 {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph _libc_Blowfish_stream2word {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,8 +1,0 @@
-digraph strcoll_l {
-node [shape = record];
-rankdir = LR;
-strcoll_l [label = "strcoll_l | 000000000000000000000000000000000000000" ]
-strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
-strcoll_l -> strcmp 
-rank = same; strcmp ;
-}

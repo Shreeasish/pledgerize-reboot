@@ -1,4 +1,0 @@
-digraph _asr_transitionstr {
-node [shape = record];
-rankdir = LR;
-}

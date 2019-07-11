@@ -1,8 +1,0 @@
-digraph __bt_free {
-node [shape = record];
-rankdir = LR;
-__bt_free [label = "__bt_free | 000000000000000000000000000000000000000" ]
-mpool_put [label = "mpool_put | 000000000000000000000000000000000000000" ] 
-__bt_free -> mpool_put 
-rank = same; mpool_put ;
-}

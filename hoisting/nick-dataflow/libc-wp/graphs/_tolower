@@ -1,4 +1,0 @@
-digraph _tolower {
-node [shape = record];
-rankdir = LR;
-}

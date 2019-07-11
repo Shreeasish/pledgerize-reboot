@@ -1,8 +1,0 @@
-digraph sockatmark {
-node [shape = record];
-rankdir = LR;
-sockatmark [label = "sockatmark | 000000000000000000000000000000000010000" ]
-ioctl [label = "ioctl | 000000000000000000000000000000000010000" ] 
-sockatmark -> ioctl 
-rank = same; ioctl ;
-}

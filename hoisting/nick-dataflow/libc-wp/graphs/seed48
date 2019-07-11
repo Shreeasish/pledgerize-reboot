@@ -1,4 +1,0 @@
-digraph seed48 {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph __explicit_bzero_hook {
-node [shape = record];
-rankdir = LR;
-}

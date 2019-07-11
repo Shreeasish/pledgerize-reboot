@@ -1,8 +1,0 @@
-digraph fstatvfs {
-node [shape = record];
-rankdir = LR;
-fstatvfs [label = "fstatvfs | 000000000000000000000000000000000000010" ]
-fstatfs [label = "fstatfs | 000000000000000000000000000000000000010" ] 
-fstatvfs -> fstatfs 
-rank = same; fstatfs ;
-}

@@ -1,8 +1,0 @@
-digraph l64a {
-node [shape = record];
-rankdir = LR;
-l64a [label = "l64a | 000000000000000000000000000000000000000" ]
-__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
-l64a -> __errno 
-rank = same; __errno ;
-}

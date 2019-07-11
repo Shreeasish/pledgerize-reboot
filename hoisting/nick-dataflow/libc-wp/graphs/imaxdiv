@@ -1,4 +1,0 @@
-digraph imaxdiv {
-node [shape = record];
-rankdir = LR;
-}

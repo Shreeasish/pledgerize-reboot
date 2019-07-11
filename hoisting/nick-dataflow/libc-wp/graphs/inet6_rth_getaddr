@@ -1,4 +1,0 @@
-digraph inet6_rth_getaddr {
-node [shape = record];
-rankdir = LR;
-}

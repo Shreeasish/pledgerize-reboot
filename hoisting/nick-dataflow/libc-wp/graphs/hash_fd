@@ -1,8 +1,0 @@
-digraph hash_fd {
-node [shape = record];
-rankdir = LR;
-hash_fd [label = "hash_fd | 000000000000000000000000000000000000000" ]
-__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
-hash_fd -> __errno 
-rank = same; __errno ;
-}

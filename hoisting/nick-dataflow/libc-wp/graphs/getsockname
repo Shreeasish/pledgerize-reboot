@@ -1,4 +1,0 @@
-digraph _libc_getsockname {
-node [shape = record];
-rankdir = LR;
-}

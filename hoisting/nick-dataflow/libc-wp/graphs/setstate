@@ -1,4 +1,0 @@
-digraph setstate {
-node [shape = record];
-rankdir = LR;
-}

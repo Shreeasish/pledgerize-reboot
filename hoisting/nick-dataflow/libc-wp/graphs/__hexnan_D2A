@@ -1,8 +1,0 @@
-digraph __hexnan_D2A {
-node [shape = record];
-rankdir = LR;
-__hexnan_D2A [label = "__hexnan_D2A | 000000000000000000000000000000000000000" ]
-__hexdig_init_D2A [label = "__hexdig_init_D2A | 000000000000000000000000000000000000000" ] 
-__hexnan_D2A -> __hexdig_init_D2A 
-rank = same; __hexdig_init_D2A ;
-}

@@ -1,8 +1,0 @@
-digraph __sflags {
-node [shape = record];
-rankdir = LR;
-__sflags [label = "__sflags | 000000000000000000000000000000000000000" ]
-__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
-__sflags -> __errno 
-rank = same; __errno ;
-}

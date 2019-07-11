@@ -1,4 +1,0 @@
-digraph xdr_double {
-node [shape = record];
-rankdir = LR;
-}

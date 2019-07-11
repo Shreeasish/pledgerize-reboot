@@ -1,8 +1,0 @@
-digraph memstream_seek {
-node [shape = record];
-rankdir = LR;
-memstream_seek [label = "memstream_seek | 000000000000000000000000000000000000000" ]
-__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
-memstream_seek -> __errno 
-rank = same; __errno ;
-}

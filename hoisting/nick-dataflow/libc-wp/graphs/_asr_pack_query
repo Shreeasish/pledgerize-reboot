@@ -1,8 +1,0 @@
-digraph _asr_pack_query {
-node [shape = record];
-rankdir = LR;
-_asr_pack_query [label = "_asr_pack_query | 000000000000000000000000000000000000000" ]
-strlen [label = "strlen | 000000000000000000000000000000000000000" ] 
-_asr_pack_query -> strlen 
-rank = same; strlen ;
-}

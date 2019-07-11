@@ -1,8 +1,0 @@
-digraph leaps_thru_end_of.1791 {
-node [shape = record];
-rankdir = LR;
-leaps_thru_end_of.1791 [label = "leaps_thru_end_of.1791 | 000000000000000000000000000000000000000" ]
-leaps_thru_end_of.1791 [label = "leaps_thru_end_of.1791 | 000000000000000000000000000000000000000" ] 
-leaps_thru_end_of.1791 -> leaps_thru_end_of.1791 
-rank = same; leaps_thru_end_of.1791 ;
-}

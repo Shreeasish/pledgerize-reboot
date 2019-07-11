@@ -1,8 +1,0 @@
-digraph nrand48 {
-node [shape = record];
-rankdir = LR;
-nrand48 [label = "nrand48 | 000000000000000000000000000000000000000" ]
-__dorand48 [label = "__dorand48 | 000000000000000000000000000000000000000" ] 
-nrand48 -> __dorand48 
-rank = same; __dorand48 ;
-}

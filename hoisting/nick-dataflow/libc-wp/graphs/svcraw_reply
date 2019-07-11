@@ -1,4 +1,0 @@
-digraph svcraw_reply {
-node [shape = record];
-rankdir = LR;
-}

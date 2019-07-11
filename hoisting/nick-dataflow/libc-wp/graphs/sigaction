@@ -1,4 +1,0 @@
-digraph _libc_sigaction {
-node [shape = record];
-rankdir = LR;
-}

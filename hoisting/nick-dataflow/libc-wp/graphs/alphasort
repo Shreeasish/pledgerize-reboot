@@ -1,8 +1,0 @@
-digraph alphasort {
-node [shape = record];
-rankdir = LR;
-alphasort [label = "alphasort | 000000000000000000000000000000000000000" ]
-strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
-alphasort -> strcmp 
-rank = same; strcmp ;
-}

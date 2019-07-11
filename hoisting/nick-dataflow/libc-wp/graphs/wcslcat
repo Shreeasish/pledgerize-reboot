@@ -1,8 +1,0 @@
-digraph _libc_wcslcat {
-node [shape = record];
-rankdir = LR;
-wcslcat [label = "wcslcat | 000000000000000000000000000000000000000" ]
-wcslen [label = "wcslen | 000000000000000000000000000000000000000" ] 
-wcslcat -> wcslen 
-rank = same; wcslen ;
-}

@@ -1,4 +1,0 @@
-digraph __call_hash {
-node [shape = record];
-rankdir = LR;
-}

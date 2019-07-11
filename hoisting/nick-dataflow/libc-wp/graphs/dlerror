@@ -1,4 +1,0 @@
-digraph dlerror {
-node [shape = record];
-rankdir = LR;
-}

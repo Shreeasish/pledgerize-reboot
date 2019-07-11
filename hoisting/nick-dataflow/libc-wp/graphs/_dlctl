@@ -1,4 +1,0 @@
-digraph _dlctl {
-node [shape = record];
-rankdir = LR;
-}

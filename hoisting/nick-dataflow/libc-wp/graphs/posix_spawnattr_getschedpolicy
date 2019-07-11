@@ -1,4 +1,0 @@
-digraph posix_spawnattr_getschedpolicy {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph _libc_socketpair {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,8 +1,0 @@
-digraph strncasecmp_l {
-node [shape = record];
-rankdir = LR;
-strncasecmp_l [label = "strncasecmp_l | 000000000000000000000000000000000000000" ]
-strncasecmp [label = "strncasecmp | 000000000000000000000000000000000000000" ] 
-strncasecmp_l -> strncasecmp 
-rank = same; strncasecmp ;
-}

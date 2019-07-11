@@ -1,4 +1,0 @@
-digraph setlogmask {
-node [shape = record];
-rankdir = LR;
-}

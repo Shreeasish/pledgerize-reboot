@@ -1,4 +1,0 @@
-digraph _libc___flt_rounds {
-node [shape = record];
-rankdir = LR;
-}

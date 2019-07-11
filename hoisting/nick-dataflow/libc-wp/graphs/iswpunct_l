@@ -1,8 +1,0 @@
-digraph iswpunct_l {
-node [shape = record];
-rankdir = LR;
-iswpunct_l [label = "iswpunct_l | 000000000000000000000000000000000000000" ]
-___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
-iswpunct_l -> ___runetype_mb 
-rank = same; ___runetype_mb ;
-}

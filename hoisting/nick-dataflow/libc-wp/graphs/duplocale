@@ -1,8 +1,0 @@
-digraph duplocale {
-node [shape = record];
-rankdir = LR;
-duplocale [label = "duplocale | 000000000000000000000000000000000000000" ]
-__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
-duplocale -> __errno 
-rank = same; __errno ;
-}

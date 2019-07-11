@@ -1,8 +1,0 @@
-digraph _libc_xdr_ypstat {
-node [shape = record];
-rankdir = LR;
-xdr_ypstat [label = "xdr_ypstat | 000000000000000000000000000000000000000" ]
-xdr_enum [label = "xdr_enum | 000000000000000000000000000000000000000" ] 
-xdr_ypstat -> xdr_enum 
-rank = same; xdr_enum ;
-}

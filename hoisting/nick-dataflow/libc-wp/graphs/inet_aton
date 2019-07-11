@@ -1,4 +1,0 @@
-digraph _libc_inet_aton {
-node [shape = record];
-rankdir = LR;
-}

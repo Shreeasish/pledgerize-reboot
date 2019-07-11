@@ -1,4 +1,0 @@
-digraph _libc_getdents {
-node [shape = record];
-rankdir = LR;
-}

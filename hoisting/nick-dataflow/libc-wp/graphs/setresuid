@@ -1,4 +1,0 @@
-digraph _libc_setresuid {
-node [shape = record];
-rankdir = LR;
-}

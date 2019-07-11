@@ -1,4 +1,0 @@
-digraph svcerr_systemerr {
-node [shape = record];
-rankdir = LR;
-}

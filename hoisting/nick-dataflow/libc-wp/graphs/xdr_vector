@@ -1,4 +1,0 @@
-digraph xdr_vector {
-node [shape = record];
-rankdir = LR;
-}

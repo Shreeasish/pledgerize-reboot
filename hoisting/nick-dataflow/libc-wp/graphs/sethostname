@@ -1,8 +1,0 @@
-digraph sethostname {
-node [shape = record];
-rankdir = LR;
-sethostname [label = "sethostname | 000000000000000000000000000000000010000" ]
-sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
-sethostname -> sysctl 
-rank = same; sysctl ;
-}

@@ -1,4 +1,0 @@
-digraph _libc__rb_remove {
-node [shape = record];
-rankdir = LR;
-}

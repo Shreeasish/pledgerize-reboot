@@ -1,8 +1,0 @@
-digraph _libc_time {
-node [shape = record];
-rankdir = LR;
-time [label = "time | 000000000000000000000000000000000010000" ]
-gettimeofday [label = "gettimeofday | 000000000000000000000000000000000010000" ] 
-time -> gettimeofday 
-rank = same; gettimeofday ;
-}

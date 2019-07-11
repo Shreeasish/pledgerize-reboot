@@ -1,8 +1,0 @@
-digraph _libc_mquery {
-node [shape = record];
-rankdir = LR;
-mquery [label = "mquery | 000000000000000000000000000000000010000" ]
-__syscall [label = "__syscall | 000000000000000000000000000000000000000" ] 
-mquery -> __syscall 
-rank = same; __syscall ;
-}

@@ -1,4 +1,0 @@
-digraph link_ntoa {
-node [shape = record];
-rankdir = LR;
-}

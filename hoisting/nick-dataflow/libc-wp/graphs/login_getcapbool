@@ -1,8 +1,0 @@
-digraph _libc_login_getcapbool {
-node [shape = record];
-rankdir = LR;
-login_getcapbool [label = "login_getcapbool | 000000000000000000000000000000000000000" ]
-cgetcap [label = "cgetcap | 000000000000000000000000000000000000000" ] 
-login_getcapbool -> cgetcap 
-rank = same; cgetcap ;
-}

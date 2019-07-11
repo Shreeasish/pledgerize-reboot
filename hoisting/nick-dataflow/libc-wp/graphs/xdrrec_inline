@@ -1,4 +1,0 @@
-digraph xdrrec_inline {
-node [shape = record];
-rankdir = LR;
-}

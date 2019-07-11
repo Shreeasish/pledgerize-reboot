@@ -1,4 +1,0 @@
-digraph _libc_isalnum {
-node [shape = record];
-rankdir = LR;
-}

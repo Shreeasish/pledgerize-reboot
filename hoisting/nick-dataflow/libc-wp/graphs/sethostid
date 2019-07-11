@@ -1,8 +1,0 @@
-digraph sethostid {
-node [shape = record];
-rankdir = LR;
-sethostid [label = "sethostid | 000000000000000000000000000000000010000" ]
-sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
-sethostid -> sysctl 
-rank = same; sysctl ;
-}

@@ -1,4 +1,0 @@
-digraph _fwalk {
-node [shape = record];
-rankdir = LR;
-}

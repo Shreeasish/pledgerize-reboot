@@ -1,8 +1,0 @@
-digraph islower_l {
-node [shape = record];
-rankdir = LR;
-islower_l [label = "islower_l | 000000000000000000000000000000000000000" ]
-islower [label = "islower | 000000000000000000000000000000000000000" ] 
-islower_l -> islower 
-rank = same; islower ;
-}

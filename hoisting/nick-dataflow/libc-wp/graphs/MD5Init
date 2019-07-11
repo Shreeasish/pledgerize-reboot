@@ -1,4 +1,0 @@
-digraph _libc_MD5Init {
-node [shape = record];
-rankdir = LR;
-}

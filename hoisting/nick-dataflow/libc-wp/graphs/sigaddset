@@ -1,8 +1,0 @@
-digraph _libc_sigaddset {
-node [shape = record];
-rankdir = LR;
-sigaddset [label = "sigaddset | 000000000000000000000000000000000000000" ]
-__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
-sigaddset -> __errno 
-rank = same; __errno ;
-}

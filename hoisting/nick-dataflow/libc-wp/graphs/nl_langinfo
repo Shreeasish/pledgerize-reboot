@@ -1,8 +1,0 @@
-digraph _libc_nl_langinfo {
-node [shape = record];
-rankdir = LR;
-nl_langinfo [label = "nl_langinfo | 000000000000000000000000000000000000000" ]
-_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
-nl_langinfo -> _CurrentRuneLocale 
-rank = same; _CurrentRuneLocale ;
-}

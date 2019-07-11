@@ -1,8 +1,0 @@
-digraph inet_addr {
-node [shape = record];
-rankdir = LR;
-inet_addr [label = "inet_addr | 000000000000000000000000000000000000000" ]
-inet_aton [label = "inet_aton | 000000000000000000000000000000000000000" ] 
-inet_addr -> inet_aton 
-rank = same; inet_aton ;
-}

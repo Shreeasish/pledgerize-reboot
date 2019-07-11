@@ -1,4 +1,0 @@
-digraph _libc_sendmsg {
-node [shape = record];
-rankdir = LR;
-}

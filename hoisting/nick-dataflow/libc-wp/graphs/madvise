@@ -1,4 +1,0 @@
-digraph _libc_madvise {
-node [shape = record];
-rankdir = LR;
-}

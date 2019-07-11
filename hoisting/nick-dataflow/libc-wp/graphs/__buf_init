@@ -1,4 +1,0 @@
-digraph __buf_init {
-node [shape = record];
-rankdir = LR;
-}

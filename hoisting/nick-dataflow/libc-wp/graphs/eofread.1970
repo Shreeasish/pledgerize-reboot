@@ -1,4 +1,0 @@
-digraph eofread.1970 {
-node [shape = record];
-rankdir = LR;
-}

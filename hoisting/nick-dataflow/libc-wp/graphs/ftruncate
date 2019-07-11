@@ -1,8 +1,0 @@
-digraph _libc_ftruncate {
-node [shape = record];
-rankdir = LR;
-ftruncate [label = "ftruncate | 000000000000000000000000000000000010000" ]
-__syscall [label = "__syscall | 000000000000000000000000000000000000000" ] 
-ftruncate -> __syscall 
-rank = same; __syscall ;
-}

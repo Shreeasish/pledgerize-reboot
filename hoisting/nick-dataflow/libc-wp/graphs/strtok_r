@@ -1,4 +1,0 @@
-digraph _libc_strtok_r {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph set_rpc_maxgrouplist {
-node [shape = record];
-rankdir = LR;
-}

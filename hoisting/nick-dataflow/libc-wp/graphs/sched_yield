@@ -1,4 +1,0 @@
-digraph _libc_sched_yield {
-node [shape = record];
-rankdir = LR;
-}

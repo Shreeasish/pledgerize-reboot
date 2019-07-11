@@ -1,8 +1,0 @@
-digraph utime {
-node [shape = record];
-rankdir = LR;
-utime [label = "utime | 000000000000000000000001000000000000000" ]
-utimes [label = "utimes | 000000000000000000000001000000000000000" ] 
-utime -> utimes 
-rank = same; utimes ;
-}

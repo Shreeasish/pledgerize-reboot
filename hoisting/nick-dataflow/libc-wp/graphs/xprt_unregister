@@ -1,4 +1,0 @@
-digraph _libc_xprt_unregister {
-node [shape = record];
-rankdir = LR;
-}

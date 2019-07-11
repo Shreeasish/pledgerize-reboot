@@ -1,4 +1,0 @@
-digraph _wctrans_init {
-node [shape = record];
-rankdir = LR;
-}

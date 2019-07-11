@@ -1,4 +1,0 @@
-digraph clnttcp_geterr {
-node [shape = record];
-rankdir = LR;
-}

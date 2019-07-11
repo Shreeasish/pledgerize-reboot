@@ -1,8 +1,0 @@
-digraph _citrus_none_ctype_mbsnrtowcs {
-node [shape = record];
-rankdir = LR;
-_citrus_none_ctype_mbsnrtowcs [label = "_citrus_none_ctype_mbsnrtowcs | 000000000000000000000000000000000000000" ]
-strnlen [label = "strnlen | 000000000000000000000000000000000000000" ] 
-_citrus_none_ctype_mbsnrtowcs -> strnlen 
-rank = same; strnlen ;
-}

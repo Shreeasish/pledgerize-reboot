@@ -1,8 +1,0 @@
-digraph __ypexclude_is {
-node [shape = record];
-rankdir = LR;
-__ypexclude_is [label = "__ypexclude_is | 000000000000000000000000000000000000000" ]
-strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
-__ypexclude_is -> strcmp 
-rank = same; strcmp ;
-}

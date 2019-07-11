@@ -1,8 +1,0 @@
-digraph wcscoll {
-node [shape = record];
-rankdir = LR;
-wcscoll [label = "wcscoll | 000000000000000000000000000000000000000" ]
-wcscmp [label = "wcscmp | 000000000000000000000000000000000000000" ] 
-wcscoll -> wcscmp 
-rank = same; wcscmp ;
-}

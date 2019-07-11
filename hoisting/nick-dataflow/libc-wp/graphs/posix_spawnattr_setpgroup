@@ -1,4 +1,0 @@
-digraph posix_spawnattr_setpgroup {
-node [shape = record];
-rankdir = LR;
-}

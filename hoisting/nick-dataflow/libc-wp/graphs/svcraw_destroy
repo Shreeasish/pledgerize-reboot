@@ -1,4 +1,0 @@
-digraph svcraw_destroy {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph __res_mailok {
-node [shape = record];
-rankdir = LR;
-}

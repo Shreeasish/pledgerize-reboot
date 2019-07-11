@@ -1,4 +1,0 @@
-digraph __lo0bits_D2A {
-node [shape = record];
-rankdir = LR;
-}

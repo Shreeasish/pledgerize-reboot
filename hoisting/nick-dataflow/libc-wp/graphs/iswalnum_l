@@ -1,8 +1,0 @@
-digraph iswalnum_l {
-node [shape = record];
-rankdir = LR;
-iswalnum_l [label = "iswalnum_l | 000000000000000000000000000000000000000" ]
-___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
-iswalnum_l -> ___runetype_mb 
-rank = same; ___runetype_mb ;
-}

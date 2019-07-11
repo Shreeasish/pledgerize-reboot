@@ -1,4 +1,0 @@
-digraph __match_D2A {
-node [shape = record];
-rankdir = LR;
-}

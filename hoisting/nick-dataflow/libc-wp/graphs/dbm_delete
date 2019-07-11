@@ -1,4 +1,0 @@
-digraph _libc_dbm_delete {
-node [shape = record];
-rankdir = LR;
-}

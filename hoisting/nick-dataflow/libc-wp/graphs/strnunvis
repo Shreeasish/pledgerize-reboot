@@ -1,8 +1,0 @@
-digraph strnunvis {
-node [shape = record];
-rankdir = LR;
-strnunvis [label = "strnunvis | 000000000000000000000000000000000000000" ]
-unvis [label = "unvis | 000000000000000000000000000000000000000" ] 
-strnunvis -> unvis 
-rank = same; unvis ;
-}

@@ -1,4 +1,0 @@
-digraph __dberr {
-node [shape = record];
-rankdir = LR;
-}

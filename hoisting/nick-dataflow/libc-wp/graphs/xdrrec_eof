@@ -1,4 +1,0 @@
-digraph _libc_xdrrec_eof {
-node [shape = record];
-rankdir = LR;
-}

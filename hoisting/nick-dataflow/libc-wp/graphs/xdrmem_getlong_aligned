@@ -1,4 +1,0 @@
-digraph xdrmem_getlong_aligned {
-node [shape = record];
-rankdir = LR;
-}

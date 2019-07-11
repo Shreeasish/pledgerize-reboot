@@ -1,4 +1,0 @@
-digraph _asr_unpack_header {
-node [shape = record];
-rankdir = LR;
-}

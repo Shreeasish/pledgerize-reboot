@@ -1,4 +1,0 @@
-digraph clntraw_freeres {
-node [shape = record];
-rankdir = LR;
-}

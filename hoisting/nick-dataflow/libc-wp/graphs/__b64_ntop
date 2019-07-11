@@ -1,4 +1,0 @@
-digraph __b64_ntop {
-node [shape = record];
-rankdir = LR;
-}

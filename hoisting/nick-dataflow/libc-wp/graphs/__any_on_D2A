@@ -1,4 +1,0 @@
-digraph __any_on_D2A {
-node [shape = record];
-rankdir = LR;
-}

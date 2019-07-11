@@ -1,4 +1,0 @@
-digraph dbm_error {
-node [shape = record];
-rankdir = LR;
-}

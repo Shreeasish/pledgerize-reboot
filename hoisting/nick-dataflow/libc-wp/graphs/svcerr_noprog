@@ -1,4 +1,0 @@
-digraph _libc_svcerr_noprog {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph xdrmem_setpos {
-node [shape = record];
-rankdir = LR;
-}

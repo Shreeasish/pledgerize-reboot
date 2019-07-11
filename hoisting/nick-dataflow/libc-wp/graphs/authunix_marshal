@@ -1,4 +1,0 @@
-digraph authunix_marshal {
-node [shape = record];
-rankdir = LR;
-}

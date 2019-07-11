@@ -1,4 +1,0 @@
-digraph __bt_pgout {
-node [shape = record];
-rankdir = LR;
-}

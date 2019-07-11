@@ -1,4 +1,0 @@
-digraph dl_iterate_phdr {
-node [shape = record];
-rankdir = LR;
-}

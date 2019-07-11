@@ -1,4 +1,0 @@
-digraph __res_dnok {
-node [shape = record];
-rankdir = LR;
-}

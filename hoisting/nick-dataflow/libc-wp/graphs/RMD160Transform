@@ -1,4 +1,0 @@
-digraph _libc_RMD160Transform {
-node [shape = record];
-rankdir = LR;
-}

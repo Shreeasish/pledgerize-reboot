@@ -1,4 +1,0 @@
-digraph _libc_umask {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph llvm.va_copy {
-node [shape = record];
-rankdir = LR;
-}

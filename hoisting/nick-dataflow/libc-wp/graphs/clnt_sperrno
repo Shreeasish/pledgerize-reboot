@@ -1,4 +1,0 @@
-digraph _libc_clnt_sperrno {
-node [shape = record];
-rankdir = LR;
-}

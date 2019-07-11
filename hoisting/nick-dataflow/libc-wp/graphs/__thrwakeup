@@ -1,4 +1,0 @@
-digraph _libc___thrwakeup {
-node [shape = record];
-rankdir = LR;
-}

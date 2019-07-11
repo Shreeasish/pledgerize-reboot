@@ -1,4 +1,0 @@
-digraph skip {
-node [shape = record];
-rankdir = LR;
-}

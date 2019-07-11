@@ -1,8 +1,0 @@
-digraph isalpha_l {
-node [shape = record];
-rankdir = LR;
-isalpha_l [label = "isalpha_l | 000000000000000000000000000000000000000" ]
-isalpha [label = "isalpha | 000000000000000000000000000000000000000" ] 
-isalpha_l -> isalpha 
-rank = same; isalpha ;
-}

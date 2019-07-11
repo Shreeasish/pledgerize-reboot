@@ -1,8 +1,0 @@
-digraph ftok {
-node [shape = record];
-rankdir = LR;
-ftok [label = "ftok | 000000000000000000000000000000000010000" ]
-stat [label = "stat | 000000000000000000000000000000000010000" ] 
-ftok -> stat 
-rank = same; stat ;
-}

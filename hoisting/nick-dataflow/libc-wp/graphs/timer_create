@@ -1,8 +1,0 @@
-digraph timer_create {
-node [shape = record];
-rankdir = LR;
-timer_create [label = "timer_create | 000000000000000000000000000000000000000" ]
-__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
-timer_create -> __errno 
-rank = same; __errno ;
-}

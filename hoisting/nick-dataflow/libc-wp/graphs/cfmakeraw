@@ -1,4 +1,0 @@
-digraph cfmakeraw {
-node [shape = record];
-rankdir = LR;
-}

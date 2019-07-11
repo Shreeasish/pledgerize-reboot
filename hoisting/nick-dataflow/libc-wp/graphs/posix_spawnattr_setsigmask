@@ -1,4 +1,0 @@
-digraph posix_spawnattr_setsigmask {
-node [shape = record];
-rankdir = LR;
-}

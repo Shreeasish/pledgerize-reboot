@@ -1,4 +1,0 @@
-digraph _libc_strpbrk {
-node [shape = record];
-rankdir = LR;
-}

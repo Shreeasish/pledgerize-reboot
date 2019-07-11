@@ -1,8 +1,0 @@
-digraph xdrrec_getlong {
-node [shape = record];
-rankdir = LR;
-xdrrec_getlong [label = "xdrrec_getlong | 000000000000000000000000000000000000000" ]
-xdrrec_getbytes [label = "xdrrec_getbytes | 000000000000000000000000000000000000000" ] 
-xdrrec_getlong -> xdrrec_getbytes 
-rank = same; xdrrec_getbytes ;
-}

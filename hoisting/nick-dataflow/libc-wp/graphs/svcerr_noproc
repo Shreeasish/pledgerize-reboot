@@ -1,4 +1,0 @@
-digraph svcerr_noproc {
-node [shape = record];
-rankdir = LR;
-}

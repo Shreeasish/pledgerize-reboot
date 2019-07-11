@@ -1,4 +1,0 @@
-digraph _libc_funlockfile {
-node [shape = record];
-rankdir = LR;
-}

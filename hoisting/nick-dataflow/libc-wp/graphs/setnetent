@@ -1,4 +1,0 @@
-digraph setnetent {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph _libc_msgsnd {
-node [shape = record];
-rankdir = LR;
-}

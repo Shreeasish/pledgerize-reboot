@@ -1,8 +1,0 @@
-digraph tcgetpgrp {
-node [shape = record];
-rankdir = LR;
-tcgetpgrp [label = "tcgetpgrp | 000000000000000000000000000000000010000" ]
-ioctl [label = "ioctl | 000000000000000000000000000000000010000" ] 
-tcgetpgrp -> ioctl 
-rank = same; ioctl ;
-}

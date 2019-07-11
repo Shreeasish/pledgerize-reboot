@@ -1,8 +1,0 @@
-digraph _asr_unpack_query {
-node [shape = record];
-rankdir = LR;
-_asr_unpack_query [label = "_asr_unpack_query | 000000000000000000000000000000000000000" ]
-unpack_dname [label = "unpack_dname | 000000000000000000000000000000000000000" ] 
-_asr_unpack_query -> unpack_dname 
-rank = same; unpack_dname ;
-}

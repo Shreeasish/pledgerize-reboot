@@ -1,4 +1,0 @@
-digraph sethostent {
-node [shape = record];
-rankdir = LR;
-}

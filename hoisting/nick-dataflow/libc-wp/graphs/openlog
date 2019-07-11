@@ -1,8 +1,0 @@
-digraph openlog {
-node [shape = record];
-rankdir = LR;
-openlog [label = "openlog | 000000000000000000000000000000000000000" ]
-openlog_r [label = "openlog_r | 000000000000000000000000000000000000000" ] 
-openlog -> openlog_r 
-rank = same; openlog_r ;
-}

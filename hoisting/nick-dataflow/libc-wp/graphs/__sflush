@@ -1,4 +1,0 @@
-digraph __sflush {
-node [shape = record];
-rankdir = LR;
-}

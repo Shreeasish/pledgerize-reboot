@@ -1,4 +1,0 @@
-digraph _mcount {
-node [shape = record];
-rankdir = LR;
-}

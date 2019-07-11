@@ -1,4 +1,0 @@
-digraph dbm_dirfno {
-node [shape = record];
-rankdir = LR;
-}

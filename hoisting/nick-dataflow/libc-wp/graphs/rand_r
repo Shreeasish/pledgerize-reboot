@@ -1,4 +1,0 @@
-digraph _libc_rand_r {
-node [shape = record];
-rankdir = LR;
-}

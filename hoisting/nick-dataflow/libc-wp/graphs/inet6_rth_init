@@ -1,4 +1,0 @@
-digraph inet6_rth_init {
-node [shape = record];
-rankdir = LR;
-}

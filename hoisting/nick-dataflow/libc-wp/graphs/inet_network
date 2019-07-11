@@ -1,4 +1,0 @@
-digraph _libc_inet_network {
-node [shape = record];
-rankdir = LR;
-}

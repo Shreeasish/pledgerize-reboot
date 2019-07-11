@@ -1,4 +1,0 @@
-digraph _libc___getcwd {
-node [shape = record];
-rankdir = LR;
-}

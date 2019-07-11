@@ -1,4 +1,0 @@
-digraph _libc_vfork {
-node [shape = record];
-rankdir = LR;
-}

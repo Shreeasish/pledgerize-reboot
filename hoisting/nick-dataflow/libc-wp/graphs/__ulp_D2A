@@ -1,4 +1,0 @@
-digraph __ulp_D2A {
-node [shape = record];
-rankdir = LR;
-}

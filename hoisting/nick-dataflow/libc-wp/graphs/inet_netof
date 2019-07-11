@@ -1,4 +1,0 @@
-digraph inet_netof {
-node [shape = record];
-rankdir = LR;
-}

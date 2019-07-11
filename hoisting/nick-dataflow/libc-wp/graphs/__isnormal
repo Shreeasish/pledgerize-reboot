@@ -1,4 +1,0 @@
-digraph __isnormal {
-node [shape = record];
-rankdir = LR;
-}

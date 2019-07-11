@@ -1,4 +1,0 @@
-digraph _libc_setgroups {
-node [shape = record];
-rankdir = LR;
-}

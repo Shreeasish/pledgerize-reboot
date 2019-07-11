@@ -1,8 +1,0 @@
-digraph _libc_uuid_is_nil {
-node [shape = record];
-rankdir = LR;
-uuid_is_nil [label = "uuid_is_nil | 000000000000000000000000000000000000000" ]
-memcmp [label = "memcmp | 000000000000000000000000000000000000000" ] 
-uuid_is_nil -> memcmp 
-rank = same; memcmp ;
-}

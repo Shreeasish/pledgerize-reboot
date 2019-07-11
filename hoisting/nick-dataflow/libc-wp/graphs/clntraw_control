@@ -1,4 +1,0 @@
-digraph clntraw_control {
-node [shape = record];
-rankdir = LR;
-}

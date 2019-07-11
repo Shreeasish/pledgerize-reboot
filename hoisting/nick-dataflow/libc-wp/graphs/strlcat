@@ -1,8 +1,0 @@
-digraph _libc_strlcat {
-node [shape = record];
-rankdir = LR;
-strlcat [label = "strlcat | 000000000000000000000000000000000000000" ]
-strlen [label = "strlen | 000000000000000000000000000000000000000" ] 
-strlcat -> strlen 
-rank = same; strlen ;
-}

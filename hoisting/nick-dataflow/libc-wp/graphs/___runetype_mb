@@ -1,4 +1,0 @@
-digraph ___runetype_mb {
-node [shape = record];
-rankdir = LR;
-}

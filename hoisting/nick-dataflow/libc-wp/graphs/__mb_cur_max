@@ -1,8 +1,0 @@
-digraph _libc___mb_cur_max {
-node [shape = record];
-rankdir = LR;
-__mb_cur_max [label = "__mb_cur_max | 000000000000000000000000000000000000000" ]
-_CurrentRuneLocale [label = "_CurrentRuneLocale | 000000000000000000000000000000000000000" ] 
-__mb_cur_max -> _CurrentRuneLocale 
-rank = same; _CurrentRuneLocale ;
-}

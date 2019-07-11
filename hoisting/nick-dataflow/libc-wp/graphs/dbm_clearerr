@@ -1,4 +1,0 @@
-digraph dbm_clearerr {
-node [shape = record];
-rankdir = LR;
-}

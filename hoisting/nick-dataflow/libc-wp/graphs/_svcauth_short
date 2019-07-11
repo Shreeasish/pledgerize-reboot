@@ -1,4 +1,0 @@
-digraph _libc__svcauth_short {
-node [shape = record];
-rankdir = LR;
-}

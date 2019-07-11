@@ -1,4 +1,0 @@
-digraph difftime {
-node [shape = record];
-rankdir = LR;
-}

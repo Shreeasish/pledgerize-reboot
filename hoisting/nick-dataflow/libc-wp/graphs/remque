@@ -1,4 +1,0 @@
-digraph remque {
-node [shape = record];
-rankdir = LR;
-}

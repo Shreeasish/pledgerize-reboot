@@ -1,4 +1,0 @@
-digraph llvm.va_end {
-node [shape = record];
-rankdir = LR;
-}

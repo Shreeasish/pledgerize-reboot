@@ -1,4 +1,0 @@
-digraph _libc_getentropy {
-node [shape = record];
-rankdir = LR;
-}

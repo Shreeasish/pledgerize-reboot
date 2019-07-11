@@ -1,8 +1,0 @@
-digraph r_sort_b {
-node [shape = record];
-rankdir = LR;
-r_sort_b [label = "r_sort_b | 000000000000000000000000000000000000000" ]
-r_sort_b [label = "r_sort_b | 000000000000000000000000000000000000000" ] 
-r_sort_b -> r_sort_b 
-rank = same; r_sort_b ;
-}

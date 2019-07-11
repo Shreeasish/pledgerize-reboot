@@ -1,4 +1,0 @@
-digraph xdrrec_putbytes {
-node [shape = record];
-rankdir = LR;
-}

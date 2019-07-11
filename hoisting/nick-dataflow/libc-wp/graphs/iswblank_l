@@ -1,8 +1,0 @@
-digraph iswblank_l {
-node [shape = record];
-rankdir = LR;
-iswblank_l [label = "iswblank_l | 000000000000000000000000000000000000000" ]
-___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
-iswblank_l -> ___runetype_mb 
-rank = same; ___runetype_mb ;
-}

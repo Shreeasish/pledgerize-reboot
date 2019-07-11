@@ -1,8 +1,0 @@
-digraph ispunct_l {
-node [shape = record];
-rankdir = LR;
-ispunct_l [label = "ispunct_l | 000000000000000000000000000000000000000" ]
-ispunct [label = "ispunct | 000000000000000000000000000000000000000" ] 
-ispunct_l -> ispunct 
-rank = same; ispunct ;
-}

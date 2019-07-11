@@ -1,4 +1,0 @@
-digraph llvm.memset.p0i8.i64 {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph authnone_validate {
-node [shape = record];
-rankdir = LR;
-}

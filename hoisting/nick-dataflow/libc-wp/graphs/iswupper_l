@@ -1,8 +1,0 @@
-digraph iswupper_l {
-node [shape = record];
-rankdir = LR;
-iswupper_l [label = "iswupper_l | 000000000000000000000000000000000000000" ]
-___runetype_mb [label = "___runetype_mb | 000000000000000000000000000000000000000" ] 
-iswupper_l -> ___runetype_mb 
-rank = same; ___runetype_mb ;
-}

@@ -1,4 +1,0 @@
-digraph _libc_cgetnum {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph _libc_wcsncat {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph _libc_poll {
-node [shape = record];
-rankdir = LR;
-}

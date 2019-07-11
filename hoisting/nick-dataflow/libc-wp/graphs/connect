@@ -1,4 +1,0 @@
-digraph _libc_connect {
-node [shape = record];
-rankdir = LR;
-}

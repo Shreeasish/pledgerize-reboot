@@ -1,4 +1,0 @@
-digraph cfgetispeed {
-node [shape = record];
-rankdir = LR;
-}

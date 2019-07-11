@@ -1,4 +1,0 @@
-digraph _libc_SHA512Init {
-node [shape = record];
-rankdir = LR;
-}

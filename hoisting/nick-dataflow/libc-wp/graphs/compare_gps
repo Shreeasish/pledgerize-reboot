@@ -1,8 +1,0 @@
-digraph compare_gps {
-node [shape = record];
-rankdir = LR;
-compare_gps [label = "compare_gps | 000000000000000000000000000000000000000" ]
-strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
-compare_gps -> strcmp 
-rank = same; strcmp ;
-}

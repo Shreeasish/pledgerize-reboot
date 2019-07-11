@@ -1,4 +1,0 @@
-digraph inet6_opt_set_val {
-node [shape = record];
-rankdir = LR;
-}

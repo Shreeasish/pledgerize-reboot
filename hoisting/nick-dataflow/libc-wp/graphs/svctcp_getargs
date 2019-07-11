@@ -1,4 +1,0 @@
-digraph svctcp_getargs {
-node [shape = record];
-rankdir = LR;
-}

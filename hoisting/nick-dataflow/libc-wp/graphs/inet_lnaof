@@ -1,4 +1,0 @@
-digraph inet_lnaof {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,8 +1,0 @@
-digraph _libc_blf_enc {
-node [shape = record];
-rankdir = LR;
-blf_enc [label = "blf_enc | 000000000000000000000000000000000000000" ]
-Blowfish_encipher [label = "Blowfish_encipher | 000000000000000000000000000000000000000" ] 
-blf_enc -> Blowfish_encipher 
-rank = same; Blowfish_encipher ;
-}

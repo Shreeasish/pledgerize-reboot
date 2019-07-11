@@ -1,8 +1,0 @@
-digraph _Exit {
-node [shape = record];
-rankdir = LR;
-_Exit [label = "_Exit | 000000000000000000000000000000000000000" ]
-_exit [label = "_exit | 000000000000000000000000000000000000000" ] 
-_Exit -> _exit 
-rank = same; _exit ;
-}

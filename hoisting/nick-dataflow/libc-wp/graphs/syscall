@@ -1,4 +1,0 @@
-digraph _libc_syscall {
-node [shape = record];
-rankdir = LR;
-}

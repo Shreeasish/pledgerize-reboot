@@ -1,8 +1,0 @@
-digraph isfdtype {
-node [shape = record];
-rankdir = LR;
-isfdtype [label = "isfdtype | 000000000000000000000000000000000010000" ]
-fstat [label = "fstat | 000000000000000000000000000000000010000" ] 
-isfdtype -> fstat 
-rank = same; fstat ;
-}

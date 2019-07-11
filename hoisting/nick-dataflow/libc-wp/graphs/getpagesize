@@ -1,8 +1,0 @@
-digraph _libc_getpagesize {
-node [shape = record];
-rankdir = LR;
-getpagesize [label = "getpagesize | 000000000000000000000000000000000010000" ]
-sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
-getpagesize -> sysctl 
-rank = same; sysctl ;
-}

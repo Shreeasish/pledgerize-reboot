@@ -1,4 +1,0 @@
-digraph xdrstdio_inline {
-node [shape = record];
-rankdir = LR;
-}

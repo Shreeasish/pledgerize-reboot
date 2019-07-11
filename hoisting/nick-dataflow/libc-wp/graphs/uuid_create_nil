@@ -1,4 +1,0 @@
-digraph _libc_uuid_create_nil {
-node [shape = record];
-rankdir = LR;
-}

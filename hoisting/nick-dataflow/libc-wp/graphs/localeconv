@@ -1,4 +1,0 @@
-digraph _libc_localeconv {
-node [shape = record];
-rankdir = LR;
-}

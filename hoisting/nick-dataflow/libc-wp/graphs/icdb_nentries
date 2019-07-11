@@ -1,4 +1,0 @@
-digraph _libc_icdb_nentries {
-node [shape = record];
-rankdir = LR;
-}

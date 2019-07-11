@@ -1,8 +1,0 @@
-digraph timer_settime {
-node [shape = record];
-rankdir = LR;
-timer_settime [label = "timer_settime | 000000000000000000000000000000000000000" ]
-__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
-timer_settime -> __errno 
-rank = same; __errno ;
-}

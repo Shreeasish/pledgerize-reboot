@@ -1,4 +1,0 @@
-digraph posix_spawnattr_setsigdefault {
-node [shape = record];
-rankdir = LR;
-}

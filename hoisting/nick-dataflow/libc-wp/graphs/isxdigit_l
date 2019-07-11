@@ -1,8 +1,0 @@
-digraph isxdigit_l {
-node [shape = record];
-rankdir = LR;
-isxdigit_l [label = "isxdigit_l | 000000000000000000000000000000000000000" ]
-isxdigit [label = "isxdigit | 000000000000000000000000000000000000000" ] 
-isxdigit_l -> isxdigit 
-rank = same; isxdigit ;
-}

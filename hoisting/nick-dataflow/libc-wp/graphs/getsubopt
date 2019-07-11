@@ -1,8 +1,0 @@
-digraph getsubopt {
-node [shape = record];
-rankdir = LR;
-getsubopt [label = "getsubopt | 000000000000000000000000000000000000000" ]
-strcmp [label = "strcmp | 000000000000000000000000000000000000000" ] 
-getsubopt -> strcmp 
-rank = same; strcmp ;
-}

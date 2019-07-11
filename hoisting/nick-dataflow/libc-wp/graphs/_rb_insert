@@ -1,4 +1,0 @@
-digraph _libc__rb_insert {
-node [shape = record];
-rankdir = LR;
-}

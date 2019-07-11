@@ -1,4 +1,0 @@
-digraph __isinff {
-node [shape = record];
-rankdir = LR;
-}

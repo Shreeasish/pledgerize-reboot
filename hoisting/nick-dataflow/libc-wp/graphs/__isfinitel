@@ -1,4 +1,0 @@
-digraph __isfinitel {
-node [shape = record];
-rankdir = LR;
-}

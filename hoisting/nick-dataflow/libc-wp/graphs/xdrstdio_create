@@ -1,4 +1,0 @@
-digraph xdrstdio_create {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph _libc_wcscspn {
-node [shape = record];
-rankdir = LR;
-}

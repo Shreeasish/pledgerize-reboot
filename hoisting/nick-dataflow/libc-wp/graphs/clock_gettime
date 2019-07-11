@@ -1,4 +1,0 @@
-digraph _libc_clock_gettime {
-node [shape = record];
-rankdir = LR;
-}

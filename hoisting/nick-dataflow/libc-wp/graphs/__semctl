@@ -1,4 +1,0 @@
-digraph _libc___semctl {
-node [shape = record];
-rankdir = LR;
-}

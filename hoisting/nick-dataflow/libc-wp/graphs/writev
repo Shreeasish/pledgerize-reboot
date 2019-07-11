@@ -1,4 +1,0 @@
-digraph _libc_writev {
-node [shape = record];
-rankdir = LR;
-}

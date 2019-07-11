@@ -1,4 +1,0 @@
-digraph getprogname {
-node [shape = record];
-rankdir = LR;
-}

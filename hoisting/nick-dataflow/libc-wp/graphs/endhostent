@@ -1,4 +1,0 @@
-digraph endhostent {
-node [shape = record];
-rankdir = LR;
-}

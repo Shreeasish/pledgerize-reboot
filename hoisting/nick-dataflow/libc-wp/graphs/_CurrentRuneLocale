@@ -1,4 +1,0 @@
-digraph _CurrentRuneLocale {
-node [shape = record];
-rankdir = LR;
-}

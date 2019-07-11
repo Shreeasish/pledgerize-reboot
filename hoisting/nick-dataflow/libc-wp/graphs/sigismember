@@ -1,8 +1,0 @@
-digraph _libc_sigismember {
-node [shape = record];
-rankdir = LR;
-sigismember [label = "sigismember | 000000000000000000000000000000000000000" ]
-__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
-sigismember -> __errno 
-rank = same; __errno ;
-}

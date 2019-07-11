@@ -1,4 +1,0 @@
-digraph strcpy {
-node [shape = record];
-rankdir = LR;
-}

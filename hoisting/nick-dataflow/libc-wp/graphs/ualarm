@@ -1,8 +1,0 @@
-digraph ualarm {
-node [shape = record];
-rankdir = LR;
-ualarm [label = "ualarm | 000000000000000000000000000000000010000" ]
-setitimer [label = "setitimer | 000000000000000000000000000000000010000" ] 
-ualarm -> setitimer 
-rank = same; setitimer ;
-}

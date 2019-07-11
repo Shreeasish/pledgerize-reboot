@@ -1,4 +1,0 @@
-digraph _libc__seterr_reply {
-node [shape = record];
-rankdir = LR;
-}

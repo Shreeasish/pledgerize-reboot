@@ -1,4 +1,0 @@
-digraph _libc_dbm_firstkey {
-node [shape = record];
-rankdir = LR;
-}

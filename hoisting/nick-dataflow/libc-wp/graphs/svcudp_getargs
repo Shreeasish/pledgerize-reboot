@@ -1,4 +1,0 @@
-digraph svcudp_getargs {
-node [shape = record];
-rankdir = LR;
-}

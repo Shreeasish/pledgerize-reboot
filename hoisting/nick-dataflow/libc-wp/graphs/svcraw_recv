@@ -1,4 +1,0 @@
-digraph svcraw_recv {
-node [shape = record];
-rankdir = LR;
-}

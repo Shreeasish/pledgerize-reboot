@@ -1,8 +1,0 @@
-digraph getrule {
-node [shape = record];
-rankdir = LR;
-getrule [label = "getrule | 000000000000000000000000000000000000000" ]
-getsecs [label = "getsecs | 000000000000000000000000000000000000000" ] 
-getrule -> getsecs 
-rank = same; getsecs ;
-}

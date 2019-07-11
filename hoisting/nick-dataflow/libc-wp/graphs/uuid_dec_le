@@ -1,4 +1,0 @@
-digraph uuid_dec_le {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,8 +1,0 @@
-digraph __ungetwc {
-node [shape = record];
-rankdir = LR;
-__ungetwc [label = "__ungetwc | 000000000000000000000000000000000000000" ]
-__errno [label = "__errno | 000000000000000000000000000000000000000" ] 
-__ungetwc -> __errno 
-rank = same; __errno ;
-}

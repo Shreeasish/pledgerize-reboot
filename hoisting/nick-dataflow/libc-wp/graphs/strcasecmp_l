@@ -1,8 +1,0 @@
-digraph strcasecmp_l {
-node [shape = record];
-rankdir = LR;
-strcasecmp_l [label = "strcasecmp_l | 000000000000000000000000000000000000000" ]
-strcasecmp [label = "strcasecmp | 000000000000000000000000000000000000000" ] 
-strcasecmp_l -> strcasecmp 
-rank = same; strcasecmp ;
-}

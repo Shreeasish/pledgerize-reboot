@@ -1,4 +1,0 @@
-digraph svcraw_getargs {
-node [shape = record];
-rankdir = LR;
-}

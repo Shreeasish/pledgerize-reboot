@@ -1,4 +1,0 @@
-digraph xdrrec_putlong {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph _citrus_none_ctype_mbrtowc {
-node [shape = record];
-rankdir = LR;
-}

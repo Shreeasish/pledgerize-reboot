@@ -1,8 +1,0 @@
-digraph clock_getcpuclockid {
-node [shape = record];
-rankdir = LR;
-clock_getcpuclockid [label = "clock_getcpuclockid | 000000000000000000000000000000000010000" ]
-getpid [label = "getpid | 000000000000000000000000000000000010000" ] 
-clock_getcpuclockid -> getpid 
-rank = same; getpid ;
-}

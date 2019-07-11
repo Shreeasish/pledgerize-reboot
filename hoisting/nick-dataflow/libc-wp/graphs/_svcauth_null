@@ -1,4 +1,0 @@
-digraph _libc__svcauth_null {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph _toupper {
-node [shape = record];
-rankdir = LR;
-}

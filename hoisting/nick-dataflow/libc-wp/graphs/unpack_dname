@@ -1,4 +1,0 @@
-digraph unpack_dname {
-node [shape = record];
-rankdir = LR;
-}

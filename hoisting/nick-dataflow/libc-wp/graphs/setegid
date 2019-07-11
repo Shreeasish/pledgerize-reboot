@@ -1,4 +1,0 @@
-digraph _libc_setegid {
-node [shape = record];
-rankdir = LR;
-}

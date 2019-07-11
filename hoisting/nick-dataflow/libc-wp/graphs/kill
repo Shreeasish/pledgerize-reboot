@@ -1,4 +1,0 @@
-digraph _libc_kill {
-node [shape = record];
-rankdir = LR;
-}

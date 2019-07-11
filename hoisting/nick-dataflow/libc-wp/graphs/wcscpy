@@ -1,4 +1,0 @@
-digraph wcscpy {
-node [shape = record];
-rankdir = LR;
-}

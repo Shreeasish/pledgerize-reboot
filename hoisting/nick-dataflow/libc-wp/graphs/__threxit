@@ -1,4 +1,0 @@
-digraph _libc___threxit {
-node [shape = record];
-rankdir = LR;
-}

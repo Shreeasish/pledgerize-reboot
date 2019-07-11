@@ -1,4 +1,0 @@
-digraph lstep {
-node [shape = record];
-rankdir = LR;
-}

@@ -1,4 +1,0 @@
-digraph __isnanf {
-node [shape = record];
-rankdir = LR;
-}

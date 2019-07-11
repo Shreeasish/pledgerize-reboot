@@ -1,4 +1,0 @@
-digraph pthread_condattr_setclock {
-node [shape = record];
-rankdir = LR;
-}

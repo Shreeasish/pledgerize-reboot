@@ -1,8 +1,0 @@
-digraph gethostid {
-node [shape = record];
-rankdir = LR;
-gethostid [label = "gethostid | 000000000000000000000000000000000010000" ]
-sysctl [label = "sysctl | 000000000000000000000000000000000010000" ] 
-gethostid -> sysctl 
-rank = same; sysctl ;
-}

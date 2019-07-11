@@ -1,4 +1,0 @@
-digraph lfind {
-node [shape = record];
-rankdir = LR;
-}

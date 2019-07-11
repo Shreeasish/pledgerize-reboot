@@ -1,4 +1,0 @@
-digraph posix_spawnattr_setschedparam {
-node [shape = record];
-rankdir = LR;
-}

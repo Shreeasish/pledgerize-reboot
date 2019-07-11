@@ -1,4 +1,0 @@
-digraph _libc_auth_getitem {
-node [shape = record];
-rankdir = LR;
-}

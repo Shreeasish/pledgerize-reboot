@@ -1,4 +1,0 @@
-digraph __dn_skipname {
-node [shape = record];
-rankdir = LR;
-}

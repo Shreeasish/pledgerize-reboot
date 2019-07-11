@@ -1,4 +1,0 @@
-digraph _libc__getshort {
-node [shape = record];
-rankdir = LR;
-}

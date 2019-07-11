@@ -1,4 +1,0 @@
-digraph __putshort {
-node [shape = record];
-rankdir = LR;
-}
