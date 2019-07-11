@@ -1,0 +1,13 @@
+#! /bin/bash
+# bash script only works on files present in it's directory
+
+if ! [[ $1 ]]; then
+	echo "Filename not supplied, exiting"
+	exit 9001
+fi
+while read line; do
+	# if [[ $(ag "[^A-Z|a-z]$line\(" "$1"/) ]]; then
+	# 	echo "$line"
+	# fi
+    echo `./genEmplaceCustom $line`
+done < /home/shreeasish/pledgerize-reboot/hoisting/nick-dataflow/libc-wp/$1
