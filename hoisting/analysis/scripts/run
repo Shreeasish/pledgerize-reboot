@@ -1,0 +1,15 @@
+#! /bin/bash
+if [ -z "$1" ]
+  then
+    echo "Program Unspecified"
+    exit 1
+fi
+
+#make
+(cd ~/pledgerize-reboot/hoisting/benchmarks/ && exec ~/pledgerize-reboot/hoisting/benchmarks/getbenchmarks)
+echo Got benchmarks
+(cd ~/pledgerize-reboot/hoisting/logs/$1/ && exec ~/pledgerize-reboot/hoisting/logs/$1/clean)
+echo Cleared Logs
+echo Executing Benchmark $1 from ~/pledgerize-reboot/hoisting/benchmarks/$1/$1.bc
+./bin/hoist_condition_list ~/pledgerize-reboot/hoisting/benchmarks/$1/$1.bc 2> errs.$1
+
