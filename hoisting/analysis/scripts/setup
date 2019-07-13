@@ -1,0 +1,3 @@
+#! /bin/bash
+find . -name *.csv -or -name *.dot | xargs rm
+mkdir always audio bpf chown cpath disklabel dns dpath drm error exec fattr flock getpw id inet mcast pf proc protexec ps recvfd route rpath sendfd settime stdio tape tmppath tty unix vminfo vmm wpath
