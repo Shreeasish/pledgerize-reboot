@@ -1231,7 +1231,7 @@ runAnalysisFor(llvm::Module& m,
 bool
 BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   initializeGlobals(m);
-  auto isInterprocedural = false; // false for turning off interprocedural
+  auto isInterprocedural = true; // false for turning off interprocedural
   if (isInterprocedural) {
     runAnalysisFor(m, {"main"}, isInterprocedural);
   } else {

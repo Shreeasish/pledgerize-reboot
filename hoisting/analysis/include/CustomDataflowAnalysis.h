@@ -269,6 +269,10 @@ public:
     } 
     auto* function = bb.getParent();
     auto traversalOrder = getFunctionTraversal(*function); // Should be cached
+    llvm::errs() << "\n\n\nTraversal Order Function";
+    for (auto* bb : traversalOrder) {
+      llvm::errs() << *bb;
+    }
     
     llvm::DenseSet<llvm::BasicBlock*> predSet;
     for (auto* toVisit : preds) {             // Get predecessor as set toVisit
@@ -278,9 +282,15 @@ public:
     bool foundCurrent = false;                // Could be faster if there were an ordering 
     for (auto* orderedBB : traversalOrder) {  // between bbs O(n) -> n = bbs in function
       foundCurrent = (&bb == orderedBB ? true : foundCurrent);
-      if (foundCurrent) {
+      if (!foundCurrent) {
         predSet.erase(orderedBB);
       }
+    }
+    llvm::errs() << "\n\n\nCurrent BB";
+    llvm::errs() << bb;
+    llvm::errs() << "\n\nPredecessor Set";
+    for (auto bb : predSet) {
+      llvm::errs() << *bb;
     }
     //std::vector<llvm::BasicBlock*> withNoBackEdges{predSet.begin(), predSet.end()};
     //return llvm::iterator_range{withNoBackEdges.begin(), withNoBackEdges.end()};
