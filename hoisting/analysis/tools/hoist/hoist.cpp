@@ -262,6 +262,8 @@ public:
        int promise,
        llvm::raw_ostream& ostream) {
     generator->dumpState(ostream);
+    auto* asModule = inst->getParent()->getParent()->getParent();
+    generator->dumpToFile<lowering::Printer>(*asModule);
     ostream << "\n----  Exiting At ----";
     ostream << PromiseNames[promise];
     ostream << "\n@Instruction" << *inst << "@parent: "

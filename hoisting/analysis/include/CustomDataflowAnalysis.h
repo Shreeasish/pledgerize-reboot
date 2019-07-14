@@ -261,8 +261,30 @@ public:
   static llvm::Value* getFunctionValueKey(llvm::BasicBlock& bb) {
     return (&bb == &bb.getParent()->getEntryBlock()) ? getExitKey(bb) : nullptr;
   }
-  static auto getSuccessors(llvm::BasicBlock& bb) {
-    return llvm::predecessors(&bb);
+  static auto getSuccessors(llvm::BasicBlock& bb) -> std::vector<llvm::BasicBlock*> {
+    auto traverseBackEdges = false;
+    auto preds = llvm::predecessors(&bb);
+    if (traverseBackEdges) {
+      return {preds.begin(), preds.end()};  // Early return if backedge
+    } 
+    auto* function = bb.getParent();
+    auto traversalOrder = getFunctionTraversal(*function); // Should be cached
+    
+    llvm::DenseSet<llvm::BasicBlock*> predSet;
+    for (auto* toVisit : preds) {             // Get predecessor as set toVisit
+      predSet.insert(toVisit);                // Iterate function bbs in post order
+    }                                         // If current bb found set flag, foundCurrent
+                                              // Remove anything after it from toVisit
+    bool foundCurrent = false;                // Could be faster if there were an ordering 
+    for (auto* orderedBB : traversalOrder) {  // between bbs O(n) -> n = bbs in function
+      foundCurrent = (&bb == orderedBB ? true : foundCurrent);
+      if (foundCurrent) {
+        predSet.erase(orderedBB);
+      }
+    }
+    //std::vector<llvm::BasicBlock*> withNoBackEdges{predSet.begin(), predSet.end()};
+    //return llvm::iterator_range{withNoBackEdges.begin(), withNoBackEdges.end()};
+    return {predSet.begin(), predSet.end()};
   }
   static auto getPredecessors(llvm::BasicBlock& bb) {
     return llvm::successors(&bb);
@@ -512,8 +534,8 @@ public:
         auto* summary = getSummaryKey(f);
         // results[&f][summary] = meet({results[&f][summary], state[key]});
         results[&f][summary] = meet({results[&f][summary], state[nullptr]});
-        //Debugger debugger{PLEDGE_CPATH, llvm::outs()};
-        //debugger.dump(llvm::dyn_cast<llvm::Instruction>(key), context, results, 0);
+        Debugger debugger{PLEDGE_STDIO, llvm::outs()};
+        debugger.dump(llvm::dyn_cast<llvm::Instruction>(key), context, results, 0);
       }
     }
 
