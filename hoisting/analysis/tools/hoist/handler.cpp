@@ -11,6 +11,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
 
 #include <bitset>
 #include <memory>
@@ -32,7 +33,13 @@
 //  }
 //  llvm::Value* called = cs.getCalledValue()->stripPointerCasts();
 //  return llvm::dyn_cast<llvm::Function>(called);
-//}
+//}A
+
+/* Defining a namespace for OS defined values (macro constants etc)
+ * like O_CREAT, O_READ, MTIOCGET... */
+namespace SysDefs {
+  #include <sys/mtio.h>
+}
 
 class CheckMCAST : public PrivilegeCheckerBase {
 public:
@@ -50,6 +57,34 @@ public:
 
     return 0;
   };
+};
+
+/* The dd coreutil, uses ioctl which can interface with tape drives
+ * Pledge Handler for ioctl pulls in the global values from sys/mtio.h */
+class Check_ioctl : public PrivilegeCheckerBase {
+public:
+  Check_ioctl(int argPosition) : PrivilegeCheckerBase{argPosition} {}
+
+  Privileges
+  operator()(const llvm::CallSite cs,
+             const Context& context,
+             AnalysisPackage* AnalysisPackage) override {
+    auto* arg     = cs.getArgument(2);
+    auto* argType = arg->getType();
+    auto* asTypeObj = argType->isPointerTy() 
+                      ? argType->getPointerElementType() : argType;
+    llvm::outs() << *asTypeObj;
+    if (auto* asStructTy = llvm::dyn_cast<llvm::StructType>(asTypeObj)) {
+      auto name = asStructTy->getName();
+      // struct.mtop indicates a magnetic tape operation
+      // struct.mtget corresponds to a magnetic tape
+      // check on the fd
+      if (name.endswith("mtop")) { 
+        return 1 << PLEDGE_TAPE;   
+      }
+    }
+    return 0;
+  }
 };
 
 void
@@ -163,4 +198,43 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage& package) {
   libCHandlers.try_emplace("vwprintf", 16);
   libCHandlers.try_emplace("wprintf", 16);
 
+  // Generated from final-closures
+  libCHandlers.try_emplace("fileno", 0);
+  libCHandlers.try_emplace("errc", 16);
+  libCHandlers.try_emplace("__swbuf", 16);
+  libCHandlers.try_emplace("memcmp", 0);
+  libCHandlers.try_emplace("strncat", 0);
+  libCHandlers.try_emplace("clearerr", 0);
+  libCHandlers.try_emplace("warnc", 16);
+  libCHandlers.try_emplace("calloc", 16);
+  libCHandlers.try_emplace("warnx", 16);
+  libCHandlers.try_emplace("ferror", 0);
+  libCHandlers.try_emplace("fts_open", 18);
+  libCHandlers.try_emplace("warn", 16);
+  libCHandlers.try_emplace("fts_read", 18);
+  libCHandlers.try_emplace("fts_set", 0);
+  libCHandlers.try_emplace("getc", 16);
+  libCHandlers.try_emplace("fclose", 16);
+  libCHandlers.try_emplace("fts_close", 16);
+  libCHandlers.try_emplace("putc", 16);
+ 
+  // These functions don't need privileges
+  // However every program implicitly needs stdio or error
+  libCHandlers.try_emplace("strcmp", 0);
+  libCHandlers.try_emplace("strcpy", 0);
+  libCHandlers.try_emplace("pledge", 0);
+  libCHandlers.try_emplace("strrchr", 0);
+  libCHandlers.try_emplace("strlen", 0);
+	
+	//Generate Specs for these
+  libCHandlers.try_emplace("clock_gettime", 16);
+  libCHandlers.try_emplace("strdup", 0);
+  libCHandlers.try_emplace("strchr", 0);
+  libCHandlers.try_emplace("bsearch", 0);
+  libCHandlers.try_emplace("isatty", 0);
+  libCHandlers.try_emplace("atexit", 16); 
+  // dd only needs stdio since the callback doesn't do anything else
+
+  //libCHandlers.try_emplace( "setsockopt", FunctionPrivilegesBuilder(16).add(std::make_unique<CheckMCAST>(2)).build());
+  libCHandlers.try_emplace("ioctl", FunctionPrivilegesBuilder(16).add(std::make_unique<Check_ioctl>(1)).build());
 };

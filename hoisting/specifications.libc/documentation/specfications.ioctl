@@ -1,0 +1,40 @@
+# `ioctl` Specifications
+
+## Description
+`ioctl` works on variety of IO devices including tty, tape, audio, video and pf
+(?). Depending on the macro sent to it (argument 1), `ioctl` is also used to
+check the type of the file descriptor sent to it (argument 0). 
+The third argument is a variadic argument which seems to usually be a reference
+to a struct which is modified to store the information asked for (as in the case
+MTIOCGET).
+
+## Man Page
+### `OpenBSD`
+```
+From <sys/mtio.h> 
+
+int ioctl(int fd, MTIOCTOP, (struct mtop *)mtop);
+int ioctl(int fd, MTIOCGET, (struct mtget *)mtget);
+```
+
+## Pledge Associations
+### "" (none)
+`MTIOCGET` checks the status of the mag tape device
+and it doesn't require privileges.
+Manually tested
+```
+commit 0a2f9e257ae1d10b9e69665d92f872e70ee20914
+Author: Shreeasish Kumar <shreeasish@gmail.com>
+Date:   Sat Jul 20 10:03:22 2019 -0700
+
+    Added MTIOCGET tests for ioctl. Does not require any privileges
+```
+### `tape`
+```
+int ioctl(int fd, MTIOCTOP, (struct mtop *)mtop);
+```
+
+
+
+
+

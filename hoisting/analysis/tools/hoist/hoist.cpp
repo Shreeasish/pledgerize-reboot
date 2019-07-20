@@ -1241,7 +1241,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     //  }
     //  runAnalysisFor(m, {function.getName()}, isInterprocedural);
     //}
-    runAnalysisFor(m, {"cook_buf"}, isInterprocedural);
+    runAnalysisFor(m, {"jcl"}, isInterprocedural);
   }
 
   svfResults->releaseAndersenWaveDiffWithType();

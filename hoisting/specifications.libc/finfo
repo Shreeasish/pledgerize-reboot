@@ -67,5 +67,4 @@ for row in mrows.iterrows():
     print('Man Pledges   :', bitsettoString(row[1].get('bitstring').strip()))
 
 print("Pledge Differences(Man Pledges - Kernel Pledges):")
-
 print(mpledgeset - kpledgeset)

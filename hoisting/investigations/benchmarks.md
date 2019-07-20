@@ -127,7 +127,16 @@ Date:   Sat Oct 3 03:28:35 2015 +0000
 
 - The set of privileges seem small enough
 - Git commit shows time dedicated to additional pledging.
-```
+
+# Testing
+----
+
+## Available Test Suites
+----
+
+* [FreeBSD test suite](https://wiki.freebsd.org/TestSuite/)
+* [POSIX Product Standard Coverage Suite - Shell and Utilities](http://www.opengroup.org/testing/testsuites/vscpcts2003.htm)
+* [BusyBox test suite](https://github.com/mirror/busybox/tree/master/testsuite)
 
 
 

@@ -1,0 +1,51 @@
+#! /usr/bin/python3
+import pandas as pd
+import sys
+import argparse
+
+plistfname = 'pledge-list'
+def bitsettoString(bitstring):
+    if pd.isna(bitstring):
+        return "NaN"
+    bitstring = bitstring[::-1]
+    with open(plistfname) as plistf:
+        plist = plistf.read().splitlines()
+    promise_list = list()
+    for i,bit in enumerate(bitstring):
+        if int(bit) == 1:
+            promise_list.append(plist[i])
+        # else:
+        #     promise_list.append("---")
+    return " ".join(promise_list)
+
+
+spec_file_name = "./final-closures"
+with open(spec_file_name) as spec_file:
+    spec_data_frame = pd.read_csv(spec_file, header=None, names=['function','long','bitstring'])
+
+if len(sys.argv) > 1:
+    infilename = sys.argv[1]
+else:
+    sys.exit("Input function filename unspecified")
+
+with open(infilename) as ffile:
+    function_names = [line.strip('\n') for line in ffile.readlines()]
+
+for fname in function_names:
+    pledges = set()
+    krows = spec_data_frame.loc[spec_data_frame['function'] == fname]
+   
+    if len(krows) < 1:
+        print(krows)
+        continue
+
+    if len(krows) > 1:
+        print (krows)
+        sys.exit("more than one row for function" + fname)
+    
+    for row in krows.iterrows():
+        pledges.add(bitsettoString(row[1].get('bitstring').strip()))
+        print('libCHandlers.try_emplace(\"', fname.strip(),'\", ', row[1].get('long'), ');', sep ="")
+
+# libCHandlers.try_emplace("fileno", 0);
+# libCHandlers.try_emplace("wprintf", 16);

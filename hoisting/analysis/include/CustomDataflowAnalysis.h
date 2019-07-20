@@ -91,7 +91,6 @@ private:
 
 using BasicBlockWorklist = WorkList<llvm::BasicBlock*>;
 
-
 // The dataflow analysis computes three different granularities of results.
 // An AbstractValue represents information in the abstract domain for a single
 // LLVM Value. An AbstractState is the abstract representation of all values
@@ -268,12 +267,10 @@ public:
       return {preds.begin(), preds.end()};  // Early return if backedge
     } 
     auto* function = bb.getParent();
-    auto traversalOrder = getFunctionTraversal(*function); // Should be cached
-    llvm::errs() << "\n\n\nTraversal Order Function";
-    for (auto* bb : traversalOrder) {
-      llvm::errs() << *bb;
-    }
-    
+    auto traversalOrder =
+        getFunctionTraversal(*function);  // Should be cached
+                                          // Gets it in Post Order (bottom up)
+
     llvm::DenseSet<llvm::BasicBlock*> predSet;
     for (auto* toVisit : preds) {             // Get predecessor as set toVisit
       predSet.insert(toVisit);                // Iterate function bbs in post order
@@ -281,16 +278,11 @@ public:
                                               // Remove anything after it from toVisit
     bool foundCurrent = false;                // Could be faster if there were an ordering 
     for (auto* orderedBB : traversalOrder) {  // between bbs O(n) -> n = bbs in function
-      foundCurrent = (&bb == orderedBB ? true : foundCurrent);
+      foundCurrent |= &bb == orderedBB;
       if (!foundCurrent) {
         predSet.erase(orderedBB);
+        //llvm::errs() << "\n Removing Basic Block\n" << bb;
       }
-    }
-    llvm::errs() << "\n\n\nCurrent BB";
-    llvm::errs() << bb;
-    llvm::errs() << "\n\nPredecessor Set";
-    for (auto bb : predSet) {
-      llvm::errs() << *bb;
     }
     //std::vector<llvm::BasicBlock*> withNoBackEdges{predSet.begin(), predSet.end()};
     //return llvm::iterator_range{withNoBackEdges.begin(), withNoBackEdges.end()};
@@ -514,7 +506,7 @@ public:
                         state[nullptr], promiseNum, size)) {
                   Debugger debugger{promiseNum, llvm::outs()};
                   debugger.dump(&i, context, results, size);
-                  if (size >= 8000) {
+                  if (size >= 20000) {
                     Debugger::exit(
                         &i, state[nullptr], promiseNum, llvm::outs());
                   }

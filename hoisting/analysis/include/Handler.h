@@ -190,11 +190,12 @@ private:
     Privileges
     getPrivilegesFor(const llvm::CallSite& cs, const Context& context) {
       // Point of configuration for specifications
-      if (auto privileges =
-              getPrivilegesForImpl(cs, context, syscallBitsetMap)) {
+			// Order libCHandlers before other maps.
+      if (auto privileges = 
+										getPrivilegesForImpl(cs, context, libCHandlers)) {
         return *privileges;
       } else if (auto privileges =
-                     getPrivilegesForImpl(cs, context, libCHandlers)) {
+                     getPrivilegesForImpl(cs, context, syscallBitsetMap)) {
         return *privileges;
       } else {
         addToUnknowns(cs);
