@@ -274,6 +274,8 @@ public:
     std::exit(0);
   }
 
+
+
   void
   printActivePrivileges(DisjunctionValue disjunction) const {
     if (!disjunction[promise].isEmpty()) {
@@ -300,6 +302,34 @@ private:
   const Promises promise;
   llvm::raw_ostream& out;
 }; // end Class Transfer Debugger
+
+struct ArgumentRewriter {
+  Disjunction
+  operator()(Disjunction state,
+             const llvm::CallSite& cs,
+             llvm::Function* const callee) {
+    // CallSites have arguments, functions have paramaters
+    using argParams = std::pair<llvm::Value*, llvm::Value*>;
+    std::vector<argParams> argPairs;
+    int i = 0;
+    for (auto& param : callee->args()) {
+      auto* paramAsValue = (llvm::Value*)&param;
+      auto arg           = cs.getArgument(i);
+      argPairs.push_back(argParams{arg, paramAsValue});
+      i++;
+    }
+
+    auto rewritePair = [&](auto* arg, auto* param) {
+      auto argExprID   = generator->GetOrCreateExprID(arg);
+      auto paramExprID = generator->GetOrCreateExprID(param);
+      return generator->rewrite(state, paramExprID, argExprID);
+    };
+    for (auto [arg, param] : argPairs) {
+      state = rewritePair(arg, param);
+    }
+    return state;
+  }
+};
 
 /*--------------------------------------------------------*
  *-------------------EDGE TRANSFORMER---------------------*
@@ -375,14 +405,15 @@ public:
     auto callStitcher = [&](Disjunction destState) {
       auto callConjunct = getMayCallConjunct(caller, indCallee);
       destState.applyConjunct(callConjunct);
+      this->argRewriter(destState, caller, indCallee);
       return destState;
     };
-
     return static_for{callStitcher}(toMerge);
   }
 
-
 private:
+  ArgumentRewriter argRewriter;
+
   template <typename Lambda>
   struct static_for {
     Lambda& lambda;
@@ -474,6 +505,7 @@ makeVacuouslyTrue(Disjunction& disjunction) {
 /*--------------------------------------------------------*
  *------------------TRANSFER FUNCTION---------------------*
  *--------------------------------------------------------*/
+
 class DisjunctionTransfer {
 public:
   bool isInterprocedural;
@@ -569,6 +601,8 @@ public:
   }
 
 private:
+  ArgumentRewriter argRewriter;
+
   template <Promises promise>
   struct StateAccessor {
     StateAccessor(DisjunctionState& sm)
@@ -581,7 +615,6 @@ private:
       return stateMap[inst][promise];
     }
   };
-
 
   bool
   handleBrOrSwitch(llvm::Instruction* inst, bool handled) {
@@ -637,33 +670,6 @@ private:
   }
 
 
-  Disjunction
-  wireCallerState(Disjunction state,
-                  const llvm::CallSite& cs,
-                  llvm::Function* const callee) {
-    // CallSites have arguments, functions have paramaters
-
-    using argParams = std::pair<llvm::Value*, llvm::Value*>;
-    std::vector<argParams> argPairs;
-    int i = 0;
-    for (auto& param : callee->args()) {
-      auto* paramAsValue = (llvm::Value*) &param;
-      auto arg = cs.getArgument(i);
-      argPairs.push_back(argParams{arg, paramAsValue});
-      i++;
-    }
-
-    auto rewritePair = [&](auto* arg, auto* param) {
-      auto argExprID   = generator->GetOrCreateExprID(arg);
-      auto paramExprID = generator->GetOrCreateExprID(param);
-      return generator->rewrite(state, paramExprID, argExprID);
-    };
-    for (auto [arg, param] : argPairs) {
-      state = rewritePair(arg, param);
-    }
-    return state;
-  }
-  
   enum class CallType {
     IndCall,
     ExternalCall,
@@ -747,7 +753,7 @@ private:
       llvm::Function* callee = analysis::getCalledFunction(callSite);
       auto& calleeState      = state[callSite.getInstruction()];
       state[nullptr] =
-          wireCallerState(state[callSite.getInstruction()], callSite, callee);
+          this->argRewriter(state[callSite.getInstruction()], callSite, callee);
     };
 
     switch (getCallType(callSite)) {
