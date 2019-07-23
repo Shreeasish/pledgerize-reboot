@@ -11,7 +11,7 @@
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/raw_ostream.h"
 
-#include "DataflowAnalysisBackup.h"
+#include "DataflowAnalysis.h"
 #include "FutureFunctions.h"
 #include "TaintAnalysis.h"
 
@@ -58,10 +58,10 @@ private:
   std::unordered_set<llvm::Function*> functionList;
 };
 
-using State          = analysisOriginal::AbstractState<CallBackList>;
-using CallBackResult = analysisOriginal::DataflowResult<State>;
+using State          = analysis::AbstractState<CallBackList>;
+using CallBackResult = analysis::DataflowResult<State>;
 
-class Aggregator : public analysisOriginal::Meet<CallBackList, Aggregator> {
+class Aggregator : public analysis::Meet<CallBackList, Aggregator> {
 public:
   CallBackList
   meetPair(CallBackList& s1, CallBackList& s2) const {
@@ -141,7 +141,7 @@ public:
   }
 
   void
-  operator()(llvm::Value& v, State state/*, const Context& context*/) {
+  operator()(llvm::Value& v, State state, const Context& context) {
     llvm::errs() << "\n" << v;
     llvm::CallSite cs{&v};
     state[nullptr] = CallBackList{};
@@ -212,7 +212,7 @@ private:
 using Value = CallBackList;
 using Transfer = CallBackTransfer;
 using Meet = Aggregator;
-using Analysis = analysisOriginal::DataflowAnalysis<Value, Transfer, Meet>;
+using Analysis = analysis::DataflowAnalysis<Value, Transfer, Meet>;
 
 void
 getResults(llvm::Module& module) {
@@ -220,7 +220,6 @@ getResults(llvm::Module& module) {
   if (!mainFunction) {
     llvm::report_fatal_error("Unable to find main function.");
   }
-
 
   Analysis analysis{module, mainFunction};
   auto results = analysis.computeDataflow();
