@@ -384,11 +384,13 @@ public:
   using ContextMapInfo =
     llvm::DenseMapInfo<std::array<llvm::Instruction*, ContextSize>>;
   using AllResults = llvm::DenseMap<Context, ContextResults, ContextMapInfo>;
+  
+  AndersenWaveDiffWithType* svfResults;
+  llvm::Module& module;
 
-
-  DataflowAnalysis(llvm::Module& m,
-                   llvm::ArrayRef<llvm::Function*> entryPoints,
-                   bool isInterprocedural) {
+  DataflowAnalysis(llvm::Module& m, llvm::ArrayRef<llvm::Function*> entryPoints,
+                   AndersenWaveDiffWithType* svf, bool isInterprocedural) 
+    : svfResults{svf}, module{m} {
     transfer.isInterprocedural = isInterprocedural;
     for (auto* entry : entryPoints) {
       contextWork.add({Context{}, entry});
@@ -456,6 +458,20 @@ public:
       //  return size;
       //};
 
+      auto isPtrCall = [](const llvm::CallSite& cs) {
+        return cs.getInstruction() 
+          && !analysis::getCalledFunction(cs);
+      };
+
+      auto getNonConst = [&](const llvm::Function* cfunc) {
+        for (llvm::Function& func : this->module) {
+          if (&func == cfunc) {
+            return &func;
+          }
+        }
+        llvm_unreachable("just go home");
+      };
+      
       // Propagate through all instructions in the block
       for (auto& i : Direction::getInstructions(*bb)) {
         [&context](auto* instruction) -> void {
@@ -482,6 +498,20 @@ public:
         if (isAnalyzableCall(cs) && transfer.isInterprocedural) {
           analyzeCall(cs, state, context);
         }
+        if (isPtrCall(cs)) {
+          llvm::errs() << "\nFound Pointer Call";
+          llvm::errs() << i;
+          for (auto* function : svfResults->getIndCSCallees(cs)) {
+            analyzeCall(cs, state, context, getNonConst(function));
+          }
+        }
+        // llvm::errs() << "\nBefore------------------------------------";
+        // llvm::errs() << "\nIn function " << i.getFunction()->getName()
+        //             << " \nBefore";
+        // llvm::errs() << i;
+        // llvm::errs() << "\n State:\n";
+        // state[nullptr].print(llvm::errs());
+        // llvm::errs() << "\n------------------------------------------";
         // ska: uncomment to skip function calls
         // else {
         applyTransfer(i, state, context);
@@ -564,7 +594,10 @@ public:
 
 
   void
-  analyzeCall(llvm::CallSite cs, State &state, const Context& context) {
+  analyzeCall(llvm::CallSite cs,
+              State& state,
+              const Context& context,
+              llvm::Function* forceEdge = nullptr) {
     Context newContext;
     if (newContext.size() > 0) {
       std::copy(context.begin() + 1, context.end(), newContext.begin());
@@ -572,7 +605,8 @@ public:
     }
 
     auto* caller  = cs.getInstruction()->getFunction();
-    auto* callee  = getCalledFunction(cs);
+    //auto* callee  = getCalledFunction(cs);
+    auto* callee  = forceEdge ? forceEdge : getCalledFunction(cs);
     auto toCall   = std::make_pair(newContext, callee);
     auto toUpdate = std::make_pair(context, caller);
 
