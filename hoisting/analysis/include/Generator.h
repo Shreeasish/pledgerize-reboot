@@ -218,9 +218,10 @@ public:
 
   ExprID
   GetOrCreateExprID(llvm::CallSite& cs) {
-    auto* fun  = llvm::dyn_cast<llvm::Function>(cs.getCalledValue()->stripPointerCasts());
-    //llvm::errs() << "\ninserting function" << *fun;
-    auto lhsID = GetOrCreateExprID(fun);
+    // $val can be a load or a function. Stored as a value for generality
+    auto* val = cs.getCalledValue()->stripPointerCasts();
+    llvm::errs() << "\nGenerator: Calling" << *val;
+    auto lhsID = GetOrCreateExprID(val);
     for (auto& arg : cs.args()) {
       auto rhsID = GetOrCreateExprID(arg);
       ExprKey key{lhsID, llvm::Instruction::Call, rhsID};

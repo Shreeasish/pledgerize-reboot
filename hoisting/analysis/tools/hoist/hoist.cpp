@@ -715,13 +715,21 @@ private:
     llvm::CallSite callSite{value};
     if (handled || !callSite.getInstruction()) {
       return handled;
-    } 
+    }
 
     auto handleIndCall = [&state, &callSite, &value] {
-      if (generator->isUsed(value)) {
-        llvm::errs() << "\nDropping to true for" << *callSite.getInstruction();
-        makeVacuouslyTrue(state[nullptr]);
-      }
+      /* If the call is indirect, as with direct calls,     ///////////////////////////////////////
+       * abstract state passed into the callee will be      // if (generator->isUsed) {
+       * pulled out and rewritten in terms of the arguments //    makeVaucouslyTrue(state[nullptr]);
+       * of call                                            //    return true;
+       * The code on the right isn't needed then. */        // }
+      
+      auto& calleeState = state[callSite.getInstruction()];  /* This is possible since the Dataflow Analysis 
+                                                              * Framework now folds over indirect calls. */
+      auto csExprID  = generator->GetOrCreateExprID(callSite);
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      // Rewrite the callsite exprs in callee states and merge it in
+      state[nullptr] = generator->rewrite(calleeState, oldExprID, csExprID);
       return;
     };
 
