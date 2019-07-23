@@ -472,6 +472,12 @@ public:
         llvm_unreachable("just go home");
       };
       
+      auto isIndirectCall = [this](const llvm::CallSite& cs) {
+        auto* PAG = this->svfResults->getPAG();
+        return PAG->isIndirectCallSites(cs);
+      };
+
+
       // Propagate through all instructions in the block
       for (auto& i : Direction::getInstructions(*bb)) {
         [&context](auto* instruction) -> void {
@@ -498,10 +504,14 @@ public:
         if (isAnalyzableCall(cs) && transfer.isInterprocedural) {
           analyzeCall(cs, state, context);
         }
-        if (isPtrCall(cs)) {
-          llvm::errs() << "\nFound Pointer Call";
-          llvm::errs() << i;
+        if (isIndirectCall(cs) 
+            && svfResults->hasIndCSCallees(cs)) {
+          llvm::errs() << "\nFound Pointer Call \t ";
+          llvm::errs() << i << "\n";
+          llvm::errs() << "Parent " << i.getParent()->getParent()->getName()
+                       << "\n";
           for (auto* function : svfResults->getIndCSCallees(cs)) {
+            llvm::errs() << "\nadding call " << function->getName();
             analyzeCall(cs, state, context, getNonConst(function));
           }
         }
@@ -619,11 +629,22 @@ public:
                                         summaryState, transfer, 
                                         meet, context);
 
+
+    // TODO: 
+    // 3. Wiring arguments.
+    // 4. Prune Edges at loads
     if (!active.count(toCall) && needsUpdate) {
       computeDataflow(*callee, newContext);
     }
-
-    state[cs.getInstruction()] = calledState[callee][callee]; // getSummaryKey()
+    if (forceEdge) {
+      EdgeTransformer transformer;
+      auto& toMerge = calledState[callee][callee];
+      auto withCallConjunct = transformer(toMerge, cs, forceEdge);
+      state[cs.getInstruction()] = meet({state[cs.getInstruction()], withCallConjunct});
+    } else {
+      // TODO: Shouldn't this be a fold anyway?
+      state[cs.getInstruction()] = calledState[callee][callee];
+    }
     callers[toCall].insert(toUpdate);
   }
 

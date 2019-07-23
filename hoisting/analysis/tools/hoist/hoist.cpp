@@ -362,6 +362,26 @@ public:
     return static_for{edgeOp}(toMerge);
   }
 
+  DisjunctionValue
+  operator()(DisjunctionValue& toMerge,
+             const llvm::CallSite& caller,
+             llvm::Function* indCallee) {
+    auto getMayCallConjunct = [](const llvm::CallSite& caller,
+                                 llvm::Function* const mayCallee) {
+      auto aliasExpr = generator->GetOrCreateAliasID(caller, mayCallee);
+      return Conjunct(aliasExpr, true);
+    };
+
+    auto callStitcher = [&](Disjunction destState) {
+      auto callConjunct = getMayCallConjunct(caller, indCallee);
+      destState.applyConjunct(callConjunct);
+      return destState;
+    };
+
+    return static_for{callStitcher}(toMerge);
+  }
+
+
 private:
   template <typename Lambda>
   struct static_for {
@@ -554,7 +574,23 @@ private:
     StateAccessor(DisjunctionState& sm)
       : stateMap{sm} { }
 
+<<<<<<< HEAD:hoisting/analysis/tools/hoist/hoist.cpp
     DisjunctionState& stateMap;
+=======
+    handled |= handleBrOrSwitch(inst, handled);
+    handled |= handlePhiBackEdges(&value, state, handled);
+    handled |= 
+      handleCallSite<TPromise>(&value, state, context, handled);
+    handled |= handleStore(&value, state, context, handled);
+    handled |= handleGep(&value, state, handled);
+    handled |= handleRet(&value, state, context, handled);
+    // Check use
+    handled |= handleLoad(&value, state, handled);
+    handled |= handleBinaryOperator(&value, state, handled);
+    handled |= handleCmpInst(&value, state, handled);
+    handled |= handleCast(&value, state, handled);
+    handleUnknown(&value, state, handled);
+>>>>>>> af62545... Overloaded edge transformers to append indirect call disjunctions:hoisting/nick-dataflow/tools/hoist/hoist.cpp
 
     Disjunction&
     operator[](llvm::Instruction* inst) {
@@ -619,7 +655,7 @@ private:
 
   Disjunction
   wireCallerState(Disjunction state,
-                  const llvm::CallSite cs,
+                  const llvm::CallSite& cs,
                   llvm::Function* const callee) {
     // CallSites have arguments, functions have paramaters
 
@@ -643,6 +679,7 @@ private:
     }
     return state;
   }
+<<<<<<< HEAD:hoisting/analysis/tools/hoist/hoist.cpp
   
   enum class CallType {
     IndCall,
@@ -666,6 +703,9 @@ private:
       return !isIndCall
              && analysis::getCalledFunction(cs)->getName().startswith("llvm");
     }();
+=======
+
+>>>>>>> af62545... Overloaded edge transformers to append indirect call disjunctions:hoisting/nick-dataflow/tools/hoist/hoist.cpp
 
     if (isIndCall) {
       return CallType::IndCall;
@@ -685,6 +725,7 @@ private:
                  StateAccessor<Promise>& state,
                  const Context& context,
                  bool handled) {
+<<<<<<< HEAD:hoisting/analysis/tools/hoist/hoist.cpp
     
     llvm::CallSite callSite{value};
     if (handled || !callSite.getInstruction()) {
@@ -748,6 +789,31 @@ private:
         break;
     }
     assert(false && "Broken Casing");
+=======
+    auto isIndirectCall = [ ](const llvm::CallSite& cs) {
+      auto* PAG = svfResults->getPAG();
+      return PAG->isIndirectCallSites(cs);
+    };
+
+    llvm::CallSite callSite{value};
+    if (handled || !callSite.getInstruction()) {
+      return handled;
+    } else if (analysis::isExternalCall(callSite)) {
+      if (privilegeResolver->hasPrivilege<TPromise>(callSite, context)) {
+        makeVacuouslyTrue(state[nullptr]);
+      }
+      return true;
+    } else if (isIndirectCall(callSite)) {
+      return true;
+    } else if (analysis::getCalledFunction(callSite)
+                           ->getName().startswith("llvm")) {
+      return true;
+    }
+
+    llvm::Function* callee = analysis::getCalledFunction(callSite);
+    state[nullptr] 
+      = wireCallerState(state[callSite.getInstruction()], callSite, callee);
+>>>>>>> af62545... Overloaded edge transformers to append indirect call disjunctions:hoisting/nick-dataflow/tools/hoist/hoist.cpp
     return true;
   }
 
@@ -1228,6 +1294,7 @@ runAnalysisFor(llvm::Module& m,
 bool
 BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   initializeGlobals(m);
+<<<<<<< HEAD:hoisting/analysis/tools/hoist/hoist.cpp
   auto isInterprocedural = true; // false for turning off interprocedural
   if (isInterprocedural) {
     runAnalysisFor(m, {"main"}, isInterprocedural);
@@ -1241,6 +1308,28 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     runAnalysisFor(m, {"jcl"}, isInterprocedural);
   }
 
+=======
+
+  using Value            = DisjunctionValue;
+  using BackwardTransfer = TransferBase<BackwardTransfer>;
+  using Meet             = DisjunctionMeet;
+  using BackwardEdgeTransformer   = DisjunctionEdgeTransformer;
+  using BackwardsAnalysis         =
+    analysis::DataflowAnalysis<Value, BackwardTransfer, Meet,
+                               BackwardEdgeTransformer, analysis::Backward>;
+
+  //auto printPAG = [&m]() {
+  //  auto* PAG = svfResults->getPAG();
+  //  PAG->dump("./dot/slaacd");
+  //};
+  //
+  //printPAG();
+  BackwardsAnalysis backwardAnalysis{m, mainFunction, svfResults};
+  auto results = backwardAnalysis.computeDataflow();
+
+  generator->dumpState();
+  llvm::outs() << "\nFinished";
+>>>>>>> af62545... Overloaded edge transformers to append indirect call disjunctions:hoisting/nick-dataflow/tools/hoist/hoist.cpp
   svfResults->releaseAndersenWaveDiffWithType();
 
   auto getLocationStates = [](llvm::Function* function, auto functionResults) {

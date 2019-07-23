@@ -240,6 +240,17 @@ public:
   }
 
   ExprID
+  GetOrCreateAliasID(const llvm::CallSite& caller, llvm::Function* const callee) {
+    auto* callAsValue = llvm::dyn_cast<llvm::Value>(caller.getInstruction());
+    auto callExprID   = GetOrCreateExprID(callAsValue);
+    auto* funcAsValue = llvm::dyn_cast<llvm::Value>(callee);
+    auto funcExprID   = GetOrCreateExprID(funcAsValue);
+
+    ExprKey key{callExprID, OpIDs::Alias, funcExprID};
+    return GetOrCreateExprID(key, funcAsValue);
+  }
+
+  ExprID
   constexpr GetEmptyExprID() {
     return ReservedExprIDs::emptyExprID;
   }
