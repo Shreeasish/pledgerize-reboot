@@ -624,41 +624,4 @@ Disjunction::isVacuouslyTrue() const {
      *  printer->insertIR(inst, state[nullptr]); */
 
 
-<<<<<<< HEAD:hoisting/analysis/include/ConditionList.h
-=======
-  // TODO: Set on-off switch in constructor as cl option
-  void
-  printBefore() const {
-    out << "\n---- Before ----";
-    out << "\n" << PromiseNames[promise];
-    out << "\n" << *inst;
-    disjunction.print(llvm::errs());
-    return;
-  }
-
-  void
-  printAfter() const {
-    out << "\n----  After ----";
-    out << "\n" << *inst;
-    disjunction.print(out);
-    out << "\n----  End   ----";
-    return;
-  }
-
-  void
-  printActivePrivileges() const {
-    if (!disjunction.isEmpty()) {
-      out << "PLEDGE_" + PromiseNames[promise] + " ";
-    }
-  }
-
-private:
-  llvm::Instruction* const inst;
-  const Disjunction& disjunction;
-  const Promises promise;
-  llvm::raw_ostream& out;
-};
->>>>>>> e378c95... Basic function pointer integration in place:hoisting/nick-dataflow/include/ConditionList.h
-
-
 #endif

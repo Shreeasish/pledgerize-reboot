@@ -1214,7 +1214,7 @@ runAnalysisFor(llvm::Module& m,
     if (!entryPoint) {
       llvm::report_fatal_error("Unable to find entrypoint " + fname);
     }
-    Analysis analysis{m, entryPoint, isInterprocedural}; // true for interprocedural
+    Analysis analysis{m, entryPoint, svfResults, isInterprocedural}; // true for interprocedural
     auto results = analysis.computeDataflow();
     llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
     llvm::outs() << "\nFinished " << entryPoint->getName() << "\n";
