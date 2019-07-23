@@ -573,6 +573,8 @@ private:
   struct StateAccessor {
     StateAccessor(DisjunctionState& sm)
       : stateMap{sm} { }
+    
+    DisjunctionState& stateMap;
 
     Disjunction&
     operator[](llvm::Instruction* inst) {
