@@ -691,7 +691,11 @@ private:
       return handled;
     } 
 
-    auto handleIndCall = [&state, &callSite] {
+    auto handleIndCall = [&state, &callSite, &value] {
+      if (generator->isUsed(value)) {
+        llvm::errs() << "\nDropping to true for" << *callSite.getInstruction();
+        makeVacuouslyTrue(state[nullptr]);
+      }
       return;
     };
 
@@ -728,7 +732,7 @@ private:
 
     switch (getCallType(callSite)) {
       case CallType::IndCall:
-        // handleIndCall();
+        handleIndCall();
         return true;
         break;
       case CallType::ExternalCall:
@@ -744,16 +748,6 @@ private:
         break;
     }
     assert(false && "Broken Casing");
-    
-    //else if (isIndCall(callSite)) {
-    //  return true;
-    //} else if (analysis::isExternalCall(callSite)) {
-    //  return true;
-    //} else if (analysis::getCalledFunction(callSite)
-    //                     ->getName().startswith("llvm")) {
-    //  return true;
-    //}
-    
     return true;
   }
 
@@ -762,11 +756,14 @@ private:
   handleGep(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
     // Possibly can be guarded by isUsed
     if (handled) {
-      return true;
-    }
+      return handled;
+    } 
     auto* gep = llvm::dyn_cast<llvm::GetElementPtrInst>(value);
     if (!gep) {
       return false;
+    }
+    if (!generator->isUsed(value)) {
+      return true;
     }
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto gepExprID = generator->GetOrCreateExprID(gep);

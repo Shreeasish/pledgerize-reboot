@@ -350,9 +350,9 @@ static SyscallBitsetMap syscallBitsetMap {
     {"revoke",
      Privileges{}.set(PLEDGE_TTY)
          | Privileges{}.set(PLEDGE_RPATH)},
-    {"chdir", Privileges{}.set(PLEDGE_RPATH)},
-    {"open", Privileges{}.set(PLEDGE_SPCL_OPEN)},  // Handle Manually.
-    {"openat", Privileges{}.set(PLEDGE_SPCL_OPEN)},
+    {"chdir", Privileges{}.set(PLEDGE_RPATH)}
+    //{"open", Privileges{}.set(PLEDGE_SPCL_OPEN)},  // Handle Manually.
+    //{"openat", Privileges{}.set(PLEDGE_SPCL_OPEN)},
 };
 
 static SyscallBitsetMap syscallManMap {

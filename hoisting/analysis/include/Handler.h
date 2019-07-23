@@ -39,7 +39,7 @@ public:
   PrivilegeCheckerBase(int ap) : argposition{ap} {}
   virtual ~PrivilegeCheckerBase() {}
 
-  virtual Privileges operator()(const llvm::CallSite,
+  virtual Privileges operator()(const llvm::CallSite&,
                                 const Context& context,
                                 AnalysisPackage* package) = 0;
 
@@ -139,7 +139,7 @@ public:
 
   template <Promises promise>
   bool
-  hasPrivilege(llvm::CallSite cs, const Context& context) {
+  hasPrivilege(llvm::CallSite& cs, const Context& context) {
     Privileges privs{};
     setPrivileges(privs, cs, context);
     return privs.test(promise);
@@ -147,7 +147,7 @@ public:
 
   bool
   setPrivileges(Privileges& requiredPrivileges,
-                llvm::CallSite cs,
+                llvm::CallSite& cs,
                 const Context& context) {
     if (auto function = getCalledFunction(cs)) {
       requiredPrivileges |= mapInterface->getPrivilegesFor(cs, context);

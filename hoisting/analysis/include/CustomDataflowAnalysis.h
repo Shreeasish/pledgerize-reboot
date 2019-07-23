@@ -282,6 +282,8 @@ public:
       if (!foundCurrent) {
         predSet.erase(orderedBB);
         //llvm::errs() << "\n Removing Basic Block\n" << bb;
+      } else {
+        break; // Since the rest of BBs in the predecessor set will become no-ops
       }
     }
     //std::vector<llvm::BasicBlock*> withNoBackEdges{predSet.begin(), predSet.end()};
@@ -536,8 +538,11 @@ public:
         auto* summary = getSummaryKey(f);
         // results[&f][summary] = meet({results[&f][summary], state[key]});
         results[&f][summary] = meet({results[&f][summary], state[nullptr]});
-        Debugger debugger{PLEDGE_STDIO, llvm::outs()};
-        debugger.dump(llvm::dyn_cast<llvm::Instruction>(key), context, results, 0);
+        for (int promiseNum = 0; promiseNum < 10; promiseNum++) {
+          Debugger debugger{promiseNum, llvm::outs()};
+          debugger.dump(
+              llvm::dyn_cast<llvm::Instruction>(key), context, results, 0);
+        }
       }
     }
 

@@ -1,23 +1,15 @@
 #include "llvm/IR/CallSite.h"
 #include "llvm/IR/DebugInfo.h"
-#include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IRReader/IRReader.h"
-#include "llvm/Support/CommandLine.h"
-#include "llvm/Support/ManagedStatic.h"
 #include "llvm/Support/PrettyStackTrace.h"
-#include "llvm/Support/Signals.h"
-#include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/IR/Constants.h"
-#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Operator.h"
 
 #include <bitset>
-#include <memory>
 #include <string>
-#include <iostream>
-#include <variant>
 #include <unordered_map>
 
 #include "Handler.h"
@@ -35,10 +27,13 @@
 //  return llvm::dyn_cast<llvm::Function>(called);
 //}A
 
-/* Defining a namespace for OS defined values (macro constants etc)
+/* Unfortunately #defines cannot be limited in scope
  * like O_CREAT, O_READ, MTIOCGET... */
-namespace SysDefs {
-  #include <sys/mtio.h>
+#include <sys/mtio.h>
+#include <fcntl.h>
+
+namespace sysdefs {
+  
 }
 
 class CheckMCAST : public PrivilegeCheckerBase {
@@ -46,7 +41,7 @@ public:
   CheckMCAST(int ap) : PrivilegeCheckerBase(ap) {}
 
   Privileges
-  operator()(const llvm::CallSite cs,
+  operator()(const llvm::CallSite& cs,
              const Context& context,
              AnalysisPackage* AnalysisPackage) override {
     auto* arg   = cs.getArgument(getArgPosition());
@@ -56,24 +51,23 @@ public:
     }
 
     return 0;
-  };
+  }
 };
 
 /* The dd coreutil, uses ioctl which can interface with tape drives
  * Pledge Handler for ioctl pulls in the global values from sys/mtio.h */
 class Check_ioctl : public PrivilegeCheckerBase {
 public:
-  Check_ioctl(int argPosition) : PrivilegeCheckerBase{argPosition} {}
+  Check_ioctl(int argPosition) : PrivilegeCheckerBase(argPosition) {}
 
   Privileges
-  operator()(const llvm::CallSite cs,
+  operator()(const llvm::CallSite& cs,
              const Context& context,
              AnalysisPackage* AnalysisPackage) override {
     auto* arg     = cs.getArgument(2);
     auto* argType = arg->getType();
     auto* asTypeObj = argType->isPointerTy() 
                       ? argType->getPointerElementType() : argType;
-    llvm::outs() << *asTypeObj;
     if (auto* asStructTy = llvm::dyn_cast<llvm::StructType>(asTypeObj)) {
       auto name = asStructTy->getName();
       // struct.mtop indicates a magnetic tape operation
@@ -86,6 +80,107 @@ public:
     return 0;
   }
 };
+
+class Check_open : public PrivilegeCheckerBase {
+public:
+  Check_open(int argPosition) : PrivilegeCheckerBase(argPosition) {}
+
+  Privileges
+  operator()(const llvm::CallSite& cs,
+             const Context& context,
+             AnalysisPackage* AnalysisPackage) override {
+    auto* arg = cs.getArgument(getArgPosition());
+    if (auto* asllvmCInt = llvm::dyn_cast<llvm::ConstantInt>(arg)) {
+      auto asInt = asllvmCInt->getSExtValue();
+      switch (asInt) {
+        case O_RDWR: {
+          Privileges privileges{1 << PLEDGE_RPATH};
+          privileges |= {1 << PLEDGE_WPATH};
+          llvm::outs() << "\n\nFOUND RDWR FOR OPEN";
+          llvm::outs() << *cs.getInstruction();
+          exit(0);
+          return privileges;
+          break;
+        }
+
+        case O_RDONLY: {
+          return {1 << PLEDGE_RPATH};
+          break;
+        }
+
+        case O_WRONLY: {
+          llvm::outs() << "\n\nFOUND WRONLY FOR OPEN";
+          llvm::outs() << cs.getInstruction();
+          exit(0);
+          return {1 << PLEDGE_WPATH};
+          break;
+        }
+
+        default: {
+          llvm::outs() << "\n\n FOUND NOTHING";
+          llvm::outs() << *cs.getInstruction();
+          exit(0);
+          return 0;
+          break;
+        }
+      }
+    } else {
+      llvm::outs() << "\n Could not get argument for: " << *cs.getInstruction();
+      llvm::outs() << "\nArgument " << *arg;
+      Privileges privileges{1 << PLEDGE_RPATH};
+      privileges |= {1 << PLEDGE_WPATH};
+      // TODO: CPATH
+      return privileges;
+    }
+  }
+};
+
+class Check_fopen : public PrivilegeCheckerBase {
+public:
+  Check_fopen(int argPosition) : PrivilegeCheckerBase(argPosition) {}
+  Privileges
+  operator()(const llvm::CallSite& cs,
+             const Context& context,
+             AnalysisPackage* AnalysisPackage) override {
+    auto* arg = cs.getArgument(getArgPosition());
+    auto* operand = arg->stripPointerCasts(); // Removes GEPs 0index
+    if (auto* gv = llvm::dyn_cast<llvm::GlobalVariable>(operand)) {
+      llvm::Constant* gvInitializer = gv->getInitializer();
+      /* Prefer to fail if fopen model does not match actual ll. 
+       * Else case should conservatively assign all privileges in
+       * lieu of a full fledged analysis */
+      //llvm::outs() << "\nFound as gv::\"" << *cdSeq;
+      auto* asCDA = llvm::dyn_cast<llvm::ConstantDataArray>(gvInitializer); 
+      llvm::StringRef permString = asCDA->getAsString();
+      llvm::outs() << "\nas String " << permString;
+
+      if (permString.contains("r")) {
+        return 1 << PLEDGE_RPATH;
+      } else if (permString.contains("w")) {
+        return 1 << PLEDGE_WPATH;
+      } else if (permString.contains("w") && permString.contains("r")) {
+        Privileges privileges{1 << PLEDGE_RPATH};
+        privileges |= {1 << PLEDGE_WPATH};
+        return privileges;
+      } else {
+        // TODO: CPATH
+        llvm::outs() << "\nfopen strings all funky: " << permString;
+        exit(0);
+      }
+    } else { /* The arguments to fopen might not be constant in which case it
+              * would require additional analysis */ 
+        llvm::outs() << "\nBad argument to fopen" << *cs.getInstruction();
+        llvm::outs() << "\nin Basic Block\n" << *cs.getInstruction()->getParent();
+        llvm::outs() << "\nin Function\n" << cs.getInstruction()->getParent()->getParent()->getName();
+        exit(0);
+        Privileges privileges{1 << PLEDGE_RPATH};
+        privileges |= {1 << PLEDGE_WPATH};
+        return privileges;
+        // TODO: CPATH
+    }
+  }
+};
+
 
 void
 LibCHandlersMap::buildLibCHandlers(AnalysisPackage& package) {
@@ -153,7 +248,6 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage& package) {
   libCHandlers.try_emplace("fdopen", 16);
   libCHandlers.try_emplace("fgetln", 16);
   libCHandlers.try_emplace("fgets", 16);
-  libCHandlers.try_emplace("fopen", 16);
   libCHandlers.try_emplace("fprintf", 16);
   libCHandlers.try_emplace("vfprintf", 16);
   libCHandlers.try_emplace("freopen", 16);
@@ -226,7 +320,9 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage& package) {
   libCHandlers.try_emplace("strrchr", 0);
   libCHandlers.try_emplace("strlen", 0);
 	
-	//Generate Specs for these
+  
+	/* Generated by frpinter.v2 
+   * or manual testing on OpenBSD */
   libCHandlers.try_emplace("clock_gettime", 16);
   libCHandlers.try_emplace("strdup", 0);
   libCHandlers.try_emplace("strchr", 0);
@@ -236,5 +332,23 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage& package) {
   // dd only needs stdio since the callback doesn't do anything else
 
   //libCHandlers.try_emplace( "setsockopt", FunctionPrivilegesBuilder(16).add(std::make_unique<CheckMCAST>(2)).build());
-  libCHandlers.try_emplace("ioctl", FunctionPrivilegesBuilder(16).add(std::make_unique<Check_ioctl>(1)).build());
+  libCHandlers.try_emplace("ioctl", FunctionPrivilegesBuilder(16).add(std::make_unique<Check_ioctl>(2)).build());
+  libCHandlers.try_emplace("open", FunctionPrivilegesBuilder(16).add(std::make_unique<Check_open>(1)).build());
+  /* Needs to use wpath, rpath depending on arguments
+   * An fwrite/fread used after this doesn't need wpath/rpath
+   * since the fd is already open and must have been opened
+   * while holding appropriate privileges. */
+  libCHandlers.try_emplace("fopen", FunctionPrivilegesBuilder(16).add(std::make_unique<Check_fopen>(1)).build()); 
+  
+  /* Generated from tests on md5 
+   * fwrite generated as stdio only
+   * need to test it */
+  libCHandlers.try_emplace("strsep", 0);
+  libCHandlers.try_emplace("__b64_ntop", 0);
+  libCHandlers.try_emplace("strncasecmp", 0);
+  libCHandlers.try_emplace("freezero", 16);
+  libCHandlers.try_emplace("strncmp", 0);
+  libCHandlers.try_emplace("strcasecmp", 0);
+  libCHandlers.try_emplace("strpbrk", 0);
+  libCHandlers.try_emplace("fwrite", 16);
 };

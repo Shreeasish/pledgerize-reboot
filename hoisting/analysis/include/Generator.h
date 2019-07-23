@@ -66,16 +66,23 @@ public:
     }
     exprFile.close();
 
+
     std::string leafFileName = baseString + "/ids.leaves";
     auto leafFile = llvm::raw_fd_ostream{leafFileName, ec};
     leafFile <<  "id|:string";
     leafFile << "\n1|:nullptr"; // SPECIALCASE: Empty ExprID has value 1
+
+
     for (auto [value, exprID] : leafTable) {
       if (value == nullptr) {
         leafFile << "\n" << exprID << "|:nullptr" ;
       }
       else {
-        leafFile << "\n" << exprID << "|:" << *value;
+        if (auto* func = llvm::dyn_cast<llvm::Function>(value)) {
+          leafFile << "\n" << exprID << "|:" << func->getName();
+        } else {
+          leafFile << "\n" << exprID << "|:" << *value;
+        }
       }
     }
     leafFile.close();

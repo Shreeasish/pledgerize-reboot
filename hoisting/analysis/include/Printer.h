@@ -206,19 +206,29 @@ private:
       //  return ret;
       //}
     };
+
+
   
     std::string flatAST;
     llvm::raw_string_ostream rso{flatAST};
+    auto printFName = [&rso](llvm::Function* func) {
+      rso << "[@" << func->getName() << "]";
+    };
 		int depth = 0;
     auto visitor = overloaded{
-        [&rso, &depth](ExprID exprID, const ConstantExprNode node) {
+        [&rso, &depth, &printFName](ExprID exprID, const ConstantExprNode node) {
           // Constants are small; print as is
           if (node.constant) {
-            rso << "[" << *(node.constant) << "]";
+            if (auto func = llvm::dyn_cast<llvm::Function>(node.constant)) {
+              printFName(func);
+            } else {
+              rso << "[" << *(node.constant) << "]";
+            }
           } else {
             rso << "[END]";
           }
         },
+
         [this,&rso, &depth](ExprID exprID, const BinaryExprNode node) {
           if (auto it = opMap.find(node.op.opCode); it != opMap.end()) {
             auto [first, opString] = *it;
@@ -226,6 +236,7 @@ private:
             //rso << " (node.value)" << *(node.value) << " ";
           }
         },
+
         [&rso, &depth](ExprID exprID, const ValueExprNode node) {
           PrettyPrinter printer;
 					if (!node.value) {
