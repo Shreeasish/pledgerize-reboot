@@ -427,7 +427,10 @@ public:
       disjunct.conjunctIDs.erase(from, disjunct.end());
 
       if (!disjunct.size()) {
-        disjunct.addConjunct({GetVacuousExprID(), true});
+        Disjunct disjunct{};
+        disjunct.addConjunct(GetVacuousConjunct());
+        localDisjunction.disjuncts = Disjuncts{disjunct};
+        break;
       }
     }
     return localDisjunction;

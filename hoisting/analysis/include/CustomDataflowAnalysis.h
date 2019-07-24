@@ -511,8 +511,10 @@ public:
           llvm::errs() << "Parent " << i.getParent()->getParent()->getName()
                        << "\n";
           for (auto* function : svfResults->getIndCSCallees(cs)) {
-            llvm::errs() << "\nadding call " << function->getName();
-            analyzeCall(cs, state, context, getNonConst(function));
+            llvm::errs() << "\nadding call " << function->getName() << "\n";
+            if (!function->isDeclaration()) {
+              analyzeCall(cs, state, context, getNonConst(function));
+            } // declonly functions will be handled as havocs
           }
         }
         // llvm::errs() << "\nBefore------------------------------------";

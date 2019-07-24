@@ -391,6 +391,12 @@ public:
     Debugger::ContributionCounter counter{branchOrSwitch};
     return static_for{edgeOp}(toMerge);
   }
+  
+
+  /* The edge transformer also works on indirect callees, 
+   * (consider them as edges in an inter-procedural control-flow-graph).
+   * In this situation however, the edge-transformer must rewrite the
+   * states with their arguments at the callsites. */
 
   DisjunctionValue
   operator()(DisjunctionValue& toMerge,
@@ -717,22 +723,6 @@ private:
       return handled;
     }
 
-    auto handleIndCall = [&state, &callSite, &value] {
-      /* If the call is indirect, as with direct calls,     ///////////////////////////////////////
-       * abstract state passed into the callee will be      // if (generator->isUsed) {
-       * pulled out and rewritten in terms of the arguments //    makeVaucouslyTrue(state[nullptr]);
-       * of call                                            //    return true;
-       * The code on the right isn't needed then. */        // }
-      
-      auto& calleeState = state[callSite.getInstruction()];  /* This is possible since the Dataflow Analysis 
-                                                              * Framework now folds over indirect calls. */
-      auto csExprID  = generator->GetOrCreateExprID(callSite);
-      auto oldExprID = generator->GetOrCreateExprID(value);
-      // Rewrite the callsite exprs in callee states and merge it in
-      state[nullptr] = generator->rewrite(calleeState, oldExprID, csExprID);
-      return;
-    };
-
     auto stubWorker = [&state, &value](bool isWhiteListed) {
       if (!isWhiteListed) {
         makeVacuouslyTrue(state[nullptr]);
@@ -742,11 +732,38 @@ private:
       }
     };
 
-    auto handleExternalCall = [&state, &callSite, &context, &stubWorker] {
-      if (privilegeResolver->hasPrivilege<Promise>(callSite, context)) {
+    auto handleExternalCall = 
+      [&state,  &context, &stubWorker] (auto callInfo) { // FName or CallSite
+      if (privilegeResolver->hasPrivilege<Promise>({callInfo}, context)) {
         makeVacuouslyTrue(state[nullptr]);
       } else {
-        privilegeResolver->handleStubs(stubWorker, callSite);
+        privilegeResolver->handleStubs(stubWorker, {callInfo});
+      }
+    };
+
+    auto handleIndCall = [&state, &callSite, &value, &handleExternalCall, this] {
+      /* If the call resolves to an internal function, the abstract state
+       * within the calle is rewritten with the arguments at the callsite. This
+       * is handled by the edge transformer in this case, since the meet
+       * function is lossy regarding the function-state ownership information,
+       * resulting in a search + replace across all function states if the
+       * argument rewriting were to be handled here.
+       * Simplification I suspect simplification to be easier when performed
+       * over every incoming pair vs over the entire set */
+      if (!isInterprocedural) {
+        auto oldExprID = generator->GetOrCreateExprID(value);
+        state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+        return; // Push conjuncts to true and exit
+      } else if (svfResults->hasIndCSCallees(callSite)) {
+        for (auto* func : svfResults->getIndCSCallees(callSite)) {
+          if (func->isDeclaration()) {
+            handleExternalCall(func->getName());
+          }
+          state[nullptr] = state[callSite.getInstruction()];
+        }
+      } else {  // if SVF is unable to find callees
+        makeVacuouslyTrue(state[nullptr]);
+        return;
       }
     };
 
@@ -770,7 +787,7 @@ private:
         return true;
         break;
       case CallType::ExternalCall:
-        handleExternalCall();
+        handleExternalCall(callSite);
         break;
       case CallType::LLVMSpecific:
         /*TODO: llvm versions of memcpy etc will need to be managed*/

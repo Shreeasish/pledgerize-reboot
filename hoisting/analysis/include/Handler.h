@@ -26,6 +26,10 @@
 
 using Context = std::array<llvm::Instruction*, 2ul>;
 
+//TODO: Rather than overriding functions depending on if
+//the call is a stringref or a callsite, use an accessor
+//object to merge the interfaces. More time than it's worth.
+
 struct AnalysisPackage {
 public:
   // Point of Configuration for turning on or off analysis
@@ -64,11 +68,17 @@ public:
       analysisPackage{package},
       analysisVector{std::move(avector)} {}
 
+
   Privileges
   getPrivileges(const llvm::CallSite& cs, const Context& context) {
     for (auto const& checker : analysisVector) {
       privileges |= (*checker)(cs, context, analysisPackage);
     }
+    return privileges;
+  }
+
+  Privileges
+  getPrivileges(llvm::StringRef fName) {
     return privileges;
   }
 
@@ -132,6 +142,9 @@ private:
 
 class PrivilegeResolver {
 public:
+  //using CallSiteRef = std::reference_wrapper<llvm::CallSite>;
+  using CSInfo = std::variant<llvm::CallSite, llvm::StringRef>;
+
   PrivilegeResolver(llvm::Module& m)
     : module{m},
       analysisPackage{std::make_unique<AnalysisPackage>(m)},
@@ -139,13 +152,25 @@ public:
 
   template <Promises promise>
   bool
-  hasPrivilege(llvm::CallSite& cs, const Context& context) {
+  hasPrivilege(CSInfo info, const Context& context) {
     Privileges privs{};
-    setPrivileges(privs, cs, context);
+    if (auto* name = std::get_if<llvm::StringRef>(&info)) {
+      setPrivileges(privs, *name);
+    } else {
+      auto cs = std::get<llvm::CallSite>(info);
+      setPrivileges(privs, cs, context);
+    }
     return privs.test(promise);
   }
 
-  bool
+  bool  // For Indirect Calls
+  setPrivileges(Privileges& requiredPrivileges, 
+                llvm::StringRef fName) {
+    requiredPrivileges |= mapInterface->getPrivilegesFor(fName);
+    return true;
+  }
+
+  bool // For Direct Calls
   setPrivileges(Privileges& requiredPrivileges,
                 llvm::CallSite& cs,
                 const Context& context) {
@@ -158,13 +183,18 @@ public:
   
   template <typename Worker>
   void
-  handleStubs(Worker& worker, llvm::CallSite& cs) {
+  handleStubs(Worker& worker, CSInfo info) {
     /* bool isWhiteListed  = mapInterface->isWhiteListed(cs);
      * bool isValueClobber = !isWhiteListed && mapInterface->isValueClobber(cs);
      * worker(isWhiteListed, isValueClobber); */
-    bool isWhiteListed = mapInterface->hasSpecifications(cs); /*||hasWhiteListEntry();*/
-    worker(isWhiteListed); 
-    return;
+    if (auto* name = std::get_if<llvm::StringRef>(&info)) {
+      return // Worker handles what to actually do if it has specs
+        worker(mapInterface->hasSpecifications(*name));
+    } else {
+      auto cs = std::get<llvm::CallSite>(info);
+      return // Worker handles what to actually do if it has specs
+        worker(mapInterface->hasSpecifications(cs));
+    }
   }
   
   auto
@@ -204,10 +234,30 @@ private:
         return {};
       }
     }
+    
+    Privileges
+    getPrivilegesFor(llvm::StringRef& fName) {
+      if (auto privileges = getPrivilegesForImpl(fName, libCHandlers)) {
+        return *privileges;
+      } else if (auto privileges = getPrivilegesForImpl(fName, syscallBitsetMap)) {
+        return *privileges;
+      } else {
+        exit(0);
+        //addToUnknowns(fName);
+        return {};
+      }
+    }
+
 
     bool
     hasSpecifications(llvm::CallSite& cs) {
       auto name = getFunctionName(cs);
+      return libCHandlers.find(name) != libCHandlers.end()
+          || syscallBitsetMap.find(name) != syscallBitsetMap.end();
+    }
+
+    bool
+    hasSpecifications(llvm::StringRef name) {
       return libCHandlers.find(name) != libCHandlers.end()
           || syscallBitsetMap.find(name) != syscallBitsetMap.end();
     }
@@ -240,12 +290,32 @@ private:
       return {};
     }
 
+
     std::optional<Privileges>
     getPrivilegesForImpl(const llvm::CallSite& cs, const Context& context,
                                                 LibCHandlersMap& handlers) {
       auto functionName = getFunctionName(cs);
       if (auto found = handlers.find(functionName); found != handlers.end()) {
         return found->second.getPrivileges(cs, context);
+      } 
+      return {};
+    }
+
+    template <typename StringMapTy>
+    std::optional<Privileges>
+    getPrivilegesForImpl(const llvm::StringRef fName,
+                         StringMapTy stringMap) {
+      if (auto found = stringMap.find(fName); found != stringMap.end()) {
+        return found->second;
+      } 
+      return {};
+    }
+
+    std::optional<Privileges>
+    getPrivilegesForImpl(const llvm::StringRef fName,
+                         LibCHandlersMap& handlers) {
+      if (auto found = handlers.find(fName); found != handlers.end()) {
+        return found->second.getPrivileges(fName);
       } 
       return {};
     }
