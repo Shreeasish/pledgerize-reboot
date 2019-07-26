@@ -402,16 +402,36 @@ public:
   operator()(DisjunctionValue& toMerge,
              const llvm::CallSite& caller,
              llvm::Function* indCallee) {
-    auto getMayCallConjunct = [](const llvm::CallSite& caller,
-                                 llvm::Function* const mayCallee) {
-      auto aliasExpr = generator->GetOrCreateAliasID(caller, mayCallee);
-      return Conjunct(aliasExpr, true);
+    auto getAliasConjunct = [](const llvm::CallSite& caller,
+                               llvm::Function* const mayCallee,
+                               bool form) {
+      auto aliasExpr = generator->GetOrCreateAliasID(mayCallee, caller);
+      auto numCallees = svfResults->getIndCSCallees(caller).size();
+      return Conjunct(aliasExpr, form);
     };
 
+
     auto callStitcher = [&](Disjunction destState) {
-      auto callConjunct = getMayCallConjunct(caller, indCallee);
-      destState.applyConjunct(callConjunct);
+      auto callees = svfResults->getIndCSCallees(caller);
+      if (callees.size() <= 1) {
+        return destState;
+      } // Early return if there's only a single target
+      
+      llvm::errs() << "\nGenerating May Call Conjunct for "
+                   << *caller.getInstruction() << "\nwith target "
+                   << indCallee->getName() << " == " ;
+      //llvm::errs() << "\nNumber of callees: " << numCallees << ":";
+      
+      // Rewriting args first should be faster (fewer lookups)
       this->argRewriter(destState, caller, indCallee);
+      //auto callConjunct = getAliasConjunct(caller, indCallee, true);
+      //destState.applyConjunct(callConjunct);
+      for (auto* function : svfResults->getIndCSCallees(caller)) {
+        llvm::errs() << " " << function->getName();
+        // may-call ind callee, may-not-call any others.
+        auto callConjunct = getAliasConjunct(caller, indCallee, function == indCallee);
+        destState.applyConjunct(callConjunct);
+      }
       return destState;
     };
     return static_for{callStitcher}(toMerge);
@@ -762,7 +782,9 @@ private:
           state[nullptr] = state[callSite.getInstruction()];
         }
       } else {  // if SVF is unable to find callees
-        makeVacuouslyTrue(state[nullptr]);
+        llvm::errs() << "\n Could Not Find Callee for"
+                     << *callSite.getInstruction();
+        //makeVacuouslyTrue(state[nullptr]);
         return;
       }
     };
@@ -854,6 +876,73 @@ private:
     return std::make_pair(strongLoads, otherLoads);
   }
 
+  /* General Load/Store pairs may have non-exclusive alias sets.
+   * Alias sets to indcalls are necessarily exclusive.
+   * WHen non-exclusive, only the (negated) conjunct describing
+   * the non-aliasing relationship between the current load
+   * pointer being analyzed and other store pointers must be killed.
+   * For exclusive sets since the load pointer *must* point to any one
+   * out of a set of aliases, the negated conjuncts describing 
+   * otherwise must be killed.*/
+  Disjunction
+  killConflicts(const Disjunction& state, llvm::StoreInst* storeInst) {
+    auto isAlias = [](const auto exprID) -> std::optional<const BinaryExprNode> {
+      auto node = generator->GetExprNode(exprID);
+      if (auto* binNode = std::get_if<const BinaryExprNode>(&node)) {
+        auto isAliasOpCode = binNode->op.opCode == OpIDs::Alias;
+        return 
+          isAliasOpCode ? std::optional<BinaryExprNode>{*binNode}
+                        : std::nullopt;
+      } return {};
+    };
+      
+    auto isMustAlias = [&storeInst, this](const BinaryExprNode& binNode) -> bool {
+      if (auto* function = llvm::dyn_cast<llvm::Function>(binNode.value)) {
+        return getAliasType(storeInst, function)
+               == llvm::AliasResult::MustAlias;
+      } else {
+        auto* loadInst = llvm::dyn_cast<llvm::LoadInst>(binNode.value);
+        return getAliasType(storeInst, loadInst)
+               == llvm::AliasResult::MustAlias;
+      }
+    };
+
+    auto isCallAlias = [](const BinaryExprNode& binNode) -> bool {
+      return llvm::isa<llvm::Function>(binNode.value);
+    };
+
+    /* Kill conflicting definitions of a load value at store*/
+    auto localState = state;
+    auto killConjunct = [&localState](const Conjunct& conjunct) {
+      if (!conjunct.notNegated) { // i.e. it is negated
+        llvm::errs() << "\nKilling ExprID (CONJUNCT)" << conjunct.exprID;
+        llvm::errs() << "\nBefore killing conjuncts";
+        localState.print(llvm::errs());
+
+        generator->pushToTrue(localState, conjunct.exprID);
+
+        llvm::errs() << "\nAfter killing conjuncts";
+        localState.print(llvm::errs());
+        exit(0);
+      }
+    };
+
+    for (auto& disjunct : state.disjuncts) {
+      for (auto& conjunct : disjunct.conjunctIDs) {
+        if (auto binNode = isAlias(conjunct.exprID); binNode && isMustAlias(*binNode)) {
+          if (!isCallAlias(*binNode)) {
+            killConjunct(conjunct);
+          }
+        }
+      }
+    }
+    return localState
+        .simplifyComplements()
+        .simplifyRedundancies(generator->GetVacuousConjunct())
+        .simplifyImplication();
+  }
+
+
   template<Promises Promise>
   bool
   handleStore(llvm::Value* const value,
@@ -868,6 +957,13 @@ private:
     if (!storeInst) {
       return false;
     }
+    /* Kill all offending aliases to the current store.
+     * Correct since it's a path specific update. 
+     * This would only work for must aliases since anything which 
+     * works otherwise would be incorrect. Ensure that it works
+     * for both indCallSite and regular load/store pairs */
+    state[nullptr] = killConflicts(state[nullptr], storeInst);
+
     //llvm::errs() << "\n Handling store at " << *value;
     std::vector<NodeExprPair> asLoads = getLoads(state);
     auto [strongLoads, weakLoads]     = seperateLoads(storeInst, asLoads);
@@ -1130,6 +1226,18 @@ private:
     return aliasType;
   }
 
+  AliasResult
+  getAliasType(llvm::StoreInst* const storeInst,
+               llvm::Function*  const function) {
+    auto asValue = storeInst->getPointerOperand()->stripPointerCasts();
+    if (auto* function = llvm::dyn_cast<llvm::Function>(asValue)) {
+      // remove check
+      llvm::errs() << "\nFound store with function pointer" << function->getName();
+      exit(0);
+    }
+    return llvm::AliasResult::NoAlias;
+  }
+
   Disjunction
   strongUpdate(const Disjunction& disjunction,
                const ExprID& loadExprID,
@@ -1259,6 +1367,11 @@ runAnalysisFor(llvm::Module& m,
     Debugger debugger{MaxPrivilege, llvm::outs()};
     debugger.dump(&inst, context, functionResults, 0);
   };
+
+  auto ec = std::error_code{};
+  auto fileOuts = llvm::raw_fd_ostream{"/home/shreeasish/pledgerize-reboot/hoisting/"
+                       "build-release/debug.ll",ec};
+  fileOuts << m;
 
   for (auto fname : functionNames) {
     auto* entryPoint = m.getFunction(fname);

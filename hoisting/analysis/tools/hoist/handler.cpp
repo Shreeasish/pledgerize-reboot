@@ -98,7 +98,7 @@ public:
           privileges |= {1 << PLEDGE_WPATH};
           llvm::outs() << "\n\nFOUND RDWR FOR OPEN";
           llvm::outs() << *cs.getInstruction();
-          exit(0);
+          //exit(0);
           return privileges;
           break;
         }
@@ -119,7 +119,7 @@ public:
         default: {
           llvm::outs() << "\n\n FOUND NOTHING";
           llvm::outs() << *cs.getInstruction();
-          exit(0);
+          //exit(0);
           return 0;
           break;
         }
@@ -351,4 +351,46 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage& package) {
   libCHandlers.try_emplace("strcasecmp", 0);
   libCHandlers.try_emplace("strpbrk", 0);
   libCHandlers.try_emplace("fwrite", 16);
+
+  /*Used by md5, fprinter generated with no privilege
+   * requirements. Makes sense. Hash generation functions
+   * shouwl be strictly compute only.*/
+
+  libCHandlers.try_emplace("MD5Final", 0);
+  libCHandlers.try_emplace("RMD160Final", 0);
+  libCHandlers.try_emplace("SHA1Final", 0);
+  libCHandlers.try_emplace("SHA224Final", 0);
+  libCHandlers.try_emplace("SHA256Final", 0);
+  libCHandlers.try_emplace("SHA384Final", 0);
+  libCHandlers.try_emplace("SHA512_256Final", 0);
+  libCHandlers.try_emplace("SHA512Final", 0);
+  libCHandlers.try_emplace("MD5End",16);
+  libCHandlers.try_emplace("RMD160End",16);
+  libCHandlers.try_emplace("SHA1End", 16);
+  libCHandlers.try_emplace("SHA224End", 16);
+  libCHandlers.try_emplace("SHA256End", 16);
+  libCHandlers.try_emplace("SHA384End", 16);
+  libCHandlers.try_emplace("SHA512_256End", 16);
+  libCHandlers.try_emplace("SHA512End", 16);
+  libCHandlers.try_emplace("MD5Update", 0);
+  libCHandlers.try_emplace("RMD160Update", 0);
+  libCHandlers.try_emplace("SHA224End", 16);
+  libCHandlers.try_emplace("SHA1Update", 0);
+  libCHandlers.try_emplace("SHA256Update", 0);
+  libCHandlers.try_emplace("SHA512Update", 0);
+  libCHandlers.try_emplace("MD5Init", 0);
+  libCHandlers.try_emplace("RMD160Init", 0);
+  libCHandlers.try_emplace("SHA1Init", 0);
+  libCHandlers.try_emplace("SHA224Init", 0);
+  libCHandlers.try_emplace("SHA256Init", 0);
+  libCHandlers.try_emplace("SHA384Init", 0);
+  libCHandlers.try_emplace("SHA512_256Init", 0);
+  libCHandlers.try_emplace("SHA512Init", 0);
+
+  // Handrolled. Doesn't exist in spec.
+  libCHandlers.try_emplace("SHA224Update", 0);  
+  libCHandlers.try_emplace("SHA384Update", 0);  
+  libCHandlers.try_emplace("SHA512_256Update", 0);  
+
+
 };

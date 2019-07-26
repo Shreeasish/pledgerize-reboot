@@ -242,6 +242,7 @@ private:
       } else if (auto privileges = getPrivilegesForImpl(fName, syscallBitsetMap)) {
         return *privileges;
       } else {
+        llvm::errs() << "\nPrivilegs unavailable for function \n" << fName << "\n";
         exit(0);
         //addToUnknowns(fName);
         return {};

@@ -10,8 +10,8 @@
 //TODO: Add checks for boundaries between ID types
 //TODO: CamelCase functions
 //TODO: Move traversals to a single function
-using ValueConstOrBinaryExprNode = std::
-    variant<const ValueExprNode, const ConstantExprNode, const BinaryExprNode>;
+using ValueConstOrBinaryExprNode = 
+    std::variant<const ValueExprNode, const ConstantExprNode, const BinaryExprNode>;
 
 class Generator {
 public:
@@ -231,23 +231,26 @@ public:
     return GetOrCreateExprID(withSentinel, cs.getInstruction());
   }
 
+  /* Store the pointers to loads and stores and not the instructions themeselevs.
+   * Enables computation of alias checks when performing lowering instead of 
+   * using them as markers only.*/
   ExprID
   GetOrCreateAliasID(const BinaryExprNode& node, llvm::StoreInst* const store) {
     auto storePtr   = store->getPointerOperand();
     auto storePtrID = GetOrCreateExprID(storePtr);
     auto loadPtrID  = node.rhs;
     ExprKey key{loadPtrID, OpIDs::Alias, storePtrID};
-    return GetOrCreateExprID(key, store);
-  }
+    return GetOrCreateExprID(key, node.value); // Carry the load instruction 
+  }                                            // to check with AA Results later on.
 
   ExprID
-  GetOrCreateAliasID(const llvm::CallSite& caller, llvm::Function* const callee) {
-    auto* callAsValue = llvm::dyn_cast<llvm::Value>(caller.getInstruction());
-    auto callExprID   = GetOrCreateExprID(callAsValue);
+  GetOrCreateAliasID(llvm::Function* const callee, const llvm::CallSite& caller) {
     auto* funcAsValue = llvm::dyn_cast<llvm::Value>(callee);
     auto funcExprID   = GetOrCreateExprID(funcAsValue);
+    auto* callAsValue = llvm::dyn_cast<llvm::Value>(caller.getInstruction());
+    auto callExprID   = GetOrCreateExprID(callAsValue);
 
-    ExprKey key{callExprID, OpIDs::Alias, funcExprID};
+    ExprKey key{funcExprID, OpIDs::Alias, callExprID};
     return GetOrCreateExprID(key, funcAsValue);
   }
 
@@ -426,7 +429,7 @@ public:
           });
       disjunct.conjunctIDs.erase(from, disjunct.end());
 
-      if (!disjunct.size()) {
+      if (!disjunct.size()) {  // Drop state to true
         Disjunct disjunct{};
         disjunct.addConjunct(GetVacuousConjunct());
         localDisjunction.disjuncts = Disjuncts{disjunct};

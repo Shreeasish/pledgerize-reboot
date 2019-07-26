@@ -513,6 +513,7 @@ public:
           for (auto* function : svfResults->getIndCSCallees(cs)) {
             llvm::errs() << "\nadding call " << function->getName() << "\n";
             if (!function->isDeclaration()) {
+              llvm::errs() << "\nAdded Internal Analyzable Call " << function->getName();
               analyzeCall(cs, state, context, getNonConst(function));
             } // declonly functions will be handled as havocs
           }
@@ -630,8 +631,6 @@ public:
       |= Direction::prepareSummaryState(cs, callee, state,
                                         summaryState, transfer, 
                                         meet, context);
-
-
     // TODO: 
     // 3. Wiring arguments.
     // 4. Prune Edges at loads
