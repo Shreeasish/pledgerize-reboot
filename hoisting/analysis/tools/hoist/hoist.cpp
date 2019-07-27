@@ -95,7 +95,7 @@ using DisjunctionValue  = std::array<Disjunction, COUNT - 1>;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
-constexpr int MaxPrivilege{10};
+constexpr int MaxPrivilege{18};
 constexpr int MinPrivilege{0};
 
 /*--------------------------------------------------------*

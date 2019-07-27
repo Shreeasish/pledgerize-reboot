@@ -17,7 +17,8 @@ enum class SocketType {
   NONE,
   UNIX = 1, // TODO: Switch to macros
   INET = 2,
-  INET6 = 24 
+  INET6 = 24,
+  UNKNOWN
 };
 
 /* Simply hold on to the domain type for each callsite*/
@@ -27,19 +28,13 @@ class SocketAnalyzer {
 public:
   SocketAnalyzer(llvm::Module& m) : module{m} { buildTable(); }
 
-  static SocketType 
-  getSocketType(llvm::CallSite& cs) {
+  SocketType // Pre-checked for socket relevant functions only
+  inferSocketType(llvm::CallSite& cs) {
     auto domainFlag  = cs.getArgument(0);
     auto* asllvmCInt = llvm::dyn_cast<llvm::ConstantInt>(domainFlag);
     auto asInt       = asllvmCInt->getSExtValue(); // Fail if incorrect
 
-    //llvm::errs() << "\nsocket at@ " << *cs.getInstruction();
-    //llvm::errs() << "parent" << cs.getInstruction()->getParent()->getParent()->getName();
-    //llvm::errs() << "\nasInt" << (asInt & (1|2|24));
-    //llvm::errs() << "\nAF_UNIX" << AF_UNIX;
-    //llvm::errs() << "\nAF_INET" << AF_INET;
-    //llvm::errs() << "\nAF_INET6" << AF_INET6;
-    switch (asInt & ((int) SocketType::UNIX|(int) SocketType::INET|(int) SocketType::INET6)) { // TODO: Switch to MACRO defs
+    switch (asInt) { // TODO: Switch to MACRO defs
       case (int) SocketType::UNIX: {
         return SocketType::UNIX;
         break;
@@ -52,9 +47,17 @@ public:
         return SocketType::INET6;
         break;
       }
-      default:
-        return SocketType::NONE;
+      default: { return SocketType::NONE; }
     }
+  }
+
+  SocketType
+  getSocketResults(const llvm::CallSite& cs) {
+    auto asInst = cs.getInstruction();
+    if (results.count(asInst)) {
+      return results[asInst];
+    }
+    return SocketType::UNKNOWN;
   }
 
   void
@@ -86,20 +89,22 @@ public:
       while (!workList.empty()) {
         auto* inst = workList.front();
         workList.pop_front();
+        this->results[inst] = domain;
         
         for (auto* user : inst->users()) {
           llvm::errs() << "\n\t " << *user;
           auto asCallSite = llvm::CallSite{user};
           auto* asInst = llvm::dyn_cast<llvm::Instruction>(user);
           if (asCallSite.getInstruction() && this->results.count(asInst) == 0) {
-            this->results[inst] = domain;
+            this->results[asInst] = domain;
+            workList.push_back(asInst);
           }
         }
       }
     };
 
     if (function->getName().startswith("socket")) {
-      auto domain = getSocketType(cs);
+      auto domain = inferSocketType(cs);
       processUsers(cs, domain);
     }
     return;

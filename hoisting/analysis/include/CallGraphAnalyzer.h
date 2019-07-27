@@ -105,7 +105,7 @@ static SyscallBitsetMap syscallBitsetMap {
     {"fchdir", Privileges{}.set(PLEDGE_STDIO)},
     {"pipe", Privileges{}.set(PLEDGE_STDIO)},
     {"pipe2", Privileges{}.set(PLEDGE_STDIO)},
-    {"socketpair", Privileges{}.set(PLEDGE_STDIO)},
+    //{"socketpair", Privileges{}.set(PLEDGE_STDIO)},
     {"wait4", Privileges{}.set(PLEDGE_STDIO)},
     {"kill", Privileges{}.set(PLEDGE_STDIO)},
     // {"ioctl", Privileges{}.set(PLEDGE_STDIO)},
@@ -204,11 +204,11 @@ static SyscallBitsetMap syscallBitsetMap {
     // {"fchownat", Privileges{}.set(PLEDGE_CHOWN)},
     // {"lchown", Privileges{}.set(PLEDGE_CHOWN)},
     // {"fchown", Privileges{}.set(PLEDGE_CHOWN)},
-    {"socket",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)
-         | Privileges{}.set(PLEDGE_DNS)
-         | Privileges{}.set(PLEDGE_YPACTIVE)},
+    //{"socket",
+    // Privileges{}.set(PLEDGE_INET)
+    //     | Privileges{}.set(PLEDGE_UNIX)
+    //     | Privileges{}.set(PLEDGE_DNS)
+    //     | Privileges{}.set(PLEDGE_YPACTIVE)},
     {"connect",
      Privileges{}.set(PLEDGE_INET)
          | Privileges{}.set(PLEDGE_UNIX)
@@ -439,7 +439,7 @@ static SyscallBitsetMap syscallManMap {
     {"sigaction", Privileges{}.set(PLEDGE_STDIO)},
     {"sigprocmask", Privileges{}.set(PLEDGE_STDIO)},
     {"sigreturn", Privileges{}.set(PLEDGE_STDIO)},
-    {"socketpair", Privileges{}.set(PLEDGE_STDIO)},
+    //{"socketpair", Privileges{}.set(PLEDGE_STDIO)},
     {"umask", Privileges{}.set(PLEDGE_STDIO)},
     {"wait4", Privileges{}.set(PLEDGE_STDIO)},
     {"write", Privileges{}.set(PLEDGE_STDIO)},
@@ -460,10 +460,10 @@ static SyscallBitsetMap syscallManMap {
     {"mkdir", Privileges{}.set(PLEDGE_CPATH)},
     {"mkdirat", Privileges{}.set(PLEDGE_CPATH)},
     {"rmdir", Privileges{}.set(PLEDGE_CPATH)},
-    {"socket",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)
-         | Privileges{}.set(PLEDGE_DNS)},
+    //{"socket",
+    // Privileges{}.set(PLEDGE_INET)
+    //     | Privileges{}.set(PLEDGE_UNIX)
+    //     | Privileges{}.set(PLEDGE_DNS)},
     {"listen",
      Privileges{}.set(PLEDGE_INET)
          | Privileges{}.set(PLEDGE_UNIX)},

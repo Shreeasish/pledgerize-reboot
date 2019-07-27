@@ -504,6 +504,11 @@ public:
         if (isAnalyzableCall(cs) && transfer.isInterprocedural) {
           analyzeCall(cs, state, context);
         }
+        if (isIndirectCall(cs)) {
+          llvm::errs() << "\nFound Pointer Call \t ";
+          llvm::errs() << i << "\n";
+        }
+
         if (isIndirectCall(cs) 
             && svfResults->hasIndCSCallees(cs)) {
           llvm::errs() << "\nFound Pointer Call \t ";

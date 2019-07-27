@@ -35,10 +35,16 @@ struct AnalysisPackage {
 public:
   // Point of Configuration for turning on or off analysis
   AnalysisPackage(llvm::Module& m) 
-  : socketAnalysis{std::make_unique<SocketAnalyzer>(m)} { }
+  : socketAnalyzer{std::make_unique<SocketAnalyzer>(m)} { }
+
+  SocketAnalyzer*
+  getSocketAnalyzer() {
+    return socketAnalyzer.get();
+  }
+
 private:
   tmpanalysis::tmppathResultsTy tmppathResults;
-  std::unique_ptr<SocketAnalyzer> socketAnalysis;
+  std::unique_ptr<SocketAnalyzer> socketAnalyzer;
 };
 
 class PrivilegeCheckerBase {
@@ -58,6 +64,7 @@ public:
 private:
   int argposition;
 };
+
 
 using AnalysisVector = std::vector<std::unique_ptr<PrivilegeCheckerBase>>;
 class FunctionPrivileges {
@@ -99,7 +106,7 @@ public:
 
   FunctionPrivilegesBuilder(unsigned long privilegeValue,
                             AnalysisPackage* package)
-    : privileges{privilegeValue} {}
+    : privileges{privilegeValue}, analysisPackage{package} {}
 
   FunctionPrivilegesBuilder&
   add(std::unique_ptr<PrivilegeCheckerBase> privilegeChecker) {
@@ -122,7 +129,7 @@ private:
 using Handlers = llvm::StringMap<FunctionPrivileges>;
 struct LibCHandlersMap {
 public:
-  LibCHandlersMap(AnalysisPackage& package) {
+  LibCHandlersMap(AnalysisPackage* package) {
     buildLibCHandlers(package);
   }
   
@@ -137,7 +144,7 @@ public:
   }
 
 private:
-  void buildLibCHandlers(AnalysisPackage& package);
+  void buildLibCHandlers(AnalysisPackage* package);
   Handlers libCHandlers;
 }; // end class LibCHandlersMap
 
@@ -151,7 +158,7 @@ public:
   PrivilegeResolver(llvm::Module& m)
     : module{m},
       analysisPackage{std::make_unique<AnalysisPackage>(m)},
-      mapInterface{std::make_unique<MapInterface>(*analysisPackage.get())} { }
+      mapInterface{std::make_unique<MapInterface>(analysisPackage.get())} { }
 
   template <Promises promise>
   bool
@@ -206,7 +213,7 @@ public:
   }
 
 private:
-  LibCHandlersMap& buildLibCHandlers(AnalysisPackage&); // Handler.cpp
+  LibCHandlersMap& buildLibCHandlers(AnalysisPackage*); // Handler.cpp
   
   static
   llvm::Function*
@@ -217,7 +224,7 @@ private:
 
   class MapInterface {
   public:
-    MapInterface(AnalysisPackage& package) 
+    MapInterface(AnalysisPackage* package) 
       : libCHandlers{package} {}
 
     Privileges
@@ -358,7 +365,6 @@ private:
   llvm::Module& module;
   std::unique_ptr<AnalysisPackage> analysisPackage;
   std::unique_ptr<MapInterface>    mapInterface;
-
 };
 
 // std::unordered_map<std::string, FunctionPledges>

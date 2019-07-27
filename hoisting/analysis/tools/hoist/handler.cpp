@@ -168,22 +168,58 @@ public:
         exit(0);
       }
     } else { /* The arguments to fopen might not be constant in which case it
-              * would require additional analysis */ 
-        llvm::outs() << "\nBad argument to fopen" << *cs.getInstruction();
-        llvm::outs() << "\nin Basic Block\n" << *cs.getInstruction()->getParent();
-        llvm::outs() << "\nin Function\n" << cs.getInstruction()->getParent()->getParent()->getName();
-        exit(0);
-        Privileges privileges{1 << PLEDGE_RPATH};
-        privileges |= {1 << PLEDGE_WPATH};
-        return privileges;
-        // TODO: CPATH
+              * would require additional analysis */
+      llvm::outs() << "\nBad argument to fopen" << *cs.getInstruction();
+      llvm::outs() << "\nin Basic Block\n" << *cs.getInstruction()->getParent();
+      llvm::outs() << "\nin Function\n"
+                   << cs.getInstruction()->getParent()->getParent()->getName();
+      exit(0);
+      Privileges privileges{1 << PLEDGE_RPATH};
+      privileges |= {1 << PLEDGE_WPATH};
+      return privileges;
+      // TODO: CPATH
     }
   }
 };
 
+class Check_socket : public PrivilegeCheckerBase {
+public:
+  Check_socket(int argPosition) : PrivilegeCheckerBase(argPosition) {}
+  Privileges
+  operator()(const llvm::CallSite& cs,
+             const Context& context,
+             AnalysisPackage* AnalysisPackage) override {
+    auto* socketAnalyzer = AnalysisPackage->getSocketAnalyzer();
+    auto domain = socketAnalyzer->getSocketResults(cs);
+    switch (domain) {
+      case SocketType::NONE: {
+        return {0};
+        break;
+      }
+      case SocketType::UNIX: {
+        return {1 << PLEDGE_UNIX};
+        break;
+      }
+      case SocketType::INET: {
+        return {1 << PLEDGE_INET};
+        break;
+      }
+      case SocketType::INET6: {
+        return {1 << PLEDGE_INET};
+        break;
+      }
+      default: {
+        llvm::errs() << "Unknown domain for " << *cs.getInstruction();
+        Privileges privileges{1 << PLEDGE_UNIX};
+        privileges |= {1 << PLEDGE_INET};
+        return privileges;
+      }
+    }
+  }
+};
 
 void
-LibCHandlersMap::buildLibCHandlers(AnalysisPackage& package) {
+LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("fread", FunctionPrivilegesBuilder(16).build());
   libCHandlers.try_emplace( "setsockopt", FunctionPrivilegesBuilder(16).add(std::make_unique<CheckMCAST>(2)).build());
   libCHandlers.try_emplace("err", FunctionPrivilegesBuilder(16).build()); //Should only use stderr
@@ -413,4 +449,12 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage& package) {
   /* More handlers for slaacd */
   //libCHandlers.try_emplace("getpwnam", 1 << PLEDGE_GETPW);
   libCHandlers.try_emplace("geteuid", 16);
+
+  /* AF_UNIX, AF_INET and AF_INET6 handlers*/
+  libCHandlers.try_emplace("socket", FunctionPrivilegesBuilder(16, package).add(std::make_unique<Check_socket>(0)).build());
+  libCHandlers.try_emplace("socketpair", FunctionPrivilegesBuilder(16, package).add(std::make_unique<Check_socket>(0)).build());
+  libCHandlers.try_emplace("listen", FunctionPrivilegesBuilder(16, package).add(std::make_unique<Check_socket>(0)).build());
+  libCHandlers.try_emplace("accept4", FunctionPrivilegesBuilder(16, package).add(std::make_unique<Check_socket>(0)).build());
+  libCHandlers.try_emplace("setsockopt", FunctionPrivilegesBuilder(16, package).add(std::make_unique<Check_socket>(0)).build());
+  libCHandlers.try_emplace("bind", FunctionPrivilegesBuilder(16, package).add(std::make_unique<Check_socket>(0)).build());
 };
