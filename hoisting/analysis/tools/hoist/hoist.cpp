@@ -914,26 +914,34 @@ private:
     /* Kill conflicting definitions of a load value at store*/
     auto localState = state;
     auto killConjunct = [&localState](const Conjunct& conjunct) {
-      if (!conjunct.notNegated) { // i.e. it is negated
-        llvm::errs() << "\nKilling ExprID (CONJUNCT)" << conjunct.exprID;
-        llvm::errs() << "\nBefore killing conjuncts";
-        localState.print(llvm::errs());
-
-        generator->pushToTrue(localState, conjunct.exprID);
-
-        llvm::errs() << "\nAfter killing conjuncts";
-        localState.print(llvm::errs());
-        exit(0);
+      llvm::errs() << "\nKilling ExprID (CONJUNCT)" << conjunct.exprID;
+      llvm::errs() << "\nBefore killing conjuncts";
+      localState.print(llvm::errs());
+      
+      for (auto& disjunct : localState.disjuncts) {
+        auto from = std::remove_if(disjunct.begin(), disjunct.end(),
+            [&conjunct](const auto& target) {
+              return target.exprID == conjunct.exprID && !target.notNegated; // only negated forms
+            });
+        disjunct.conjunctIDs.erase(from, disjunct.end());
       }
+
+      llvm::errs() << "\nAfter killing conjuncts";
+      localState.print(llvm::errs());
     };
 
+    std::unordered_set<ExprID> finished;
     for (auto& disjunct : state.disjuncts) {
       for (auto& conjunct : disjunct.conjunctIDs) {
+        if (finished.count(conjunct.exprID)) {
+          continue;
+        }
         if (auto binNode = isAlias(conjunct.exprID); binNode && isMustAlias(*binNode)) {
           if (!isCallAlias(*binNode)) {
             killConjunct(conjunct);
           }
         }
+        finished.insert(conjunct.exprID);
       }
     }
     return localState

@@ -20,6 +20,7 @@
 #include <variant>
 #include <functional>
 
+#include "SocketAnalysis.h"
 #include "TaintAnalysis.h"
 #include "PromiseDeclarations.h"
 #include "CallGraphAnalyzer.h"
@@ -33,9 +34,11 @@ using Context = std::array<llvm::Instruction*, 2ul>;
 struct AnalysisPackage {
 public:
   // Point of Configuration for turning on or off analysis
-  AnalysisPackage(llvm::Module& m) { };
+  AnalysisPackage(llvm::Module& m) 
+  : socketAnalysis{std::make_unique<SocketAnalyzer>(m)} { }
 private:
   tmpanalysis::tmppathResultsTy tmppathResults;
+  std::unique_ptr<SocketAnalyzer> socketAnalysis;
 };
 
 class PrivilegeCheckerBase {

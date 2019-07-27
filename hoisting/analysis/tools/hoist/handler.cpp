@@ -392,5 +392,25 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage& package) {
   libCHandlers.try_emplace("SHA384Update", 0);  
   libCHandlers.try_emplace("SHA512_256Update", 0);  
 
+  // For slaacd
+  /* Stubbed functions instead of including 
+   * them x_errx exits rest just need stdio */
+  libCHandlers.try_emplace("event_err", 16);   
+  libCHandlers.try_emplace("event_errx", 16);
+  libCHandlers.try_emplace("event_msgx", 16); 
 
+  libCHandlers.try_emplace("getenv", 16);
+  libCHandlers.try_emplace("imsg_compose", 16);
+  libCHandlers.try_emplace("imsg_flush", 16);
+  libCHandlers.try_emplace("imsg_init", 16);
+  libCHandlers.try_emplace("msgbuf_clear", 16);
+  libCHandlers.try_emplace("msgbuf_write", 16);
+  libCHandlers.try_emplace("realloc", 16);
+
+  /*TODO: chroot seems to require no privs. Confirm*/
+  libCHandlers.try_emplace("chroot", 0);
+
+  /* More handlers for slaacd */
+  //libCHandlers.try_emplace("getpwnam", 1 << PLEDGE_GETPW);
+  libCHandlers.try_emplace("geteuid", 16);
 };
