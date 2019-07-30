@@ -43,10 +43,14 @@ public:
 
   llvm::DenseMap<OpKey, const char*> opMap;
 
+  static constexpr bool SUPPRESSED = false;
 	template<typename Printer>
   void
   dumpToFile(llvm::Module& module) {
-    
+    if constexpr (SUPPRESSED) {
+      return;
+    }
+
 		llvm::outs() << "\nDumping Expr Table -- Size :" << exprTable.size();
     auto ec = std::error_code{};
     auto [modulePath, _]  = module.getName().split(".");
@@ -55,6 +59,7 @@ public:
                       + moduleName.str();
     
     std::string exprFileName = baseString + "/ids.binary";
+    //llvm::sys::fs::create_directories(exprFileName);
     auto exprFile = llvm::raw_fd_ostream{exprFileName, ec};
     exprFile << "id,left,right,opId,opName" ;
     for (auto [exprKey, exprID] : exprTable) {
@@ -68,6 +73,7 @@ public:
 
 
     std::string leafFileName = baseString + "/ids.leaves";
+    //llvm::sys::fs::create_directories(leafFileName);
     auto leafFile = llvm::raw_fd_ostream{leafFileName, ec};
     leafFile <<  "id|:string";
     leafFile << "\n1|:nullptr"; // SPECIALCASE: Empty ExprID has value 1
@@ -88,6 +94,7 @@ public:
     leafFile.close();
 
     std::string astFileName = baseString + "/ids.flattened";
+    //llvm::sys::fs::create_directories(astFileName);
     auto astFile = llvm::raw_fd_ostream{astFileName, ec};
     astFile <<  "id|:aststring";
     Printer printer{this, astFile};

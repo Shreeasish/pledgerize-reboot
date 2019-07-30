@@ -18,11 +18,11 @@
 #include "PromiseDeclarations.h"
 
 using Privileges = std::bitset<COUNT>;
-using ExprID     = int16_t;  // Deterministic size
-using OpKey      = int16_t;  // Negatives used to hash sentinels
+using ExprID     = int32_t;  // Deterministic size
+using OpKey      = int32_t;  // Negatives used to hash sentinels
 using ExprKey    = std::tuple<ExprID, OpKey, ExprID>;
 
-constexpr int typeSize{16};
+constexpr int typeSize{32};
 namespace OpIDs {
 constexpr OpKey Alias{100};
 constexpr OpKey Cast{101};
@@ -86,10 +86,10 @@ public:
   explicit ExprOp(OpKey opCode, Predicate pred)
     : opCode{opCode}, predicate{pred} {}
 
-  bool
-  operator==(OpKey opCode) const {
-    return this->opCode == opCode;
-  }
+  //bool
+  //operator==(OpKey opCode) const {
+  //  return this->opCode == opCode;
+  //}
 
   bool
   operator==(int opCode) const {

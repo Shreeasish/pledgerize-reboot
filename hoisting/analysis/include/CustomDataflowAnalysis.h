@@ -51,6 +51,11 @@ struct DenseMapInfo<std::array<llvm::Instruction*, Size>> {
 
 namespace analysis {
 
+using SVFAnalysis = AndersenWaveDiff;
+auto getSVFResults = [] (auto& m){
+  return SVFAnalysis::createAndersenWaveDiff(m);
+};
+
 template<typename T>
 class WorkList {
 public:
@@ -385,11 +390,12 @@ public:
     llvm::DenseMapInfo<std::array<llvm::Instruction*, ContextSize>>;
   using AllResults = llvm::DenseMap<Context, ContextResults, ContextMapInfo>;
   
-  AndersenWaveDiffWithType* svfResults;
+  //AndersenWaveDiffWithType* svfResults;
+  SVFAnalysis* svfResults;
   llvm::Module& module;
 
   DataflowAnalysis(llvm::Module& m, llvm::ArrayRef<llvm::Function*> entryPoints,
-                   AndersenWaveDiffWithType* svf, bool isInterprocedural) 
+                   SVFAnalysis* svf, bool isInterprocedural) 
     : svfResults{svf}, module{m} {
     transfer.isInterprocedural = isInterprocedural;
     for (auto* entry : entryPoints) {
@@ -457,19 +463,13 @@ public:
       //  }
       //  return size;
       //};
-
       auto isPtrCall = [](const llvm::CallSite& cs) {
         return cs.getInstruction() 
           && !analysis::getCalledFunction(cs);
       };
 
-      auto getNonConst = [&](const llvm::Function* cfunc) {
-        for (llvm::Function& func : this->module) {
-          if (&func == cfunc) {
-            return &func;
-          }
-        }
-        llvm_unreachable("just go home");
+      auto getNonConst = [this](const llvm::Function* cfunc) {
+        return this->module.getFunction(cfunc->getName());
       };
       
       auto isIndirectCall = [this](const llvm::CallSite& cs) {
@@ -504,13 +504,8 @@ public:
         if (isAnalyzableCall(cs) && transfer.isInterprocedural) {
           analyzeCall(cs, state, context);
         }
-        if (isIndirectCall(cs)) {
-          llvm::errs() << "\nFound Pointer Call \t ";
-          llvm::errs() << i << "\n";
-        }
-
-        if (isIndirectCall(cs) 
-            && svfResults->hasIndCSCallees(cs)) {
+        if (isIndirectCall(cs) && svfResults->hasIndCSCallees(cs)
+            && transfer.isInterprocedural) {
           llvm::errs() << "\nFound Pointer Call \t ";
           llvm::errs() << i << "\n";
           llvm::errs() << "Parent " << i.getParent()->getParent()->getName()
@@ -645,6 +640,8 @@ public:
     if (forceEdge) {
       EdgeTransformer transformer;
       auto& toMerge = calledState[callee][callee];
+      llvm::errs() << "\nToMerge";
+      toMerge[PLEDGE_STDIO].print(llvm::errs());
       auto withCallConjunct = transformer(toMerge, cs, forceEdge);
       state[cs.getInstruction()] = meet({state[cs.getInstruction()], withCallConjunct});
     } else {

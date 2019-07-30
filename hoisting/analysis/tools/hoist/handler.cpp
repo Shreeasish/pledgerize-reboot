@@ -457,4 +457,54 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("accept4", FunctionPrivilegesBuilder(16, package).add(std::make_unique<Check_socket>(0)).build());
   libCHandlers.try_emplace("setsockopt", FunctionPrivilegesBuilder(16, package).add(std::make_unique<Check_socket>(0)).build());
   libCHandlers.try_emplace("bind", FunctionPrivilegesBuilder(16, package).add(std::make_unique<Check_socket>(0)).build());
+  
+  /* imsg handlers for slaacd. None of them should actually require any privileges*/
+  libCHandlers.try_emplace("imsg_init", 16);
+  libCHandlers.try_emplace("imsg_read", 16);
+  libCHandlers.try_emplace("imsg_get", 16);
+  libCHandlers.try_emplace("imsg_compose", 16);
+  libCHandlers.try_emplace("imsg_composev",16);
+  libCHandlers.try_emplace("imsg_create", 16);
+  libCHandlers.try_emplace("imsg_add", 16);
+  libCHandlers.try_emplace("imsg_close", 16);
+  libCHandlers.try_emplace("imsg_free", 16);
+  libCHandlers.try_emplace("imsg_flush", 16);
+  libCHandlers.try_emplace("imsg_clear", 16);
+  libCHandlers.try_emplace("ibuf_open", 16);
+  libCHandlers.try_emplace("ibuf_dynamic", 16);
+  libCHandlers.try_emplace("ibuf_add", 16);
+  libCHandlers.try_emplace("ibuf_reserve", 16);
+  libCHandlers.try_emplace("ibuf_seek", 16);
+  libCHandlers.try_emplace("ibuf_size", 16);
+  libCHandlers.try_emplace("ibuf_left", 16);
+  libCHandlers.try_emplace("ibuf_close", 16);
+  libCHandlers.try_emplace("ibuf_write", 16);
+  libCHandlers.try_emplace("ibuf_free", 16);
+  libCHandlers.try_emplace("msgbuf_init", 16);
+  libCHandlers.try_emplace("msgbuf_clear", 16);
+  libCHandlers.try_emplace("msgbuf_write", 16);
+  libCHandlers.try_emplace("msgbuf_drain", 16);
+  /*More from slaacd.bc*/
+  libCHandlers.try_emplace("strerror", 16);
+  libCHandlers.try_emplace("gai_strerror", 16);
+  libCHandlers.try_emplace("arc4random_uniform", 16);
+  libCHandlers.try_emplace("arc4random", 16);
+  libCHandlers.try_emplace("arc4random_buf", 16);
+  /* Network helpers which seem to require no privileges 
+   * Checked with generated privileges and handchecked*/
+  libCHandlers.try_emplace("getnameinfo", 16);
+  libCHandlers.try_emplace("inet_ntop", 16);
+  libCHandlers.try_emplace("asr_run", 16);
+  libCHandlers.try_emplace("asr_abort", 16); // From libc/asr
+  libCHandlers.try_emplace("asr_abort", 16); // From libc/asr
+  libCHandlers.try_emplace("if_freenameindex", 16); // From libc/asr
+  libCHandlers.try_emplace("if_nametoindex", 16);
+  libCHandlers.try_emplace("if_indextoname", 16);
+  libCHandlers.try_emplace("if_nameindex", 16);
+  libCHandlers.try_emplace("if_freenameindex", 16);
+  libCHandlers.try_emplace("freeifaddrs", 16);
+  /* libc pledge generation scripts point towards need for special handling
+   * since it calls sysctl According to man page getifaddrs should not 
+   * require additional privs */
+  libCHandlers.try_emplace("getifaddrs", 16);
 };

@@ -79,8 +79,9 @@ std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
 std::unique_ptr<lowering::Printer> printer;
 std::unique_ptr<PrivilegeResolver> privilegeResolver;
-//std::unique_ptr<AndersenWaveDiffWithType> svfResults;
-AndersenWaveDiffWithType* svfResults;
+
+
+analysis::SVFAnalysis* svfResults;
 
 llvm::DenseMap<const llvm::Function*,
                std::unique_ptr<llvm::MemorySSA>> functionMemSSAs;
@@ -147,6 +148,8 @@ private:
 llvm::DenseMap<llvm::Instruction*, int> SContributionMap; // Global Counters
 class Debugger {
 public:
+  static constexpr bool SUPPRESSED = false;
+
   struct ContributionCounter {
     ContributionCounter(llvm::Instruction* i)
       : exprCount{generator->getSize()}, inst{i} {}
@@ -154,6 +157,7 @@ public:
     ~ContributionCounter() {
       SContributionMap[inst] += generator->getSize() - exprCount;
     }
+
   private:
     size_t exprCount;
     llvm::Instruction* inst;
@@ -194,6 +198,11 @@ public:
        Context context,
        FunctionResults functionResults,
        int threshold) {
+    if (SUPPRESSED) {
+      return;
+    }
+
+
     auto* currBB          = currInst->getParent();
     auto* currFunction    = currBB->getParent();
     auto [modulePath, _]  = currFunction->getParent()->getName().split(".");
@@ -204,6 +213,7 @@ public:
     auto ec = std::error_code{};
     std::string fileName =
         baseString + "/cfg.dump." + currFunction->getName().str() + ".dot";
+    //llvm::sys::fs::create_directories(fileName);
     auto dotFile = llvm::raw_fd_ostream{fileName, ec};
 
     auto printGraph = [&currInst, &currFunction, &baseString](auto* inst, auto& disjunction) {
@@ -213,6 +223,7 @@ public:
       std::string graphFileName =
           baseString + "/ast." + currFunction->getName().str() + ".dot";
       auto ec = std::error_code{};
+      // llvm::sys::fs::create_directories(graphFileName);
       auto graphFile = llvm::raw_fd_ostream{graphFileName, ec};
       lowering::Printer printer{generator.get(), graphFile};
       printer.printState(currInst, disjunction);
@@ -251,6 +262,7 @@ public:
 
     std::string exprHistFileName =
         baseString + "/exprs.histogram." + std::to_string(threshold) + ".csv";
+    //llvm::sys::fs::create_directories(exprHistFileName);
     auto binExprFile = llvm::raw_fd_ostream{exprHistFileName, ec};
     generator->dumpExprData(binExprFile);
     binExprFile.close();
@@ -402,6 +414,11 @@ public:
   operator()(DisjunctionValue& toMerge,
              const llvm::CallSite& caller,
              llvm::Function* indCallee) {
+    auto getNonConst = [&indCallee](const llvm::Function* cfunc) {
+      auto* module = indCallee->getParent();
+      return module->getFunction(cfunc->getName());
+    };
+
     auto getAliasConjunct = [](const llvm::CallSite& caller,
                                llvm::Function* const mayCallee,
                                bool form) {
@@ -429,8 +446,10 @@ public:
       for (auto* function : svfResults->getIndCSCallees(caller)) {
         llvm::errs() << " " << function->getName();
         // may-call ind callee, may-not-call any others.
-        auto callConjunct = getAliasConjunct(caller, indCallee, function == indCallee);
+        auto callConjunct = getAliasConjunct(caller, getNonConst(function), function == indCallee);
         destState.applyConjunct(callConjunct);
+        llvm::errs() << "\nWith conjunct applied ";
+        destState.print(llvm::errs());
       }
       return destState;
     };
@@ -547,10 +566,14 @@ public:
       llvm::errs() << "\n\n" << value;
       llvm_unreachable("\nFound constant exprs");
     }
-
     Debugger::ContributionCounter counter{inst};
 
     constexpr Promises promise = static_cast<Promises>(PledgeCounter);
+    /* PLUGIN for stdio REMOVE THIS */
+    //if constexpr (promise == PLEDGE_STDIO) {
+    //  return;
+    //}
+    /* REMOVE THIS */
     auto state = StateAccessor<promise>{stateMap};
     bool notEmpty = !state[nullptr].isEmpty();
 
@@ -778,8 +801,9 @@ private:
         for (auto* func : svfResults->getIndCSCallees(callSite)) {
           if (func->isDeclaration()) {
             handleExternalCall(func->getName());
+          } else {
+            state[nullptr] = state[callSite.getInstruction()];
           }
-          state[nullptr] = state[callSite.getInstruction()];
         }
       } else {  // if SVF is unable to find callees
         llvm::errs() << "\n Could Not Find Callee for"
@@ -893,7 +917,8 @@ private:
         return 
           isAliasOpCode ? std::optional<BinaryExprNode>{*binNode}
                         : std::nullopt;
-      } return {};
+      }
+      return std::nullopt;
     };
       
     auto isMustAlias = [&storeInst, this](const BinaryExprNode& binNode) -> bool {
@@ -936,6 +961,7 @@ private:
         if (finished.count(conjunct.exprID)) {
           continue;
         }
+        llvm::errs() << "Checking exprID " << conjunct.exprID;
         if (auto binNode = isAlias(conjunct.exprID); binNode && isMustAlias(*binNode)) {
           if (!isCallAlias(*binNode)) {
             killConjunct(conjunct);
@@ -1320,12 +1346,14 @@ BuildPromiseTreePass::getPassName() const {
 void
 BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
   generator = std::make_unique<Generator>(Generator{});
-  resolver  = std::make_unique<IndirectCallResolver>(IndirectCallResolver{m});
+  //resolver  = std::make_unique<IndirectCallResolver>(IndirectCallResolver{m});
   privilegeResolver = std::make_unique<PrivilegeResolver>(m);
   //printer =
   //    std::make_unique<lowering::Printer>(generator.get(), llvm::outs(), m);
 
-  svfResults = AndersenWaveDiffWithType::createAndersenWaveDiffWithType(m);
+  svfResults = analysis::getSVFResults(m);
+  //AndersenWaveDiffWithType::createAndersenWaveDiffWithType(m);
+  //svfResults = analysis::SVFAnalysis::createAndersenWaveDiff(m);
 
   //libEventAnalyzer::getResults(m);
   for (auto& f : m) {
@@ -1366,7 +1394,6 @@ runAnalysisFor(llvm::Module& m,
   using Analysis 
     = analysis::DataflowAnalysis<V, T, M, E, D, analysis::Backward>;
 
-
   auto dumpAnnotatedCFG = [](llvm::Function* function,
                              Context context,
                              auto& results) {
@@ -1400,7 +1427,7 @@ runAnalysisFor(llvm::Module& m,
 bool
 BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   initializeGlobals(m);
-  auto isInterprocedural = true; // false for turning off interprocedural
+  auto isInterprocedural = false; // false for turning off interprocedural
   if (isInterprocedural) {
     runAnalysisFor(m, {"main"}, isInterprocedural);
   } else {
@@ -1410,10 +1437,10 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
     //  }
     //  runAnalysisFor(m, {function.getName()}, isInterprocedural);
     //}
-    runAnalysisFor(m, {"jcl"}, isInterprocedural);
+    runAnalysisFor(m, {"event_base_loop"}, isInterprocedural);
   }
 
-  svfResults->releaseAndersenWaveDiffWithType();
+  svfResults->releaseAndersenWaveDiff();
 
   auto getLocationStates = [](llvm::Function* function, auto functionResults) {
     auto* location = &*(function->getEntryBlock().getFirstInsertionPt());

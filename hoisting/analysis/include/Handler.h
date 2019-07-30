@@ -253,7 +253,7 @@ private:
         return *privileges;
       } else {
         llvm::errs() << "\nPrivilegs unavailable for function \n" << fName << "\n";
-        exit(0);
+        std::exit(0);
         //addToUnknowns(fName);
         return {};
       }
@@ -273,14 +273,20 @@ private:
           || syscallBitsetMap.find(name) != syscallBitsetMap.end();
     }
 
+    static constexpr bool SUPPRESSED = false;
     void
     dumpUnknowns(llvm::Module& module) {
+      if (SUPPRESSED) {
+        return;
+      }
+
       auto ec = std::error_code{};
       auto [modulePath, _]  = module.getName().split(".");
       auto [__, moduleName] = modulePath.rsplit("/");
       auto baseString = "/home/shreeasish/pledgerize-reboot/hoisting/logs/"
                         + moduleName.str();
       std::string unknownsFileName = baseString + "/ext_unknown";
+      //llvm::sys::fs::create_directories(unknownsFileName);
       auto unknownsFile = llvm::raw_fd_ostream{unknownsFileName, ec};
       dumpUnknownFunctions(unknownsFile);
       unknownsFile.close();
