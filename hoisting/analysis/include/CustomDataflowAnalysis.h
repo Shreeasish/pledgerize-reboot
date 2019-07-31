@@ -51,9 +51,9 @@ struct DenseMapInfo<std::array<llvm::Instruction*, Size>> {
 
 namespace analysis {
 
-using SVFAnalysis = AndersenWaveDiff;
+using SVFAnalysis = AndersenWaveDiffWithType;
 auto getSVFResults = [] (auto& m){
-  return SVFAnalysis::createAndersenWaveDiff(m);
+  return SVFAnalysis::createAndersenWaveDiffWithType(m);
 };
 
 template<typename T>
@@ -503,33 +503,60 @@ public:
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs) && transfer.isInterprocedural) {
           analyzeCall(cs, state, context);
-        }
-        if (isIndirectCall(cs) && svfResults->hasIndCSCallees(cs)
+        } else if (isIndirectCall(cs) && svfResults->hasIndCSCallees(cs)
             && transfer.isInterprocedural) {
           llvm::errs() << "\nFound Pointer Call \t ";
           llvm::errs() << i << "\n";
           llvm::errs() << "Parent " << i.getParent()->getParent()->getName()
                        << "\n";
-          for (auto* function : svfResults->getIndCSCallees(cs)) {
-            llvm::errs() << "\nadding call " << function->getName() << "\n";
-            if (!function->isDeclaration()) {
-              llvm::errs() << "\nAdded Internal Analyzable Call " << function->getName();
-              analyzeCall(cs, state, context, getNonConst(function));
-            } // declonly functions will be handled as havocs
-          }
-        }
-        // llvm::errs() << "\nBefore------------------------------------";
-        // llvm::errs() << "\nIn function " << i.getFunction()->getName()
-        //             << " \nBefore";
-        // llvm::errs() << i;
-        // llvm::errs() << "\n State:\n";
-        // state[nullptr].print(llvm::errs());
-        // llvm::errs() << "\n------------------------------------------";
-        // ska: uncomment to skip function calls
-        // else {
-        applyTransfer(i, state, context);
-        results[&i] = state;
+          
 
+          struct StateFunction {
+            AbstractValue state;
+            llvm::Function* indTarget;
+            StateFunction(AbstractValue s, llvm::Function* f)
+              : state{s}, indTarget{f} {}
+          };
+
+          auto stateCopy = state;
+          std::vector<StateFunction> rewritten;
+          for (auto* constIndTarget : svfResults->getIndCSCallees(cs)) {
+            llvm::errs() << "\nadding call " << constIndTarget->getName() << "\n";
+            if (constIndTarget->isDeclaration()) { 
+              continue;
+            } // declonly functions will be handled as havocs
+            llvm::errs() << "\nAdded Internal Analyzable Call "
+                         << constIndTarget->getName();
+            
+            stateCopy[cs.getInstruction()] = state[cs.getInstruction()];
+            analyzeCall(cs, stateCopy, context, getNonConst(constIndTarget));
+            auto& stateAndTarget = 
+              rewritten.emplace_back(stateCopy[cs.getInstruction()], getNonConst(constIndTarget));
+              //StateFunction{state[cs.getInstruction()], getNonConst(constIndTarget)};
+            llvm::errs() << "\nWorking on target" << stateAndTarget.indTarget->getName() << "\nwoo";
+            auto& absValueCopy = stateAndTarget.state;
+            auto& indTarget = stateAndTarget.indTarget;
+            absValueCopy = transformer.rewriteArgs(absValueCopy, cs, indTarget);
+            stateCopy[cs.getInstruction()] = state[cs.getInstruction()];
+
+            //rewritten.push_back(stateAndTarget);
+          }
+
+          state = stateCopy;
+          // Check for homogeniety
+          std::vector<AbstractValue> toMeet;
+          bool equal = true;
+          auto first = rewritten.begin();
+          for (auto& [disjunction, target] : rewritten) {
+            equal &= first->state == disjunction;
+            auto disj = transformer(disjunction, cs, target);
+            toMeet.emplace_back(std::move(disj));
+          }
+          state[cs.getInstruction()] = equal ? first->state : meet(toMeet);
+        } 
+        applyTransfer(i, state, context);
+
+        results[&i] = state;
         auto snapShot = [&](int promiseNum) {
           static std::vector<std::vector<int>> sizes = {
               {10000, 8000, 6000, 4000, 2000, 1000},
@@ -637,16 +664,16 @@ public:
     if (!active.count(toCall) && needsUpdate) {
       computeDataflow(*callee, newContext);
     }
-    if (forceEdge) {
-      EdgeTransformer transformer;
-      auto& toMerge = calledState[callee][callee];
-      llvm::errs() << "\nToMerge";
-      toMerge[PLEDGE_STDIO].print(llvm::errs());
-      auto withCallConjunct = transformer(toMerge, cs, forceEdge);
-      state[cs.getInstruction()] = meet({state[cs.getInstruction()], withCallConjunct});
-    } else {
-      state[cs.getInstruction()] = calledState[callee][callee];
-    }
+    //if (forceEdge) {
+    //  auto& toMerge = calledState[callee][callee];
+    //  llvm::errs() << "\nToMerge";
+    //  toMerge[PLEDGE_STDIO].print(llvm::errs());
+    //  auto withCallConjunct = transformer(toMerge, cs, forceEdge);
+    //  /*TODO: Fix this*/
+    //  state[cs.getInstruction()] = meet({state[cs.getInstruction()], withCallConjunct});
+    //} else {
+    state[cs.getInstruction()] = calledState[callee][callee];
+    //}
     callers[toCall].insert(toUpdate);
   }
 
@@ -656,14 +683,12 @@ private:
   // analysis basis.
   Meet meet;
   Transfer transfer;
+  EdgeTransformer transformer;
 
   AllResults allResults;
   ContextWorklist contextWork;
   llvm::DenseMap<ContextFunction, llvm::DenseSet<ContextFunction>> callers;
   llvm::DenseSet<ContextFunction> active;
-
-  
-
 
   static llvm::Value*
   getSummaryKey(llvm::Function& f) {

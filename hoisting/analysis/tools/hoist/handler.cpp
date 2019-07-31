@@ -507,4 +507,6 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
    * since it calls sysctl According to man page getifaddrs should not 
    * require additional privs */
   libCHandlers.try_emplace("getifaddrs", 16);
+  libCHandlers.try_emplace("reallocarray", 16);
+
 };

@@ -273,7 +273,7 @@ private:
           || syscallBitsetMap.find(name) != syscallBitsetMap.end();
     }
 
-    static constexpr bool SUPPRESSED = false;
+    static constexpr bool SUPPRESSED = true;
     void
     dumpUnknowns(llvm::Module& module) {
       if (SUPPRESSED) {

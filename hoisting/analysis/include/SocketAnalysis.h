@@ -32,6 +32,9 @@ public:
   inferSocketType(llvm::CallSite& cs) {
     auto domainFlag  = cs.getArgument(0);
     auto* asllvmCInt = llvm::dyn_cast<llvm::ConstantInt>(domainFlag);
+    if (!asllvmCInt) {
+      return SocketType::UNKNOWN;
+    }
     auto asInt       = asllvmCInt->getSExtValue(); // Fail if incorrect
 
     switch (asInt) { // TODO: Switch to MACRO defs

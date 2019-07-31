@@ -148,7 +148,7 @@ private:
 llvm::DenseMap<llvm::Instruction*, int> SContributionMap; // Global Counters
 class Debugger {
 public:
-  static constexpr bool SUPPRESSED = false;
+  static constexpr bool SUPPRESSED = true;
 
   struct ContributionCounter {
     ContributionCounter(llvm::Instruction* i)
@@ -348,6 +348,7 @@ struct ArgumentRewriter {
  *--------------------------------------------------------*/
 class DisjunctionEdgeTransformer {
 public:
+
   DisjunctionValue
   operator()(DisjunctionValue toMerge,
              llvm::Value* branchAsValue,
@@ -403,13 +404,21 @@ public:
     Debugger::ContributionCounter counter{branchOrSwitch};
     return static_for{edgeOp}(toMerge);
   }
-  
+
+  DisjunctionValue
+  rewriteArgs(DisjunctionValue& toRewrite,
+                  const llvm::CallSite& caller,
+                  llvm::Function* indCallee) {
+    auto wrapper = [&,this](Disjunction toRewrite) {
+      return argRewriter(toRewrite, caller, indCallee);
+    };
+    return static_for{wrapper}(toRewrite);
+  }
 
   /* The edge transformer also works on indirect callees, 
    * (consider them as edges in an inter-procedural control-flow-graph).
    * In this situation however, the edge-transformer must rewrite the
    * states with their arguments at the callsites. */
-
   DisjunctionValue
   operator()(DisjunctionValue& toMerge,
              const llvm::CallSite& caller,
@@ -440,7 +449,6 @@ public:
       //llvm::errs() << "\nNumber of callees: " << numCallees << ":";
       
       // Rewriting args first should be faster (fewer lookups)
-      this->argRewriter(destState, caller, indCallee);
       //auto callConjunct = getAliasConjunct(caller, indCallee, true);
       //destState.applyConjunct(callConjunct);
       for (auto* function : svfResults->getIndCSCallees(caller)) {
@@ -961,7 +969,7 @@ private:
         if (finished.count(conjunct.exprID)) {
           continue;
         }
-        llvm::errs() << "Checking exprID " << conjunct.exprID;
+        //llvm::errs() << "Checking exprID " << conjunct.exprID;
         if (auto binNode = isAlias(conjunct.exprID); binNode && isMustAlias(*binNode)) {
           if (!isCallAlias(*binNode)) {
             killConjunct(conjunct);
@@ -1427,34 +1435,35 @@ runAnalysisFor(llvm::Module& m,
 bool
 BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   initializeGlobals(m);
-  auto isInterprocedural = false; // false for turning off interprocedural
+  auto isInterprocedural = true; // false for turning off interprocedural
   if (isInterprocedural) {
     runAnalysisFor(m, {"main"}, isInterprocedural);
   } else {
-    //for (auto& function : m) {
-    //  if (function.isDeclaration()) {
-    //    continue;
-    //  }
-    //  runAnalysisFor(m, {function.getName()}, isInterprocedural);
-    //}
-    runAnalysisFor(m, {"event_base_loop"}, isInterprocedural);
+    for (auto& function : m) {
+      if (function.isDeclaration()) {
+        continue;
+      }
+      llvm::errs() << "\nRunning For " << function.getName();
+      runAnalysisFor(m, {function.getName()}, isInterprocedural);
+    }
+    //runAnalysisFor(m, {"event_del"}, isInterprocedural);
   }
 
-  svfResults->releaseAndersenWaveDiff();
+  svfResults->releaseAndersenWaveDiffWithType();
 
-  auto getLocationStates = [](llvm::Function* function, auto functionResults) {
-    auto* location = &*(function->getEntryBlock().getFirstInsertionPt());
-    auto state = functionResults[location][nullptr];
-    return std::make_pair(location, state);
-  };
+  //auto getLocationStates = [](llvm::Function* function, auto functionResults) {
+  //  auto* location = &*(function->getEntryBlock().getFirstInsertionPt());
+  //  auto state = functionResults[location][nullptr];
+  //  return std::make_pair(location, state);
+  //};
 
-  auto getParent = [](auto& context) -> llvm::Instruction* {
-    llvm::Instruction* parent = nullptr;
-    for (auto* function : context) {
-      parent = function == nullptr ? function : nullptr;
-    }
-    return parent;
-  };
+  //auto getParent = [](auto& context) -> llvm::Instruction* {
+  //  llvm::Instruction* parent = nullptr;
+  //  for (auto* function : context) {
+  //    parent = function == nullptr ? function : nullptr;
+  //  }
+  //  return parent;
+  //};
 
   //using ResolverQueue = std::deque<lowering::LocationState>;
   //ResolverQueue resolverQueue;
@@ -1515,16 +1524,15 @@ static void
 instrumentPromiseTree(llvm::Module& m) {
   //llvm::DebugFlag = true;
   legacy::PassManager pm;
-  pm.add(createTypeBasedAAWrapperPass());
   pm.add(createGlobalsAAWrapperPass());
   pm.add(createSCEVAAWrapperPass());
   pm.add(createScopedNoAliasAAWrapperPass());
   pm.add(createCFLSteensAAWrapperPass());
+  pm.add(createTypeBasedAAWrapperPass());
   pm.add(new llvm::LoopInfoWrapperPass());
   //pm.add(createPostDomTree());
   pm.add(new MemorySSAWrapperPass());
   pm.add(new DominatorTreeWrapperPass());
-  pm.add(createBasicAAWrapperPass());
   pm.add(new AAResultsWrapperPass());
   pm.add(new BuildPromiseTreePass());
   pm.run(m);

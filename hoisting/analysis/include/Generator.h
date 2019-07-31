@@ -43,7 +43,7 @@ public:
 
   llvm::DenseMap<OpKey, const char*> opMap;
 
-  static constexpr bool SUPPRESSED = false;
+  static constexpr bool SUPPRESSED = true;
 	template<typename Printer>
   void
   dumpToFile(llvm::Module& module) {
