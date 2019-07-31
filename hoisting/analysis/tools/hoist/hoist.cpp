@@ -310,7 +310,7 @@ public:
   }
 
 private:
-  llvm::Module* module;
+  //llvm::Module* module;
   const Promises promise;
   llvm::raw_ostream& out;
 }; // end Class Transfer Debugger
@@ -436,28 +436,15 @@ public:
       return Conjunct(aliasExpr, form);
     };
 
-
     auto callStitcher = [&](Disjunction destState) {
       auto callees = svfResults->getIndCSCallees(caller);
       if (callees.size() <= 1) {
         return destState;
       } // Early return if there's only a single target
-      
-      llvm::errs() << "\nGenerating May Call Conjunct for "
-                   << *caller.getInstruction() << "\nwith target "
-                   << indCallee->getName() << " == " ;
-      //llvm::errs() << "\nNumber of callees: " << numCallees << ":";
-      
-      // Rewriting args first should be faster (fewer lookups)
-      //auto callConjunct = getAliasConjunct(caller, indCallee, true);
-      //destState.applyConjunct(callConjunct);
+
       for (auto* function : svfResults->getIndCSCallees(caller)) {
-        llvm::errs() << " " << function->getName();
-        // may-call ind callee, may-not-call any others.
         auto callConjunct = getAliasConjunct(caller, getNonConst(function), function == indCallee);
         destState.applyConjunct(callConjunct);
-        llvm::errs() << "\nWith conjunct applied ";
-        destState.print(llvm::errs());
       }
       return destState;
     };

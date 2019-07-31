@@ -308,27 +308,32 @@ public:
                                   Transfer& transfer,
                                   Meet& meet,
                                   const Context& context) {
-    // TODO: This would be better if it checked whether the new state at this
-    // function different from the old.
-    bool needsUpdate = false;
-    [[maybe_unused]]
-    auto* passedConcrete = cs.getInstruction();
-    auto& passedAbstract = state.FindAndConstruct(nullptr);
-    //auto& passedAbstract = state[nullptr];
+     // TODO: This would be better if it checked whether the new state at this
+     // function different from the old.
+     bool needsUpdate = false;
+     //auto* passedConcrete = cs.getInstruction();
+     auto& passedAbstract = state.FindAndConstruct(nullptr);
 
-    /*Marshalling abstract state into functions*/
-    for (auto& bb : *callee) {
-      if (auto* ret = llvm::dyn_cast<llvm::ReturnInst>(bb.getTerminator());
-          ret /*&& ret->getReturnValue()*/ ) {
-        // Pick up returns with return values
-        // auto& retState = summaryState[ret->getReturnValue()];
-        // auto  newState = meet({passedAbstract, retState});
-        auto& retState = summaryState[ret];
-        auto  newState = meet({passedAbstract.second, retState});
-        needsUpdate |= !(newState == retState);
-        retState = newState;
-      }
-    }
+     llvm::errs() << "\nState recieved as";
+     state[nullptr][PLEDGE_STDIO].print(llvm::errs());
+
+     //auto& passedAbstract = state[nullptr];
+
+     /*Marshalling abstract state into functions*/
+     for (auto& bb : *callee) {
+       if (auto* ret = llvm::dyn_cast<llvm::ReturnInst>(bb.getTerminator());
+           ret /*&& ret->getReturnValue()*/ ) {
+         // Pick up returns with return values
+         // auto& retState = summaryState[ret->getReturnValue()];
+         // auto  newState = meet({passedAbstract, retState});
+         auto& retState = summaryState[ret];
+         llvm::errs() << "\nSummaryState";
+         retState[PLEDGE_STDIO].print(llvm::errs());
+         auto  newState = meet({passedAbstract.second, retState});
+         needsUpdate |= !(newState == retState);
+         retState = newState;
+       }
+     }
    // 
    // /*The top inst should hold final state computed for the function*/
    // llvm::Instruction* topInst = *(callee->getEntryBlock().begin());
@@ -502,6 +507,9 @@ public:
         // state[nullptr].conjunctCount();
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs) && transfer.isInterprocedural) {
+          llvm::errs() << "\nSending state in as";
+          state[nullptr][PLEDGE_STDIO].print(llvm::errs());
+
           analyzeCall(cs, state, context);
         } else if (isIndirectCall(cs) && svfResults->hasIndCSCallees(cs)
             && transfer.isInterprocedural) {
@@ -509,7 +517,6 @@ public:
           llvm::errs() << i << "\n";
           llvm::errs() << "Parent " << i.getParent()->getParent()->getName()
                        << "\n";
-          
 
           struct StateFunction {
             AbstractValue state;
@@ -518,7 +525,6 @@ public:
               : state{s}, indTarget{f} {}
           };
 
-          auto stateCopy = state;
           std::vector<StateFunction> rewritten;
           for (auto* constIndTarget : svfResults->getIndCSCallees(cs)) {
             llvm::errs() << "\nadding call " << constIndTarget->getName() << "\n";
@@ -527,8 +533,7 @@ public:
             } // declonly functions will be handled as havocs
             llvm::errs() << "\nAdded Internal Analyzable Call "
                          << constIndTarget->getName();
-            
-            stateCopy[cs.getInstruction()] = state[cs.getInstruction()];
+            auto stateCopy = state;
             analyzeCall(cs, stateCopy, context, getNonConst(constIndTarget));
             auto& stateAndTarget = 
               rewritten.emplace_back(stateCopy[cs.getInstruction()], getNonConst(constIndTarget));
@@ -537,12 +542,17 @@ public:
             auto& absValueCopy = stateAndTarget.state;
             auto& indTarget = stateAndTarget.indTarget;
             absValueCopy = transformer.rewriteArgs(absValueCopy, cs, indTarget);
-            stateCopy[cs.getInstruction()] = state[cs.getInstruction()];
 
-            //rewritten.push_back(stateAndTarget);
+            // Reset the state at cs.getInstruction but accept function summaries
+            stateCopy[cs.getInstruction()] = state[cs.getInstruction()];
+            state = stateCopy;
+
+            // Should be the same since the results are stored
+            // at cs.getInstruction()*
+            llvm::errs() << "\nState after analyzecall@nullptr";
+            state[nullptr][PLEDGE_STDIO].print(llvm::errs());
           }
 
-          state = stateCopy;
           // Check for homogeniety
           std::vector<AbstractValue> toMeet;
           bool equal = true;
@@ -550,7 +560,7 @@ public:
           for (auto& [disjunction, target] : rewritten) {
             equal &= first->state == disjunction;
             auto disj = transformer(disjunction, cs, target);
-            toMeet.emplace_back(std::move(disj));
+            toMeet.emplace_back(disj);
           }
           state[cs.getInstruction()] = equal ? first->state : meet(toMeet);
         } 
@@ -621,6 +631,7 @@ public:
     // necessary. Updating the results for this (function,context) means that
     // all callers must be updated as well.
     auto& oldResults = allResults[context][&f];
+    llvm::errs() << "\nFunction Summary check";
     if (!(oldResults == results)) {
       oldResults = results;
       for (auto& caller : callers[{context, &f}]) {
@@ -652,7 +663,9 @@ public:
 
     auto& calledState  = allResults[newContext][callee];
     auto& summaryState = calledState[callee];
-    bool needsUpdate   = summaryState.size() == 0;
+
+    // Forces computation if not already computed
+    bool needsUpdate   = summaryState.size() == 0; 
 
     needsUpdate 
       |= Direction::prepareSummaryState(cs, callee, state,
@@ -669,7 +682,6 @@ public:
     //  llvm::errs() << "\nToMerge";
     //  toMerge[PLEDGE_STDIO].print(llvm::errs());
     //  auto withCallConjunct = transformer(toMerge, cs, forceEdge);
-    //  /*TODO: Fix this*/
     //  state[cs.getInstruction()] = meet({state[cs.getInstruction()], withCallConjunct});
     //} else {
     state[cs.getInstruction()] = calledState[callee][callee];
