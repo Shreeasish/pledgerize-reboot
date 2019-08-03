@@ -307,6 +307,9 @@ public:
   // Rename to Horizontal/Vertical Negation
   Disjunction&
   simplifyComplements() {
+    //llvm::errs() << "\nBefore complements";
+    //this->print(llvm::errs());
+
     auto isNegatedPair = [](const Conjunct& a, const Conjunct& b) ->  bool {
       // The second check is redundant since there should never be adjacent
       // conjuncts with the same exprID
@@ -314,20 +317,23 @@ public:
       return a.exprID == b.exprID && (a.notNegated xor b.notNegated);
     };
     auto hasNegatedPair = [&isNegatedPair](Disjunct& disjunct) {
-      auto found
-        = std::adjacent_find(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(), isNegatedPair);
+      auto found = std::adjacent_find(disjunct.conjunctIDs.begin(),
+                                      disjunct.conjunctIDs.end(),
+                                      isNegatedPair);
       return found != disjunct.conjunctIDs.end();
     };
     auto eraseIt = std::remove_if(disjuncts.begin(), disjuncts.end(), hasNegatedPair);
     disjuncts.erase(eraseIt, disjuncts.end());
+
     std::sort(disjuncts.begin(),disjuncts.end());
+    //llvm::errs() << "\nAfter complements";
+    //this->print(llvm::errs());
     return *this;
   }
 
 
   Disjunction&
   simplifyRedundancies(Conjunct vacuous) {
-
     auto isComplementary = [](auto& a, auto& b) -> bool {
       return a->notNegated xor b->notNegated;
     };

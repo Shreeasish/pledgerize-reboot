@@ -96,8 +96,8 @@ using DisjunctionValue  = std::array<Disjunction, COUNT - 1>;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
-constexpr int MaxPrivilege{18};
-constexpr int MinPrivilege{0};
+constexpr int MaxPrivilege{PLEDGE_STDIO};
+constexpr int MinPrivilege{PLEDGE_STDIO};
 
 /*--------------------------------------------------------*
  *----------------------BACKWARD MEET---------------------*
@@ -148,7 +148,7 @@ private:
 llvm::DenseMap<llvm::Instruction*, int> SContributionMap; // Global Counters
 class Debugger {
 public:
-  static constexpr bool SUPPRESSED = true;
+  //static constexpr bool SUPPRESSED = true;
 
   struct ContributionCounter {
     ContributionCounter(llvm::Instruction* i)
@@ -166,6 +166,9 @@ public:
   static bool 
   checkThreshold(DisjunctionValue state, int p, int threshold = 20000) {
     auto check = static_cast<Promises>(p);
+    if (check > threshold) {
+      
+    }
     return state[check].conjunctCount() > threshold;
   }
 
@@ -184,12 +187,21 @@ public:
   }
 
   void
-  printAfter(DisjunctionValue disjunction, llvm::Instruction* inst) const {
+  printAfter(DisjunctionValue disjunction, llvm::Instruction* inst, const Context& context) const {
     out << "\n----  After ----";
     out << PromiseNames[promise];
     out << "\n@Instruction" << *inst << "@parent"
         << inst->getParent()->getParent()->getName();
+    out << "\nwith Context";
+    for (auto* call : context) {
+      if (call) {
+        out << "[" << *call << "]";
+      } else {
+        out << "[ nullptr ]";
+      }
+    }
     disjunction[promise].print(llvm::errs());
+    out << "\n----------------";
   }
 
   template <typename FunctionResults>
@@ -202,9 +214,12 @@ public:
       return;
     }
 
-
     auto* currBB          = currInst->getParent();
     auto* currFunction    = currBB->getParent();
+
+    llvm::errs() << "\nDumping at " << *currInst << " in function"
+                 << currFunction->getName() << " with threshold exceeding " << threshold;
+
     auto [modulePath, _]  = currFunction->getParent()->getName().split(".");
     auto [__, moduleName] = modulePath.rsplit("/");
     auto baseString       = "/home/shreeasish/pledgerize-reboot/hoisting/logs/"
@@ -215,6 +230,7 @@ public:
         baseString + "/cfg.dump." + currFunction->getName().str() + ".dot";
     //llvm::sys::fs::create_directories(fileName);
     auto dotFile = llvm::raw_fd_ostream{fileName, ec};
+
 
     auto printGraph = [&currInst, &currFunction, &baseString](auto* inst, auto& disjunction) {
       if (inst != currInst) {
@@ -348,7 +364,6 @@ struct ArgumentRewriter {
  *--------------------------------------------------------*/
 class DisjunctionEdgeTransformer {
 public:
-
   DisjunctionValue
   operator()(DisjunctionValue toMerge,
              llvm::Value* branchAsValue,
@@ -392,7 +407,7 @@ public:
         return withPhi;
       }
       if (isSame) {
-        //llvm::errs() << "\nOptimization Applied";
+        llvm::errs() << "\nOptimization Applied";
         return withPhi;
       }  // TODO: Careful. Phi's concretize values.
          // This has implications in the forward
@@ -404,6 +419,9 @@ public:
     Debugger::ContributionCounter counter{branchOrSwitch};
     return static_for{edgeOp}(toMerge);
   }
+
+            
+
 
   DisjunctionValue
   rewriteArgs(DisjunctionValue& toRewrite,
@@ -438,18 +456,20 @@ public:
 
     auto callStitcher = [&](Disjunction destState) {
       auto callees = svfResults->getIndCSCallees(caller);
-      if (callees.size() <= 1) {
+      if (callees.size() <= 1 || destState.isEmpty()) {
         return destState;
       } // Early return if there's only a single target
 
-      for (auto* function : svfResults->getIndCSCallees(caller)) {
-        auto callConjunct = getAliasConjunct(caller, getNonConst(function), function == indCallee);
-        destState.applyConjunct(callConjunct);
-      }
+      //for (auto* function : svfResults->getIndCSCallees(caller)) {
+      //intrinsic representation of exclusivity
+      auto callConjunct = getAliasConjunct(caller, getNonConst(indCallee), true);
+      destState.applyConjunct(callConjunct);
+      //}
       return destState;
     };
     return static_for{callStitcher}(toMerge);
   }
+
 
 private:
   ArgumentRewriter argRewriter;
@@ -522,6 +542,13 @@ private:
     }
     return destState;
   }
+
+  DisjunctionValue
+  mergeSwitch()(DisjunctionValue& toMerge) {
+
+  }
+
+
   Disjunction&
   handleAsBranch(llvm::BranchInst* branchInst, Disjunction& destState, llvm::Value* destination) {
     auto conjunctForm = [&] ( ) {
@@ -606,16 +633,16 @@ public:
     if (becameEmpty) {
       llvm::CallSite callSite{&value};
       if (!callSite.getInstruction()) {
-        llvm::outs().changeColor(llvm::raw_ostream::Colors::RED);
-        llvm::outs() << "\n\n\n\n"
+        llvm::errs().changeColor(llvm::raw_ostream::Colors::RED);
+        llvm::errs() << "\n\n\n\n"
                      << "DISJUNCT BECAME EMPTY AFTER SIMPLIFCATION"
                      << "\n\n\n\n";
-        llvm::outs().resetColor();
+        llvm::errs().resetColor();
       }
     }
 
     Debugger debugger{PledgeCounter};
-    debugger.printAfter(stateMap[nullptr],llvm::dyn_cast<llvm::Instruction>(&value));
+    debugger.printAfter(stateMap[nullptr],llvm::dyn_cast<llvm::Instruction>(&value), context);
     return;
   }
 
@@ -657,6 +684,11 @@ private:
     Disjunction&
     operator[](llvm::Instruction* inst) {
       return stateMap[inst][promise];
+    }
+  
+    bool
+    has(llvm::Instruction* inst) {
+      return stateMap.count(inst);
     }
   };
 
@@ -761,6 +793,7 @@ private:
       return handled;
     }
 
+
     auto stubWorker = [&state, &value](bool isWhiteListed) {
       if (!isWhiteListed) {
         makeVacuouslyTrue(state[nullptr]);
@@ -857,6 +890,7 @@ private:
     if (!generator->isUsed(value)) {
       return true;
     }
+
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto gepExprID = generator->GetOrCreateExprID(gep);
     state[nullptr] = generator->rewrite(state[nullptr], oldExprID, gepExprID);
@@ -883,6 +917,7 @@ private:
         return; //Discard NoAliases
       } else {
         llvm::errs() << "\n Found may-alias for  " << *loadInst << " and " << *storeInst;
+        llvm::errs() << "\n with ExprID" << exprID;
         otherLoads.push_back({node, exprID});
         return;
       }
@@ -1002,8 +1037,12 @@ private:
       //llvm::errs() << "\nStrong load for " << *(loadNode.value);
       state[nullptr] = strongUpdate(localDisjunction, exprID, loadNode, storeInst);
     }
+    for (auto [loadNode, exprID] : weakLoads) {
+      llvm::errs() << "\nWeak load for " << *(loadNode.value) << " id " << exprID;
+    }
+
     for (auto& [loadNode, exprID] : weakLoads) {
-      //llvm::errs() << "\nWeak load for " << *(loadNode.value);
+      //llvm::errs() << "\nWeak load for " << *(loadNode.value) << " id " << exprID;
       state[nullptr] = weakUpdate(localDisjunction, exprID, loadNode, storeInst);
     }
     return true;
@@ -1058,6 +1097,41 @@ private:
     if (!generator->isUsed(value)) {
       return true;
     }
+
+    auto ptrOp = loadInst->getPointerOperand();
+    auto ptrTy = ptrOp->getType();
+    if (ptrTy == loadInst->getType()){
+      llvm::errs() << "\nLoad with ptr as ptr type";
+      llvm::errs() << "\nLoad Type " << *loadInst->getType();
+      llvm::errs() << "\nPtr  Type " << *ptrTy;
+    }
+
+    if (auto asLoad = llvm::dyn_cast<llvm::LoadInst>(ptrOp)) {
+      llvm::errs() << "\nLoad with load as ptr";
+      llvm::errs() << "\nLoad Inst " << *loadInst;
+      llvm::errs() << "\nPtr       " << *asLoad;
+    }
+
+    if (auto asGep = llvm::dyn_cast<llvm::GetElementPtrInst>(ptrOp);
+        asGep && asGep->getSourceElementType() == asGep->getResultElementType()) {
+      llvm::errs() << "\nfound load through gep with same src and result";
+      llvm::errs() << "\nloadInst" << *loadInst;
+      llvm::errs() << "\npointer op" << *loadInst->getPointerOperand();
+
+      llvm::errs() << "\n\nSourceType" << *asGep->getSourceElementType()
+                   << "\nResultType" << *asGep->getResultElementType();
+
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+      llvm::errs() << "\nBefore killing loads";
+      state[nullptr].print(llvm::errs());
+      dropOperands(value, state);
+      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      llvm::errs() << "\nAfter killing loads";
+      state[nullptr].print(llvm::errs());
+      return true;
+    }
+
     //lvm::outs() << "\nHandling Load";
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto newExprID = generator->GetOrCreateExprID(loadInst);
@@ -1136,7 +1210,7 @@ private:
     if (handled) {
       return;
     }
-    //llvm::errs() << "\nUnknown at " << *value;
+    llvm::errs() << "\nUnknown at " << *value;
     dropOperands(value, state);
     if (!generator->isUsed(value)) {
       return;
@@ -1159,7 +1233,7 @@ private:
       if (!generator->isUsed(op.get())) {
         continue;
       }
-      //llvm::errs() << "\nDropping Unknown for" << *(op.get());
+      llvm::errs() << "\nDropping Unknown Op for" << *(op.get());
       auto oldExprID = generator->GetOrCreateExprID(op.get());
       state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
     }
@@ -1170,12 +1244,18 @@ private:
   getLoads(StateAccessor<Promise>& state) {
     std::unordered_set<ExprID> foundIDs;
     std::vector<NodeExprPair> asLoads;
+
     auto isBinaryExprID = [](const ExprID exprID) -> bool {
       return generator->GetExprType(exprID) == 2;
     };
+
     auto insertIfLoad =
         [&](const auto& exprID, const auto& node, const auto* value) {
-          if (llvm::isa<llvm::LoadInst>(value) && foundIDs.count(exprID) == 0) {
+          if (node.op.opCode == llvm::Instruction::Load
+              //llvm::isa<llvm::LoadInst>(value) 
+              //&& foundIDs.count(exprID) == 0
+              /*&& binaryNode.op.opCode*/) {
+            llvm::errs() << "\nInserting id" << exprID;
             foundIDs.insert(exprID);
             asLoads.push_back({node, exprID});
           }
@@ -1191,6 +1271,7 @@ private:
       return;
     };
 
+    llvm::errs() << "\n getting ids";
     for (auto& disjunct : state[nullptr].disjuncts) {
       for (auto& conjunct : disjunct.conjunctIDs) {
         findLoads(conjunct.exprID, findLoads);
@@ -1290,13 +1371,14 @@ private:
 
     Disjunction forRewrites{};
     Disjunction noRewrites{};
-    for (auto& disjunct : disjunction.disjuncts) {
+    for (const auto& disjunct : disjunction.disjuncts) {
       auto aliasDisjunct{disjunct};
       auto notAliasDisjunct{disjunct};
       auto found = false;
       for (auto& conjunct : disjunct.conjunctIDs) {
         if (generator->find(conjunct, loadExprID)) {
           aliasDisjunct.addConjunct(aliasConjunct);
+          llvm::errs() << "\nAdded alias conjunct " << aliasConjunct.exprID;
           notAliasDisjunct.addConjunct(!aliasConjunct);
           forRewrites.addDisjunct(aliasDisjunct);
           noRewrites.addDisjunct(notAliasDisjunct);
@@ -1311,7 +1393,11 @@ private:
 
     auto storeValue = storeInst->getValueOperand();
     auto valExprID  = generator->GetOrCreateExprID(storeValue);
-    auto rewritten  = generator->rewrite(forRewrites, loadExprID, valExprID);
+    llvm::errs() << "\nRewriting load exprID " << loadExprID
+                 << "  with store value expr " << valExprID;
+    auto rewritten = generator->rewrite(forRewrites, loadExprID, valExprID);
+    llvm::errs() << "\n rewritten disjunction";
+    rewritten.print(llvm::errs());
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
 };
@@ -1432,8 +1518,8 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
       }
       llvm::errs() << "\nRunning For " << function.getName();
       runAnalysisFor(m, {function.getName()}, isInterprocedural);
-    }
-    //runAnalysisFor(m, {"event_del"}, isInterprocedural);
+    } //TODO: Fix event_warn
+    //runAnalysisFor(m, {"event_warn"}, isInterprocedural);
   }
 
   svfResults->releaseAndersenWaveDiffWithType();

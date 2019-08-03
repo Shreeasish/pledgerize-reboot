@@ -313,12 +313,6 @@ public:
      bool needsUpdate = false;
      //auto* passedConcrete = cs.getInstruction();
      auto& passedAbstract = state.FindAndConstruct(nullptr);
-
-     llvm::errs() << "\nState recieved as";
-     state[nullptr][PLEDGE_STDIO].print(llvm::errs());
-
-     //auto& passedAbstract = state[nullptr];
-
      /*Marshalling abstract state into functions*/
      for (auto& bb : *callee) {
        if (auto* ret = llvm::dyn_cast<llvm::ReturnInst>(bb.getTerminator());
@@ -327,8 +321,6 @@ public:
          // auto& retState = summaryState[ret->getReturnValue()];
          // auto  newState = meet({passedAbstract, retState});
          auto& retState = summaryState[ret];
-         llvm::errs() << "\nSummaryState";
-         retState[PLEDGE_STDIO].print(llvm::errs());
          auto  newState = meet({passedAbstract.second, retState});
          needsUpdate |= !(newState == retState);
          retState = newState;
@@ -421,6 +413,12 @@ public:
     return allResults;
   }
 
+  struct StateFunction {
+    AbstractValue state;
+    llvm::Function* indTarget;
+    StateFunction(AbstractValue s, llvm::Function* f)
+      : state{s}, indTarget{f} {}
+  };
   // computeDataflow collects the dataflowfacts for all instructions
   // within Function f with the associated execution context. Functions whose
   // results are required for the analysis of f will be transitively analyzed.
@@ -468,10 +466,6 @@ public:
       //  }
       //  return size;
       //};
-      auto isPtrCall = [](const llvm::CallSite& cs) {
-        return cs.getInstruction() 
-          && !analysis::getCalledFunction(cs);
-      };
 
       auto getNonConst = [this](const llvm::Function* cfunc) {
         return this->module.getFunction(cfunc->getName());
@@ -508,63 +502,56 @@ public:
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs) && transfer.isInterprocedural) {
           llvm::errs() << "\nSending state in as";
-          state[nullptr][PLEDGE_STDIO].print(llvm::errs());
-
+          //state[nullptr][PLEDGE_STDIO].print(llvm::errs());
           analyzeCall(cs, state, context);
-        } else if (isIndirectCall(cs) && svfResults->hasIndCSCallees(cs)
+        } 
+        else if (isIndirectCall(cs) && svfResults->hasIndCSCallees(cs)
             && transfer.isInterprocedural) {
           llvm::errs() << "\nFound Pointer Call \t ";
           llvm::errs() << i << "\n";
           llvm::errs() << "Parent " << i.getParent()->getParent()->getName()
                        << "\n";
 
-          struct StateFunction {
-            AbstractValue state;
-            llvm::Function* indTarget;
-            StateFunction(AbstractValue s, llvm::Function* f)
-              : state{s}, indTarget{f} {}
-          };
-
           std::vector<StateFunction> rewritten;
           for (auto* constIndTarget : svfResults->getIndCSCallees(cs)) {
-            llvm::errs() << "\nadding call " << constIndTarget->getName() << "\n";
-            if (constIndTarget->isDeclaration()) { 
-              continue;
-            } // declonly functions will be handled as havocs
-            llvm::errs() << "\nAdded Internal Analyzable Call "
-                         << constIndTarget->getName();
             auto stateCopy = state;
-            analyzeCall(cs, stateCopy, context, getNonConst(constIndTarget));
+
+            if (!constIndTarget->isDeclaration()) { 
+              llvm::errs() << "\nAdded Internal Analyzable Call "
+                           << constIndTarget->getName();
+              analyzeCall(cs, stateCopy, context, getNonConst(constIndTarget));
+            } // declonly functions will be handled as havocs
+            llvm::errs() << "\nAdding External Call " << constIndTarget->getName() << "\n";
+
             auto& stateAndTarget = 
               rewritten.emplace_back(stateCopy[cs.getInstruction()], getNonConst(constIndTarget));
-              //StateFunction{state[cs.getInstruction()], getNonConst(constIndTarget)};
-            llvm::errs() << "\nWorking on target" << stateAndTarget.indTarget->getName() << "\nwoo";
             auto& absValueCopy = stateAndTarget.state;
             auto& indTarget = stateAndTarget.indTarget;
             absValueCopy = transformer.rewriteArgs(absValueCopy, cs, indTarget);
-
+            
             // Reset the state at cs.getInstruction but accept function summaries
             stateCopy[cs.getInstruction()] = state[cs.getInstruction()];
             state = stateCopy;
-
-            // Should be the same since the results are stored
-            // at cs.getInstruction()*
-            llvm::errs() << "\nState after analyzecall@nullptr";
-            state[nullptr][PLEDGE_STDIO].print(llvm::errs());
           }
 
           // Check for homogeniety
           std::vector<AbstractValue> toMeet;
           bool equal = true;
-          auto first = rewritten.begin();
+          auto first = !(rewritten.begin() == rewritten.end()) 
+            ? rewritten.begin()->state : state[cs.getInstruction()];
           for (auto& [disjunction, target] : rewritten) {
-            equal &= first->state == disjunction;
+            equal &= first == disjunction;
             auto disj = transformer(disjunction, cs, target);
             toMeet.emplace_back(disj);
           }
-          state[cs.getInstruction()] = equal ? first->state : meet(toMeet);
+          state[cs.getInstruction()] = equal ? first : meet(toMeet);
         } 
+
+        //llvm::errs() << "\nbefore transfer "; 
+        //state[nullptr][PLEDGE_STDIO].print(llvm::errs());
         applyTransfer(i, state, context);
+        //llvm::errs() << "\nafter transfer "; 
+        //state[nullptr][PLEDGE_STDIO].print(llvm::errs());
 
         results[&i] = state;
         auto snapShot = [&](int promiseNum) {
@@ -581,6 +568,7 @@ public:
               {10000, 8000, 6000, 4000, 2000, 1000},
               {10000, 8000, 6000, 4000, 2000, 1000},
               {10000, 8000, 6000, 4000, 2000, 1000}};
+
           auto from = std::remove_if(
               sizes[promiseNum].begin(),
               sizes[promiseNum].end(),
@@ -589,7 +577,7 @@ public:
                         state[nullptr], promiseNum, size)) {
                   Debugger debugger{promiseNum, llvm::outs()};
                   debugger.dump(&i, context, results, size);
-                  if (size >= 20000) {
+                  if (size >= 8000) {
                     Debugger::exit(
                         &i, state[nullptr], promiseNum, llvm::outs());
                   }
@@ -658,6 +646,8 @@ public:
     auto* caller  = cs.getInstruction()->getFunction();
     //auto* callee  = getCalledFunction(cs);
     auto* callee  = forceEdge ? forceEdge : getCalledFunction(cs);
+    addToMap(caller, callee);
+
     auto toCall   = std::make_pair(newContext, callee);
     auto toUpdate = std::make_pair(context, caller);
 
@@ -693,6 +683,46 @@ private:
   // These property objects determine the behavior of the dataflow analysis.
   // They should by replaced by concrete implementation classes on a per
   // analysis basis.
+  using Callees = std::unordered_set<llvm::Function*>;
+  std::unordered_map<llvm::Function*, Callees> callGraph;
+
+  void
+  addToMap(llvm::Function* caller, llvm::Function* callee) {
+    callGraph[caller].insert(callee);
+    checkCycle(callee);
+    return;
+  }
+
+  void
+  checkCycle(llvm::Function* start) {
+    std::stack<llvm::Function*> callStack;
+    std::unordered_set<llvm::Function*> visited;
+    std::vector<llvm::Function*> path;
+
+    callStack.push(start);
+    while (!callStack.empty()) {
+      auto caller = callStack.top();
+      callStack.pop();
+      auto calleeList = callGraph[caller];
+      
+      for (auto* callee : calleeList) {
+        if (visited.count(callee)) {
+          llvm::errs() << "\nFound cycle";
+          llvm::errs() << "\nPath ";
+          for (auto* inst : path) {
+            llvm::errs() << *inst << " ";
+          }
+          llvm::errs() << *callee;
+          std::exit(0);
+        }
+        callStack.push(callee);
+        path.push_back(callee);
+      }
+    }
+    return;
+  }
+
+  
   Meet meet;
   Transfer transfer;
   EdgeTransformer transformer;

@@ -431,9 +431,9 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   // For slaacd
   /* Stubbed functions instead of including 
    * them x_errx exits rest just need stdio */
-  libCHandlers.try_emplace("event_err", 16);   
-  libCHandlers.try_emplace("event_errx", 16);
-  libCHandlers.try_emplace("event_msgx", 16); 
+  //libCHandlers.try_emplace("event_err", 16);   
+  //libCHandlers.try_emplace("event_errx", 16);
+  //libCHandlers.try_emplace("event_msgx", 16); 
 
   libCHandlers.try_emplace("getenv", 16);
   libCHandlers.try_emplace("imsg_compose", 16);

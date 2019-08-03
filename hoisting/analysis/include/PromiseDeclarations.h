@@ -57,4 +57,7 @@ const llvm::StringRef PromiseNames[]{ //always added for uniformity
     "PLEDGE_STATLIE", "PLEDGE_YPACTIVE", "PLEDGE_SPCL_SYSCTL", "COUNT" }; 
 //FIXME:PLEDGE_USERSET, PLEDGE_STATLIE, PLEDGE_YPACTIVE, COUNT 
 
+// Suppress Debugger
+static constexpr auto SUPPRESSED = false;
+
 #endif
