@@ -111,6 +111,68 @@ public:
     return result;
   }
 
+  // Using a concrete type here would need me to also explicitly show the state
+  // of states infrastructure from the dataflow lib
+  template <typename Predecessors>
+  void 
+  getIntersection(Predecessors& predecessors, DisjunctionValue& intersection) {
+    llvm::errs() << "Intersection State";
+    intersection[PLEDGE_STDIO].print(llvm::errs());
+    //for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
+      intersection[MaxPrivilege] = intersectPerPrivilege(predecessors, MaxPrivilege);
+    //}
+  }
+
+  template <typename Predecessors>
+  Disjunction
+  intersectPerPrivilege(Predecessors& predecessors, int privilege) {
+    using DisjunctionSet = std::unordered_set<Disjunct, DisjunctHash>;
+    llvm::errs() << "\npredecessors.size()" << predecessors.size();
+    for (auto [key, pred] : predecessors) {
+      llvm::errs() << "\npredecessor";
+      pred[nullptr][privilege].print(llvm::errs()); // use here
+    }
+    
+    auto intersect = 
+      [&privilege](Disjunction prev, auto& incoming) { // Specialized
+      auto& [key, value] = incoming; // make ref for ease
+      auto& state = value[nullptr][privilege];  // State with nullptr
+      auto [larger, smaller] = prev.size() < state.size() 
+       ? std::tie(prev, state) : std::tie(state, prev);
+
+      auto larger_set   = DisjunctionSet(larger.begin(), larger.end());
+      auto smaller_set  = DisjunctionSet(smaller.begin(), smaller.end());
+      auto intersection = Disjunction{};
+
+      for (auto& disjunct : smaller_set) {
+        if (larger_set.count(disjunct)) {
+          intersection.addDisjunct(disjunct);
+        }
+      }
+      return intersection;
+    };
+
+    Disjunction intersection{};
+    intersection = std::accumulate(predecessors.begin(), predecessors.end(),
+                                   intersection, intersect);
+  
+    Disjunction ret{};
+    for (auto& [key, disjunctionValue] : predecessors) {
+      // Remove intersecting disjuncts from the original predecessors
+      Disjunction& predDisjunction = disjunctionValue[nullptr][privilege];
+      for (auto& disjunct : intersection) {
+        auto from = std::remove_if(predDisjunction.begin(), predDisjunction.end(), 
+            [&disjunct](Disjunct& incoming) {
+              return incoming == disjunct;
+             });
+        predDisjunction.disjuncts.erase(from, predDisjunction.end());
+        ret.addDisjunct(disjunct);
+      }
+    }
+    
+    return ret;
+  }
+
 private:
   Disjunction
   meetPairImpl(Disjunction& s1, Disjunction& s2) const {
@@ -277,7 +339,7 @@ public:
     dotFile.close();
 
     std::string exprHistFileName =
-        baseString + "/exprs.histogram." + std::to_string(threshold) + ".csv";
+        baseString + "/exprs.histogram.unique" + std::to_string(threshold) + ".csv";
     //llvm::sys::fs::create_directories(exprHistFileName);
     auto binExprFile = llvm::raw_fd_ostream{exprHistFileName, ec};
     generator->dumpExprData(binExprFile);
@@ -358,6 +420,13 @@ struct ArgumentRewriter {
     return state;
   }
 };
+
+void
+makeVacuouslyTrue(Disjunction& disjunction) {
+  Disjunct disjunct{};
+  disjunct.addConjunct(generator->GetVacuousConjunct());
+  disjunction.disjuncts = Disjuncts{disjunct};
+}
 
 /*--------------------------------------------------------*
  *-------------------EDGE TRANSFORMER---------------------*
@@ -543,11 +612,6 @@ private:
     return destState;
   }
 
-  DisjunctionValue
-  mergeSwitch()(DisjunctionValue& toMerge) {
-
-  }
-
 
   Disjunction&
   handleAsBranch(llvm::BranchInst* branchInst, Disjunction& destState, llvm::Value* destination) {
@@ -561,12 +625,6 @@ private:
   }
 };
 
-void
-makeVacuouslyTrue(Disjunction& disjunction) {
-  Disjunct disjunct{};
-  disjunct.addConjunct(generator->GetVacuousConjunct());
-  disjunction.disjuncts = Disjuncts{disjunct};
-}
 
 
 /*--------------------------------------------------------*
@@ -787,12 +845,11 @@ private:
                  StateAccessor<Promise>& state,
                  const Context& context,
                  bool handled) {
-    
     llvm::CallSite callSite{value};
     if (handled || !callSite.getInstruction()) {
       return handled;
     }
-
+    llvm::errs() << "printing from callsite" << *callSite.getInstruction();
 
     auto stubWorker = [&state, &value](bool isWhiteListed) {
       if (!isWhiteListed) {
@@ -862,6 +919,7 @@ private:
         break;
       case CallType::ExternalCall:
         handleExternalCall(callSite);
+        return true;
         break;
       case CallType::LLVMSpecific:
         /*TODO: llvm versions of memcpy etc will need to be managed*/
@@ -872,6 +930,9 @@ private:
         return true;
         break;
     }
+    llvm::errs() << "\nCall Type";
+    llvm::errs() << (int) getCallType(callSite);
+
     assert(false && "Broken Casing");
     return true;
   }
@@ -917,7 +978,7 @@ private:
         return; //Discard NoAliases
       } else {
         llvm::errs() << "\n Found may-alias for  " << *loadInst << " and " << *storeInst;
-        llvm::errs() << "\n with ExprID" << exprID;
+        //llvm::errs() << "\n with ExprID" << exprID;
         otherLoads.push_back({node, exprID});
         return;
       }
@@ -1037,10 +1098,6 @@ private:
       //llvm::errs() << "\nStrong load for " << *(loadNode.value);
       state[nullptr] = strongUpdate(localDisjunction, exprID, loadNode, storeInst);
     }
-    for (auto [loadNode, exprID] : weakLoads) {
-      llvm::errs() << "\nWeak load for " << *(loadNode.value) << " id " << exprID;
-    }
-
     for (auto& [loadNode, exprID] : weakLoads) {
       //llvm::errs() << "\nWeak load for " << *(loadNode.value) << " id " << exprID;
       state[nullptr] = weakUpdate(localDisjunction, exprID, loadNode, storeInst);
@@ -1393,11 +1450,11 @@ private:
 
     auto storeValue = storeInst->getValueOperand();
     auto valExprID  = generator->GetOrCreateExprID(storeValue);
-    llvm::errs() << "\nRewriting load exprID " << loadExprID
-                 << "  with store value expr " << valExprID;
+    //llvm::errs() << "\nRewriting load exprID " << loadExprID
+    //             << "  with store value expr " << valExprID;
     auto rewritten = generator->rewrite(forRewrites, loadExprID, valExprID);
-    llvm::errs() << "\n rewritten disjunction";
-    rewritten.print(llvm::errs());
+    //llvm::errs() << "\n rewritten disjunction";
+    //rewritten.print(llvm::errs());
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
   }
 };

@@ -246,6 +246,19 @@ public:
 
 };
 
+struct DisjunctHash {
+  size_t operator()(const Disjunct& disjunct) const {
+    std::hash<int> hasher;
+    size_t seed = 0;
+    for (auto conjunct : disjunct) {
+      int asInt = conjunct.notNegated ? conjunct.exprID : -(conjunct.exprID);
+      seed ^= hasher(asInt) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+    }
+    return seed;
+  }
+};
+
+
 // Class for handling the abstract state.
 // Contains a vector of vectors of conjunctions/disjuncts
 using Disjuncts = std::vector<Disjunct>;
@@ -274,6 +287,8 @@ public:
   
   auto begin() { return disjuncts.begin(); }
   auto end() { return disjuncts.end(); }
+
+  auto size() { return disjuncts.size(); }
 
   bool isEmpty() const { return disjuncts.begin() == disjuncts.end(); }
   bool isVacuouslyTrue() const;

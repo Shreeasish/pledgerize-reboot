@@ -297,6 +297,13 @@ public:
     return {predSet.begin(), predSet.end()};
   }
   static auto getPredecessors(llvm::BasicBlock& bb) {
+    llvm::errs() << "\nFrom Basic Block";
+    llvm::errs() << bb;
+    llvm::errs() << "\nPrinting Predecessors";
+    for (auto* bb : llvm::successors(&bb)) {
+      llvm::errs() << *bb;
+    }
+
     return llvm::successors(&bb);
   }
   static bool shouldMeetPHI() { return false; }
@@ -763,43 +770,66 @@ private:
       // state, meet it with the new one. Otherwise, copy the new value over,
       // implicitly meeting with bottom.
 
+      if (valueStatePair.first) {
+        llvm::errs() << "\nMerge key " << *valueStatePair.first;
+      } else {
+        llvm::errs() << "\nMerge key nullptr";
+      }
+
       auto temp =
           edgeTransformer(valueStatePair.second, branchAsValue, destination, isSame);
       auto [found, newlyAdded] = destinationState.insert({valueStatePair.first,temp});
       //temp.print(llvm::errs());
       if (!newlyAdded) {
         found->second = meet({found->second, temp});
-        //found->second.print(llvm::errs());
       }
     }
   }
 
   State
   mergeStateFromPredecessors(llvm::BasicBlock* bb, FunctionResults& results) {
-    State mergedState = State{};
-    mergeInState(mergedState, results[bb]);
-  
-    std::vector<AbstractValue*> facts;
-    for (auto* p : Direction::getPredecessors(*bb)) {
-      auto predecessorFacts = results.find(Direction::getExitKey(*p));
-      //llvm::errs() << "\n Exit Key =" << *p;
+
+    // Make a copy of the predecessors, modify copy
+    llvm::DenseMap<llvm::Instruction*, State> predFacts;
+    llvm::errs() << "\nPre Loop";
+    for (auto* p : Direction::getPredecessors(*bb)) { // for each predecessor
+      auto predecessorFacts = results.find(Direction::getExitKey(*p)); // get exit key
+      llvm::errs() << "\n\nFor predecessor" << *p;
+      llvm::errs() << "\n Exit Key" << *Direction::getExitKey(*p);
       if (results.end() == predecessorFacts) {
         continue;
       }
-      facts.push_back(&(predecessorFacts->second[nullptr]));
+
+      for (auto [key, value] : predecessorFacts->second) {
+        if (key) {
+          llvm::errs() << "\n For key: " << *key;
+        } else {
+          llvm::errs() << "\n For Key nullptr";
+        }
+        llvm::errs() << "\n State";
+        value[PLEDGE_STDIO].print(llvm::errs());
+      }
+      auto predState = predecessorFacts->second;        
+      predFacts[Direction::getExitKey(*p)] = predState;
     }
-    bool isSame = true;
-    auto prevFact = facts.begin();
-    for (auto* fact : facts) {
-      isSame &= *fact == **prevFact;
+
+    // checking for equality from here won't work since
+    // states for each privilege is independent
+    State mergedState = State{};
+    if (predFacts.size() > 0) {
+      meet.getIntersection(predFacts, mergedState[nullptr]);
     }
+    mergeInState(mergedState, results[bb]); // prev bb results
+
     for (auto* p : Direction::getPredecessors(*bb)) {
-      auto predecessorFacts = results.find(Direction::getExitKey(*p));
-      if (results.end() == predecessorFacts) {
+      //auto predecessorFacts = results.find(Direction::getExitKey(*p));
+      //if (results.end() == predecessorFacts) {
+      auto predecessorFacts = predFacts.find(Direction::getExitKey(*p));
+      if (predFacts.end() == predecessorFacts) {
         continue;
       }
       auto* branchInst = bb->getTerminator();
-      mergeInState(mergedState, predecessorFacts->second, p, branchInst, isSame);
+      mergeInState(mergedState, predecessorFacts->second, p, branchInst, false);
     }
     return mergedState;
   }
