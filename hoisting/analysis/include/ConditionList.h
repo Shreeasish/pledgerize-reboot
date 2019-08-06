@@ -288,7 +288,7 @@ public:
   auto begin() { return disjuncts.begin(); }
   auto end() { return disjuncts.end(); }
 
-  auto size() { return disjuncts.size(); }
+  auto size() const { return disjuncts.size(); }
 
   bool isEmpty() const { return disjuncts.begin() == disjuncts.end(); }
   bool isVacuouslyTrue() const;

@@ -116,17 +116,18 @@ public:
   template <typename Predecessors>
   void 
   getIntersection(Predecessors& predecessors, DisjunctionValue& intersection) {
-    llvm::errs() << "Intersection State";
-    intersection[PLEDGE_STDIO].print(llvm::errs());
-    //for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
-      intersection[MaxPrivilege] = intersectPerPrivilege(predecessors, MaxPrivilege);
-    //}
+    for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
+      intersection[privilege] = intersectPerPrivilege(predecessors, MaxPrivilege);
+      llvm::errs() << "\nIntersection State Final";
+      intersection[privilege].print(llvm::errs());
+    }
   }
 
   template <typename Predecessors>
   Disjunction
   intersectPerPrivilege(Predecessors& predecessors, int privilege) {
     using DisjunctionSet = std::unordered_set<Disjunct, DisjunctHash>;
+    llvm::errs() << "\nBefore Optimizations";
     llvm::errs() << "\npredecessors.size()" << predecessors.size();
     for (auto [key, pred] : predecessors) {
       llvm::errs() << "\npredecessor";
@@ -135,10 +136,17 @@ public:
     
     auto intersect = 
       [&privilege](Disjunction prev, auto& incoming) { // Specialized
+      //llvm::errs() << "\nFrom intersect";
       auto& [key, value] = incoming; // make ref for ease
       auto& state = value[nullptr][privilege];  // State with nullptr
       auto [larger, smaller] = prev.size() < state.size() 
-       ? std::tie(prev, state) : std::tie(state, prev);
+       ? std::make_pair(prev, state) : std::make_pair(state, prev);
+  
+      //llvm::errs() << "\nsmaller";
+      //smaller.print(llvm::errs());
+
+      //llvm::errs() << "\nlarger";
+      //larger.print(llvm::errs());
 
       auto larger_set   = DisjunctionSet(larger.begin(), larger.end());
       auto smaller_set  = DisjunctionSet(smaller.begin(), smaller.end());
@@ -149,33 +157,56 @@ public:
           intersection.addDisjunct(disjunct);
         }
       }
+      //llvm::errs() << "\nIntersection State -";
+      //intersection.print(llvm::errs());
       return intersection;
     };
 
-    Disjunction intersection{};
+    Disjunction intersection{}; // initialize this to the smallest in pred set
+    int intersectionSize = std::numeric_limits<int>::max();
+    for (auto [key, state] : predecessors) {
+      auto disjunction = state[nullptr][privilege];
+      intersection = intersectionSize < disjunction.size()
+        ? intersection : disjunction;
+      intersectionSize = disjunction.size();
+    }
+
     intersection = std::accumulate(predecessors.begin(), predecessors.end(),
                                    intersection, intersect);
-  
+    if (intersection.size() < 1) {
+      llvm::errs() << "\n>0 Intersection Size " << intersection.size();
+    } else if (intersection.size() < 2) {
+      llvm::errs() << "\n>1 Intersection Size " << intersection.size();
+    } else {
+      llvm::errs() << "\n>2 Intersection Size " << intersection.size();
+    }
+
     Disjunction ret{};
-    for (auto& [key, disjunctionValue] : predecessors) {
+    for (auto& disjunct : intersection) {  //For each disjunct in intersection
       // Remove intersecting disjuncts from the original predecessors
-      Disjunction& predDisjunction = disjunctionValue[nullptr][privilege];
-      for (auto& disjunct : intersection) {
+      for (auto& [key, state] : predecessors) { //For each predecessor
+        Disjunction& predDisjunction = state[nullptr][privilege];
         auto from = std::remove_if(predDisjunction.begin(), predDisjunction.end(), 
             [&disjunct](Disjunct& incoming) {
               return incoming == disjunct;
              });
         predDisjunction.disjuncts.erase(from, predDisjunction.end());
-        ret.addDisjunct(disjunct);
       }
+      ret.addDisjunct(disjunct);
     }
-    
+    llvm::errs() << "\nAfter Optimizations";
+    llvm::errs() << "\npredecessors.size()" << predecessors.size();
+    for (auto [key, pred] : predecessors) {
+      llvm::errs() << "\npredecessor";
+      pred[nullptr][privilege].print(llvm::errs()); // use here
+    }
     return ret;
   }
 
 private:
   Disjunction
   meetPairImpl(Disjunction& s1, Disjunction& s2) const {
+    llvm::errs() << "\nPerforming Meet";
     return Disjunction::unionDisjunctions(s1, s2)
             .simplifyComplements()
             .simplifyRedundancies(generator->GetVacuousConjunct())
@@ -699,6 +730,16 @@ public:
       }
     }
 
+    for (const auto& [key, value] : stateMap) {
+      llvm::errs() << "\nState Size for promise " << PromiseNames[promise];
+      if (key) {
+        llvm::errs() << " with key: " << *key << " ";
+      } else {
+        llvm::errs() << " with key nullptr: ";
+      }
+      llvm::errs() << value[promise].size();
+    }
+
     Debugger debugger{PledgeCounter};
     debugger.printAfter(stateMap[nullptr],llvm::dyn_cast<llvm::Instruction>(&value), context);
     return;
@@ -1161,12 +1202,28 @@ private:
       llvm::errs() << "\nLoad with ptr as ptr type";
       llvm::errs() << "\nLoad Type " << *loadInst->getType();
       llvm::errs() << "\nPtr  Type " << *ptrTy;
+
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+      llvm::errs() << "\nBefore killing loads";
+      state[nullptr].print(llvm::errs());
+      dropOperands(value, state);
+      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      return true;
     }
 
     if (auto asLoad = llvm::dyn_cast<llvm::LoadInst>(ptrOp)) {
       llvm::errs() << "\nLoad with load as ptr";
       llvm::errs() << "\nLoad Inst " << *loadInst;
       llvm::errs() << "\nPtr       " << *asLoad;
+
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+      llvm::errs() << "\nBefore killing loads";
+      state[nullptr].print(llvm::errs());
+      dropOperands(value, state);
+      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      return true;
     }
 
     if (auto asGep = llvm::dyn_cast<llvm::GetElementPtrInst>(ptrOp);
@@ -1268,7 +1325,7 @@ private:
       return;
     }
     llvm::errs() << "\nUnknown at " << *value;
-    dropOperands(value, state);
+    //dropOperands(value, state);
     if (!generator->isUsed(value)) {
       return;
     }
