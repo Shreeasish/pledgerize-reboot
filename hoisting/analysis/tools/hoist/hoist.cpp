@@ -131,6 +131,12 @@ public:
     llvm::errs() << "\npredecessors.size()" << predecessors.size();
     for (auto [key, pred] : predecessors) {
       llvm::errs() << "\npredecessor";
+      if (key) {
+        llvm::errs() << "\nFor key " << *key;
+      } else {
+        llvm::errs() << "\nFor key nullptr";
+      }
+       
       pred[nullptr][privilege].print(llvm::errs()); // use here
     }
     
@@ -283,7 +289,7 @@ public:
   printAfter(DisjunctionValue disjunction, llvm::Instruction* inst, const Context& context) const {
     out << "\n----  After ----";
     out << PromiseNames[promise];
-    out << "\n@Instruction" << *inst << "@parent"
+    out << "\n@Instruction" << *inst << "@parent "
         << inst->getParent()->getParent()->getName();
     out << "\nwith Context";
     for (auto* call : context) {
@@ -391,7 +397,7 @@ public:
             << inst->getParent()->getParent()->getName();
     //disjunction[promise].print(ostream);
     //llvm_unreachable("Exiting");
-    assert(false && "Exiting Program");
+    //assert(false && "Exiting Program");
     std::exit(0);
   }
 
@@ -730,15 +736,15 @@ public:
       }
     }
 
-    for (const auto& [key, value] : stateMap) {
-      llvm::errs() << "\nState Size for promise " << PromiseNames[promise];
-      if (key) {
-        llvm::errs() << " with key: " << *key << " ";
-      } else {
-        llvm::errs() << " with key nullptr: ";
-      }
-      llvm::errs() << value[promise].size();
-    }
+    //for (const auto& [key, value] : stateMap) {
+    //  llvm::errs() << "\nState Size for promise " << PromiseNames[promise];
+    //  if (key) {
+    //    llvm::errs() << " with key: " << *key << " ";
+    //  } else {
+    //    llvm::errs() << " with key nullptr: ";
+    //  }
+    //  llvm::errs() << value[promise].size();
+    //}
 
     Debugger debugger{PledgeCounter};
     debugger.printAfter(stateMap[nullptr],llvm::dyn_cast<llvm::Instruction>(&value), context);
@@ -784,10 +790,16 @@ private:
     operator[](llvm::Instruction* inst) {
       return stateMap[inst][promise];
     }
+    
   
     bool
     has(llvm::Instruction* inst) {
       return stateMap.count(inst);
+    }
+
+    bool
+    erase(llvm::Instruction* key) {
+      return stateMap.erase(key);
     }
   };
 
@@ -890,7 +902,17 @@ private:
     if (handled || !callSite.getInstruction()) {
       return handled;
     }
-    llvm::errs() << "printing from callsite" << *callSite.getInstruction();
+    llvm::errs() << "\nprinting from callsite" << *callSite.getInstruction();
+    llvm::errs() << "\nState at key";
+    state[callSite.getInstruction()].print(llvm::errs());
+
+    auto getCalleeState = [&state, &callSite] {
+      auto calleeState = state[callSite.getInstruction()];
+      state.erase(callSite.getInstruction());
+      llvm::errs() << "\nGetting Callee State";
+      calleeState.print(llvm::errs());
+      return calleeState;
+    };
 
     auto stubWorker = [&state, &value](bool isWhiteListed) {
       if (!isWhiteListed) {
@@ -910,7 +932,8 @@ private:
       }
     };
 
-    auto handleIndCall = [&state, &callSite, &value, &handleExternalCall, this] {
+    auto handleIndCall = 
+      [&state, &callSite, &value, &handleExternalCall, this, &getCalleeState] {
       /* If the call resolves to an internal function, the abstract state
        * within the calle is rewritten with the arguments at the callsite. This
        * is handled by the edge transformer in this case, since the meet
@@ -924,12 +947,14 @@ private:
         state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
         return; // Push conjuncts to true and exit
       } else if (svfResults->hasIndCSCallees(callSite)) {
+        // The state will either have the merged states from all it's
+        // callees. If a callee is an external call, it should be 
+        // treated as such.
+        state[nullptr] = getCalleeState(); //state[callSite.getInstruction()];
         for (auto* func : svfResults->getIndCSCallees(callSite)) {
           if (func->isDeclaration()) {
             handleExternalCall(func->getName());
-          } else {
-            state[nullptr] = state[callSite.getInstruction()];
-          }
+          } 
         }
       } else {  // if SVF is unable to find callees
         llvm::errs() << "\n Could Not Find Callee for"
@@ -939,7 +964,7 @@ private:
       }
     };
 
-    auto handleInternal = [&state, &callSite, &value, this] {
+    auto handleInternal = [&state, &callSite, &value, this, &getCalleeState] {
       if (!isInterprocedural) {
         auto oldExprID = generator->GetOrCreateExprID(value);
         state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
@@ -948,9 +973,8 @@ private:
       Debugger::printCalleeStats(callSite, llvm::errs(), state);
 
       llvm::Function* callee = analysis::getCalledFunction(callSite);
-      auto& calleeState      = state[callSite.getInstruction()];
-      state[nullptr] =
-          this->argRewriter(state[callSite.getInstruction()], callSite, callee);
+      //auto calleeState      = state[callSite.getInstruction()];
+      state[nullptr]         = this->argRewriter(getCalleeState(), callSite, callee);
     };
 
     switch (getCallType(callSite)) {
@@ -990,6 +1014,60 @@ private:
       return false;
     }
     if (!generator->isUsed(value)) {
+      return true;
+    }
+    bool isArrayGEP = [&gep] {
+      auto* resType = gep->getSourceElementType();
+      if (resType->isArrayTy()) {
+        llvm::errs() << "\nArray Type GEP ";
+        llvm::errs() << *resType;
+        llvm::errs() << "GEP:" << *gep;
+      }
+      return resType->isArrayTy();
+    }();
+
+    if (isArrayGEP) {
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+      llvm::errs() << "\nBefore killing geps";
+      state[nullptr].print(llvm::errs());
+      dropOperands(value, state);
+      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      llvm::errs() << "\nAfter killing geps";
+      state[nullptr].print(llvm::errs());
+    }
+    
+    auto* resType = gep->getResultElementType();
+    if (resType->isPointerTy()) {
+      llvm::errs() << "\nFound gep ptr result type";
+      llvm::errs() << *gep;
+      llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
+                   << "\nResultType" << *gep->getResultElementType();
+
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+      llvm::errs() << "\nBefore killing geps";
+      state[nullptr].print(llvm::errs());
+      dropOperands(value, state);
+      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      llvm::errs() << "\nAfter killing geps";
+      state[nullptr].print(llvm::errs());
+      return true;
+    }
+
+    if (gep->getSourceElementType() == gep->getResultElementType()) {
+      llvm::errs() << "\nFound gep with src == result";
+      llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
+                   << "\nResultType" << *gep->getResultElementType();
+
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+      llvm::errs() << "\nBefore killing geps";
+      state[nullptr].print(llvm::errs());
+      dropOperands(value, state);
+      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      llvm::errs() << "\nAfter killing geps";
+      state[nullptr].print(llvm::errs());
       return true;
     }
 
@@ -1197,21 +1275,6 @@ private:
     }
 
     auto ptrOp = loadInst->getPointerOperand();
-    auto ptrTy = ptrOp->getType();
-    if (ptrTy == loadInst->getType()){
-      llvm::errs() << "\nLoad with ptr as ptr type";
-      llvm::errs() << "\nLoad Type " << *loadInst->getType();
-      llvm::errs() << "\nPtr  Type " << *ptrTy;
-
-      auto oldExprID = generator->GetOrCreateExprID(value);
-      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-      llvm::errs() << "\nBefore killing loads";
-      state[nullptr].print(llvm::errs());
-      dropOperands(value, state);
-      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-      return true;
-    }
-
     if (auto asLoad = llvm::dyn_cast<llvm::LoadInst>(ptrOp)) {
       llvm::errs() << "\nLoad with load as ptr";
       llvm::errs() << "\nLoad Inst " << *loadInst;

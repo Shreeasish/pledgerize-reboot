@@ -520,14 +520,27 @@ public:
               llvm::errs() << "\nAdded Internal Analyzable Call "
                            << constIndTarget->getName();
               analyzeCall(cs, stateCopy, context, getNonConst(constIndTarget));
+
+              llvm::errs() << "\n After analyzeCall For ind targetName " 
+                           << constIndTarget->getName();
+              stateCopy[cs.getInstruction()][PLEDGE_STDIO].print(llvm::errs());
             } // declonly functions will be handled as havocs
-            llvm::errs() << "\nAdding External Call " << constIndTarget->getName() << "\n";
+            else {
+              llvm::errs() << "\nAdding External Call " << constIndTarget->getName() << "\n";
+            }
 
             auto& stateAndTarget = 
               rewritten.emplace_back(stateCopy[cs.getInstruction()], getNonConst(constIndTarget));
             auto& absValueCopy = stateAndTarget.state;
             auto& indTarget = stateAndTarget.indTarget;
+
+            llvm::errs() << "\n\nBefore rewriting args";
+            absValueCopy[PLEDGE_STDIO].print(llvm::errs());
+
             absValueCopy = transformer.rewriteArgs(absValueCopy, cs, indTarget);
+
+            llvm::errs() << "\n\nAfter rewriting args";
+            absValueCopy[PLEDGE_STDIO].print(llvm::errs());
             
             // Reset the state at cs.getInstruction but accept function summaries
             stateCopy[cs.getInstruction()] = state[cs.getInstruction()];

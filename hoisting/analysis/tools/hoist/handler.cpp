@@ -508,5 +508,6 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
    * require additional privs */
   libCHandlers.try_emplace("getifaddrs", 16);
   libCHandlers.try_emplace("reallocarray", 16);
+  libCHandlers.try_emplace("exit", 16);
 
 };
