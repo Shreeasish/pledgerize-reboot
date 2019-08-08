@@ -341,8 +341,8 @@ public:
     disjuncts.erase(eraseIt, disjuncts.end());
 
     std::sort(disjuncts.begin(),disjuncts.end());
-    //llvm::errs() << "\nAfter complements";
-    //this->print(llvm::errs());
+    llvm::errs() << "\nAfter complements";
+    this->print(llvm::errs());
     return *this;
   }
 
@@ -350,7 +350,12 @@ public:
   Disjunction&
   simplifyRedundancies(Conjunct vacuous) {
     auto isComplementary = [](auto& a, auto& b) -> bool {
-      return a->notNegated xor b->notNegated;
+      //llvm::errs() << "\n incoming a";
+      //a->print(llvm::errs());
+      //llvm::errs() << "\n incoming b";
+      //b->print(llvm::errs());
+      return a->exprID == b->exprID 
+          && a->notNegated xor b->notNegated;
     };
 
     auto checkPrev = [&](auto& iter1, auto& iter2, auto& first, auto& second) {
@@ -387,6 +392,10 @@ public:
 
     auto from = std::remove_if(disjuncts.begin() + 1, disjuncts.end(), isRedundant);
     disjuncts.erase(from, disjuncts.end());
+
+    llvm::errs() << "\nAfter erasing";
+    this->print(llvm::errs());
+
     this->removeEmpties();
     if (this->isEmpty() && removed) {
       Disjunct vacuousDisjunct{};
@@ -394,6 +403,8 @@ public:
       this->addDisjunct(vacuousDisjunct);
     }
 
+    llvm::errs() << "\nAfter redundancies";
+    this->print(llvm::errs());
     return *this;
   }
 
@@ -428,6 +439,8 @@ public:
     disjuncts.erase(end, disjuncts.end());
     std::sort(disjuncts.begin(), disjuncts.end());
 
+    llvm::errs() << "\nAfter implication";
+    this->print(llvm::errs());
     return *this;
   }
 
@@ -444,8 +457,8 @@ public:
       return *this;
     }
     disjuncts.erase(this->begin() + 1, this->end());
-    //llvm::errs() << "\nAfter simplifications" ;
-    //this->print(llvm::errs());
+    llvm::errs() << "\nAfter trues" ;
+    this->print(llvm::errs());
     return *this;
   }
 

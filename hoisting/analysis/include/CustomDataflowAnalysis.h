@@ -313,6 +313,8 @@ public:
      bool needsUpdate = false;
      //auto* passedConcrete = cs.getInstruction();
      auto& passedAbstract = state.FindAndConstruct(nullptr);
+     llvm::errs() << "\nPassed Abstract";
+     passedAbstract.second[PLEDGE_CPATH].print(llvm::errs());
      /*Marshalling abstract state into functions*/
      for (auto& bb : *callee) {
        if (auto* ret = llvm::dyn_cast<llvm::ReturnInst>(bb.getTerminator());
@@ -321,8 +323,26 @@ public:
          // auto& retState = summaryState[ret->getReturnValue()];
          // auto  newState = meet({passedAbstract, retState});
          auto& retState = summaryState[ret];
+         llvm::errs() << "\nPassed retstate before merging";
+         retState[PLEDGE_CPATH].print(llvm::errs());
          auto  newState = meet({passedAbstract.second, retState});
+
          needsUpdate |= !(newState == retState);
+         {
+           llvm::errs() << "\nChecking Ret State at " << *cs.getInstruction();
+           llvm::errs() << " parent" << cs.getInstruction()->getParent()->getParent()->getName();
+           llvm::errs() << "\nretState";
+           retState[PLEDGE_CPATH].print(llvm::errs());
+
+           llvm::errs() << "\nnewState";
+           newState[PLEDGE_CPATH].print(llvm::errs());
+           llvm::errs() << "\n----end check----";
+           if (needsUpdate) {
+             llvm::errs() << " yes update";
+           } else {
+             llvm::errs() << " no update";
+           }
+         }
          retState = newState;
        }
      }
@@ -501,8 +521,11 @@ public:
         // state[nullptr].conjunctCount();
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs) && transfer.isInterprocedural) {
+          auto fname = getCalledFunction(cs)->getName();
+          llvm::errs() << "\nFound internal call" << fname;
+
           llvm::errs() << "\nSending state in as";
-          //state[nullptr][PLEDGE_STDIO].print(llvm::errs());
+          state[nullptr][PLEDGE_CPATH].print(llvm::errs());
           analyzeCall(cs, state, context);
         } 
         else if (isIndirectCall(cs) && svfResults->hasIndCSCallees(cs)
@@ -512,36 +535,32 @@ public:
           llvm::errs() << "Parent " << i.getParent()->getParent()->getName()
                        << "\n";
 
+          llvm::errs() << "\nSending state in as";
+          state[nullptr][PLEDGE_CPATH].print(llvm::errs());
+
           std::vector<StateFunction> rewritten;
           for (auto* constIndTarget : svfResults->getIndCSCallees(cs)) {
             auto stateCopy = state;
 
             if (!constIndTarget->isDeclaration()) { 
-              llvm::errs() << "\nAdded Internal Analyzable Call "
-                           << constIndTarget->getName();
+              //llvm::errs() << "\nAdded Internal Analyzable Call "
+              //             << constIndTarget->getName();
               analyzeCall(cs, stateCopy, context, getNonConst(constIndTarget));
-
-              llvm::errs() << "\n After analyzeCall For ind targetName " 
-                           << constIndTarget->getName();
-              stateCopy[cs.getInstruction()][PLEDGE_STDIO].print(llvm::errs());
+              //llvm::errs() << "\n After analyzeCall For ind targetName " 
+              //             << constIndTarget->getName();
+              //stateCopy[cs.getInstruction()][promise].print(llvm::errs());
             } // declonly functions will be handled as havocs
-            else {
-              llvm::errs() << "\nAdding External Call " << constIndTarget->getName() << "\n";
-            }
 
             auto& stateAndTarget = 
               rewritten.emplace_back(stateCopy[cs.getInstruction()], getNonConst(constIndTarget));
             auto& absValueCopy = stateAndTarget.state;
             auto& indTarget = stateAndTarget.indTarget;
-
-            llvm::errs() << "\n\nBefore rewriting args";
-            absValueCopy[PLEDGE_STDIO].print(llvm::errs());
-
             absValueCopy = transformer.rewriteArgs(absValueCopy, cs, indTarget);
+            //llvm::errs() << "\n\nBefore rewriting args";
+            //absValueCopy[PLEDGE_STDIO].print(llvm::errs());
 
-            llvm::errs() << "\n\nAfter rewriting args";
-            absValueCopy[PLEDGE_STDIO].print(llvm::errs());
-            
+            //llvm::errs() << "\n\nAfter rewriting args";
+            //absValueCopy[PLEDGE_STDIO].print(llvm::errs());
             // Reset the state at cs.getInstruction but accept function summaries
             stateCopy[cs.getInstruction()] = state[cs.getInstruction()];
             state = stateCopy;

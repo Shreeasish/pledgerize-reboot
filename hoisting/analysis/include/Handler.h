@@ -306,14 +306,13 @@ private:
       return {};
     }
 
-
     std::optional<Privileges>
     getPrivilegesForImpl(const llvm::CallSite& cs, const Context& context,
                                                 LibCHandlersMap& handlers) {
       auto functionName = getFunctionName(cs);
       if (auto found = handlers.find(functionName); found != handlers.end()) {
         return found->second.getPrivileges(cs, context);
-      } 
+      }
       return {};
     }
 

@@ -96,8 +96,8 @@ using DisjunctionValue  = std::array<Disjunction, COUNT - 1>;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
-constexpr int MaxPrivilege{PLEDGE_STDIO};
-constexpr int MinPrivilege{PLEDGE_STDIO};
+constexpr int MaxPrivilege{PLEDGE_CPATH};
+constexpr int MinPrivilege{PLEDGE_CPATH};
 
 /*--------------------------------------------------------*
  *----------------------BACKWARD MEET---------------------*
@@ -118,7 +118,7 @@ public:
   getIntersection(Predecessors& predecessors, DisjunctionValue& intersection) {
     for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
       intersection[privilege] = intersectPerPrivilege(predecessors, MaxPrivilege);
-      llvm::errs() << "\nIntersection State Final";
+      //llvm::errs() << "\nIntersection State Final";
       intersection[privilege].print(llvm::errs());
     }
   }
@@ -127,18 +127,18 @@ public:
   Disjunction
   intersectPerPrivilege(Predecessors& predecessors, int privilege) {
     using DisjunctionSet = std::unordered_set<Disjunct, DisjunctHash>;
-    llvm::errs() << "\nBefore Optimizations";
-    llvm::errs() << "\npredecessors.size()" << predecessors.size();
-    for (auto [key, pred] : predecessors) {
-      llvm::errs() << "\npredecessor";
-      if (key) {
-        llvm::errs() << "\nFor key " << *key;
-      } else {
-        llvm::errs() << "\nFor key nullptr";
-      }
-       
-      pred[nullptr][privilege].print(llvm::errs()); // use here
-    }
+    //llvm::errs() << "\nBefore Optimizations";
+    //llvm::errs() << "\npredecessors.size()" << predecessors.size();
+    //for (auto [key, pred] : predecessors) {
+    //  llvm::errs() << "\npredecessor";
+    //  if (key) {
+    //    llvm::errs() << "\nFor key " << *key;
+    //  } else {
+    //    llvm::errs() << "\nFor key nullptr";
+    //  }
+    //   
+    //  pred[nullptr][privilege].print(llvm::errs()); // use here
+    //}
     
     auto intersect = 
       [&privilege](Disjunction prev, auto& incoming) { // Specialized
@@ -212,13 +212,19 @@ public:
 private:
   Disjunction
   meetPairImpl(Disjunction& s1, Disjunction& s2) const {
-    llvm::errs() << "\nPerforming Meet";
-    return Disjunction::unionDisjunctions(s1, s2)
+    llvm::errs() << "\nlhs";
+    s1.print(llvm::errs());
+    llvm::errs() << "\nrhs";
+    s2.print(llvm::errs());
+    auto result =  Disjunction::unionDisjunctions(s1, s2)
             .simplifyComplements()
             .simplifyRedundancies(generator->GetVacuousConjunct())
             .simplifyImplication()
             .simplifyUnique()
             .simplifyTrues();
+    llvm::errs() << "\nResult";
+    result.print(llvm::errs());
+    return result;
   }
 
   template <int Counter>
@@ -430,6 +436,8 @@ private:
   llvm::raw_ostream& out;
 }; // end Class Transfer Debugger
 
+// Variadic arguments should be killed by 
+// array access simplification at geps
 struct ArgumentRewriter {
   Disjunction
   operator()(Disjunction state,
@@ -908,7 +916,9 @@ private:
 
     auto getCalleeState = [&state, &callSite] {
       auto calleeState = state[callSite.getInstruction()];
-      state.erase(callSite.getInstruction());
+      if constexpr (Promise == MinPrivilege) { 
+        state.erase(callSite.getInstruction());
+      }
       llvm::errs() << "\nGetting Callee State";
       calleeState.print(llvm::errs());
       return calleeState;
@@ -1248,6 +1258,8 @@ private:
     if (!callAsValue) {
       return true;
     }
+    llvm::errs() << "\nstate[ret]";
+    state[ret].print(llvm::errs());
     state[nullptr] = state[ret];
     auto* retValue = ret->getReturnValue();
     if (!retValue) {
