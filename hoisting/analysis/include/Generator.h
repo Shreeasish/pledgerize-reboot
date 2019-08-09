@@ -245,7 +245,9 @@ public:
   GetOrCreateAliasID(const BinaryExprNode& node, llvm::StoreInst* const store) {
     auto storePtr   = store->getPointerOperand();
     auto storePtrID = GetOrCreateExprID(storePtr);
+
     auto loadPtrID  = node.rhs;
+
     ExprKey key{loadPtrID, OpIDs::Alias, storePtrID};
     return GetOrCreateExprID(key, node.value); // Carry the load instruction 
   }                                            // to check with AA Results later on.
@@ -254,13 +256,17 @@ public:
   GetOrCreateAliasID(llvm::Function* const callee, const llvm::CallSite& caller) {
     auto* funcAsValue = llvm::dyn_cast<llvm::Value>(callee);
     auto funcExprID   = GetOrCreateExprID(funcAsValue);
-    auto* callOperand = caller.getCalledValue();
-    auto* callAsValue = llvm::dyn_cast<llvm::Value>(callOperand);
-    auto callExprID   = GetOrCreateExprID(callAsValue);
-    llvm::errs() << "\nUsing Call Operand " << *callOperand
-                 << " With value" << callExprID;
 
-    ExprKey key{funcExprID, OpIDs::Alias, callExprID};
+    auto* callOperand = caller.getCalledValue();
+    auto* asValue = llvm::dyn_cast<llvm::Value>(callOperand);
+    auto opExprID   = GetOrCreateExprID(asValue);
+
+    llvm::errs() << "\nUsing Call Operand " << *callOperand
+                 << " With value" << opExprID;
+    ExprKey key{funcExprID, OpIDs::Alias, opExprID};
+
+    auto* asInst = caller.getInstruction();
+    auto* csAsValue = llvm::dyn_cast<llvm::Value>(asInst);
     return GetOrCreateExprID(key, funcAsValue);
   }
 

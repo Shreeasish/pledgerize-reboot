@@ -804,7 +804,8 @@ private:
       auto temp =
           edgeTransformer(valueStatePair.second, branchAsValue, destination, isSame);
       auto [found, newlyAdded] = destinationState.insert({valueStatePair.first,temp});
-      //temp.print(llvm::errs());
+      llvm::errs() << "\nAfter bb transformation args";
+      temp[PLEDGE_CPATH].print(llvm::errs());
       if (!newlyAdded) {
         found->second = meet({found->second, temp});
       }
@@ -827,7 +828,7 @@ private:
     }
 
     State mergedState = State{};
-    if (predFacts.size() > 0) {
+    if (predFacts.size() > 1) {
       meet.getIntersection(predFacts, mergedState[nullptr]);
     }
     mergeInState(mergedState, results[bb]); // prev bb results

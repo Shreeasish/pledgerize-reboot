@@ -341,8 +341,8 @@ public:
     disjuncts.erase(eraseIt, disjuncts.end());
 
     std::sort(disjuncts.begin(),disjuncts.end());
-    llvm::errs() << "\nAfter complements";
-    this->print(llvm::errs());
+    //llvm::errs() << "\nAfter complements";
+    //this->print(llvm::errs());
     return *this;
   }
 
@@ -393,8 +393,8 @@ public:
     auto from = std::remove_if(disjuncts.begin() + 1, disjuncts.end(), isRedundant);
     disjuncts.erase(from, disjuncts.end());
 
-    llvm::errs() << "\nAfter erasing";
-    this->print(llvm::errs());
+    //llvm::errs() << "\nAfter erasing";
+    //this->print(llvm::errs());
 
     this->removeEmpties();
     if (this->isEmpty() && removed) {
@@ -403,8 +403,8 @@ public:
       this->addDisjunct(vacuousDisjunct);
     }
 
-    llvm::errs() << "\nAfter redundancies";
-    this->print(llvm::errs());
+    //llvm::errs() << "\nAfter redundancies";
+    //this->print(llvm::errs());
     return *this;
   }
 
@@ -439,8 +439,8 @@ public:
     disjuncts.erase(end, disjuncts.end());
     std::sort(disjuncts.begin(), disjuncts.end());
 
-    llvm::errs() << "\nAfter implication";
-    this->print(llvm::errs());
+    //llvm::errs() << "\nAfter implication";
+    //this->print(llvm::errs());
     return *this;
   }
 
@@ -457,8 +457,8 @@ public:
       return *this;
     }
     disjuncts.erase(this->begin() + 1, this->end());
-    llvm::errs() << "\nAfter trues" ;
-    this->print(llvm::errs());
+    //llvm::errs() << "\nAfter trues" ;
+    //this->print(llvm::errs());
     return *this;
   }
 

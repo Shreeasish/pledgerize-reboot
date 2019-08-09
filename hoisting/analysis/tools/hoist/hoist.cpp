@@ -99,6 +99,21 @@ using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 constexpr int MaxPrivilege{PLEDGE_CPATH};
 constexpr int MinPrivilege{PLEDGE_CPATH};
 
+void
+makeVacuouslyTrue(Disjunction& disjunction) {
+  Disjunct disjunct{};
+  disjunct.addConjunct(generator->GetVacuousConjunct());
+  disjunction.disjuncts = Disjuncts{disjunct};
+}
+
+Disjunction
+getVacuouslyTrue() {
+  Disjunct disjunct{};
+  disjunct.addConjunct(generator->GetVacuousConjunct());
+  Disjunction top{};
+  top.disjuncts = Disjuncts{disjunct};
+  return top;
+}
 /*--------------------------------------------------------*
  *----------------------BACKWARD MEET---------------------*
  * -------------------------------------------------------*/
@@ -119,7 +134,7 @@ public:
     for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
       intersection[privilege] = intersectPerPrivilege(predecessors, MaxPrivilege);
       //llvm::errs() << "\nIntersection State Final";
-      intersection[privilege].print(llvm::errs());
+      //intersection[privilege].print(llvm::errs());
     }
   }
 
@@ -212,18 +227,18 @@ public:
 private:
   Disjunction
   meetPairImpl(Disjunction& s1, Disjunction& s2) const {
-    llvm::errs() << "\nlhs";
-    s1.print(llvm::errs());
-    llvm::errs() << "\nrhs";
-    s2.print(llvm::errs());
+    //llvm::errs() << "\nlhs";
+    //s1.print(llvm::errs());
+    //llvm::errs() << "\nrhs";
+    //s2.print(llvm::errs());
     auto result =  Disjunction::unionDisjunctions(s1, s2)
             .simplifyComplements()
             .simplifyRedundancies(generator->GetVacuousConjunct())
             .simplifyImplication()
             .simplifyUnique()
             .simplifyTrues();
-    llvm::errs() << "\nResult";
-    result.print(llvm::errs());
+    //llvm::errs() << "\nResult";
+    //result.print(llvm::errs());
     return result;
   }
 
@@ -466,12 +481,116 @@ struct ArgumentRewriter {
   }
 };
 
-void
-makeVacuouslyTrue(Disjunction& disjunction) {
-  Disjunct disjunct{};
-  disjunct.addConjunct(generator->GetVacuousConjunct());
-  disjunction.disjuncts = Disjuncts{disjunct};
-}
+struct SemanticSimplifier {
+public:
+  Disjunction
+  killLoad(llvm::LoadInst* loadInst, Disjunction& disjunction) {
+    auto asValue  = llvm::dyn_cast<llvm::Value>(loadInst);
+    auto valueExprID = generator->GetOrCreateExprID(asValue);
+
+    auto isAlias = [](const auto exprID) -> std::optional<const BinaryExprNode> {
+      auto node = generator->GetExprNode(exprID);
+      if (auto* binNode = std::get_if<const BinaryExprNode>(&node)) {
+        auto isAliasOpCode = binNode->op.opCode == OpIDs::Alias;
+        return 
+          isAliasOpCode ? std::optional<BinaryExprNode>{*binNode}
+                        : std::nullopt;
+      }
+      return std::nullopt;
+    };
+
+    auto isCallAlias = [](const BinaryExprNode& binNode) -> bool {
+      return !(llvm::isa<llvm::LoadInst>(binNode.value));
+    };
+
+    auto shouldKill = [&isAlias, &isCallAlias, &valueExprID] (auto& conjunct) {
+      if (auto binNode = isAlias(conjunct.exprID); 
+          binNode && isCallAlias(*binNode) /*&& !(conjunct.notNegated)*/) { 
+        // Semantic mutual exclusion of may-aliasing calls precludes the
+        // need for checking the negated form of the constraint i.e. kill em all
+        return generator->find(conjunct, valueExprID);
+        //return binNode->rhs == valueExprID;
+      }
+      return false;
+    };
+
+    auto checkMayCall = [&shouldKill](auto& disjunct) {
+      auto kill = false;
+      for (auto& conjunct : disjunct) {
+        kill |= shouldKill(conjunct);
+      }
+      if (kill) {
+        llvm::errs() << "\nDisjunct to True From Load";
+        disjunct.print(llvm::errs());
+      }
+      return kill;
+    };
+
+    auto from = 
+      std::remove_if(disjunction.begin(), disjunction.end(), checkMayCall);
+    auto wasRemoved = !(from == disjunction.end());
+    disjunction.disjuncts.erase(from, disjunction.disjuncts.end());
+    if (wasRemoved && disjunction.isEmpty()) {
+      disjunction = getVacuouslyTrue();
+    }
+    return disjunction;
+  }
+
+  Disjunction
+  killGEP(llvm::GetElementPtrInst* gep, Disjunction& disjunction) {
+    auto asValue     = llvm::dyn_cast<llvm::Value>(gep);
+    auto valueExprID = generator->GetOrCreateExprID(asValue);
+
+    auto isAlias = [](const auto exprID) -> std::optional<const BinaryExprNode> {
+      auto node = generator->GetExprNode(exprID);
+      if (auto* binNode = std::get_if<const BinaryExprNode>(&node)) {
+        auto isAliasOpCode = binNode->op.opCode == OpIDs::Alias;
+        return 
+          isAliasOpCode ? std::optional<BinaryExprNode>{*binNode}
+                        : std::nullopt;
+      }
+      return std::nullopt;
+    };
+
+    auto isCallAlias = [](const BinaryExprNode& binNode) -> bool {
+      return !(llvm::isa<llvm::LoadInst>(binNode.value));
+    };
+
+    auto shouldKill = [&isAlias, &isCallAlias, &valueExprID] (auto& conjunct) {
+      if (auto binNode = isAlias(conjunct.exprID); 
+          binNode && isCallAlias(*binNode) /*&& !(conjunct.notNegated)*/) {
+        // Semantic mutual exclusion of may-aliasing calls precludes the
+        // need for checking the negated form of the constraint i.e. kill em all
+        return generator->find(conjunct, valueExprID);
+        //return binNode->rhs == valueExprID;
+      }
+      return false;
+    };
+
+    auto checkCallAlias = [&shouldKill](auto& disjunct) {
+      auto kill = false;
+      for (auto& conjunct : disjunct) {
+        kill |= shouldKill(conjunct);
+      }
+      if (kill) {
+        llvm::errs() << "\nDisjunct to True From GEP";
+        disjunct.print(llvm::errs());
+      }
+      return kill;
+    };
+
+
+    auto from =
+        std::remove_if(disjunction.begin(), disjunction.end(), checkCallAlias);
+    auto wasRemoved = !(from == disjunction.end());
+    disjunction.disjuncts.erase(from, disjunction.disjuncts.end());
+    if (wasRemoved && disjunction.isEmpty()) {
+      disjunction = getVacuouslyTrue();
+    }
+    return disjunction;
+  }
+};
+
 
 /*--------------------------------------------------------*
  *-------------------EDGE TRANSFORMER---------------------*
@@ -493,21 +612,21 @@ public:
     auto isUsedPhi = [](llvm::PHINode& phi) -> bool {
       return generator->isUsed(&phi);
     };
-    auto handlePhi =
-        [&getAssocValue, &destination, &isUsedPhi](Disjunction destState) {
-          auto destBlock = llvm::dyn_cast<llvm::BasicBlock>(destination);
-          for (auto& phi : destBlock->phis()) {
-            if (!isUsedPhi(phi)) {
-              continue;
-            }
-            auto phiAsValue    = llvm::dyn_cast<llvm::Value>(&phi);
-            auto phiExprID     = generator->GetOrCreateExprID(phiAsValue);
-            auto phiOperand    = getAssocValue(&phi);
-            auto operandExprID = generator->GetOrCreateExprID(phiOperand);
-            destState = generator->rewrite(destState, phiExprID, operandExprID);
-          }
-          return destState;
-        };
+    auto handlePhi = 
+      [&getAssocValue, &destination, &isUsedPhi](Disjunction destState) {
+      auto destBlock = llvm::dyn_cast<llvm::BasicBlock>(destination);
+      for (auto& phi : destBlock->phis()) {
+        if (!isUsedPhi(phi)) {
+          continue;
+        }
+        auto phiAsValue    = llvm::dyn_cast<llvm::Value>(&phi);
+        auto phiExprID     = generator->GetOrCreateExprID(phiAsValue);
+        auto phiOperand    = getAssocValue(&phi);
+        auto operandExprID = generator->GetOrCreateExprID(phiOperand);
+        destState = generator->rewrite(destState, phiExprID, operandExprID);
+      }
+      return destState;
+    };
 
     auto* branchOrSwitch    = llvm::dyn_cast<llvm::Instruction>(branchAsValue);
     auto isConditionalJump = [&branchOrSwitch]() {
@@ -786,6 +905,7 @@ public:
 
 private:
   ArgumentRewriter argRewriter;
+  SemanticSimplifier semSimplifier;
 
   template <Promises promise>
   struct StateAccessor {
@@ -969,6 +1089,9 @@ private:
       } else {  // if SVF is unable to find callees
         llvm::errs() << "\n Could Not Find Callee for"
                      << *callSite.getInstruction();
+        dropOperands(value, state);
+        auto oldExprID = generator->GetOrCreateExprID(value);
+        state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
         //makeVacuouslyTrue(state[nullptr]);
         return;
       }
@@ -1026,6 +1149,10 @@ private:
     if (!generator->isUsed(value)) {
       return true;
     }
+
+    llvm::errs() << "\nGep SRC type " << *gep->getSourceElementType();
+    llvm::errs() << "\nGep RES type " << *gep->getResultElementType();
+
     bool isArrayGEP = [&gep] {
       auto* resType = gep->getSourceElementType();
       if (resType->isArrayTy()) {
@@ -1041,10 +1168,12 @@ private:
       llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
       llvm::errs() << "\nBefore killing geps";
       state[nullptr].print(llvm::errs());
+      state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
       dropOperands(value, state);
       state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
       llvm::errs() << "\nAfter killing geps";
       state[nullptr].print(llvm::errs());
+      return true;
     }
     
     auto* resType = gep->getResultElementType();
@@ -1058,8 +1187,10 @@ private:
       llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
       llvm::errs() << "\nBefore killing geps";
       state[nullptr].print(llvm::errs());
+      state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
       dropOperands(value, state);
       state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+
       llvm::errs() << "\nAfter killing geps";
       state[nullptr].print(llvm::errs());
       return true;
@@ -1074,6 +1205,7 @@ private:
       llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
       llvm::errs() << "\nBefore killing geps";
       state[nullptr].print(llvm::errs());
+      state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
       dropOperands(value, state);
       state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
       llvm::errs() << "\nAfter killing geps";
@@ -1140,20 +1272,27 @@ private:
       }
       return std::nullopt;
     };
-      
-    auto isMustAlias = [&storeInst, this](const BinaryExprNode& binNode) -> bool {
-      if (auto* function = llvm::dyn_cast<llvm::Function>(binNode.value)) {
-        return getAliasType(storeInst, function)
-               == llvm::AliasResult::MustAlias;
-      } else {
-        auto* loadInst = llvm::dyn_cast<llvm::LoadInst>(binNode.value);
+
+    auto isMustAlias = 
+      [&storeInst, this](const BinaryExprNode& binNode) -> bool {
+      if (auto* loadInst = llvm::dyn_cast<llvm::LoadInst>(binNode.value)) {
         return getAliasType(storeInst, loadInst)
+               == llvm::AliasResult::MustAlias;
+      } else { // Get Function from left node
+        llvm::errs() << "\nBad Access at " << binNode.lhs;
+        llvm::errs() << "\nFor store inst " << *storeInst;
+        llvm::errs() << "\nFor bin node value " << *binNode.value;
+        auto  functionNode    = generator->GetExprNode(binNode.lhs);
+        auto asValueExprNode  = std::get<const ConstantExprNode>(functionNode);
+        auto* asValue         = asValueExprNode.constant;
+        auto* asFunction      = llvm::dyn_cast<llvm::Function>(asValue);
+        return getAliasType(storeInst, asFunction)
                == llvm::AliasResult::MustAlias;
       }
     };
 
     auto isCallAlias = [](const BinaryExprNode& binNode) -> bool {
-      return llvm::isa<llvm::Function>(binNode.value);
+      return !(llvm::isa<llvm::LoadInst>(binNode.value));
     };
 
     /* Kill conflicting definitions of a load value at store*/
@@ -1166,7 +1305,7 @@ private:
       for (auto& disjunct : localState.disjuncts) {
         auto from = std::remove_if(disjunct.begin(), disjunct.end(),
             [&conjunct](const auto& target) {
-              return target.exprID == conjunct.exprID && !target.notNegated; // only negated forms
+              return target.exprID == conjunct.exprID /*&& !target.notNegated*/;
             });
         disjunct.conjunctIDs.erase(from, disjunct.end());
       }
@@ -1175,16 +1314,30 @@ private:
       localState.print(llvm::errs());
     };
 
+    auto killDisjunct = [&localState](const Disjunct& disjunct) {
+      llvm::errs() << "\nKilling Disjunct";
+      disjunct.print(llvm::errs());
+
+      auto from = std::remove_if(localState.begin(), localState.end(),
+          [&disjunct](const auto& incoming) {
+            return disjunct == incoming;
+          });
+      localState.disjuncts.erase(from, localState.disjuncts.end());
+    };
+
     std::unordered_set<ExprID> finished;
     for (auto& disjunct : state.disjuncts) {
       for (auto& conjunct : disjunct.conjunctIDs) {
         if (finished.count(conjunct.exprID)) {
-          continue;
-        }
-        //llvm::errs() << "Checking exprID " << conjunct.exprID;
-        if (auto binNode = isAlias(conjunct.exprID); binNode && isMustAlias(*binNode)) {
+          continue; 
+        } // Check if already processed since it's not inplace
+        if (auto binNode = isAlias(conjunct.exprID); binNode 
+            && isMustAlias(*binNode) && !(conjunct.notNegated)) { // neg forms only
+
           if (!isCallAlias(*binNode)) {
-            killConjunct(conjunct);
+            killConjunct(conjunct); // kill conjunct if load alias
+          } else {
+            killDisjunct(disjunct); // kill disjunct if call alias
           }
         }
         finished.insert(conjunct.exprID);
@@ -1296,8 +1449,11 @@ private:
       llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
       llvm::errs() << "\nBefore killing loads";
       state[nullptr].print(llvm::errs());
+      state[nullptr] = semSimplifier.killLoad(loadInst, state[nullptr]);
       dropOperands(value, state);
       state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      llvm::errs() << "\nAfter killing loads";
+      state[nullptr].print(llvm::errs());
       return true;
     }
 
@@ -1314,6 +1470,7 @@ private:
       llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
       llvm::errs() << "\nBefore killing loads";
       state[nullptr].print(llvm::errs());
+      state[nullptr] = semSimplifier.killLoad(loadInst, state[nullptr]);
       dropOperands(value, state);
       state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
       llvm::errs() << "\nAfter killing loads";
