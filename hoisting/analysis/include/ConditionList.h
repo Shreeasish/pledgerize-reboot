@@ -318,6 +318,32 @@ public:
     return asDisjunction;
   }
 
+  Disjunction&
+  simplifyDisjuncts(Conjunct vacuousConjunct) {
+    auto removeTrues = [&vacuousConjunct](auto& disjunct) {
+      auto from = std::remove(disjunct.begin(), disjunct.end(), vacuousConjunct);
+      assert(from != disjunct.begin() && "not all trues");
+      disjunct.conjunctIDs.erase(from, disjunct.end());
+    };
+
+    bool makeVacuous = false;
+    for (auto& disjunct : *this) {
+      makeVacuous = (disjunct.size() == 1)
+                     && *(disjunct.begin()) == vacuousConjunct;
+      if (makeVacuous) {
+        break;
+      }
+      removeTrues(disjunct);
+    }
+
+    if (makeVacuous) {
+      Disjunct vacuousDisjunct{}; 
+      vacuousDisjunct.addConjunct(vacuousConjunct);
+      disjuncts.erase(disjuncts.begin(), disjuncts.end());
+      this->addDisjunct(vacuousDisjunct);
+    }
+    return *this;
+  }
 
   // Rename to Horizontal/Vertical Negation
   Disjunction&
@@ -464,7 +490,7 @@ public:
 
 private:
   void
-  stripTrues() {
+  stripTrues() { // does not check if the disjunction should become true
     bool isUnary = false;
     auto isVacExpr  = [&isUnary](auto& conjunct) {
       return !isUnary && conjunct.exprID == ReservedExprIDs::vacuousExprID;

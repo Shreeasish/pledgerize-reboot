@@ -267,16 +267,16 @@ public:
     return (&bb == &bb.getParent()->getEntryBlock()) ? getExitKey(bb) : nullptr;
   }
   static auto getSuccessors(llvm::BasicBlock& bb) -> std::vector<llvm::BasicBlock*> {
-    auto traverseBackEdges = false;
+    constexpr auto traverseBackEdges = true;
     auto preds = llvm::predecessors(&bb);
-    if (traverseBackEdges) {
-      return {preds.begin(), preds.end()};  // Early return if backedge
-    } 
+    if constexpr (traverseBackEdges) {
+      return {preds.begin(), preds.end()};  
+    } // Early return if backedge traversal is enabled
+
     auto* function = bb.getParent();
     auto traversalOrder =
         getFunctionTraversal(*function);  // Should be cached
                                           // Gets it in Post Order (bottom up)
-
     llvm::DenseSet<llvm::BasicBlock*> predSet;
     for (auto* toVisit : preds) {             // Get predecessor as set toVisit
       predSet.insert(toVisit);                // Iterate function bbs in post order
@@ -325,8 +325,8 @@ public:
          auto& retState = summaryState[ret];
          llvm::errs() << "\nPassed retstate before merging";
          retState[PLEDGE_CPATH].print(llvm::errs());
-         auto  newState = meet({passedAbstract.second, retState});
-
+        
+         auto newState = meet({passedAbstract.second, retState});
          needsUpdate |= !(newState == retState);
          {
            llvm::errs() << "\nChecking Ret State at " << *cs.getInstruction();
@@ -555,7 +555,10 @@ public:
               rewritten.emplace_back(stateCopy[cs.getInstruction()], getNonConst(constIndTarget));
             auto& absValueCopy = stateAndTarget.state;
             auto& indTarget = stateAndTarget.indTarget;
+
+            auto* checkLoc = transformer.setLocation(cs.getInstruction());
             absValueCopy = transformer.rewriteArgs(absValueCopy, cs, indTarget);
+            transformer.removeLocation(checkLoc);
             //llvm::errs() << "\n\nBefore rewriting args";
             //absValueCopy[PLEDGE_STDIO].print(llvm::errs());
 
@@ -573,7 +576,10 @@ public:
             ? rewritten.begin()->state : state[cs.getInstruction()];
           for (auto& [disjunction, target] : rewritten) {
             equal &= first == disjunction;
+
+            auto* checkLoc = transformer.setLocation(cs.getInstruction());
             auto disj = transformer(disjunction, cs, target);
+            transformer.removeLocation(checkLoc);
             toMeet.emplace_back(disj);
           }
           state[cs.getInstruction()] = equal ? first : meet(toMeet);
@@ -609,7 +615,7 @@ public:
                         state[nullptr], promiseNum, size)) {
                   Debugger debugger{promiseNum, llvm::outs()};
                   debugger.dump(&i, context, results, size);
-                  if (size >= 8000) {
+                  if (size >= 500) {
                     Debugger::exit(
                         &i, state[nullptr], promiseNum, llvm::outs());
                   }
@@ -789,25 +795,38 @@ private:
                llvm::Value* destination,
                llvm::Value* branchAsValue,
                bool isSame) {
-    EdgeTransformer edgeTransformer;
+    EdgeTransformer transformer;
     for (auto& valueStatePair : toMerge) {
       // If an incoming Value has an AbstractValue in the already merged
       // state, meet it with the new one. Otherwise, copy the new value over,
       // implicitly meeting with bottom.
 
+      // FIXME: State is carried around at returns and callsites
+      // Even after removing them at the call/return
       //if (valueStatePair.first) {
-      //  llvm::errs() << "\nMerge key " << *valueStatePair.first;
+      //  llvm::errs() << "\nBefore, key " << *valueStatePair.first;
       //} else {
-      //  llvm::errs() << "\nMerge key nullptr";
+      //  llvm::errs() << "\nBefore key nullptr";
       //}
+      //valueStatePair.second[PLEDGE_CPATH].print(llvm::errs());
 
-      auto temp =
-          edgeTransformer(valueStatePair.second, branchAsValue, destination, isSame);
-      auto [found, newlyAdded] = destinationState.insert({valueStatePair.first,temp});
-      llvm::errs() << "\nAfter bb transformation args";
-      temp[PLEDGE_CPATH].print(llvm::errs());
+      auto withEdges = valueStatePair.second;
+      if (valueStatePair.first == nullptr) { // only rewrite state at nullptr
+        auto* checkLoc = transformer.setLocation(branchAsValue);
+        withEdges = transformer(withEdges, branchAsValue, destination, isSame);
+        transformer.removeLocation(checkLoc);
+      }
+      auto [found, newlyAdded] = destinationState.insert({valueStatePair.first, withEdges});
+
+      //if (valueStatePair.first) {
+      //  llvm::errs() << "\nFor key " << *valueStatePair.first;
+      //} else {
+      //  llvm::errs() << "\nFor key nullptr";
+      //}
+      //llvm::errs() << "\nAfter bb transformation args";
+      //temp[PLEDGE_CPATH].print(llvm::errs());
       if (!newlyAdded) {
-        found->second = meet({found->second, temp});
+        found->second = meet({found->second, withEdges});
       }
     }
   }
@@ -870,7 +889,9 @@ private:
       // Phis can be explicit meet operations
       state[phi] = meetOverPHI(state, *phi, context);
     } else {
+      auto* checkLoc = transfer.setLocation(&i);
       transfer(i, state, context);
+      transfer.removeLocation(checkLoc);
     }
   }
 };

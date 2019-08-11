@@ -1,7 +1,11 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
+#include "llvm/Transforms/Utils/OrderedInstructions.h"
+#include "llvm/IR/Dominators.h"
+
 #include "ConditionList.h"
+
 #include <stack>
 
 //size_t to exprID?
@@ -34,6 +38,9 @@ public:
       initializeMap();
     }
 
+/*-------------------------------------------------*
+*---------------- DEBUG HELPERS -------------------*
+*-------------------------------------------------*/
   void
   initializeMap() {
     #define HANDLE(a, b, c) opMap.try_emplace(a, #b);
@@ -136,6 +143,25 @@ public:
     debugger.initializeMap();
     debugger.dumpBinExpr(outs);
   }
+/*--------------------------------------------------*
+*---------------- DEBUG HELPERS --------------------*
+*--------------------------------------------------*/
+  
+  void
+  setLocation(llvm::Instruction* location) {
+    this->location = location;
+  }
+
+  llvm::Instruction*
+  getLocation() {
+    return this->location;
+  }
+
+  llvm::Instruction* // Fail for bad queuries
+  getOrigin(ExprID exprID) {
+    assert(originMap.count(exprID) && "Does not have an origin");
+    return originMap[exprID];
+  };
 
   ExprID
   GetOrCreateExprID(llvm::Value* const value) {
@@ -358,12 +384,36 @@ public:
       }
     }
   }
+  
+  // Janky place to hold these
+  using DTree = std::unique_ptr<llvm::DominatorTree>;
+  llvm::DenseMap<llvm::Function*, DTree> functionDTs;
+  
+  using OInsts = std::unique_ptr<llvm::OrderedInstructions>;
+  llvm::DenseMap<llvm::Function*, OInsts> orderedInstMap;
+
+
+  struct DefaultPolicy {
+  public:
+    virtual 
+    std::optional<Disjunction>  // Return if changed
+    operator()(const Disjunction& disjunction,
+               const ExprID oldExprID,
+               const ExprID newExprID) {
+      return std::nullopt; // no-op in this case
+    }
+  };
 
 
   //TODO: Memoize
+  template<typename RewritingPolicy = DefaultPolicy>
   Disjunction
   rewrite(const Disjunction& disjunction, const ExprID oldExprID, const ExprID newExprID) {
     //TODO: Make Node types enum
+    if (auto enforced = RewritingPolicy{}(disjunction, oldExprID, newExprID)) {
+      return *enforced; // Also a good place to cache now
+    }
+
     auto isBinaryExprID = [this](const ExprID exprID) -> bool {
       return GetExprType(exprID) == 2;
     };
@@ -401,40 +451,41 @@ public:
     return newDisjunction;
   }
 
-  Disjunction
-  dropConjunct(const Disjunction& disjunction, const ExprID oldExprID) {
-    auto isBinaryExprID = [this](const ExprID exprID) -> bool {
-      return GetExprType(exprID) == 2;
-    };
+  //Disjunction
+  //dropConjunct(const Disjunction& disjunction, const ExprID oldExprID) {
+  //  auto isBinaryExprID = [this](const ExprID exprID) -> bool {
+  //    return GetExprType(exprID) == 2;
+  //  };
 
-    auto preOrderFind  = [this, &oldExprID, &isBinaryExprID](const Conjunct& conjunct) -> bool {
-      std::stack<ExprID> exprStack;
-      exprStack.push(conjunct.exprID);
-      while (!exprStack.empty()) {
-        auto exprID = exprStack.top();
-        exprStack.pop();
-        if (oldExprID == exprID){
-          return true;
-        }
-        if (!isBinaryExprID(exprID)) {
-          continue;
-        }
-        auto binaryNode = GetBinaryExprNode(exprID);
-        exprStack.push(binaryNode.lhs);
-        exprStack.push(binaryNode.rhs);
-      }
-      return false;
-    };
+  //  auto preOrderFind  = [this, &oldExprID, &isBinaryExprID](const Conjunct& conjunct) -> bool {
+  //    std::stack<ExprID> exprStack;
+  //    exprStack.push(conjunct.exprID);
+  //    while (!exprStack.empty()) {
+  //      auto exprID = exprStack.top();
+  //      exprStack.pop();
+  //      if (oldExprID == exprID){
+  //        return true;
+  //      }
+  //      if (!isBinaryExprID(exprID)) {
+  //        continue;
+  //      }
+  //      auto binaryNode = GetBinaryExprNode(exprID);
+  //      exprStack.push(binaryNode.lhs);
+  //      exprStack.push(binaryNode.rhs);
+  //    }
+  //    return false;
+  //  };
 
-    Disjunction newDisjunction = disjunction; // Return new by value
-    for (auto& disjunct : newDisjunction.disjuncts) {
-      std::replace_if(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(),
-                      preOrderFind, Conjunct{GetVacuousExprID(), true});
-      std::sort(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end());
-    }
-    return newDisjunction;
-  }
+  //  Disjunction newDisjunction = disjunction; // Return new by value
+  //  for (auto& disjunct : newDisjunction.disjuncts) {
+  //    std::replace_if(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(),
+  //                    preOrderFind, Conjunct{GetVacuousExprID(), true});
+  //    std::sort(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end());
+  //  }
+  //  return newDisjunction;
+  //}
 
+  // Accounts for state becoming true
   Disjunction
   pushToTrue(const Disjunction& disjunction, const ExprID oldExprID) {
     Disjunction localDisjunction = disjunction;
@@ -602,6 +653,10 @@ private:
 
   llvm::DenseMap<ExprKey, ExprID> exprTable;
   llvm::DenseMap<llvm::Value*, ExprID> leafTable;
+
+  llvm::Instruction* location = nullptr;
+  using Origin = llvm::Instruction*;
+  llvm::DenseMap<ExprID, Origin> originMap;
   
   constexpr ExprID reservedVExprBits() const {
     return 1 << (typeSize - 3); // -1 for sign bit
@@ -619,13 +674,19 @@ private:
 
     constantSlab.emplace_back(constant);
     leafTable.insert({constant, constantExprCounter});
-    return constantExprCounter++;
+
+    auto* location = getLocation();
+    originMap[binaryExprCounter] = location;
+    return constantExprCounter++; 
   }
 
   ExprID
   GenerateValueExprID(llvm::Value* const value) {
     valueSlab.emplace_back(value);
     leafTable.insert({value, valueExprCounter});
+
+    auto* location = getLocation();
+    originMap[valueExprCounter] = location;
     return valueExprCounter++;
   }
 
@@ -647,6 +708,9 @@ private:
                                            getPredicate(value),
                                            value});
     exprTable.insert({key, binaryExprCounter});
+
+    auto* location = getLocation();
+    originMap[binaryExprCounter] = location;
     return binaryExprCounter++;
   }
 

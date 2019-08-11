@@ -6,6 +6,7 @@
 #include "llvm/Analysis/CFG.h"
 #include "llvm/Analysis/CFLSteensAliasAnalysis.h"
 #include "llvm/Analysis/CallGraph.h"
+#include "llvm/Analysis/ConstantFolding.h"
 #include "llvm/Analysis/GlobalsModRef.h"
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Analysis/MemorySSA.h"
@@ -114,6 +115,79 @@ getVacuouslyTrue() {
   top.disjuncts = Disjuncts{disjunct};
   return top;
 }
+
+/*--------------------------------------------------------*
+ *-------------------REWRITING POLICY---------------------*
+ *--------------------------------------------------------*/
+struct Topological : public Generator::DefaultPolicy {
+public:
+  std::optional<Disjunction>  // Return if changed
+  operator()(const Disjunction& disjunction,
+             const ExprID oldExprID,
+             const ExprID newExprID) override {
+    disjunction.print(llvm::errs());
+
+    auto oldNode  = generator->GetExprNode(oldExprID);
+    auto* oldProv = std::visit(Provenance{oldExprID}, oldNode);
+
+    auto newNode  = generator->GetExprNode(newExprID);
+    auto* newProv = std::visit(Provenance{newExprID}, newNode);
+
+    auto isOrdered = [&oldProv, &newProv, this] {
+      if (!(oldProv && newProv) ||  // either = nullptr, different parents
+          oldProv->getFunction() != newProv->getFunction()) {
+        return true;
+      }
+
+      auto* currFunction = oldProv->getFunction();
+      auto& fDTrees      = generator->functionDTs;
+      auto& oInstMap     = generator->orderedInstMap;
+      if (!oInstMap.count(currFunction)) {
+        auto dt     = std::make_unique<llvm::DominatorTree>(*currFunction);
+        auto oInsts = std::make_unique<llvm::OrderedInstructions>(dt.get());
+
+        fDTrees.try_emplace(currFunction, std::move(dt));
+        oInstMap.try_emplace(currFunction, std::move(oInsts));
+      }
+      auto& orderedInsts = *oInstMap[currFunction];
+      // llvm::errs() << "\noldProv = " << oldProv->getFunction()->getName()
+      //             << "\nnewProv = " << newProv->getFunction()->getName();
+      llvm::errs() << "\noldProv = " << *oldProv << "\nnewProv = " << *newProv;
+      return orderedInsts.dfsBefore(oldProv, newProv);
+      // true if oldProv before newProv
+    }();
+
+    if (isOrdered) {
+      return std::nullopt;
+    } else {
+      llvm::errs() << "\nKilling OldExprID: " << oldExprID;
+      llvm::errs() << "\nFor New ExprID" << newExprID;
+      return generator->pushToTrue(disjunction, oldExprID);
+    }
+  }
+
+private:
+  struct Provenance {
+    Provenance(ExprID exprID)
+      : exprID{exprID} {}
+    ExprID exprID;
+      
+    llvm::Instruction*
+    operator()(const ConstantExprNode& node) {
+      return nullptr;  // Permit Constant Rewrites
+    }
+
+    template <typename ValueOrBinary>
+    llvm::Instruction*
+    operator()(const ValueOrBinary& node) {
+      llvm::errs() << "\nGetting Origin for " << exprID;
+      llvm::errs() << "\nFor Node Inst" << *node.value;
+      return generator->getOrigin(exprID);
+    }
+  };
+};
+
+
 /*--------------------------------------------------------*
  *----------------------BACKWARD MEET---------------------*
  * -------------------------------------------------------*/
@@ -422,6 +496,18 @@ public:
     std::exit(0);
   }
 
+  static void
+  exit(Disjunction& disjunction, llvm::Instruction* inst, llvm::raw_ostream& ostream) {
+    generator->dumpState(ostream);
+    auto* asModule = inst->getParent()->getParent()->getParent();
+    generator->dumpToFile<lowering::Printer>(*asModule);
+    ostream << "\n----  Exiting ---- with disjunction";
+    ostream << "\n@Instruction" << *inst << "@parent: "
+            << inst->getParent()->getParent()->getName();
+    disjunction.print(ostream);
+    std::exit(0);
+  }
+
 
 
   void
@@ -449,7 +535,7 @@ private:
   //llvm::Module* module;
   const Promises promise;
   llvm::raw_ostream& out;
-}; // end Class Transfer Debugger
+}; // end Class Debugger
 
 // Variadic arguments should be killed by 
 // array access simplification at geps
@@ -484,6 +570,173 @@ struct ArgumentRewriter {
 struct SemanticSimplifier {
 public:
   Disjunction
+  simplifyConstants(Disjunction& disjunction, llvm::Value& value) {
+    struct Folder {
+    /* Expensive but no way around it
+     * without constraint metadata */
+    public:
+      llvm::Value*
+      operator()(ExprID id, ConstantExprNode node) {
+        if (node.constant && isConstant) {
+          llvm::errs() << "\nPushing Back " << *node.constant;
+          constants.push_back(node.constant);
+        }         
+        return nullptr;
+      }
+
+      llvm::Value*
+      operator()(ExprID id,
+                 BinaryExprNode node,
+                 llvm::Value* lhs,
+                 llvm::Value* rhs) {
+        if (isConstant && llvm::Instruction::isBinaryOp(node.op.opCode)) {
+          auto* inst = llvm::dyn_cast<llvm::Instruction>(node.value);
+          auto* module = inst->getModule();
+          return generateConstant(node.op, module); 
+        } else if (isConstant && llvm::Instruction::ICmp == node.op.opCode) {
+          auto* inst = llvm::dyn_cast<llvm::Instruction>(node.value);
+          auto* module = inst->getModule();
+          return generateCompare(node.op, module); 
+        } else {
+          isConstant = false;
+          return nullptr;
+        }
+      }
+
+      llvm::Value*
+      operator()(ExprID id, ValueExprNode veNode) {
+        auto* asConstant = llvm::dyn_cast<llvm::Constant>(veNode.value);
+        if (asConstant) {
+          llvm::errs() << "\nValue as Constant" << *asConstant;
+          std::exit(0);
+        }
+        isConstant = false;
+        return nullptr;
+      }
+
+      private:
+      std::deque<Constant*> constants;
+      bool isConstant = true;
+  
+      llvm::Constant*
+      generateConstant(ExprOp op, llvm::Module* module) {
+        auto* lhs = constants.front();
+        constants.pop_front();
+
+        auto* rhs = constants.front();
+        constants.pop_front();
+        
+        auto& layout = module->getDataLayout();
+        auto* constant = ConstantFoldBinaryOpOperands(op.opCode, lhs, rhs, layout);
+        constants.push_back(constant);
+        llvm::errs() << "\nopCode name"
+                     << llvm::Instruction::getOpcodeName(op.opCode);
+        llvm::errs() << "\nGenerated Constant " << *constant;
+        return constant;
+      }
+
+      llvm::Constant*
+      generateCompare(ExprOp op, llvm::Module* module) {
+        auto* lhs = constants.front();
+        constants.pop_front();
+
+        auto* rhs = constants.front();
+        constants.pop_front();
+        
+        auto& layout = module->getDataLayout();
+        auto* constant = ConstantFoldCompareInstOperands(op.predicate, lhs, rhs, layout);
+        constants.push_back(constant);
+        llvm::errs() << "\nopCode name"
+                     << llvm::Instruction::getOpcodeName(op.opCode);
+        llvm::errs() << "\nGenerated Compare" << *constant;
+        return constant;
+      }
+    };
+
+    auto generateFolded = [](auto& conjunct) -> llvm::Constant* {
+      Folder visitor;
+      auto [_ , asValue] = generator->postOrderFor(conjunct, visitor);
+      return llvm::dyn_cast_or_null<llvm::Constant>(asValue);
+    };
+
+    auto isCmpInst = [](auto& conjunct) -> bool {
+      auto exprID = conjunct.exprID;
+      auto node = generator->GetExprNode(exprID);
+
+      if (auto* binNode = std::get_if<const BinaryExprNode>(&node)) {
+        auto opCode = binNode->op.opCode;
+        return opCode == llvm::Instruction::ICmp || opCode == llvm::Instruction::Switch;
+      }
+      return false;
+    };
+
+    llvm::DenseMap<ExprID, llvm::Constant*> idConstantMap;
+    bool foundConstant = false;
+    for (auto& disjunct : disjunction) {
+      for (auto& conjunct : disjunct) {
+        if (!isCmpInst(conjunct)) {
+          continue;
+        }
+        if (auto* constant = generateFolded(conjunct)) {
+          idConstantMap[conjunct.exprID] = constant;
+          foundConstant = true;
+        }
+      }
+    }
+  
+    if (!foundConstant) {
+      return disjunction;
+    }
+
+    auto handle =  [](auto& conjunct, bool conjunctIsTrue) -> bool {
+      if (conjunct.notNegated xor conjunctIsTrue) {
+        /* Either the constraint is negated && evaluated to true
+         * Or the constraint is true and it evaluates to false 
+         * i.e. represents a false constraint, kill it. */
+        return true; 
+      } else { /* Push constraint to true and move on */
+        conjunct = generator->GetVacuousConjunct();
+        return false;
+      }
+    };
+
+    auto checkDisjunct = [&idConstantMap, &handle](auto& disjunct) {
+      for (auto& conjunct : disjunct) {
+        auto& exprID = conjunct.exprID;
+        if (!idConstantMap.count(exprID)) {
+           continue;
+        }
+      
+        auto* constant = idConstantMap[exprID];
+        bool evaluatesToTrue = constant->isOneValue();
+        if (handle(conjunct, evaluatesToTrue)) {
+          return true;
+        }
+      }
+
+      auto& conjuncts = disjunct.conjunctIDs;
+      auto from       = 
+        std::remove(conjuncts.begin(), conjuncts.end(), generator->GetVacuousConjunct());
+      conjuncts.erase(from, disjunct.end());
+      return false;
+    };
+
+    bool shouldKill = false;
+    auto& disjuncts = disjunction.disjuncts;
+    for (auto& disjunct : disjunction) {
+      bool shouldKill = checkDisjunct(disjunct);
+      if (shouldKill) {
+        break;
+      }
+    }
+
+    if (shouldKill) {
+      disjunction = getVacuouslyTrue();
+    }
+    return disjunction;
+  }
+
+  Disjunction
   killLoad(llvm::LoadInst* loadInst, Disjunction& disjunction) {
     auto asValue  = llvm::dyn_cast<llvm::Value>(loadInst);
     auto valueExprID = generator->GetOrCreateExprID(asValue);
@@ -514,25 +767,19 @@ public:
       return false;
     };
 
-    auto checkMayCall = [&shouldKill](auto& disjunct) {
-      auto kill = false;
+    auto checkMayCall = [&shouldKill, disjunction](auto& disjunct) {
       for (auto& conjunct : disjunct) {
-        kill |= shouldKill(conjunct);
+        if (shouldKill(conjunct)) {
+          conjunct = generator->GetVacuousConjunct();
+        }
       }
-      if (kill) {
-        llvm::errs() << "\nDisjunct to True From Load";
-        disjunct.print(llvm::errs());
-      }
-      return kill;
     };
 
-    auto from = 
-      std::remove_if(disjunction.begin(), disjunction.end(), checkMayCall);
-    auto wasRemoved = !(from == disjunction.end());
-    disjunction.disjuncts.erase(from, disjunction.disjuncts.end());
-    if (wasRemoved && disjunction.isEmpty()) {
-      disjunction = getVacuouslyTrue();
+    for (auto& disjunct : disjunction) {
+      checkMayCall(disjunct);
     }
+  
+    disjunction.simplifyDisjuncts(generator->GetVacuousConjunct());
     return disjunction;
   }
 
@@ -567,26 +814,19 @@ public:
       return false;
     };
 
-    auto checkCallAlias = [&shouldKill](auto& disjunct) {
-      auto kill = false;
+    auto checkMayCall = [&shouldKill, disjunction](auto& disjunct) {
       for (auto& conjunct : disjunct) {
-        kill |= shouldKill(conjunct);
+        if (shouldKill(conjunct)) {
+          conjunct = generator->GetVacuousConjunct();
+        }
       }
-      if (kill) {
-        llvm::errs() << "\nDisjunct to True From GEP";
-        disjunct.print(llvm::errs());
-      }
-      return kill;
     };
 
-
-    auto from =
-        std::remove_if(disjunction.begin(), disjunction.end(), checkCallAlias);
-    auto wasRemoved = !(from == disjunction.end());
-    disjunction.disjuncts.erase(from, disjunction.disjuncts.end());
-    if (wasRemoved && disjunction.isEmpty()) {
-      disjunction = getVacuouslyTrue();
+    for (auto& disjunct : disjunction) {
+      checkMayCall(disjunct);
     }
+  
+    disjunction.simplifyDisjuncts(generator->GetVacuousConjunct());
     return disjunction;
   }
 };
@@ -597,6 +837,20 @@ public:
  *--------------------------------------------------------*/
 class DisjunctionEdgeTransformer {
 public:
+  llvm::Instruction*
+  setLocation(llvm::Value* value) {
+    auto* branch = llvm::dyn_cast<llvm::Instruction>(value);
+    assert(branch && "Not an instruction");
+    generator->setLocation(branch);
+    return branch;
+  }
+
+  void
+  removeLocation(llvm::Instruction* checkLoc) {
+    assert(generator->getLocation() == checkLoc && "Location changed");
+    generator->setLocation(nullptr);
+  }
+
   DisjunctionValue
   operator()(DisjunctionValue toMerge,
              llvm::Value* branchAsValue,
@@ -623,7 +877,8 @@ public:
         auto phiExprID     = generator->GetOrCreateExprID(phiAsValue);
         auto phiOperand    = getAssocValue(&phi);
         auto operandExprID = generator->GetOrCreateExprID(phiOperand);
-        destState = generator->rewrite(destState, phiExprID, operandExprID);
+        // Phis can be loop dependent
+        destState = generator->rewrite<Topological>(destState, phiExprID, operandExprID);
       }
       return destState;
     };
@@ -653,13 +908,10 @@ public:
     return static_for{edgeOp}(toMerge);
   }
 
-            
-
-
   DisjunctionValue
   rewriteArgs(DisjunctionValue& toRewrite,
-                  const llvm::CallSite& caller,
-                  llvm::Function* indCallee) {
+              const llvm::CallSite& caller,
+              llvm::Function* indCallee) {
     auto wrapper = [&,this](Disjunction toRewrite) {
       return argRewriter(toRewrite, caller, indCallee);
     };
@@ -706,6 +958,7 @@ public:
 
 private:
   ArgumentRewriter argRewriter;
+
 
   template <typename Lambda>
   struct static_for {
@@ -794,9 +1047,21 @@ private:
 /*--------------------------------------------------------*
  *------------------TRANSFER FUNCTION---------------------*
  *--------------------------------------------------------*/
-
 class DisjunctionTransfer {
 public:
+  llvm::Instruction*
+  setLocation(llvm::Instruction* inst) {
+    assert(inst && "Not an instruction");
+    generator->setLocation(inst);
+    return inst;
+  }
+
+  void
+  removeLocation(llvm::Instruction* checkLoc) {
+    assert(generator->getLocation() == checkLoc && "Location changed");
+    generator->setLocation(nullptr);
+  }
+
   bool isInterprocedural;
 
   template <int PledgeCounter>
@@ -846,10 +1111,20 @@ public:
       }
     }
 
+
+    llvm::errs() << "\nBefore Sem Simplifier";
+    state[nullptr].print(llvm::errs());
+
+    semSimplifier.simplifyConstants(state[nullptr], value);
+
+    llvm::errs() << "\nAfter Sem Simplifier";
+    state[nullptr].print(llvm::errs());
+
     state[nullptr]
         .simplifyComplements()
         .simplifyRedundancies(generator->GetVacuousConjunct())
         .simplifyImplication();
+
   
     auto becameEmpty = notEmpty && state[nullptr].isEmpty();
     if (becameEmpty) {
@@ -1038,6 +1313,8 @@ private:
       auto calleeState = state[callSite.getInstruction()];
       if constexpr (Promise == MinPrivilege) { 
         state.erase(callSite.getInstruction());
+        llvm::errs() << "\nAfter wiping cs.getinst";
+        state[callSite.getInstruction()].print(llvm::errs());
       }
       llvm::errs() << "\nGetting Callee State";
       calleeState.print(llvm::errs());
@@ -1080,12 +1357,13 @@ private:
         // The state will either have the merged states from all it's
         // callees. If a callee is an external call, it should be 
         // treated as such.
-        state[nullptr] = getCalleeState(); //state[callSite.getInstruction()];
+        state[nullptr] = getCalleeState();
         for (auto* func : svfResults->getIndCSCallees(callSite)) {
           if (func->isDeclaration()) {
             handleExternalCall(func->getName());
           } 
         }
+        makeVacuouslyTrue(state[nullptr]);
       } else {  // if SVF is unable to find callees
         llvm::errs() << "\n Could Not Find Callee for"
                      << *callSite.getInstruction();
@@ -1215,7 +1493,8 @@ private:
 
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto gepExprID = generator->GetOrCreateExprID(gep);
-    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, gepExprID);
+    // GEPs can be loop dependent
+    state[nullptr] = generator->rewrite<Topological>(state[nullptr], oldExprID, gepExprID);
     return true;
   }
 
@@ -1414,6 +1693,11 @@ private:
     llvm::errs() << "\nstate[ret]";
     state[ret].print(llvm::errs());
     state[nullptr] = state[ret];
+    if constexpr (Promise == MinPrivilege) { 
+      state.erase(ret);
+      llvm::errs() << "\nAfter wiping ret: " << state.has(ret);
+      assert(!(state.has(ret)) && "ret not empty");
+    }
     auto* retValue = ret->getReturnValue();
     if (!retValue) {
       return true;
@@ -1481,7 +1765,8 @@ private:
     //lvm::outs() << "\nHandling Load";
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto newExprID = generator->GetOrCreateExprID(loadInst);
-    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
+    // Loads can be loop dependent
+    state[nullptr] = generator->rewrite<Topological>(state[nullptr], oldExprID, newExprID);
     return true;
   }
 
@@ -1545,7 +1830,8 @@ private:
     }
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto exprID    = generator->GetOrCreateExprID(castInst);
-    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
+    // Casts can be loop dependent
+    state[nullptr] = generator->rewrite<Topological>(state[nullptr], oldExprID, exprID);
     return true;
   }
 
@@ -1701,7 +1987,8 @@ private:
                llvm::StoreInst* const storeInst) {
     auto operand    = storeInst->getValueOperand();
     auto opExprID   = generator->GetOrCreateExprID(operand);
-    return generator->rewrite(disjunction, loadExprID, opExprID);
+    // Stores can also be loop dependent
+    return generator->rewrite<Topological>(disjunction, loadExprID, opExprID);
   }
 
   Disjunction
@@ -1741,7 +2028,11 @@ private:
     auto valExprID  = generator->GetOrCreateExprID(storeValue);
     //llvm::errs() << "\nRewriting load exprID " << loadExprID
     //             << "  with store value expr " << valExprID;
-    auto rewritten = generator->rewrite(forRewrites, loadExprID, valExprID);
+    
+    // TODO: may-alias can screw with the constraints
+    // I expect loop dependent aliases to be must aliases though
+    // May-aliases can also be loop dependent
+    auto rewritten = generator->rewrite<Topological>(forRewrites, loadExprID, valExprID);
     //llvm::errs() << "\n rewritten disjunction";
     //rewritten.print(llvm::errs());
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
