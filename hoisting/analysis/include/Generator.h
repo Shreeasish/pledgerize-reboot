@@ -448,6 +448,8 @@ public:
       newDisjunct.conjunctIDs.erase(from, newDisjunct.end());
       newDisjunction.addDisjunct(newDisjunct);
     }
+    llvm::errs() << "\nAfter rewrites, New Disjunction";
+    newDisjunction.print(llvm::errs());
     return newDisjunction;
   }
 

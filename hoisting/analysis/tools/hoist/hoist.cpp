@@ -125,6 +125,7 @@ public:
   operator()(const Disjunction& disjunction,
              const ExprID oldExprID,
              const ExprID newExprID) override {
+    llvm::errs() << "\nBefore Topology Check";
     disjunction.print(llvm::errs());
 
     auto oldNode  = generator->GetExprNode(oldExprID);
@@ -134,7 +135,7 @@ public:
     auto* newProv = std::visit(Provenance{newExprID}, newNode);
 
     auto isOrdered = [&oldProv, &newProv, this] {
-      if (!(oldProv && newProv) ||  // either = nullptr, different parents
+      if ( !(oldProv && newProv) ||  // either = constant, different parents
           oldProv->getFunction() != newProv->getFunction()) {
         return true;
       }
@@ -152,8 +153,8 @@ public:
       auto& orderedInsts = *oInstMap[currFunction];
       // llvm::errs() << "\noldProv = " << oldProv->getFunction()->getName()
       //             << "\nnewProv = " << newProv->getFunction()->getName();
-      llvm::errs() << "\noldProv = " << *oldProv << "\nnewProv = " << *newProv;
-      return orderedInsts.dfsBefore(oldProv, newProv);
+      llvm::errs() << "\nCheckin newProv = " << *newProv << "\ndominates oldProv = " << *oldProv;
+      return orderedInsts.dominates(newProv, oldProv);
       // true if oldProv before newProv
     }();
 
@@ -162,7 +163,9 @@ public:
     } else {
       llvm::errs() << "\nKilling OldExprID: " << oldExprID;
       llvm::errs() << "\nFor New ExprID" << newExprID;
-      return generator->pushToTrue(disjunction, oldExprID);
+      llvm::errs() << "\nWith Pushed To True";
+      return generator->pushToTrue(disjunction, oldExprID);//.print(llvm::errs());
+      //return std::nullopt;
     }
   }
 
@@ -182,7 +185,7 @@ private:
     operator()(const ValueOrBinary& node) {
       llvm::errs() << "\nGetting Origin for " << exprID;
       llvm::errs() << "\nFor Node Inst" << *node.value;
-      return generator->getOrigin(exprID);
+      return generator->getOrigin(this->exprID);
     }
   };
 };
@@ -268,13 +271,13 @@ public:
 
     intersection = std::accumulate(predecessors.begin(), predecessors.end(),
                                    intersection, intersect);
-    if (intersection.size() < 1) {
-      llvm::errs() << "\n>0 Intersection Size " << intersection.size();
-    } else if (intersection.size() < 2) {
-      llvm::errs() << "\n>1 Intersection Size " << intersection.size();
-    } else {
-      llvm::errs() << "\n>2 Intersection Size " << intersection.size();
-    }
+    //if (intersection.size() < 1) {
+    //  llvm::errs() << "\n>0 Intersection Size " << intersection.size();
+    //} else if (intersection.size() < 2) {
+    //  llvm::errs() << "\n>1 Intersection Size " << intersection.size();
+    //} else {
+    //  llvm::errs() << "\n>2 Intersection Size " << intersection.size();
+    //}
 
     Disjunction ret{};
     for (auto& disjunct : intersection) {  //For each disjunct in intersection
@@ -289,12 +292,12 @@ public:
       }
       ret.addDisjunct(disjunct);
     }
-    llvm::errs() << "\nAfter Optimizations";
-    llvm::errs() << "\npredecessors.size()" << predecessors.size();
-    for (auto [key, pred] : predecessors) {
-      llvm::errs() << "\npredecessor";
-      pred[nullptr][privilege].print(llvm::errs()); // use here
-    }
+    //llvm::errs() << "\nAfter Optimizations";
+    //llvm::errs() << "\npredecessors.size()" << predecessors.size();
+    //for (auto [key, pred] : predecessors) {
+    //  llvm::errs() << "\npredecessor";
+    //  pred[nullptr][privilege].print(llvm::errs()); // use here
+    //}
     return ret;
   }
 
@@ -593,11 +596,16 @@ public:
           auto* inst = llvm::dyn_cast<llvm::Instruction>(node.value);
           auto* module = inst->getModule();
           return generateConstant(node.op, module); 
-        } else if (isConstant && llvm::Instruction::ICmp == node.op.opCode) {
+        } 
+        else if (isConstant && (llvm::Instruction::ICmp == node.op.opCode 
+                             || llvm::Instruction::Switch == node.op.opCode)) {
           auto* inst = llvm::dyn_cast<llvm::Instruction>(node.value);
           auto* module = inst->getModule();
           return generateCompare(node.op, module); 
         } else {
+          llvm::errs() << "\nSkipping opCode name "
+                       << llvm::Instruction::getOpcodeName(node.op.opCode)
+                       << " OpCode value " << node.op.opCode;
           isConstant = false;
           return nullptr;
         }
@@ -629,13 +637,14 @@ public:
         auto& layout = module->getDataLayout();
         auto* constant = ConstantFoldBinaryOpOperands(op.opCode, lhs, rhs, layout);
         constants.push_back(constant);
-        llvm::errs() << "\nopCode name"
+        llvm::errs() << "\nopCode name "
                      << llvm::Instruction::getOpcodeName(op.opCode);
         llvm::errs() << "\nGenerated Constant " << *constant;
         return constant;
       }
 
-      llvm::Constant*
+      // Works for switches too, since switches use the same predicate
+      llvm::Constant* 
       generateCompare(ExprOp op, llvm::Module* module) {
         auto* lhs = constants.front();
         constants.pop_front();
@@ -708,32 +717,36 @@ public:
         }
       
         auto* constant = idConstantMap[exprID];
+        llvm::errs() << "\nFound Generated constant for " << exprID
+                     << "\nConstant " << *constant;
         bool evaluatesToTrue = constant->isOneValue();
+        if (evaluatesToTrue) {
+          llvm::errs() << "\n Is True";
+        }
         if (handle(conjunct, evaluatesToTrue)) {
           return true;
         }
       }
 
-      auto& conjuncts = disjunct.conjunctIDs;
-      auto from       = 
-        std::remove(conjuncts.begin(), conjuncts.end(), generator->GetVacuousConjunct());
-      conjuncts.erase(from, disjunct.end());
+      //auto& conjuncts = disjunct.conjunctIDs;
+      //auto from       = 
+      //  std::remove(conjuncts.begin(), conjuncts.end(), generator->GetVacuousConjunct());
+      //conjuncts.erase(from, disjunct.end());
       return false;
     };
 
     bool shouldKill = false;
     auto& disjuncts = disjunction.disjuncts;
     for (auto& disjunct : disjunction) {
-      bool shouldKill = checkDisjunct(disjunct);
+      shouldKill = checkDisjunct(disjunct);
       if (shouldKill) {
         break;
       }
     }
-
     if (shouldKill) {
       disjunction = getVacuouslyTrue();
     }
-    return disjunction;
+    return disjunction.simplifyDisjuncts(generator->GetVacuousConjunct());
   }
 
   Disjunction
@@ -1112,13 +1125,13 @@ public:
     }
 
 
-    llvm::errs() << "\nBefore Sem Simplifier";
-    state[nullptr].print(llvm::errs());
+    //llvm::errs() << "\nBefore Sem Simplifier";
+    //state[nullptr].print(llvm::errs());
 
     semSimplifier.simplifyConstants(state[nullptr], value);
 
-    llvm::errs() << "\nAfter Sem Simplifier";
-    state[nullptr].print(llvm::errs());
+    //llvm::errs() << "\nAfter Sem Simplifier";
+    //state[nullptr].print(llvm::errs());
 
     state[nullptr]
         .simplifyComplements()
@@ -1305,18 +1318,18 @@ private:
     if (handled || !callSite.getInstruction()) {
       return handled;
     }
-    llvm::errs() << "\nprinting from callsite" << *callSite.getInstruction();
-    llvm::errs() << "\nState at key";
+    //llvm::errs() << "\nprinting from callsite" << *callSite.getInstruction();
+    //llvm::errs() << "\nState at key";
     state[callSite.getInstruction()].print(llvm::errs());
 
     auto getCalleeState = [&state, &callSite] {
       auto calleeState = state[callSite.getInstruction()];
       if constexpr (Promise == MinPrivilege) { 
         state.erase(callSite.getInstruction());
-        llvm::errs() << "\nAfter wiping cs.getinst";
+        //llvm::errs() << "\nAfter wiping cs.getinst";
         state[callSite.getInstruction()].print(llvm::errs());
       }
-      llvm::errs() << "\nGetting Callee State";
+      //llvm::errs() << "\nGetting Callee State";
       calleeState.print(llvm::errs());
       return calleeState;
     };
@@ -1363,7 +1376,7 @@ private:
             handleExternalCall(func->getName());
           } 
         }
-        makeVacuouslyTrue(state[nullptr]);
+        //makeVacuouslyTrue(state[nullptr]);
       } else {  // if SVF is unable to find callees
         llvm::errs() << "\n Could Not Find Callee for"
                      << *callSite.getInstruction();
@@ -1406,8 +1419,6 @@ private:
         return true;
         break;
     }
-    llvm::errs() << "\nCall Type";
-    llvm::errs() << (int) getCallType(callSite);
 
     assert(false && "Broken Casing");
     return true;
@@ -1690,13 +1701,13 @@ private:
     if (!callAsValue) {
       return true;
     }
-    llvm::errs() << "\nstate[ret]";
-    state[ret].print(llvm::errs());
+    //llvm::errs() << "\nstate[ret]";
+    //state[ret].print(llvm::errs());
     state[nullptr] = state[ret];
     if constexpr (Promise == MinPrivilege) { 
       state.erase(ret);
-      llvm::errs() << "\nAfter wiping ret: " << state.has(ret);
-      assert(!(state.has(ret)) && "ret not empty");
+      //llvm::errs() << "\nAfter wiping ret: " << state.has(ret);
+      //assert(!(state.has(ret)) && "ret not empty");
     }
     auto* retValue = ret->getReturnValue();
     if (!retValue) {
