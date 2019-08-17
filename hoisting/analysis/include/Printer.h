@@ -185,11 +185,21 @@ private:
       }
 
       std::string
+      visitPHINode(llvm::PHINode &I) {
+        std::string ret;
+        llvm::raw_string_ostream rso(ret);
+				rso << I;
+        return ret;
+      }
+
+      std::string
       visitICmpInst(llvm::ICmpInst& I) {
         // Actual Predicates can be dealt with later
-				assert("False");
         return {"ICmp"};
       }
+
+
+
       //std::string
       //visitLoadInst(llvm::LoadInst& loadInst) {
       //  std::string ret;
@@ -214,9 +224,8 @@ private:
     auto printFName = [&rso](llvm::Function* func) {
       rso << "[@" << func->getName() << "]";
     };
-		int depth = 0;
     auto visitor = overloaded{
-        [&rso, &depth, &printFName](ExprID exprID, const ConstantExprNode node) {
+        [&rso, &printFName](ExprID exprID, const ConstantExprNode node) {
           // Constants are small; print as is
           if (node.constant) {
             if (auto func = llvm::dyn_cast<llvm::Function>(node.constant)) {
@@ -229,7 +238,7 @@ private:
           }
         },
 
-        [this,&rso, &depth](ExprID exprID, const BinaryExprNode node) {
+        [this,&rso](ExprID exprID, const BinaryExprNode node) {
           if (auto it = opMap.find(node.op.opCode); it != opMap.end()) {
             auto [first, opString] = *it;
             rso << "_op_" << opString << "_";
@@ -237,7 +246,7 @@ private:
           }
         },
 
-        [&rso, &depth](ExprID exprID, const ValueExprNode node) {
+        [&rso](ExprID exprID, const ValueExprNode node) {
           PrettyPrinter printer;
 					if (!node.value) {
 						llvm::outs().changeColor(llvm::raw_ostream::Colors::RED);
@@ -247,9 +256,9 @@ private:
 						assert(false);
 					}
           if (auto* asInst = llvm::dyn_cast<llvm::Instruction>(node.value)) {
-            rso << "(_" << depth << "_" << printer.visit(*asInst) << ")";
+            rso << "(__" << printer.visit(*asInst) << ")";
           } else if (node.value) {
-						rso << "(_" << depth << "_" << *node.value << ")";
+						rso << "(__" << *node.value << ")";
             llvm::outs().changeColor(llvm::raw_ostream::Colors::RED);
             llvm::outs() << "\nFor ExprID:" << exprID
                          << "\nValue is not an Instruction: " 
@@ -340,6 +349,7 @@ private:
   private:
     llvm::IRBuilder<>& builder;
     llvm::Instruction* const location;
+    [[maybe_unused]]
     Context& context;
     
     bool

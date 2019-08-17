@@ -509,5 +509,8 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("getifaddrs", 16);
   libCHandlers.try_emplace("reallocarray", 16);
   libCHandlers.try_emplace("exit", 16);
-
+  /* From slaacd */
+  libCHandlers.try_emplace("recallocarray", 16);
+  /* WhiteList fork */
+  libCHandlers.try_emplace("fork",0);
 };

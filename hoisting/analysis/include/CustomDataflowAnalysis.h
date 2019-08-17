@@ -313,8 +313,8 @@ public:
      bool needsUpdate = false;
      //auto* passedConcrete = cs.getInstruction();
      auto& passedAbstract = state.FindAndConstruct(nullptr);
-     llvm::errs() << "\nPassed Abstract";
-     passedAbstract.second[PLEDGE_CPATH].print(llvm::errs());
+     //llvm::errs() << "\nPassed Abstract";
+     //passedAbstract.second[PLEDGE_CPATH].print(llvm::errs());
      /*Marshalling abstract state into functions*/
      for (auto& bb : *callee) {
        if (auto* ret = llvm::dyn_cast<llvm::ReturnInst>(bb.getTerminator());
@@ -323,25 +323,25 @@ public:
          // auto& retState = summaryState[ret->getReturnValue()];
          // auto  newState = meet({passedAbstract, retState});
          auto& retState = summaryState[ret];
-         llvm::errs() << "\nPassed retstate before merging";
-         retState[PLEDGE_CPATH].print(llvm::errs());
+         //llvm::errs() << "\nPassed retstate before merging";
+         //retState[PLEDGE_CPATH].print(llvm::errs());
         
          auto newState = meet({passedAbstract.second, retState});
          needsUpdate |= !(newState == retState);
          {
-           llvm::errs() << "\nChecking Ret State at " << *cs.getInstruction();
-           llvm::errs() << " parent" << cs.getInstruction()->getParent()->getParent()->getName();
-           llvm::errs() << "\nretState";
-           retState[PLEDGE_CPATH].print(llvm::errs());
+           //llvm::errs() << "\nChecking Ret State at " << *cs.getInstruction();
+           //llvm::errs() << " parent" << cs.getInstruction()->getParent()->getParent()->getName();
+           //llvm::errs() << "\nretState";
+           //retState[PLEDGE_CPATH].print(llvm::errs());
 
-           llvm::errs() << "\nnewState";
-           newState[PLEDGE_CPATH].print(llvm::errs());
-           llvm::errs() << "\n----end check----";
-           if (needsUpdate) {
-             llvm::errs() << " yes update";
-           } else {
-             llvm::errs() << " no update";
-           }
+           //llvm::errs() << "\nnewState";
+           //newState[PLEDGE_CPATH].print(llvm::errs());
+           //llvm::errs() << "\n----end check----";
+           //if (needsUpdate) {
+           //  llvm::errs() << " yes update";
+           //} else {
+           //  llvm::errs() << " no update";
+           //}
          }
          retState = newState;
        }
@@ -521,22 +521,22 @@ public:
         // state[nullptr].conjunctCount();
         llvm::CallSite cs(&i);
         if (isAnalyzableCall(cs) && transfer.isInterprocedural) {
-          auto fname = getCalledFunction(cs)->getName();
-          llvm::errs() << "\nFound internal call" << fname;
+          //auto fname = getCalledFunction(cs)->getName();
+          //llvm::errs() << "\nFound internal call" << fname;
 
-          llvm::errs() << "\nSending state in as";
-          state[nullptr][PLEDGE_CPATH].print(llvm::errs());
+          //llvm::errs() << "\nSending state in as";
+          //state[nullptr][PLEDGE_CPATH].print(llvm::errs());
           analyzeCall(cs, state, context);
         } 
         else if (isIndirectCall(cs) && svfResults->hasIndCSCallees(cs)
             && transfer.isInterprocedural) {
-          llvm::errs() << "\nFound Pointer Call \t ";
-          llvm::errs() << i << "\n";
-          llvm::errs() << "Parent " << i.getParent()->getParent()->getName()
-                       << "\n";
+          //llvm::errs() << "\nFound Pointer Call \t ";
+          //llvm::errs() << i << "\n";
+          //llvm::errs() << "Parent " << i.getParent()->getParent()->getName()
+          //             << "\n";
 
-          llvm::errs() << "\nSending state in as";
-          state[nullptr][PLEDGE_CPATH].print(llvm::errs());
+          //llvm::errs() << "\nSending state in as";
+          //state[nullptr][PLEDGE_CPATH].print(llvm::errs());
 
           std::vector<StateFunction> rewritten;
           for (auto* constIndTarget : svfResults->getIndCSCallees(cs)) {
@@ -684,7 +684,7 @@ public:
     auto* caller  = cs.getInstruction()->getFunction();
     //auto* callee  = getCalledFunction(cs);
     auto* callee  = forceEdge ? forceEdge : getCalledFunction(cs);
-    addToMap(caller, callee);
+    //addToMap(caller, callee);
 
     auto toCall   = std::make_pair(newContext, callee);
     auto toUpdate = std::make_pair(context, caller);
@@ -793,8 +793,7 @@ private:
   mergeInState(State& destinationState,
                const State& toMerge,
                llvm::Value* destination,
-               llvm::Value* branchAsValue,
-               bool isSame) {
+               llvm::Value* branchAsValue) {
     EdgeTransformer transformer;
     for (auto& valueStatePair : toMerge) {
       // If an incoming Value has an AbstractValue in the already merged
@@ -813,7 +812,7 @@ private:
       auto withEdges = valueStatePair.second;
       if (valueStatePair.first == nullptr) { // only rewrite state at nullptr
         auto* checkLoc = transformer.setLocation(branchAsValue);
-        withEdges = transformer(withEdges, branchAsValue, destination, isSame);
+        withEdges = transformer(withEdges, branchAsValue, destination);
         transformer.removeLocation(checkLoc);
       }
       auto [found, newlyAdded] = destinationState.insert({valueStatePair.first, withEdges});
@@ -833,7 +832,6 @@ private:
 
   State
   mergeStateFromPredecessors(llvm::BasicBlock* bb, FunctionResults& results) {
-
     // Make a copy of the predecessors, modify copy
     llvm::DenseMap<llvm::Instruction*, State> predFacts;
     for (auto* p : Direction::getPredecessors(*bb)) { // for each predecessor
@@ -848,8 +846,9 @@ private:
 
     State mergedState = State{};
     if (predFacts.size() > 1) {
-      meet.getIntersection(predFacts, mergedState[nullptr]);
-    }
+      mergedState[nullptr] = meet.getIntersection(predFacts);
+    } 
+    // Rely on meet for reachability
     mergeInState(mergedState, results[bb]); // prev bb results
 
     // checking for equality from here won't work since
@@ -863,7 +862,7 @@ private:
         continue;
       }
       auto* branchInst = bb->getTerminator();
-      mergeInState(mergedState, predecessorFacts->second, p, branchInst, false);
+      mergeInState(mergedState, predecessorFacts->second, p, branchInst);
     }
     return mergedState;
   }

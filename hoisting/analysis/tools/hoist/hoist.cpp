@@ -87,6 +87,8 @@ analysis::SVFAnalysis* svfResults;
 llvm::DenseMap<const llvm::Function*,
                std::unique_ptr<llvm::MemorySSA>> functionMemSSAs;
 llvm::DenseMap<const llvm::Function*,
+               std::unique_ptr<llvm::LoopInfo>> functionLoopInfos;
+llvm::DenseMap<const llvm::Function*,
                llvm::AAResultsWrapperPass*> functionAAs;
 
 using Edge  = std::pair<const llvm::BasicBlock*,const llvm::BasicBlock*>;
@@ -97,23 +99,14 @@ using DisjunctionValue  = std::array<Disjunction, COUNT - 1>;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
-constexpr int MaxPrivilege{PLEDGE_CPATH};
-constexpr int MinPrivilege{PLEDGE_CPATH};
+constexpr int MaxPrivilege{18};
+constexpr int MinPrivilege{0};
 
 void
 makeVacuouslyTrue(Disjunction& disjunction) {
   Disjunct disjunct{};
   disjunct.addConjunct(generator->GetVacuousConjunct());
   disjunction.disjuncts = Disjuncts{disjunct};
-}
-
-Disjunction
-getVacuouslyTrue() {
-  Disjunct disjunct{};
-  disjunct.addConjunct(generator->GetVacuousConjunct());
-  Disjunction top{};
-  top.disjuncts = Disjuncts{disjunct};
-  return top;
 }
 
 /*--------------------------------------------------------*
@@ -134,7 +127,7 @@ public:
     auto newNode  = generator->GetExprNode(newExprID);
     auto* newProv = std::visit(Provenance{newExprID}, newNode);
 
-    auto isOrdered = [&oldProv, &newProv, this] {
+    auto isOrdered = [&oldProv, &newProv] {
       if ( !(oldProv && newProv) ||  // either = constant, different parents
           oldProv->getFunction() != newProv->getFunction()) {
         return true;
@@ -198,7 +191,7 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    DisjunctionValue result{};
+    DisjunctionValue result;
     static_for<MaxPrivilege>(s1, s2, result);
     return result;
   }
@@ -206,57 +199,58 @@ public:
   // Using a concrete type here would need me to also explicitly show the state
   // of states infrastructure from the dataflow lib
   template <typename Predecessors>
-  void 
-  getIntersection(Predecessors& predecessors, DisjunctionValue& intersection) {
+  DisjunctionValue
+  getIntersection(Predecessors& predecessors) {
+    DisjunctionValue intersection;
     for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
-      intersection[privilege] = intersectPerPrivilege(predecessors, MaxPrivilege);
+      intersection[privilege] = intersectPerPrivilege(predecessors, privilege);
       //llvm::errs() << "\nIntersection State Final";
       //intersection[privilege].print(llvm::errs());
     }
+    return intersection;
   }
 
   template <typename Predecessors>
   Disjunction
   intersectPerPrivilege(Predecessors& predecessors, int privilege) {
     using DisjunctionSet = std::unordered_set<Disjunct, DisjunctHash>;
-    //llvm::errs() << "\nBefore Optimizations";
-    //llvm::errs() << "\npredecessors.size()" << predecessors.size();
-    //for (auto [key, pred] : predecessors) {
-    //  llvm::errs() << "\npredecessor";
-    //  if (key) {
-    //    llvm::errs() << "\nFor key " << *key;
-    //  } else {
-    //    llvm::errs() << "\nFor key nullptr";
-    //  }
-    //   
-    //  pred[nullptr][privilege].print(llvm::errs()); // use here
-    //}
+    llvm::errs() << "\nBefore Optimizations";
+    llvm::errs() << "\npredecessors.size()" << predecessors.size();
+    for (auto [key, pred] : predecessors) {
+      llvm::errs() << "\npredecessor";
+      if (key) {
+        llvm::errs() << "\nFor key " << *key;
+      } else {
+        llvm::errs() << "\nFor key nullptr";
+      }
+      pred[nullptr][privilege].print(llvm::errs()); // use here
+    }
     
-    auto intersect = 
-      [&privilege](Disjunction prev, auto& incoming) { // Specialized
-      //llvm::errs() << "\nFrom intersect";
-      auto& [key, value] = incoming; // make ref for ease
-      auto& state = value[nullptr][privilege];  // State with nullptr
-      auto [larger, smaller] = prev.size() < state.size() 
-       ? std::make_pair(prev, state) : std::make_pair(state, prev);
-  
-      //llvm::errs() << "\nsmaller";
-      //smaller.print(llvm::errs());
+    auto skip = [](const auto& disjunction) {
+      return !disjunction.isReachable && disjunction.isEmpty();
+    }; // skip if: NOT reachable AND is empty
 
-      //llvm::errs() << "\nlarger";
-      //larger.print(llvm::errs());
+    auto intersect = 
+    [&privilege, &skip] (Disjunction prev, auto& incoming) {
+      auto& [key, value] = incoming;                   // make ref for ease
+      auto& state        = value[nullptr][privilege];  // State with nullptr
+      if (skip(state)) {
+        llvm::errs() << "\nWould reject incoming";
+        return prev;
+      }
+      auto [larger, smaller] = prev.size() < state.size()
+                                   ? std::make_pair(prev, state)
+                                   : std::make_pair(state, prev);
 
       auto larger_set   = DisjunctionSet(larger.begin(), larger.end());
       auto smaller_set  = DisjunctionSet(smaller.begin(), smaller.end());
-      auto intersection = Disjunction{};
+      auto intersection = Disjunction{true};
 
       for (auto& disjunct : smaller_set) {
         if (larger_set.count(disjunct)) {
           intersection.addDisjunct(disjunct);
         }
       }
-      //llvm::errs() << "\nIntersection State -";
-      //intersection.print(llvm::errs());
       return intersection;
     };
 
@@ -264,6 +258,9 @@ public:
     int intersectionSize = std::numeric_limits<int>::max();
     for (auto [key, state] : predecessors) {
       auto disjunction = state[nullptr][privilege];
+      if (skip(disjunction)) {
+        continue;
+      }
       intersection = intersectionSize < disjunction.size()
         ? intersection : disjunction;
       intersectionSize = disjunction.size();
@@ -271,14 +268,6 @@ public:
 
     intersection = std::accumulate(predecessors.begin(), predecessors.end(),
                                    intersection, intersect);
-    //if (intersection.size() < 1) {
-    //  llvm::errs() << "\n>0 Intersection Size " << intersection.size();
-    //} else if (intersection.size() < 2) {
-    //  llvm::errs() << "\n>1 Intersection Size " << intersection.size();
-    //} else {
-    //  llvm::errs() << "\n>2 Intersection Size " << intersection.size();
-    //}
-
     Disjunction ret{};
     for (auto& disjunct : intersection) {  //For each disjunct in intersection
       // Remove intersecting disjuncts from the original predecessors
@@ -292,12 +281,13 @@ public:
       }
       ret.addDisjunct(disjunct);
     }
-    //llvm::errs() << "\nAfter Optimizations";
-    //llvm::errs() << "\npredecessors.size()" << predecessors.size();
-    //for (auto [key, pred] : predecessors) {
-    //  llvm::errs() << "\npredecessor";
-    //  pred[nullptr][privilege].print(llvm::errs()); // use here
-    //}
+
+    llvm::errs() << "\nAfter Optimizations";
+    llvm::errs() << "\npredecessors.size()" << predecessors.size();
+    for (auto [key, pred] : predecessors) {
+      llvm::errs() << "\npredecessor";
+      pred[nullptr][privilege].print(llvm::errs()); // use here
+    }
     return ret;
   }
 
@@ -314,6 +304,7 @@ private:
             .simplifyImplication()
             .simplifyUnique()
             .simplifyTrues();
+    result.isReachable = Disjunction::intersectReachability(s1, s2);
     //llvm::errs() << "\nResult";
     //result.print(llvm::errs());
     return result;
@@ -387,6 +378,9 @@ public:
   printAfter(DisjunctionValue disjunction, llvm::Instruction* inst, const Context& context) const {
     out << "\n----  After ----";
     out << PromiseNames[promise];
+    if (!disjunction[promise].isReachable) {
+      out << "--UNREACHABLE";
+    }
     out << "\n@Instruction" << *inst << "@parent "
         << inst->getParent()->getParent()->getName();
     out << "\nwith Context";
@@ -451,8 +445,15 @@ public:
           auto& state = functionResults[&inst][nullptr][promise];
           auto conjunctCount = state.conjunctCount();
           auto disjunctCount = state.disjunctCount();
-          dotFile << inst << " [CC:" << conjunctCount << "][DC:" << disjunctCount << "]" 
-                          << "[G:" << SContributionMap[&inst] << "]\\l";
+
+          dotFile << inst << " [CC:" << conjunctCount << "][DC:" << disjunctCount << "]"
+                  << "[G:" << SContributionMap[&inst] << "]";
+          if (!state.isReachable) {
+            dotFile << "[UNREACH";
+          } else {
+            dotFile << "[_______";
+          }
+          dotFile << "]\\l";
           printGraph(&inst, state);
         } else {
           dotFile << inst << "[NOT REACHED]\\l";
@@ -511,8 +512,6 @@ public:
     std::exit(0);
   }
 
-
-
   void
   printActivePrivileges(DisjunctionValue disjunction) const {
     if (!disjunction[promise].isEmpty()) {
@@ -531,9 +530,8 @@ public:
     outs << "\nState from " << callee->getName() << ":--------------------";
     state[cs.getInstruction()].print(outs);
     outs << "\n------------------------------------------------END";
-
   }
-
+  
 private:
   //llvm::Module* module;
   const Promises promise;
@@ -581,7 +579,6 @@ public:
       llvm::Value*
       operator()(ExprID id, ConstantExprNode node) {
         if (node.constant && isConstant) {
-          llvm::errs() << "\nPushing Back " << *node.constant;
           constants.push_back(node.constant);
         }         
         return nullptr;
@@ -603,9 +600,9 @@ public:
           auto* module = inst->getModule();
           return generateCompare(node.op, module); 
         } else {
-          llvm::errs() << "\nSkipping opCode name "
-                       << llvm::Instruction::getOpcodeName(node.op.opCode)
-                       << " OpCode value " << node.op.opCode;
+//          llvm::errs() << "\nSkipping opCode name "
+//                       << llvm::Instruction::getOpcodeName(node.op.opCode)
+//                       << " OpCode value " << node.op.opCode;
           isConstant = false;
           return nullptr;
         }
@@ -637,9 +634,6 @@ public:
         auto& layout = module->getDataLayout();
         auto* constant = ConstantFoldBinaryOpOperands(op.opCode, lhs, rhs, layout);
         constants.push_back(constant);
-        llvm::errs() << "\nopCode name "
-                     << llvm::Instruction::getOpcodeName(op.opCode);
-        llvm::errs() << "\nGenerated Constant " << *constant;
         return constant;
       }
 
@@ -655,9 +649,6 @@ public:
         auto& layout = module->getDataLayout();
         auto* constant = ConstantFoldCompareInstOperands(op.predicate, lhs, rhs, layout);
         constants.push_back(constant);
-        llvm::errs() << "\nopCode name"
-                     << llvm::Instruction::getOpcodeName(op.opCode);
-        llvm::errs() << "\nGenerated Compare" << *constant;
         return constant;
       }
     };
@@ -717,12 +708,9 @@ public:
         }
       
         auto* constant = idConstantMap[exprID];
-        llvm::errs() << "\nFound Generated constant for " << exprID
-                     << "\nConstant " << *constant;
+        //llvm::errs() << "\nFound Generated constant for " << exprID
+        //             << "\nConstant " << *constant;
         bool evaluatesToTrue = constant->isOneValue();
-        if (evaluatesToTrue) {
-          llvm::errs() << "\n Is True";
-        }
         if (handle(conjunct, evaluatesToTrue)) {
           return true;
         }
@@ -736,7 +724,6 @@ public:
     };
 
     bool shouldKill = false;
-    auto& disjuncts = disjunction.disjuncts;
     for (auto& disjunct : disjunction) {
       shouldKill = checkDisjunct(disjunct);
       if (shouldKill) {
@@ -744,7 +731,7 @@ public:
       }
     }
     if (shouldKill) {
-      disjunction = getVacuouslyTrue();
+      makeVacuouslyTrue(disjunction);
     }
     return disjunction.simplifyDisjuncts(generator->GetVacuousConjunct());
   }
@@ -864,11 +851,72 @@ public:
     generator->setLocation(nullptr);
   }
 
+  Edges
+  getBackedges(const llvm::Function* func) {
+    return functionBackEdges[func];
+  }
+
+  void  // Clean BackEdges
+  cleanBackEdge(Disjunction& disjunction,
+                llvm::Value* branch,        
+                llvm::Value* destination) {
+    auto* srcInst = llvm::dyn_cast<llvm::Instruction>(branch);
+    auto* srcBB = srcInst->getParent(); // in the forward sense
+    auto* function = srcBB->getParent();
+
+    assert(functionLoopInfos.count(function) && "No loop info for function");
+    auto* loopInfo = functionLoopInfos[function].get();
+    auto* loop     = loopInfo->getLoopFor(srcBB);
+    //if (loop && loop->isLoopLatch(srcBB)) {
+    //  llvm::errs() << "\nFound Loop from loopInfo";
+    //}
+
+    auto isBackEdge = [&srcBB, &loop] {
+      return loop && loop->isLoopLatch(srcBB);
+    }();
+
+    if (!isBackEdge) {
+      //llvm::errs() << "\nNo Loop from backedgecheck";
+      return;
+    }
+
+    llvm::errs() << "\nBefore Cleaning BackEdges";
+    disjunction.print(llvm::errs());
+    // 1. get constraints introduced within the loop
+    auto& blackList  = loop->getBlocksSet();
+
+    auto isFromLoop  = [&blackList](auto& conjunct) -> bool {
+      auto& exprID = conjunct.exprID;
+      // TODO: 
+      // Rewrite within a loop is actually a cached
+      // rewrite from non-loop body. Possible?
+      auto* location = generator->getOrigin(exprID);
+      auto* asBB = location->getParent();
+      return blackList.count(asBB);
+    };
+
+    auto vacuousConjunct = generator->GetVacuousConjunct();
+    for (auto& disjunct : disjunction) {
+      for (auto& conjunct : disjunct) {
+        if (conjunct == vacuousConjunct
+            || !isFromLoop(conjunct)) {
+          continue;
+        }
+        conjunct = generator->GetVacuousConjunct();
+      }
+    }
+
+    disjunction.simplifyDisjuncts(generator->GetVacuousConjunct());
+    llvm::errs() << "\nAfter Cleaning BackEdges";
+    disjunction.print(llvm::errs());
+    return;
+  }
+  
   DisjunctionValue
   operator()(DisjunctionValue toMerge,
              llvm::Value* branchAsValue,
-             llvm::Value* destination,
-             bool isSame) {
+             llvm::Value* destination) {
+    // Store reachability
     // Use the label of the basic block of the branch to replace the appropriate
     // operand of the phi
     auto getAssocValue = [&branchAsValue](llvm::PHINode* const phi) {
@@ -891,7 +939,7 @@ public:
         auto phiOperand    = getAssocValue(&phi);
         auto operandExprID = generator->GetOrCreateExprID(phiOperand);
         // Phis can be loop dependent
-        destState = generator->rewrite<Topological>(destState, phiExprID, operandExprID);
+        destState = generator->rewrite(destState, phiExprID, operandExprID);
       }
       return destState;
     };
@@ -902,21 +950,17 @@ public:
     };
 
     auto edgeOp = [&](Disjunction& destState) {
+      cleanBackEdge(destState, branchAsValue, destination);
       auto oldState = destState;
       auto withPhi  = handlePhi(destState);
       if (!isConditionalJump()) {
         return withPhi;
       }
-      if (isSame) {
-        llvm::errs() << "\nOptimization Applied";
-        return withPhi;
-      }  // TODO: Careful. Phi's concretize values.
-         // This has implications in the forward
-         // as well as backward direction. 
-      return handle(branchOrSwitch, withPhi, destination);
+
+      auto&& retState = handle(branchOrSwitch, withPhi, destination);
+      return retState;
     };
 
-    //return edgeOp(toMerge);
     Debugger::ContributionCounter counter{branchOrSwitch};
     return static_for{edgeOp}(toMerge);
   }
@@ -948,7 +992,7 @@ public:
                                llvm::Function* const mayCallee,
                                bool form) {
       auto aliasExpr = generator->GetOrCreateAliasID(mayCallee, caller);
-      auto numCallees = svfResults->getIndCSCallees(caller).size();
+      //auto numCallees = svfResults->getIndCSCallees(caller).size();
       return Conjunct(aliasExpr, form);
     };
 
@@ -958,11 +1002,9 @@ public:
         return destState;
       } // Early return if there's only a single target
 
-      //for (auto* function : svfResults->getIndCSCallees(caller)) {
       //intrinsic representation of exclusivity
       auto callConjunct = getAliasConjunct(caller, getNonConst(indCallee), true);
       destState.applyConjunct(callConjunct);
-      //}
       return destState;
     };
     return static_for{callStitcher}(toMerge);
@@ -979,7 +1021,7 @@ private:
     DisjunctionValue result;
 
     static_for(Lambda& lm) 
-      : lambda(lm) { result = DisjunctionValue{}; }
+      : lambda(lm) { }
 
     DisjunctionValue
     operator()(DisjunctionValue& value) {
@@ -1099,10 +1141,13 @@ public:
     auto state = StateAccessor<promise>{stateMap};
     bool notEmpty = !state[nullptr].isEmpty();
 
+
+    /* Get reachability. The transfers should * not be changing the reachability
+     * but it does generate states which are default initialized to
+     * unreachable. */
     handled |= handleBrOrSwitch(inst, handled);
     handled |= handlePhiBackEdges(&value, state, handled);
-    handled |= handleCallSite<static_cast<Promises>(PledgeCounter)>(
-        &value, state, context, handled);
+    handled |= handleCallSite<promise>(&value, state, context, handled);
     handled |= handleStore(&value, state, context, handled);
     handled |= handleGep(&value, state, handled);
     handled |= handleRet(&value, state, context, handled);
@@ -1127,7 +1172,6 @@ public:
 
     //llvm::errs() << "\nBefore Sem Simplifier";
     //state[nullptr].print(llvm::errs());
-
     semSimplifier.simplifyConstants(state[nullptr], value);
 
     //llvm::errs() << "\nAfter Sem Simplifier";
@@ -1138,7 +1182,6 @@ public:
         .simplifyRedundancies(generator->GetVacuousConjunct())
         .simplifyImplication();
 
-  
     auto becameEmpty = notEmpty && state[nullptr].isEmpty();
     if (becameEmpty) {
       llvm::CallSite callSite{&value};
@@ -1160,9 +1203,9 @@ public:
     //  }
     //  llvm::errs() << value[promise].size();
     //}
-
     Debugger debugger{PledgeCounter};
     debugger.printAfter(stateMap[nullptr],llvm::dyn_cast<llvm::Instruction>(&value), context);
+    debugger.printActivePrivileges(stateMap[nullptr]);
     return;
   }
 
@@ -1320,16 +1363,14 @@ private:
     }
     //llvm::errs() << "\nprinting from callsite" << *callSite.getInstruction();
     //llvm::errs() << "\nState at key";
-    state[callSite.getInstruction()].print(llvm::errs());
+    //state[callSite.getInstruction()].print(llvm::errs());
 
     auto getCalleeState = [&state, &callSite] {
       auto calleeState = state[callSite.getInstruction()];
       if constexpr (Promise == MinPrivilege) { 
         state.erase(callSite.getInstruction());
-        //llvm::errs() << "\nAfter wiping cs.getinst";
-        state[callSite.getInstruction()].print(llvm::errs());
       }
-      //llvm::errs() << "\nGetting Callee State";
+      llvm::errs() << "\nGetting Callee State";
       calleeState.print(llvm::errs());
       return calleeState;
     };
@@ -1376,7 +1417,6 @@ private:
             handleExternalCall(func->getName());
           } 
         }
-        //makeVacuouslyTrue(state[nullptr]);
       } else {  // if SVF is unable to find callees
         llvm::errs() << "\n Could Not Find Callee for"
                      << *callSite.getInstruction();
@@ -1397,8 +1437,8 @@ private:
       Debugger::printCalleeStats(callSite, llvm::errs(), state);
 
       llvm::Function* callee = analysis::getCalledFunction(callSite);
-      //auto calleeState      = state[callSite.getInstruction()];
-      state[nullptr]         = this->argRewriter(getCalleeState(), callSite, callee);
+      // auto calleeState      = state[callSite.getInstruction()];
+      state[nullptr] = this->argRewriter(getCalleeState(), callSite, callee);
     };
 
     switch (getCallType(callSite)) {
@@ -1465,47 +1505,47 @@ private:
       return true;
     }
     
-    auto* resType = gep->getResultElementType();
-    if (resType->isPointerTy()) {
-      llvm::errs() << "\nFound gep ptr result type";
-      llvm::errs() << *gep;
-      llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
-                   << "\nResultType" << *gep->getResultElementType();
+    //auto* resType = gep->getResultElementType();
+    //if (resType->isPointerTy()) {
+    //  llvm::errs() << "\nFound gep ptr result type";
+    //  llvm::errs() << *gep;
+    //  llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
+    //               << "\nResultType" << *gep->getResultElementType();
 
-      auto oldExprID = generator->GetOrCreateExprID(value);
-      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-      llvm::errs() << "\nBefore killing geps";
-      state[nullptr].print(llvm::errs());
-      state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
-      dropOperands(value, state);
-      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+    //  auto oldExprID = generator->GetOrCreateExprID(value);
+    //  llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+    //  llvm::errs() << "\nBefore killing geps";
+    //  state[nullptr].print(llvm::errs());
+    //  state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
+    //  dropOperands(value, state);
+    //  state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
 
-      llvm::errs() << "\nAfter killing geps";
-      state[nullptr].print(llvm::errs());
-      return true;
-    }
+    //  llvm::errs() << "\nAfter killing geps";
+    //  state[nullptr].print(llvm::errs());
+    //  return true;
+    //}
 
-    if (gep->getSourceElementType() == gep->getResultElementType()) {
-      llvm::errs() << "\nFound gep with src == result";
-      llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
-                   << "\nResultType" << *gep->getResultElementType();
+    //if (gep->getSourceElementType() == gep->getResultElementType()) {
+    //  llvm::errs() << "\nFound gep with src == result";
+    //  llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
+    //               << "\nResultType" << *gep->getResultElementType();
 
-      auto oldExprID = generator->GetOrCreateExprID(value);
-      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-      llvm::errs() << "\nBefore killing geps";
-      state[nullptr].print(llvm::errs());
-      state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
-      dropOperands(value, state);
-      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-      llvm::errs() << "\nAfter killing geps";
-      state[nullptr].print(llvm::errs());
-      return true;
-    }
+    //  auto oldExprID = generator->GetOrCreateExprID(value);
+    //  llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+    //  llvm::errs() << "\nBefore killing geps";
+    //  state[nullptr].print(llvm::errs());
+    //  state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
+    //  dropOperands(value, state);
+    //  state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+    //  llvm::errs() << "\nAfter killing geps";
+    //  state[nullptr].print(llvm::errs());
+    //  return true;
+    //}
 
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto gepExprID = generator->GetOrCreateExprID(gep);
     // GEPs can be loop dependent
-    state[nullptr] = generator->rewrite<Topological>(state[nullptr], oldExprID, gepExprID);
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, gepExprID);
     return true;
   }
 
@@ -1639,8 +1679,27 @@ private:
         .simplifyImplication();
   }
 
+  bool
+  validate(llvm::StoreInst* store) {
+    auto* valueOperand = store->getValueOperand();
+    bool isFromLoad    = llvm::isa<llvm::LoadInst>(valueOperand);
+    auto isPointer = valueOperand->getType()->isPointerTy();
+    if (isFromLoad && isPointer) {
+      llvm::errs() << "From load with pointer " << *valueOperand;
+    }
+    return isFromLoad && isPointer;
+  }
 
-  template<Promises Promise>
+  void
+  sterilise(Disjunction& disjunction,
+            const ExprID loadExprID,
+            const BinaryExprNode& loadNode) {
+    disjunction = generator->pushToTrue(disjunction, loadExprID);
+    return;
+  }
+
+
+  template <Promises Promise>
   bool
   handleStore(llvm::Value* const value,
               StateAccessor<Promise>& state,
@@ -1664,15 +1723,22 @@ private:
     //llvm::errs() << "\n Handling store at " << *value;
     std::vector<NodeExprPair> asLoads = getLoads(state);
     auto [strongLoads, weakLoads]     = seperateLoads(storeInst, asLoads);
-
+    bool isValid = validate(storeInst);
+    
     auto localDisjunction = state[nullptr];
     for (auto& [loadNode, exprID] : strongLoads) {
       //llvm::errs() << "\nStrong load for " << *(loadNode.value);
       state[nullptr] = strongUpdate(localDisjunction, exprID, loadNode, storeInst);
     }
+
     for (auto& [loadNode, exprID] : weakLoads) {
       //llvm::errs() << "\nWeak load for " << *(loadNode.value) << " id " << exprID;
-      state[nullptr] = weakUpdate(localDisjunction, exprID, loadNode, storeInst);
+      if (!isValid) {
+        sterilise(localDisjunction, exprID,  loadNode);
+      } else {
+      state[nullptr] =
+          weakUpdate(localDisjunction, exprID, loadNode, storeInst);
+      }
     }
     return true;
   }
@@ -1698,12 +1764,22 @@ private:
         callAsValue = llvm::dyn_cast<llvm::Value>(inst);
       }
     }
+
+    auto isMain = [&ret] {
+      auto fName = ret->getFunction()->getName();
+      llvm::errs() << "\nPrinting Function Name";
+      llvm::errs() << fName;
+      return fName == "main";
+    }(); // set reachable if main.
+    state[nullptr].isReachable |= isMain;
+
     if (!callAsValue) {
       return true;
     }
+    state[nullptr] = state[ret];
     //llvm::errs() << "\nstate[ret]";
     //state[ret].print(llvm::errs());
-    state[nullptr] = state[ret];
+
     if constexpr (Promise == MinPrivilege) { 
       state.erase(ret);
       //llvm::errs() << "\nAfter wiping ret: " << state.has(ret);
@@ -1734,23 +1810,27 @@ private:
       return true;
     }
 
-    auto ptrOp = loadInst->getPointerOperand();
-    if (auto asLoad = llvm::dyn_cast<llvm::LoadInst>(ptrOp)) {
-      llvm::errs() << "\nLoad with load as ptr";
-      llvm::errs() << "\nLoad Inst " << *loadInst;
-      llvm::errs() << "\nPtr       " << *asLoad;
 
-      auto oldExprID = generator->GetOrCreateExprID(value);
-      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-      llvm::errs() << "\nBefore killing loads";
-      state[nullptr].print(llvm::errs());
-      state[nullptr] = semSimplifier.killLoad(loadInst, state[nullptr]);
-      dropOperands(value, state);
-      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-      llvm::errs() << "\nAfter killing loads";
-      state[nullptr].print(llvm::errs());
-      return true;
-    }
+    auto ptrOp = loadInst->getPointerOperand();
+    //auto ptrTy = ptrOp->getType();
+    llvm::errs() << "\nLoad     Type:" << *loadInst->getType();
+    llvm::errs() << "\nLoad Ptr Type:" << *ptrOp->getType();
+
+    //if (ptrTy->getPointerElementType()->isPointerTy()) {
+    //  llvm::errs() << "\nLoad Inst " << *loadInst;
+    //  llvm::errs() << "\nLoad with ptr2ptr as ptr";
+
+    //  auto oldExprID = generator->GetOrCreateExprID(value);
+    //  llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+    //  llvm::errs() << "\nBefore killing loads";
+    //  state[nullptr].print(llvm::errs());
+    //  state[nullptr] = semSimplifier.killLoad(loadInst, state[nullptr]);
+    //  dropOperands(value, state);
+    //  state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+    //  llvm::errs() << "\nAfter killing loads";
+    //  state[nullptr].print(llvm::errs());
+    //  return true;
+    //}
 
     if (auto asGep = llvm::dyn_cast<llvm::GetElementPtrInst>(ptrOp);
         asGep && asGep->getSourceElementType() == asGep->getResultElementType()) {
@@ -1777,7 +1857,7 @@ private:
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto newExprID = generator->GetOrCreateExprID(loadInst);
     // Loads can be loop dependent
-    state[nullptr] = generator->rewrite<Topological>(state[nullptr], oldExprID, newExprID);
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, newExprID);
     return true;
   }
 
@@ -1842,10 +1922,24 @@ private:
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto exprID    = generator->GetOrCreateExprID(castInst);
     // Casts can be loop dependent
-    state[nullptr] = generator->rewrite<Topological>(state[nullptr], oldExprID, exprID);
+    state[nullptr] = generator->rewrite(state[nullptr], oldExprID, exprID);
     return true;
   }
 
+  template <Promises Promise>
+  bool
+  handleUnreachable(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
+    if (handled) {
+      return handled;
+    }
+
+    if (auto* unreachable = llvm::dyn_cast<llvm::UnreachableInst>(value)) {
+      llvm::errs() << "\nSetting unreachable bit";
+      state[nullptr].setUnreachable();
+      return true;
+    }
+    return handled;
+  }
 
   template <Promises Promise>
   void
@@ -1999,7 +2093,7 @@ private:
     auto operand    = storeInst->getValueOperand();
     auto opExprID   = generator->GetOrCreateExprID(operand);
     // Stores can also be loop dependent
-    return generator->rewrite<Topological>(disjunction, loadExprID, opExprID);
+    return generator->rewrite(disjunction, loadExprID, opExprID);
   }
 
   Disjunction
@@ -2013,8 +2107,9 @@ private:
       return Conjunct(aliasExpr, true);
     }(loadNode, storeInst);
 
-    Disjunction forRewrites{};
-    Disjunction noRewrites{};
+    auto reachable = disjunction.isReachable;
+    Disjunction forRewrites{reachable};
+    Disjunction noRewrites{reachable};
     for (const auto& disjunct : disjunction.disjuncts) {
       auto aliasDisjunct{disjunct};
       auto notAliasDisjunct{disjunct};
@@ -2043,7 +2138,7 @@ private:
     // TODO: may-alias can screw with the constraints
     // I expect loop dependent aliases to be must aliases though
     // May-aliases can also be loop dependent
-    auto rewritten = generator->rewrite<Topological>(forRewrites, loadExprID, valExprID);
+    auto rewritten = generator->rewrite(forRewrites, loadExprID, valExprID);
     //llvm::errs() << "\n rewritten disjunction";
     //rewritten.print(llvm::errs());
     return Disjunction::unionDisjunctions(rewritten, noRewrites);
@@ -2101,6 +2196,11 @@ BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
     Edges backedges;
     llvm::FindFunctionBackedges(f, backedges);
     functionBackEdges.try_emplace(&f, backedges);
+
+    auto* liWrapper = &getAnalysis<llvm::LoopInfoWrapperPass>(f);
+    auto& loopInfo = liWrapper->getLoopInfo();
+    auto asUptr = std::make_unique<llvm::LoopInfo>(std::move(loopInfo));
+    functionLoopInfos.try_emplace(&f, std::move(asUptr));
   }
   return;
 }
@@ -2131,6 +2231,7 @@ runAnalysisFor(llvm::Module& m,
     Debugger debugger{MaxPrivilege, llvm::outs()};
     debugger.dump(&inst, context, functionResults, 0);
   };
+
 
   auto ec = std::error_code{};
   auto fileOuts = llvm::raw_fd_ostream{"/home/shreeasish/pledgerize-reboot/hoisting/"
@@ -2236,6 +2337,7 @@ BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
   //info.setPreservesAll();
   info.addRequired<DominatorTreeWrapperPass>();
   info.addRequired<AAResultsWrapperPass>();
+  info.addRequired<LoopInfoWrapperPass>();
   //info.addRequired<AliasAnalysis>();
   //info.addRequired<PostDominatorTreeWrapperPass>();
 }

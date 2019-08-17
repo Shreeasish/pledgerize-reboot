@@ -291,8 +291,8 @@ public:
                  << " With value" << opExprID;
     ExprKey key{funcExprID, OpIDs::Alias, opExprID};
 
-    auto* asInst = caller.getInstruction();
-    auto* csAsValue = llvm::dyn_cast<llvm::Value>(asInst);
+    //auto* asInst = caller.getInstruction();
+    //auto* csAsValue = llvm::dyn_cast<llvm::Value>(asInst);
     return GetOrCreateExprID(key, funcAsValue);
   }
 
@@ -438,7 +438,8 @@ public:
       return Conjunct{rebuiltID, conjunct.notNegated};
     };
 
-    Disjunction newDisjunction{ };
+    auto reachable = disjunction.isReachable;
+    Disjunction newDisjunction{reachable};
     for (auto& disjunct : disjunction.disjuncts) {
       Disjunct newDisjunct{};
       std::transform(disjunct.conjunctIDs.begin(), disjunct.conjunctIDs.end(),

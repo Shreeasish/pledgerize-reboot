@@ -42,6 +42,7 @@ public:
   }
   
 private:
+  [[maybe_unused]]
   const llvm::Module& module;
   Generator* const generator;
   struct OutOfScopeFinder;

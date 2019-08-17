@@ -63,20 +63,6 @@ struct llvm::DenseMapInfo<ExprKey> {
   }
 };
 
-/// FIXME: Why is this here?
-static llvm::Function*
-getCalledFunction(llvm::CallSite cs) {
-  if (!cs.getInstruction()) {
-    return nullptr;
-  }
-
-  auto* called = cs.getCalledValue()->stripPointerCasts();
-  if (called->getName().contains("llvm")) {
-    return nullptr;
-  }
-  return llvm::dyn_cast<llvm::Function>(called);
-}
-
 class ExprOp {
 public:
   const OpKey opCode;
@@ -264,11 +250,25 @@ struct DisjunctHash {
 using Disjuncts = std::vector<Disjunct>;
 class Disjunction {
 public:
-  Disjuncts disjuncts;
-
   explicit Disjunction (Disjuncts otherDisjuncts)
     : disjuncts{otherDisjuncts} { }
-  Disjunction() = default;
+
+  explicit Disjunction() = default;
+  
+  explicit Disjunction(bool reachable) 
+    : isReachable{reachable} {}
+
+  Disjuncts disjuncts;
+  bool isReachable = false;
+  auto setReachable() { this->isReachable = true; }
+  auto setUnreachable() { this->isReachable = false; }
+
+  static bool 
+  intersectReachability(const Disjunction& s1, const Disjunction& s2) {
+    bool lhsReachable = s1.isReachable || !s1.isEmpty();
+    bool rhsReachable = s2.isReachable || !s2.isEmpty();
+    return lhsReachable || rhsReachable;
+  }
 
   //Operator Overloads
   //bool operator=(Disjunct&&);
@@ -320,13 +320,16 @@ public:
 
   Disjunction&
   simplifyDisjuncts(Conjunct vacuousConjunct) {
-    auto removeTrues = [&vacuousConjunct](auto& disjunct) {
+    llvm::errs() << "\nBefore simplifyDisjuncts";
+    this->print(llvm::errs());
+    
+    bool makeVacuous = false;
+    auto removeTrues = [&makeVacuous, &vacuousConjunct](auto& disjunct) {
       auto from = std::remove(disjunct.begin(), disjunct.end(), vacuousConjunct);
-      assert(from != disjunct.begin() && "not all trues");
+      makeVacuous |= from == disjunct.begin();
       disjunct.conjunctIDs.erase(from, disjunct.end());
     };
 
-    bool makeVacuous = false;
     for (auto& disjunct : *this) {
       makeVacuous = (disjunct.size() == 1)
                      && *(disjunct.begin()) == vacuousConjunct;
@@ -342,6 +345,8 @@ public:
       disjuncts.erase(disjuncts.begin(), disjuncts.end());
       this->addDisjunct(vacuousDisjunct);
     }
+    llvm::errs() << "\nAfter simplifyDisjuncts";
+    this->print(llvm::errs());
     return *this;
   }
 
@@ -656,6 +661,9 @@ Disjunction::print(llvm::raw_ostream& out) const {
   for (auto& disjunct : disjuncts) {
     out << "\n";
     disjunct.print(out);
+  }
+  if (!isReachable) {
+    llvm::errs() << "\n`````UNREACHABLE````";
   }
   return;
 }
