@@ -36,7 +36,8 @@ for fname in function_names:
     krows = spec_data_frame.loc[spec_data_frame['function'] == fname]
    
     if len(krows) < 1:
-        print(krows)
+        print("Unknown function " + fname)
+        #print(krows)
         continue
 
     if len(krows) > 1:

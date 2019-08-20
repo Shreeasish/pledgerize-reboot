@@ -158,7 +158,28 @@ public:
   PrivilegeResolver(llvm::Module& m)
     : module{m},
       analysisPackage{std::make_unique<AnalysisPackage>(m)},
-      mapInterface{std::make_unique<MapInterface>(analysisPackage.get())} { }
+      mapInterface{std::make_unique<MapInterface>(analysisPackage.get())} { 
+        printUnknowns();
+      }
+
+  void
+  printUnknowns() {
+    auto ec               = std::error_code{};
+    auto [modulePath, _]  = module.getName().split(".");
+    auto [__, moduleName] = modulePath.rsplit("/");
+    auto baseString =
+        "/home/shreeasish/pledgerize-reboot/hoisting/logs/" + moduleName.str();
+    std::string unknownsFileName = baseString + "/ext_unknown";
+    auto unknownsFile            = llvm::raw_fd_ostream{unknownsFileName, ec};
+    for (auto& f : module) {
+      auto fname = f.getName();
+      if (!f.isDeclaration() || mapInterface->hasSpecifications(fname)) {
+        continue;
+      }
+      unknownsFile << "\n" << fname;
+    }
+    unknownsFile.close();
+  }
 
   template <Promises promise>
   bool
@@ -229,6 +250,8 @@ private:
 
     Privileges
     getPrivilegesFor(const llvm::CallSite& cs, const Context& context) {
+      llvm::errs() << "\nExternal Call to Function ";
+      llvm::errs() << cs.getCalledFunction()->getName();
       // Point of configuration for specifications
 			// Order libCHandlers before other maps.
       if (auto privileges = 
@@ -247,6 +270,8 @@ private:
     
     Privileges
     getPrivilegesFor(llvm::StringRef& fName) {
+      llvm::errs() << "\nExternal Call to Function ";
+      llvm::errs() << fName;
       if (auto privileges = getPrivilegesForImpl(fName, libCHandlers)) {
         return *privileges;
       } else if (auto privileges = getPrivilegesForImpl(fName, syscallBitsetMap)) {
@@ -363,6 +388,7 @@ private:
       auto* value = cs.getInstruction();
       unknownFunctions[value] = getFunctionName(cs);
     }
+
     llvm::DenseMap<llvm::Instruction*, llvm::StringRef> unknownFunctions;
   }; // End Class MapInterface
 

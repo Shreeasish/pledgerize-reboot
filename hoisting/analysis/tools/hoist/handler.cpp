@@ -96,9 +96,6 @@ public:
         case O_RDWR: {
           Privileges privileges{1 << PLEDGE_RPATH};
           privileges |= {1 << PLEDGE_WPATH};
-          llvm::outs() << "\n\nFOUND RDWR FOR OPEN";
-          llvm::outs() << *cs.getInstruction();
-          //exit(0);
           return privileges;
           break;
         }
@@ -109,9 +106,6 @@ public:
         }
 
         case O_WRONLY: {
-          llvm::outs() << "\n\nFOUND WRONLY FOR OPEN";
-          llvm::outs() << cs.getInstruction();
-          exit(0);
           return {1 << PLEDGE_WPATH};
           break;
         }
@@ -222,9 +216,6 @@ void
 LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("fread", FunctionPrivilegesBuilder(16).build());
   libCHandlers.try_emplace( "setsockopt", FunctionPrivilegesBuilder(16).add(std::make_unique<CheckMCAST>(2)).build());
-  libCHandlers.try_emplace("err", FunctionPrivilegesBuilder(16).build()); //Should only use stderr
-  libCHandlers.try_emplace("errx",FunctionPrivilegesBuilder(16).build()); //Like err, also exits the program 
-  libCHandlers.try_emplace("exit",FunctionPrivilegesBuilder(0).build());  //Program can always exit
   libCHandlers.try_emplace( "fprintf", FunctionPrivilegesBuilder(16).build()); //Check the first argument(file pointer) for tmppath
   libCHandlers.try_emplace("getopt",FunctionPrivilegesBuilder(16).build());
   libCHandlers.try_emplace("isdigit",FunctionPrivilegesBuilder(0).build());
@@ -239,17 +230,13 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   
   libCHandlers.try_emplace("asprintf", FunctionPrivilegesBuilder(16).build());
   libCHandlers.try_emplace("daemon", FunctionPrivilegesBuilder(8210).build());
-  libCHandlers.try_emplace("__errno", FunctionPrivilegesBuilder(0).build());
-  libCHandlers.try_emplace("errx", FunctionPrivilegesBuilder(16).build());
-  libCHandlers.try_emplace("execvp", FunctionPrivilegesBuilder(1048592).build());
-  libCHandlers.try_emplace("exit", FunctionPrivilegesBuilder(16).build());
   libCHandlers.try_emplace("fflush", FunctionPrivilegesBuilder(0).build());
   libCHandlers.try_emplace("fork", FunctionPrivilegesBuilder(8208).build());
   libCHandlers.try_emplace("fprintf", FunctionPrivilegesBuilder(16).build());
   libCHandlers.try_emplace("fputc", FunctionPrivilegesBuilder(16).build());
   libCHandlers.try_emplace("free", FunctionPrivilegesBuilder(16).build());
   libCHandlers.try_emplace("getopt", FunctionPrivilegesBuilder(16).build());
-  libCHandlers.try_emplace("getpwnam", FunctionPrivilegesBuilder(4199418).build());
+  //libCHandlers.try_emplace("getpwnam", FunctionPrivilegesBuilder(4199418).build());
   libCHandlers.try_emplace("inet_pton", FunctionPrivilegesBuilder(0).build());
   libCHandlers.try_emplace("malloc", FunctionPrivilegesBuilder(16).build());
   libCHandlers.try_emplace("openlog", FunctionPrivilegesBuilder(0).build());
@@ -379,14 +366,14 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   /* Generated from tests on md5 
    * fwrite generated as stdio only
    * need to test it */
+  libCHandlers.try_emplace("freezero", 16);
+  libCHandlers.try_emplace("fwrite", 16);
   libCHandlers.try_emplace("strsep", 0);
   libCHandlers.try_emplace("__b64_ntop", 0);
   libCHandlers.try_emplace("strncasecmp", 0);
-  libCHandlers.try_emplace("freezero", 16);
   libCHandlers.try_emplace("strncmp", 0);
   libCHandlers.try_emplace("strcasecmp", 0);
   libCHandlers.try_emplace("strpbrk", 0);
-  libCHandlers.try_emplace("fwrite", 16);
 
   /*Used by md5, fprinter generated with no privilege
    * requirements. Makes sense. Hash generation functions
@@ -508,9 +495,172 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
    * require additional privs */
   libCHandlers.try_emplace("getifaddrs", 16);
   libCHandlers.try_emplace("reallocarray", 16);
-  libCHandlers.try_emplace("exit", 16);
   /* From slaacd */
   libCHandlers.try_emplace("recallocarray", 16);
   /* WhiteList fork */
   libCHandlers.try_emplace("fork",0);
+  /*Tmux stuff*/
+  libCHandlers.try_emplace("getprogname",16);
+  libCHandlers.try_emplace("stravis",16);
+
+  libCHandlers.try_emplace("send", 0);
+  libCHandlers.try_emplace("recv", 0);
+  libCHandlers.try_emplace("strtoll", 0);
+  libCHandlers.try_emplace("explicit_bzero", 0);
+  libCHandlers.try_emplace("Blowfish_initstate", 0);
+  libCHandlers.try_emplace("Blowfish_expandstate", 0);
+  libCHandlers.try_emplace("Blowfish_expand0state", 0);
+  libCHandlers.try_emplace("Blowfish_stream2word", 0);
+  libCHandlers.try_emplace("blf_enc", 0);
+  //libCHandlers.try_emplace("auth_open", 16);
+  //libCHandlers.try_emplace("auth_setpwd", 4199418);
+  //libCHandlers.try_emplace("auth_check_change", 4199418);
+  //libCHandlers.try_emplace("auth_close", 56);
+  //libCHandlers.try_emplace("login_getclass", 58);
+  libCHandlers.try_emplace("login_getcaptime", 16);
+  libCHandlers.try_emplace("login_close", 16);
+  libCHandlers.try_emplace("endpwent", 16);
+  libCHandlers.try_emplace("pw_dup", 16);
+  libCHandlers.try_emplace("auth_mkvalue", 16);
+  libCHandlers.try_emplace("ctime", 18);
+  libCHandlers.try_emplace("waitpid", 16);
+  libCHandlers.try_emplace("fputs", 16);
+  libCHandlers.try_emplace("atoll", 0);
+  libCHandlers.try_emplace("setusershell", 18);
+  libCHandlers.try_emplace("getusershell", 18);
+  libCHandlers.try_emplace("endusershell", 16);
+  libCHandlers.try_emplace("sleep", 16);
+  libCHandlers.try_emplace("getdtablesize", 0);
+  libCHandlers.try_emplace("strtok_r", 0);
+  libCHandlers.try_emplace("syslog", 16);
+  libCHandlers.try_emplace("opendir", 18);
+  libCHandlers.try_emplace("readdir", 16);
+  libCHandlers.try_emplace("strlcat", 0);
+  libCHandlers.try_emplace("closedir", 16);
+  libCHandlers.try_emplace("strncpy", 0);
+  libCHandlers.try_emplace("raise", 0);
+  libCHandlers.try_emplace("strtoul", 0);
+  libCHandlers.try_emplace("strcspn", 0);
+  libCHandlers.try_emplace("gethostname", 0);
+  libCHandlers.try_emplace("wctomb", 0);
+  libCHandlers.try_emplace("wcwidth", 0);
+  libCHandlers.try_emplace("mbtowc", 0);
+  libCHandlers.try_emplace("__mb_cur_max", 0);
+  libCHandlers.try_emplace("usleep", 16);
+  libCHandlers.try_emplace("setenv", 16);
+  libCHandlers.try_emplace("ctime_r", 18);
+  libCHandlers.try_emplace("strspn", 0);
+  libCHandlers.try_emplace("vis", 0);
+  libCHandlers.try_emplace("__b64_pton", 0);
+  libCHandlers.try_emplace("globfree", 16);
+  libCHandlers.try_emplace("fnmatch", 0);
+  libCHandlers.try_emplace("basename", 0);
+  libCHandlers.try_emplace("dirname", 0);
+  libCHandlers.try_emplace("strndup", 16);
+  libCHandlers.try_emplace("strnvis", 0);
+  libCHandlers.try_emplace("strvisx", 0);
+  libCHandlers.try_emplace("realpath", 22);
+  libCHandlers.try_emplace("strstr", 0);
+  libCHandlers.try_emplace("strftime", 18);
+  libCHandlers.try_emplace("qsort", 16);
+  libCHandlers.try_emplace("gmtime_r", 18);
+  libCHandlers.try_emplace("memmem", 0);
+  libCHandlers.try_emplace("getcwd", 16);
+  libCHandlers.try_emplace("cfmakeraw", 0);
+  libCHandlers.try_emplace("cfgetispeed", 0);
+  libCHandlers.try_emplace("cfsetispeed", 0);
+  libCHandlers.try_emplace("cfgetospeed", 0);
+  libCHandlers.try_emplace("cfsetospeed", 0);
+  libCHandlers.try_emplace("strsignal", 0);
+  libCHandlers.try_emplace("killpg", 8192);
+  libCHandlers.try_emplace("uname", 0);
+  libCHandlers.try_emplace("setlocale", 18);
+  libCHandlers.try_emplace("nl_langinfo", 0);
+  libCHandlers.try_emplace("strcasestr", 0);
+
+  /* tmux unknowns */
+  //libCHandlers.try_emplace("strunvis", 0);
+  //libCHandlers.try_emplace("setupterm", 0);
+  //libCHandlers.try_emplace("tigetstr", 0);
+  //libCHandlers.try_emplace("tigetnum", 0);
+  //libCHandlers.try_emplace("tigetflag", 0);
+  //libCHandlers.try_emplace("killpg", 0);
+  //libCHandlers.try_emplace("auth_open",0);
+  //libCHandlers.try_emplace("auth_setpwd",0);
+  //libCHandlers.try_emplace("auth_check_change",0);
+  //libCHandlers.try_emplace("auth_close",0);
+  //libCHandlers.try_emplace("del_curterm", 0);
+  //libCHandlers.try_emplace("llvm.memmove.p0i8.p0i8.i64", 0);
+  //libCHandlers.try_emplace("llvm.va_copy", 0);
+  //libCHandlers.try_emplace("memchr", 0);
+  //libCHandlers.try_emplace("fcntl", 0);
+  //libCHandlers.try_emplace("bcopy", 0);
+  //libCHandlers.try_emplace("tparm", 0);
+  //
+  ///* Bad Privilge Specifications */
+  //libCHandlers.try_emplace("execv", 0);
+  //libCHandlers.try_emplace("ttyslot", 0);
+  //libCHandlers.try_emplace("tcsetattr", 0);
+  //libCHandlers.try_emplace("tcgetattr", 0);
+  //libCHandlers.try_emplace("tcflush", 0);
+  //libCHandlers.try_emplace("execl", 0);
+  //libCHandlers.try_emplace("glob", 0);
+  //libCHandlers.try_emplace("tcgetpgrp", 0);
+  //libCHandlers.try_emplace("system", 0);
+  //libCHandlers.try_emplace("ttyname", 0);
+
+  /* Unknown Functions KSH */
+  //libCHandlers.try_emplace("llvm.lifetime.start.p0i8", 0);
+  //libCHandlers.try_emplace("llvm.lifetime.end.p0i8", 0);
+  //libCHandlers.try_emplace("llvm.memcpy.p0i8.p0i8.i64", 0);
+  //libCHandlers.try_emplace("llvm.memset.p0i8.i64", 0);
+  //libCHandlers.try_emplace("llvm.va_start", 0);
+  //libCHandlers.try_emplace("llvm.va_end", 0);
+  //libCHandlers.try_emplace("srand_deterministic", 0);
+  //libCHandlers.try_emplace("tcsetpgrp", 0);
+  //libCHandlers.try_emplace("sigsetjmp", 0);
+  //libCHandlers.try_emplace("siglongjmp", 0);
+  //libCHandlers.try_emplace("atoi", 0);
+  //libCHandlers.try_emplace("fgetc", 0);
+  //libCHandlers.try_emplace("feof", 0);
+  //libCHandlers.try_emplace("nice", 0);
+  //libCHandlers.try_emplace("alarm", 0);
+  //libCHandlers.try_emplace("confstr", 0);
+  //libCHandlers.try_emplace("getlogin", 0);
+  //libCHandlers.try_emplace("isalnum", 0);
+  //libCHandlers.try_emplace("isalpha", 0);
+  //libCHandlers.try_emplace("isblank", 0);
+  //libCHandlers.try_emplace("iscntrl", 0);
+  //libCHandlers.try_emplace("isgraph", 0);
+  //libCHandlers.try_emplace("islower", 0);
+  //libCHandlers.try_emplace("isprint", 0);
+  //libCHandlers.try_emplace("ispunct", 0);
+  //libCHandlers.try_emplace("isupper", 0);
+  //libCHandlers.try_emplace("isxdigit", 0);
+  //libCHandlers.try_emplace("rand", 0);
+
+  // From
+  libCHandlers.try_emplace("__errno", 16);
+  libCHandlers.try_emplace("err", 16); //Should only use stderr
+  libCHandlers.try_emplace("errx",16); //Like err, also exits the program 
+  libCHandlers.try_emplace("exit",16);  //Program can always exit
+  /* For PAX */
+  libCHandlers.try_emplace("_exit", 16);
+  //libCHandlers.try_emplace("llvm.cttz.i32", 0);
+  libCHandlers.try_emplace("feof", 0);
+  libCHandlers.try_emplace("memchr", 0);
+  libCHandlers.try_emplace("putenv", 0);
+  libCHandlers.try_emplace("strmode", 0);
+  libCHandlers.try_emplace("user_from_uid", 0);
+  libCHandlers.try_emplace("group_from_gid", 0);
+  libCHandlers.try_emplace("regcomp", 0);
+  libCHandlers.try_emplace("regerror", 0);
+  libCHandlers.try_emplace("regfree", 0);
+  libCHandlers.try_emplace("regexec", 0);
+  libCHandlers.try_emplace("mktime", 0);
+  /* BlackListed from PAX */
+  //libCHandlers.try_emplace("options", 16);
+  libCHandlers.try_emplace("ar_write", 16);
+  libCHandlers.try_emplace("fn_match", 0);
+  libCHandlers.try_emplace("str_offt", 0);
 };

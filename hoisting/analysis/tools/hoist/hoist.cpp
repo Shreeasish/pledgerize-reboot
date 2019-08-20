@@ -1141,8 +1141,7 @@ public:
     auto state = StateAccessor<promise>{stateMap};
     bool notEmpty = !state[nullptr].isEmpty();
 
-
-    /* Get reachability. The transfers should * not be changing the reachability
+    /* Get reachability. The transfers should not be changing the reachability
      * but it does generate states which are default initialized to
      * unreachable. */
     handled |= handleBrOrSwitch(inst, handled);
@@ -1325,19 +1324,24 @@ private:
 
   CallType
   getCallType(llvm::CallSite& cs) {
-    bool isIndCall = [&cs]() {
+    bool isIndCall = [&cs] {
       auto* PAG = svfResults->getPAG();
       return PAG->isIndirectCallSites(cs);
     }();
 
-    bool isExtCall = [&cs, &isIndCall]() {
+    bool isExtCall = [&cs, &isIndCall] {
       return !isIndCall && analysis::isExternalCall(cs);
     }();
 
-    bool isLLVMCall = [&cs, &isIndCall]() {
+    bool isLLVMCall = [&cs, &isIndCall] {
       return !isIndCall
              && analysis::getCalledFunction(cs)->getName().startswith("llvm");
     }();
+
+    bool isBlackListed = [&cs, &isIndCall, &isLLVMCall] {
+      return !isIndCall && !isLLVMCall && analysis::isBlackListed(cs);
+    }();
+
 
     if (isIndCall) {
       return CallType::IndCall;
@@ -1345,6 +1349,8 @@ private:
       return CallType::ExternalCall;
     } else if (isLLVMCall) {
       return CallType::LLVMSpecific;
+    } else if (isBlackListed) {
+      return CallType::ExternalCall;
     } else {
       return CallType::Internal;
     }
@@ -1387,6 +1393,7 @@ private:
     auto handleExternalCall = 
       [&state,  &context, &stubWorker] (auto callInfo) { // FName or CallSite
       if (privilegeResolver->hasPrivilege<Promise>({callInfo}, context)) {
+        llvm::errs() << "\nGoing to Top";
         makeVacuouslyTrue(state[nullptr]);
       } else {
         privilegeResolver->handleStubs(stubWorker, {callInfo});
@@ -1438,7 +1445,8 @@ private:
 
       llvm::Function* callee = analysis::getCalledFunction(callSite);
       // auto calleeState      = state[callSite.getInstruction()];
-      state[nullptr] = this->argRewriter(getCalleeState(), callSite, callee);
+      state[nullptr] = getCalleeState(); 
+      //this->argRewriter(getCalleeState(), callSite, callee);
     };
 
     switch (getCallType(callSite)) {
@@ -1771,12 +1779,14 @@ private:
       llvm::errs() << fName;
       return fName == "main";
     }(); // set reachable if main.
-    state[nullptr].isReachable |= isMain;
 
+    state[nullptr].isReachable |= isMain;
     if (!callAsValue) {
       return true;
     }
+
     state[nullptr] = state[ret];
+    state[nullptr].isReachable |= isMain;
     //llvm::errs() << "\nstate[ret]";
     //state[ret].print(llvm::errs());
 
@@ -1812,25 +1822,25 @@ private:
 
 
     auto ptrOp = loadInst->getPointerOperand();
-    //auto ptrTy = ptrOp->getType();
+    auto ptrTy = ptrOp->getType();
     llvm::errs() << "\nLoad     Type:" << *loadInst->getType();
     llvm::errs() << "\nLoad Ptr Type:" << *ptrOp->getType();
 
-    //if (ptrTy->getPointerElementType()->isPointerTy()) {
-    //  llvm::errs() << "\nLoad Inst " << *loadInst;
-    //  llvm::errs() << "\nLoad with ptr2ptr as ptr";
+    if (ptrTy->getPointerElementType()->isPointerTy()) {
+      llvm::errs() << "\nLoad Inst " << *loadInst;
+      llvm::errs() << "\nLoad with ptr2ptr as ptr";
 
-    //  auto oldExprID = generator->GetOrCreateExprID(value);
-    //  llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-    //  llvm::errs() << "\nBefore killing loads";
-    //  state[nullptr].print(llvm::errs());
-    //  state[nullptr] = semSimplifier.killLoad(loadInst, state[nullptr]);
-    //  dropOperands(value, state);
-    //  state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-    //  llvm::errs() << "\nAfter killing loads";
-    //  state[nullptr].print(llvm::errs());
-    //  return true;
-    //}
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+      llvm::errs() << "\nBefore killing loads";
+      state[nullptr].print(llvm::errs());
+      state[nullptr] = semSimplifier.killLoad(loadInst, state[nullptr]);
+      dropOperands(value, state);
+      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      llvm::errs() << "\nAfter killing loads";
+      state[nullptr].print(llvm::errs());
+      return true;
+    }
 
     if (auto asGep = llvm::dyn_cast<llvm::GetElementPtrInst>(ptrOp);
         asGep && asGep->getSourceElementType() == asGep->getResultElementType()) {

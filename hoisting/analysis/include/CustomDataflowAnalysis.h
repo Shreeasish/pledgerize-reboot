@@ -329,19 +329,19 @@ public:
          auto newState = meet({passedAbstract.second, retState});
          needsUpdate |= !(newState == retState);
          {
-           //llvm::errs() << "\nChecking Ret State at " << *cs.getInstruction();
-           //llvm::errs() << " parent" << cs.getInstruction()->getParent()->getParent()->getName();
-           //llvm::errs() << "\nretState";
-           //retState[PLEDGE_CPATH].print(llvm::errs());
+           llvm::errs() << "\nChecking Ret State at " << *cs.getInstruction();
+           llvm::errs() << " parent" << cs.getInstruction()->getParent()->getParent()->getName();
+           llvm::errs() << "\nretState";
+           retState[PLEDGE_CPATH].print(llvm::errs());
 
-           //llvm::errs() << "\nnewState";
-           //newState[PLEDGE_CPATH].print(llvm::errs());
-           //llvm::errs() << "\n----end check----";
-           //if (needsUpdate) {
-           //  llvm::errs() << " yes update";
-           //} else {
-           //  llvm::errs() << " no update";
-           //}
+           llvm::errs() << "\nnewState";
+           newState[PLEDGE_CPATH].print(llvm::errs());
+           llvm::errs() << "\n----end check----";
+           if (needsUpdate) {
+             llvm::errs() << " yes update";
+           } else {
+             llvm::errs() << " no update";
+           }
          }
          retState = newState;
        }
@@ -358,6 +358,12 @@ public:
   }
 };
 
+llvm::DenseSet<llvm::StringRef> 
+functionBlackList {
+  "ar_write", 
+  "fn_match",
+  "str_offt" 
+};
 
 llvm::Function*
 getCalledFunction(llvm::CallSite cs) {
@@ -365,13 +371,27 @@ getCalledFunction(llvm::CallSite cs) {
   return llvm::dyn_cast<llvm::Function>(calledValue);
 }
 
+auto
+isBlackListed(llvm::CallSite cs) {
+  auto* called = getCalledFunction(cs);
+  auto fname = called->getName();
+  return functionBlackList.count(fname) > 0;
+}
+
+
 bool
 isAnalyzableCall(llvm::CallSite cs) {
   if (!cs.getInstruction()) {
     return false;
   }
   auto* called = getCalledFunction(cs);
-  return called && !called->isDeclaration();
+  if (!called) {
+    return false;
+  }
+
+  auto fname = called->getName();
+  auto isBlackListed = functionBlackList.count(fname) > 0;
+  return !isBlackListed && !called->isDeclaration();
 }
 
 bool
@@ -542,48 +562,38 @@ public:
           for (auto* constIndTarget : svfResults->getIndCSCallees(cs)) {
             auto stateCopy = state;
 
-            if (!constIndTarget->isDeclaration()) { 
+            if (constIndTarget->isDeclaration()) { 
+              continue;
               //llvm::errs() << "\nAdded Internal Analyzable Call "
               //             << constIndTarget->getName();
-              analyzeCall(cs, stateCopy, context, getNonConst(constIndTarget));
               //llvm::errs() << "\n After analyzeCall For ind targetName " 
               //             << constIndTarget->getName();
               //stateCopy[cs.getInstruction()][promise].print(llvm::errs());
             } // declonly functions will be handled as havocs
-
-            auto& stateAndTarget = 
-              rewritten.emplace_back(stateCopy[cs.getInstruction()], getNonConst(constIndTarget));
-            auto& absValueCopy = stateAndTarget.state;
-            auto& indTarget = stateAndTarget.indTarget;
-
-            auto* checkLoc = transformer.setLocation(cs.getInstruction());
-            absValueCopy = transformer.rewriteArgs(absValueCopy, cs, indTarget);
-            transformer.removeLocation(checkLoc);
+            analyzeCall(cs, stateCopy, context, getNonConst(constIndTarget));
+            //auto& stateAndTarget = 
+            rewritten.emplace_back(stateCopy[cs.getInstruction()], getNonConst(constIndTarget));
+            //stateCopy[cs.getInstruction()] = state[cs.getInstruction()];
+            //state = stateCopy;
             //llvm::errs() << "\n\nBefore rewriting args";
             //absValueCopy[PLEDGE_STDIO].print(llvm::errs());
-
             //llvm::errs() << "\n\nAfter rewriting args";
             //absValueCopy[PLEDGE_STDIO].print(llvm::errs());
-            // Reset the state at cs.getInstruction but accept function summaries
-            stateCopy[cs.getInstruction()] = state[cs.getInstruction()];
-            state = stateCopy;
           }
 
-          // Check for homogeniety
-          std::vector<AbstractValue> toMeet;
-          bool equal = true;
-          auto first = !(rewritten.begin() == rewritten.end()) 
-            ? rewritten.begin()->state : state[cs.getInstruction()];
-          for (auto& [disjunction, target] : rewritten) {
-            equal &= first == disjunction;
-
-            auto* checkLoc = transformer.setLocation(cs.getInstruction());
-            auto disj = transformer(disjunction, cs, target);
-            transformer.removeLocation(checkLoc);
-            toMeet.emplace_back(disj);
+          if (!rewritten.empty()) {
+            auto [first, function] = *(rewritten.begin());
+            bool equal = true;
+            std::vector<AbstractValue> toMeet;
+            for (auto& [disjunction, target] : rewritten) {
+              equal &= first == disjunction;
+              toMeet.emplace_back(disjunction);
+            }
+            state[cs.getInstruction()] = equal ? first : meet(toMeet);
           }
-          state[cs.getInstruction()] = equal ? first : meet(toMeet);
         } 
+
+        // Check for homogeniety
 
         //llvm::errs() << "\nbefore transfer "; 
         //state[nullptr][PLEDGE_STDIO].print(llvm::errs());
@@ -712,6 +722,10 @@ public:
     //  auto withCallConjunct = transformer(toMerge, cs, forceEdge);
     //  state[cs.getInstruction()] = meet({state[cs.getInstruction()], withCallConjunct});
     //} else {
+    auto& calleeState = calledState[callee][callee];
+    auto* checkLoc = transformer.setLocation(cs.getInstruction());
+    calleeState = transformer.rewriteArgs(calleeState, cs, callee);
+    transformer.removeLocation(checkLoc);
     state[cs.getInstruction()] = calledState[callee][callee];
     //}
     callers[toCall].insert(toUpdate);
