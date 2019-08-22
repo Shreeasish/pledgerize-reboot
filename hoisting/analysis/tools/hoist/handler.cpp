@@ -660,6 +660,7 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("mktime", 0);
   /* BlackListed from PAX */
   //libCHandlers.try_emplace("options", 16);
+  libCHandlers.try_emplace("options", 0); // Cpath etc. Experiment via stub
   libCHandlers.try_emplace("ar_write", 16);
   libCHandlers.try_emplace("fn_match", 0);
   libCHandlers.try_emplace("str_offt", 0);

@@ -273,7 +273,7 @@ public:
   //Operator Overloads
   //bool operator=(Disjunct&&);
   bool operator==(const Disjunction&) const;
-  bool operator<(const Disjunction&) const;
+  bool operator<(const Disjunction&) const = delete;
   //Member Functions
   void applyConjunct(const Conjunct&);
   void addDisjunct(const Disjunct&);

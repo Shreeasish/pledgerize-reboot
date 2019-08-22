@@ -362,7 +362,8 @@ llvm::DenseSet<llvm::StringRef>
 functionBlackList {
   "ar_write", 
   "fn_match",
-  "str_offt" 
+  "str_offt",
+  "options"
 };
 
 llvm::Function*
@@ -489,6 +490,10 @@ public:
       // Merge the state coming in from all predecessors including the function
       // summary (which contains arguments, etc.)
       auto state = mergeStateFromPredecessors(bb, results);
+      //TODO: Is this merging the function summary with every bb?
+      llvm::errs() << "\n\nEXTRA: For BB in " << bb->getParent()->getName();
+      llvm::errs() << "\nEXTRA: First inst in BB " << *bb->begin();
+      llvm::errs() << "\nEXTRA: Merging with function Key " << getSummaryKey(f)->getName();
       mergeInState(state, results[getSummaryKey(f)]);
 
       // If we have already processed the block and no changes have been made to
@@ -589,6 +594,7 @@ public:
               equal &= first == disjunction;
               toMeet.emplace_back(disjunction);
             }
+            llvm::errs() << "\nPerforming meet over ind callees";
             state[cs.getInstruction()] = equal ? first : meet(toMeet);
           }
         } 
@@ -667,7 +673,7 @@ public:
     // necessary. Updating the results for this (function,context) means that
     // all callers must be updated as well.
     auto& oldResults = allResults[context][&f];
-    llvm::errs() << "\nFunction Summary check";
+    llvm::errs() << "\nFunction Summary check for " << f.getName();
     if (!(oldResults == results)) {
       oldResults = results;
       for (auto& caller : callers[{context, &f}]) {
@@ -791,12 +797,22 @@ private:
 
   void
   mergeInState(State& destination, const State& toMerge) {
+    llvm::errs() << "\nMergeInState";
     for (auto& valueStatePair : toMerge) {
       // If an incoming Value has an AbstractValue in the already merged
       // state, meet it with the new one. Otherwise, copy the new value over,
       // implicitly meeting with bottom.
       auto [found, newlyAdded] = destination.insert(valueStatePair);
       if (!newlyAdded) {
+        if (valueStatePair.first) {
+          if (auto function = llvm::dyn_cast_or_null<llvm::Function>(valueStatePair.first)) {
+            llvm::errs() << "\nBefore, key " << function->getName();
+          } else {
+            llvm::errs() << "\nBefore, key " << *valueStatePair.first;
+          }
+        } else {
+          llvm::errs() << "\nBefore key nullptr";
+        }
         found->second = meet({found->second, valueStatePair.second});
       }
     }
@@ -808,6 +824,7 @@ private:
                const State& toMerge,
                llvm::Value* destination,
                llvm::Value* branchAsValue) {
+    llvm::errs() << "\nMergeInState";
     EdgeTransformer transformer;
     for (auto& valueStatePair : toMerge) {
       // If an incoming Value has an AbstractValue in the already merged
@@ -822,7 +839,6 @@ private:
       //  llvm::errs() << "\nBefore key nullptr";
       //}
       //valueStatePair.second[PLEDGE_CPATH].print(llvm::errs());
-
       auto withEdges = valueStatePair.second;
       if (valueStatePair.first == nullptr) { // only rewrite state at nullptr
         auto* checkLoc = transformer.setLocation(branchAsValue);
@@ -839,6 +855,15 @@ private:
       //llvm::errs() << "\nAfter bb transformation args";
       //temp[PLEDGE_CPATH].print(llvm::errs());
       if (!newlyAdded) {
+        if (valueStatePair.first) {
+          if (auto function = llvm::dyn_cast_or_null<llvm::Function>(valueStatePair.first)) {
+            llvm::errs() << "\nBefore, key " << function->getName();
+          } else {
+            llvm::errs() << "\nBefore, key " << *valueStatePair.first;
+          }
+        } else {
+          llvm::errs() << "\nBefore key nullptr";
+        }
         found->second = meet({found->second, withEdges});
       }
     }

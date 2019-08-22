@@ -99,8 +99,8 @@ using DisjunctionValue  = std::array<Disjunction, COUNT - 1>;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
-constexpr int MaxPrivilege{18};
-constexpr int MinPrivilege{0};
+constexpr int MaxPrivilege{PLEDGE_RPATH};
+constexpr int MinPrivilege{PLEDGE_RPATH};
 
 void
 makeVacuouslyTrue(Disjunction& disjunction) {
@@ -191,6 +191,7 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
+    llvm::errs() << "\nPerforming Meet";
     DisjunctionValue result;
     static_for<MaxPrivilege>(s1, s2, result);
     return result;
@@ -214,17 +215,17 @@ public:
   Disjunction
   intersectPerPrivilege(Predecessors& predecessors, int privilege) {
     using DisjunctionSet = std::unordered_set<Disjunct, DisjunctHash>;
-    llvm::errs() << "\nBefore Optimizations";
-    llvm::errs() << "\npredecessors.size()" << predecessors.size();
-    for (auto [key, pred] : predecessors) {
-      llvm::errs() << "\npredecessor";
-      if (key) {
-        llvm::errs() << "\nFor key " << *key;
-      } else {
-        llvm::errs() << "\nFor key nullptr";
-      }
-      pred[nullptr][privilege].print(llvm::errs()); // use here
-    }
+    //llvm::errs() << "\nBefore Optimizations";
+    //llvm::errs() << "\npredecessors.size()" << predecessors.size();
+    //for (auto [key, pred] : predecessors) {
+    //  llvm::errs() << "\npredecessor";
+    //  if (key) {
+    //    llvm::errs() << "\nFor key " << *key;
+    //  } else {
+    //    llvm::errs() << "\nFor key nullptr";
+    //  }
+    //  pred[nullptr][privilege].print(llvm::errs()); // use here
+    //}
     
     auto skip = [](const auto& disjunction) {
       return !disjunction.isReachable && disjunction.isEmpty();
@@ -235,7 +236,7 @@ public:
       auto& [key, value] = incoming;                   // make ref for ease
       auto& state        = value[nullptr][privilege];  // State with nullptr
       if (skip(state)) {
-        llvm::errs() << "\nWould reject incoming";
+        //llvm::errs() << "\nWould reject incoming";
         return prev;
       }
       auto [larger, smaller] = prev.size() < state.size()
@@ -282,12 +283,12 @@ public:
       ret.addDisjunct(disjunct);
     }
 
-    llvm::errs() << "\nAfter Optimizations";
-    llvm::errs() << "\npredecessors.size()" << predecessors.size();
-    for (auto [key, pred] : predecessors) {
-      llvm::errs() << "\npredecessor";
-      pred[nullptr][privilege].print(llvm::errs()); // use here
-    }
+    //llvm::errs() << "\nAfter Optimizations";
+    //llvm::errs() << "\npredecessors.size()" << predecessors.size();
+    //for (auto [key, pred] : predecessors) {
+    //  llvm::errs() << "\npredecessor";
+    //  pred[nullptr][privilege].print(llvm::errs()); // use here
+    //}
     return ret;
   }
 
@@ -887,9 +888,6 @@ public:
 
     auto isFromLoop  = [&blackList](auto& conjunct) -> bool {
       auto& exprID = conjunct.exprID;
-      // TODO: 
-      // Rewrite within a loop is actually a cached
-      // rewrite from non-loop body. Possible?
       auto* location = generator->getOrigin(exprID);
       auto* asBB = location->getParent();
       return blackList.count(asBB);
@@ -1013,7 +1011,6 @@ public:
 
 private:
   ArgumentRewriter argRewriter;
-
 
   template <typename Lambda>
   struct static_for {
@@ -1487,68 +1484,68 @@ private:
       return true;
     }
 
-    llvm::errs() << "\nGep SRC type " << *gep->getSourceElementType();
-    llvm::errs() << "\nGep RES type " << *gep->getResultElementType();
+    //llvm::errs() << "\nGep SRC type " << *gep->getSourceElementType();
+    //llvm::errs() << "\nGep RES type " << *gep->getResultElementType();
 
     bool isArrayGEP = [&gep] {
       auto* resType = gep->getSourceElementType();
-      if (resType->isArrayTy()) {
-        llvm::errs() << "\nArray Type GEP ";
-        llvm::errs() << *resType;
-        llvm::errs() << "GEP:" << *gep;
-      }
+      //if (resType->isArrayTy()) {
+      //  llvm::errs() << "\nArray Type GEP ";
+      //  llvm::errs() << *resType;
+      //  llvm::errs() << "GEP:" << *gep;
+      //}
       return resType->isArrayTy();
     }();
 
     if (isArrayGEP) {
       auto oldExprID = generator->GetOrCreateExprID(value);
-      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-      llvm::errs() << "\nBefore killing geps";
-      state[nullptr].print(llvm::errs());
+      //llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+      //llvm::errs() << "\nBefore killing geps";
+      //state[nullptr].print(llvm::errs());
       state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
       dropOperands(value, state);
-      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-      llvm::errs() << "\nAfter killing geps";
-      state[nullptr].print(llvm::errs());
+      //state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      //llvm::errs() << "\nAfter killing geps";
+      //state[nullptr].print(llvm::errs());
       return true;
     }
     
-    //auto* resType = gep->getResultElementType();
-    //if (resType->isPointerTy()) {
-    //  llvm::errs() << "\nFound gep ptr result type";
-    //  llvm::errs() << *gep;
-    //  llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
-    //               << "\nResultType" << *gep->getResultElementType();
+    auto* resType = gep->getResultElementType();
+    if (resType->isPointerTy()) {
+      //llvm::errs() << "\nFound gep ptr result type";
+      //llvm::errs() << *gep;
+      //llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
+      //             << "\nResultType" << *gep->getResultElementType();
 
-    //  auto oldExprID = generator->GetOrCreateExprID(value);
-    //  llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-    //  llvm::errs() << "\nBefore killing geps";
-    //  state[nullptr].print(llvm::errs());
-    //  state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
-    //  dropOperands(value, state);
-    //  state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      //llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+      //llvm::errs() << "\nBefore killing geps";
+      //state[nullptr].print(llvm::errs());
+      state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
+      dropOperands(value, state);
+      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
 
-    //  llvm::errs() << "\nAfter killing geps";
-    //  state[nullptr].print(llvm::errs());
-    //  return true;
-    //}
+      //llvm::errs() << "\nAfter killing geps";
+      //state[nullptr].print(llvm::errs());
+      return true;
+    }
 
-    //if (gep->getSourceElementType() == gep->getResultElementType()) {
-    //  llvm::errs() << "\nFound gep with src == result";
-    //  llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
-    //               << "\nResultType" << *gep->getResultElementType();
+    if (gep->getSourceElementType() == gep->getResultElementType()) {
+      //llvm::errs() << "\nFound gep with src == result";
+      //llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
+      //             << "\nResultType" << *gep->getResultElementType();
 
-    //  auto oldExprID = generator->GetOrCreateExprID(value);
-    //  llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-    //  llvm::errs() << "\nBefore killing geps";
-    //  state[nullptr].print(llvm::errs());
-    //  state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
-    //  dropOperands(value, state);
-    //  state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-    //  llvm::errs() << "\nAfter killing geps";
-    //  state[nullptr].print(llvm::errs());
-    //  return true;
-    //}
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      //llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
+      //llvm::errs() << "\nBefore killing geps";
+      //state[nullptr].print(llvm::errs());
+      state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
+      dropOperands(value, state);
+      //state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      //llvm::errs() << "\nAfter killing geps";
+      //state[nullptr].print(llvm::errs());
+      return true;
+    }
 
     auto oldExprID = generator->GetOrCreateExprID(value);
     auto gepExprID = generator->GetOrCreateExprID(gep);
@@ -2172,7 +2169,7 @@ private:
 };
 char BuildPromiseTreePass::ID = 0;
 
-StringRef
+llvm::StringRef
 BuildPromiseTreePass::getPassName() const {
   return "BuildPromiseTreePass";
 }
@@ -2221,6 +2218,90 @@ dumpGlobals(llvm::Module& m) {
   privilegeResolver->dumpToFile(m);
 }
 
+template<typename Results, typename ContextMerger>
+class Lowering {
+public:
+  Lowering(llvm::Module& m, Results& r, Printer& p)
+   : module{m}, results{r}, printer{p} {}
+
+  std::vector<llvm::Instruction*>
+  getLoweringLocations() {
+    std::vector<llvm::Instruction*> insertionPts;
+    for (auto& function : module) {
+      auto& entryBlock = function.getEntryBlock();
+      llvm::Instruction* insertionPt = entryBlock->getFirstInsertionPt();
+      if (insertionPt) {
+        llvm_unreachable("Not an instruction");
+      }
+      insertionPts.push_back(insertionPt);
+    }
+  }
+
+  llvm::DenseMap<llvm::Instruction*, DisjunctionValue>
+  getMergedResults(std::vector<llvm::Instruction*> locations) {
+    auto getStates = [this](auto* instruction) {
+      std::vector<DisjunctionValue> states;
+      auto* function = instruction->getFunction();
+      for (auto& [context, cResults] : results) {
+        if (cResults.count(instruction) < 1) {
+          continue;
+        }
+        auto state = cResults[instruction][nullptr];
+        states.push_back(state);
+      }
+      return states;
+    };
+
+    auto merge = [this](llvm::ArrayRef<DisjunctionValue> values) {
+    auto& merger = this->merger;
+    return std::accumulate(values.begin(), values.end(),
+      DisjunctionValue(),
+      [merger] (auto& v1, auto& v2) {
+        return merger(v1, v2);
+      });
+    };
+
+    auto mergeStates = [&getStates, &merge](auto* instruction) {
+      auto states = getStates(instruction);
+      return merge({states});
+    };
+
+    llvm::DenseMap<llvm::Instruction*, DisjunctionValue> ret;
+    auto addToMap = [&mergeStates, this, &ret] (auto* inst) {
+      auto mergedState = &mergeStates(inst);
+      llvm::errs() << "\nMerged State For " << *inst;
+      mergedState[PLEDGE_RPATH].print(llvm::errs());
+      auto shouldAdd = filter(mergedState);
+      if (shouldAdd) {
+        ret[inst] = mergedState;
+      }
+    };
+    for (auto* inst : locations) {
+      addToMap(inst);
+    }
+    return ret;
+  }
+
+private:
+  llvm::Module& module;
+  Results results;
+  ContextMerger merger;
+  Printer& printer;
+
+  bool
+  filter(DisjunctionValue& stateArray) {
+    for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
+      auto& disjunction = stateArray[privilege];
+      if (disjunction.conjunctCount() > 1) {
+        return true;
+      }
+    }
+    return false;
+  }
+};
+
+
+
 void
 runAnalysisFor(llvm::Module& m,
                llvm::ArrayRef<llvm::StringRef> functionNames,
@@ -2258,6 +2339,8 @@ runAnalysisFor(llvm::Module& m,
     llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
     llvm::outs() << "\nFinished " << entryPoint->getName() << "\n";
     llvm::outs().resetColor();
+
+    //lowerInstructions(m, mergedResults);
     dumpAnnotatedCFG(entryPoint, {nullptr, nullptr}, results);
   }
   dumpGlobals(m);
