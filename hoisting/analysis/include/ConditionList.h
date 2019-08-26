@@ -18,9 +18,10 @@
 #include "PromiseDeclarations.h"
 
 using Privileges = std::bitset<COUNT>;
-using ExprID     = int32_t;  // Deterministic size
-using OpKey      = int32_t;  // Negatives used to hash sentinels
-using ExprKey    = std::tuple<ExprID, OpKey, ExprID>;
+using int_type   = int32_t;  // Negatives used to hash sentinels
+using ExprID     = int_type;  
+using OpKey      = int_type; 
+using ExprKey = std::tuple<ExprID, OpKey, ExprID>;
 
 constexpr int typeSize{32};
 namespace OpIDs {
@@ -50,10 +51,10 @@ struct llvm::DenseMapInfo<ExprKey> {
 
   static unsigned
   getHashValue(const ExprKey& exprKey) {
-    int16_t lhsAsInt    = std::get<0>(exprKey);
-    int16_t opCodeAsInt = std::get<1>(exprKey);
-    int16_t rhsAsInt    = std::get<2>(exprKey);
-    int16_t asArray[]   = {lhsAsInt, opCodeAsInt, rhsAsInt};
+    int_type lhsAsInt    = std::get<0>(exprKey);
+    int_type opCodeAsInt = std::get<1>(exprKey);
+    int_type rhsAsInt    = std::get<2>(exprKey);
+    int_type asArray[]   = {lhsAsInt, opCodeAsInt, rhsAsInt};
     return llvm::hash_combine_range(std::begin(asArray), std::end(asArray));
   }
 
@@ -170,10 +171,33 @@ public:
     return;
   }
 };
+
+template<>
+struct llvm::DenseMapInfo<Conjunct> {
+  static inline Conjunct
+  getEmptyKey() {
+    return Conjunct{-1, true};
+  }
+
+  static inline Conjunct
+  getTombstoneKey() {
+    return Conjunct{-2, true};
+  }
+
+  static int_type
+  getHashValue(const Conjunct& conjunct) {
+    auto exprID = conjunct.exprID;
+    auto form = conjunct.notNegated;
+    return form ? exprID : -(exprID);
+  }
+
+  static bool
+  isEqual(const Conjunct& LHS, const Conjunct& RHS) {
+    return LHS == RHS;
+  }
+};
+
 //Rename to conjuncts
-
-
-
 using ConjunctIDs = std::vector<Conjunct>;
 class Disjunct { // Or a Conjunction
 public:
@@ -230,6 +254,40 @@ public:
     return conjunctIDs.rend();
   }
 
+};
+
+template<>
+struct llvm::DenseMapInfo<Disjunct> {
+  static inline Disjunct
+  getEmptyKey() {
+    auto emptyConjunct = llvm::DenseMapInfo<Conjunct>::getEmptyKey();
+    Disjunct empty{};
+    empty.addConjunct(emptyConjunct);
+    return empty;
+  }
+
+  static inline Disjunct
+  getTombstoneKey() {
+    auto tombstoneConjunct = llvm::DenseMapInfo<Conjunct>::getTombstoneKey();
+    Disjunct tombstone{};
+    tombstone.addConjunct(tombstoneConjunct);
+    return tombstone;
+  }
+
+  static unsigned
+  getHashValue(const Disjunct& disjunct) {
+    std::vector<int_type> asInts(disjunct.size());
+    std::transform(disjunct.begin(), disjunct.end(),
+        std::back_inserter(asInts), [](auto& conjunct) {
+          return llvm::DenseMapInfo<Conjunct>::getHashValue(conjunct);
+        });
+    return llvm::hash_combine_range(std::begin(asInts), std::end(asInts));
+  }
+
+  static bool
+  isEqual(const Disjunct& LHS, const Disjunct& RHS) {
+    return LHS == RHS;
+  }
 };
 
 struct DisjunctHash {
@@ -518,14 +576,46 @@ private:
   }
 };
 
+template<>
+struct llvm::DenseMapInfo<Disjunction> {
+  static inline Disjunction
+  getEmptyKey() {
+    auto emptyDisjunct = llvm::DenseMapInfo<Disjunct>::getEmptyKey();
+    Disjunction empty{};
+    empty.addDisjunct(emptyDisjunct);
+    return empty;
+  }
+
+  static inline Disjunction
+  getTombstoneKey() {
+    auto tombstoneDisjunct = llvm::DenseMapInfo<Disjunct>::getTombstoneKey();
+    Disjunction tombstone{};
+    tombstone.addDisjunct(tombstoneDisjunct);
+    return tombstone;
+  }
+
+  static unsigned
+  getHashValue(const Disjunction& disjunction) {
+    std::vector<unsigned> asInts(disjunction.size());
+    std::transform(disjunction.begin(), disjunction.end(),
+        std::back_inserter(asInts), [](auto& disjunct) {
+          return llvm::DenseMapInfo<Disjunct>::getHashValue(disjunct);
+        });
+    return llvm::hash_combine_range(std::begin(asInts), std::end(asInts));
+  }
+
+  static bool
+  isEqual(const Disjunction& LHS, const Disjunction& RHS) {
+    return LHS == RHS;
+  }
+};
+
 //---------------Method Definitions----------------//
 
 
 /// ---------------------------------------- ///
 /// -----------Disjuncts-------------------- ///
 /// ---------------------------------------- ///
-
-
 bool
 Disjunct::operator<(const Disjunct& other) const {
   return std::lexicographical_compare (
@@ -538,14 +628,6 @@ Disjunct::operator==(const Disjunct& other) const {
   return conjunctIDs == other.conjunctIDs;
 }
 
-//void
-//Disjunct::operator=(Disjunct&& other) {
-//  
-//  return 
-//}
-
-/// Invariant: The conjunctions will be sorted
-/// Maintains  uniqueness
 void
 Disjunct::addConjunct(const Conjunct& conjunct) {
   auto binary_insert = [](auto& conjunctIDs, auto first, auto last, auto& conjunct) {
@@ -576,21 +658,6 @@ return std::lower_bound(
     });
 }
 
-
-bool
-Disjunct::findAndReplace(const ExprID target, const ExprID newID) {
-  auto position = std::lower_bound(conjunctIDs.begin(), conjunctIDs.end(), target,
-        [](Conjunct conjunct, ExprID target) -> bool {
-          return conjunct.exprID < target;
-        });
-  if ( position != conjunctIDs.end() && position->exprID == target) {
-    Conjunct asConjunct({newID, position->notNegated});
-    *position = asConjunct;
-    return true; //might be useful later
-  }
-  return false;
-}
-
 void
 Disjunct::print(llvm::raw_ostream& out) const {
   if (conjunctIDs.empty()) {
@@ -608,7 +675,6 @@ Disjunct::print(llvm::raw_ostream& out) const {
 /// ---------------------------------------- ///
 /// ---------- Disjunctions ---------------- ///
 /// ---------------------------------------- ///
-
 bool
 Disjunction::operator==(const Disjunction& other) const {
   return this->disjuncts == other.disjuncts;
@@ -638,24 +704,6 @@ Disjunction::addDisjunct(const Disjunct& disjunct) {
   return;
 }
 
-
-bool
-Disjunction::hasExprID(const ExprID& exprID) const {
-  for (auto& disjunct : disjuncts) {
-    if (disjunct.findExprID(exprID) != disjunct.conjunctIDs.end()) {
-      return true;
-    }
-  }
-  return false;
-}
-
-void
-Disjunction::findAndReplace(const ExprID target, const ExprID replacement) {
-  for (auto& disjunct : disjuncts) {
-    disjunct.findAndReplace(target, replacement);
-  }
-}
-
 void
 Disjunction::print(llvm::raw_ostream& out) const {
   for (auto& disjunct : disjuncts) {
@@ -678,18 +726,4 @@ Disjunction::isVacuouslyTrue() const {
   return firstConjunct == ReservedExprIDs::vacuousExprID
          && firstDisjunct.size() == 1;
 }
-    /* Enable Debug
-     * llvm::errs() << "\n =====================";
-     * llvm::errs() << "\n BEFORE transfer at -- " << value;
-     * state[nullptr].print(llvm::errs());
-     */
-
-    /* Enable Debug
-     * llvm::errs() << "\n AFTER transfer at -- " << value;
-     * state[nullptr].print(llvm::errs());
-     *  generator->dumpState();
-     * llvm::errs() << "\n =====================";
-     *  printer->insertIR(inst, state[nullptr]); */
-
-
 #endif

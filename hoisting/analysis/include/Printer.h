@@ -21,9 +21,19 @@ namespace lowering {
 }
 
 class lowering::Printer {
+  using Builder = llvm::IRBuilder<>;
 public:
-  Printer(Generator* const g, llvm::raw_ostream& out) : generator{g}, out{out} {
+  Printer(Generator* const g, 
+          llvm::raw_ostream& out) : generator{g}, out{out} {
     initializeMap();
+    setLoweringBoundaries();
+  }
+
+  Printer(Generator* const g, 
+          llvm::raw_ostream& out,
+          llvm::Module* m) : generator{g}, out{out}, module{m} {
+    initializeMap();
+    setLoweringBoundaries();
   }
 
   void
@@ -37,34 +47,427 @@ public:
   }
 
   void
-  insertIR(llvm::Instruction* const location,
-           const Disjunction& disjunction) {
-    if (disjunction.isEmpty()) {
-      llvm::errs() << "Empty here";
-      return;
-    }
-    llvm::errs() << "\nInserting at " << *location << "\n parent function "
-                 << location->getParent()->getParent()->getName();
-    llvm::outs() << "\nInserting at " << *location << "\n parent function "
-                 << location->getParent()->getParent()->getName();
-    llvm::IRBuilder<> builder{location};
-    insertIRImpl(location,disjunction, builder);
-    printState(location, disjunction);
-    auto* bb = location->getParent();
-    llvm::errs() << "\nAfter insertion";
-    llvm::errs() << *bb;
-  }
-
-  void
   printFlattened(ExprID exprID, llvm::raw_ostream& ostream) {
     ostream << asFlatAST(exprID);
   }
 
+  auto*
+  insertStringResetter(llvm::Instruction* location) {
+    auto& context    = module->getContext();
+    auto* voidTy     = llvm::Type::getVoidTy(context);
+    auto* functionTy = llvm::FunctionType::get(voidTy, false);
+
+    auto* clearString = 
+      module->getOrInsertFunction("ClEaR_StRiNg", functionTy);
+    llvm::IRBuilder<> builder{location};
+    return builder.CreateCall(clearString);
+  }
+
+  auto*
+  insertStringBuilder(llvm::Instruction* const location,
+           const Disjunction& disjunction, Promises promise) {
+    auto getPrivAdderFunction = [this, promise] {
+      auto&  context = module->getContext();
+      auto* int1Ty     = llvm::Type::getInt1Ty(context);
+      auto* voidTy     = llvm::Type::getVoidTy(context);
+      auto* functionTy = llvm::FunctionType::get(voidTy, {int1Ty}, false);
+
+      auto  pledge_name = PromiseNames[promise];
+      auto  functionName = "AdD_" + pledge_name;
+      auto  asString    = functionName.str();
+      return module->getOrInsertFunction(asString, functionTy);
+    };
+    //llvm::errs() << "\nInserting at " << *location << "\n parent function "
+    //             << location->getParent()->getParent()->getName();
+    //llvm::outs() << "\nInserting at " << *location << "\n parent function "
+    //             << location->getParent()->getParent()->getName();
+    // printState(location, disjunction);
+    this->location = location;
+    llvm::IRBuilder<> builder{location};
+    auto* predicate = foldDisjunction(disjunction, builder);
+    auto* privAdderFn = getPrivAdderFunction();
+    return builder.CreateCall(/*functiontype,*/ privAdderFn, predicate);
+    //auto* bb = location->getParent();
+    //llvm::errs() << "\nAfter insertion";
+    //llvm::errs() << *bb;
+  }
+
+  auto*
+  insertPledgeCall(llvm::Instruction* const location) {
+    auto getPledgeCallFunction = [this] {
+      auto& context = module->getContext();
+      auto* voidTy     = llvm::Type::getVoidTy(context);
+      auto* functionTy = llvm::FunctionType::get(voidTy, false);
+
+      auto functionName = "MaKe_pLeDgE";
+      return module->getOrInsertFunction(functionName, functionTy);
+    };
+
+    auto pledgeCaller = getPledgeCallFunction();
+    llvm::IRBuilder<> builder{location};
+    return builder.CreateCall(pledgeCaller);
+  }
+
+
 private:
   Generator* const generator;
   llvm::raw_ostream& out;
+
+  llvm::Instruction* location = nullptr;
+  llvm::Module* module        = nullptr;
+  //llvm::Context* context      = nullptr;
+
   llvm::DenseSet<llvm::StringRef> functionBlackList;
   void setLoweringBoundaries();
+
+
+
+  llvm::DenseMap<Conjunct, llvm::Value*>    conjunctCache;
+  llvm::DenseMap<Disjunct, llvm::Value*>    disjunctCache;
+  llvm::DenseMap<Disjunction, llvm::Value*> disjunctionCache;
+
+  llvm::Value*
+  generateConjunct(const Conjunct& conjunct, Builder& builder) {
+    auto applyForm = [&builder](const Conjunct& conjunct,
+                         llvm::Value* value) -> llvm::Value* {
+      if (!conjunct.notNegated) {
+        return builder.CreateNot(value);
+      }
+      return value;
+    };
+
+    auto& cache = this->conjunctCache;
+    if (cache.find(conjunct) != cache.end()) {
+      return cache[conjunct];
+    }
+  
+    InstVisitor visitor{builder, this->location};
+    auto [retConjunct, generatedIR] =
+        generator->postOrderFor(conjunct, visitor);
+    auto* generatedValue = applyForm(conjunct, generatedIR);
+    cache[conjunct]      = generatedValue;
+    return generatedValue;
+  }
+
+  llvm::Value*
+  generateDisjunct(const Disjunct& disjunct, Builder& builder) {
+    auto& cache = this->disjunctCache;
+    if (cache.find(disjunct) != cache.end()) {
+      return cache[disjunct];
+    }
+
+    std::vector<llvm::Value*> generatedConjuncts;
+    std::transform(disjunct.begin(), disjunct.end(),
+                   std::back_inserter(generatedConjuncts),
+                   [&builder, this](const Conjunct& conjunct) -> llvm::Value* {
+                      return generateConjunct(conjunct, builder);
+                   });
+
+    auto* asValue =
+      std::accumulate(generatedConjuncts.begin(),
+          generatedConjuncts.end(), 
+          *generatedConjuncts.begin(), 
+          [&builder](auto* lhs, auto* rhs) -> llvm::Value* { 
+            return lhs == rhs ? lhs : builder.CreateAnd(lhs, rhs);
+          });
+    cache[disjunct] = asValue;
+    return asValue;
+  }
+
+  llvm::Value*
+  generateDisjunction(const Disjunction& disjunction, Builder& builder) {
+    auto& cache = this->disjunctionCache;
+    if (cache.find(disjunction) != cache.end()) {
+      return cache[disjunction];
+    }
+
+    std::vector<llvm::Value*> generatedDisjuncts;
+    std::transform(disjunction.begin(),
+                   disjunction.end(),
+                   std::back_inserter(generatedDisjuncts),
+                   [&builder, this](const auto& disjunct) {
+                     return generateDisjunct(disjunct, builder);
+                   });
+
+    auto* asValue =
+        std::accumulate(generatedDisjuncts.begin(),
+                        generatedDisjuncts.end(),
+                        *generatedDisjuncts.begin(),
+                        [&builder](auto* lhs, auto* rhs) -> llvm::Value* {
+                          return lhs == rhs ? lhs : builder.CreateOr(lhs, rhs);
+                        });
+    cache[disjunction] = asValue;
+    return asValue;
+  }
+
+  llvm::Value*
+  foldDisjunction(const Disjunction& disjunction,
+             llvm::IRBuilder<>& builder) {
+    return generateDisjunction(disjunction, builder);
+  }
+
+  class InstVisitor {
+  public:
+    InstVisitor(llvm::IRBuilder<>& irb, llvm::Instruction* const loc)
+      : builder{irb}, location{loc} {}
+    llvm::Value*
+    operator()(ExprID exprID,
+               BinaryExprNode binaryNode,
+               llvm::Value* lhs,
+               llvm::Value* rhs) {
+      if (makeTrue) {
+        auto& context = location->getContext();
+        auto* boolTy = llvm::Type::getInt1Ty(context);
+        return llvm::ConstantInt::getTrue(boolTy);
+      } else {
+        return binaryDispatch(exprID, binaryNode, lhs, rhs);
+      }
+    }
+
+    llvm::Value*
+    operator()(ExprID exprID, ConstantExprNode node) {
+      if (exprID == 0) {
+        auto& context = location->getContext();
+        auto* boolTy = llvm::Type::getInt1Ty(context);
+        return llvm::ConstantInt::getTrue(boolTy);
+      }
+      llvm::errs() << "\n ExprID " << exprID;
+      if (node.constant) {
+        llvm::errs() << "\n Direct Return Constant" << *node.constant;
+      }
+      return node.constant;
+    }
+
+    llvm::Value*
+    operator()(ExprID exprID, ValueExprNode node) {
+      if (!isInScope(node.value)) {
+        llvm::errs() << "\nIs not in scope" << *node.value ;
+      }
+      makeTrue |= !(isInScope(node.value));
+      return node.value;
+    }
+
+  private:
+    llvm::IRBuilder<>& builder;
+    llvm::Instruction* const location;
+    bool makeTrue = false;
+
+    bool
+    isInScope(llvm::Value* const value) {
+      auto* asInst = llvm::dyn_cast<llvm::Instruction>(value);
+      if (!asInst) {
+        llvm::errs() << "\n Used Value is not an instruction" << *value;
+        return value;
+      }
+      auto* valueFunction    = asInst->getParent()->getParent();
+      auto* locationFunction = location->getParent()->getParent();
+      return valueFunction == locationFunction;
+    }
+
+
+    llvm::Value*
+    binaryDispatch(ExprID exprID,
+                   BinaryExprNode binaryNode,
+                   llvm::Value* lhs,
+                   llvm::Value* rhs) {
+      llvm::errs() << "\n"
+                   << exprID << " (binaryNode.value) " << *(binaryNode.value);
+      llvm::errs() << "\n"
+                   << exprID << " (binaryNode.op.opCode) "
+                   << (binaryNode.op.opCode);
+      if (lhs && rhs) {
+        llvm::errs() << "\n"
+                     << " lhs " << *lhs << "\n rhs " << *rhs << "\n";
+        auto lhsInst = llvm::dyn_cast<llvm::Instruction>(lhs);
+        auto rhsInst = llvm::dyn_cast<llvm::Instruction>(rhs);
+        //if (lhsInst && rhsInst
+        //    && lhsInst->getParent()->getParent()
+        //           != rhsInst->getParent()->getParent()) {
+        //  llvm::errs() << "\n Different Parents";
+        //} else {
+        //  llvm::errs() << " \n Same parent or not inst";
+        //}
+      }
+      switch (binaryNode.op.opCode) {
+        case llvm::Instruction::Add:
+          return generateAdd(binaryNode, lhs, rhs);
+          break;
+        case llvm::Instruction::ICmp:
+          return generateIcmp(binaryNode, lhs, rhs);
+          break;
+        case llvm::Instruction::Load:
+          return generateLoad(binaryNode, lhs, rhs);
+          break;
+        case llvm::Instruction::Switch:
+          return generateSwitch(binaryNode, lhs, rhs);
+          break;
+        case llvm::Instruction::GetElementPtr:
+          return generateGEP(binaryNode, lhs, rhs);
+          break;
+        case llvm::Instruction::Call:
+          return generateCall(binaryNode, lhs, rhs);
+          break;
+        case llvm::Instruction::Or:
+          return generateOr(binaryNode, lhs, rhs);
+          break;
+        case llvm::Instruction::And:
+          return generateAnd(binaryNode, lhs, rhs);
+          break;
+        case OpIDs::Cast:
+          llvm::errs() << "\nFound castOp";
+          return generateCast(binaryNode, lhs, rhs);
+          break;
+        case OpIDs::Alias: 
+          return generateAlias(binaryNode, lhs, rhs); 
+          break;
+        case llvm::Instruction::Sub: 
+          return generateSub(binaryNode, lhs, rhs);
+          break;
+        default:
+          llvm::errs() << "\n (binaryNode.op.opCode) "
+                       << (binaryNode.op.opCode);
+          llvm_unreachable("Found unknown instruction");
+          return nullptr;
+          break;
+      }
+    }
+
+    llvm::Value*
+    generateAnd(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      llvm::Value* generated = builder.CreateAnd(lhs, rhs);
+      return generated;
+    }
+
+    llvm::Value*
+    generateOr(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      llvm::Value* generated = builder.CreateOr(lhs, rhs);
+      return generated;
+    }
+
+    llvm::Value*
+    generateAdd(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      llvm::Value* generated = builder.CreateAdd(lhs, rhs);
+      return generated;
+    }
+
+    llvm::Value*
+    generateIcmp(BinaryExprNode binaryNode,
+                 llvm::Value* lhs,
+                 llvm::Value* rhs) {
+      switch (binaryNode.op.predicate) {
+        case Predicate::ICMP_EQ:  return builder.CreateICmpEQ(lhs, rhs); break;
+        case Predicate::ICMP_SLT: return builder.CreateICmpSLT(lhs, rhs); break;
+        case Predicate::ICMP_SGT: return builder.CreateICmpSGT(lhs, rhs); break;
+        case Predicate::ICMP_NE:  return builder.CreateICmpNE(lhs, rhs); break;
+        default:
+          llvm::errs() << "\n (binaryNode.op.predicate) "
+                       << (binaryNode.op.predicate);
+          llvm_unreachable("Found unknown predicate");
+          return nullptr;
+          break;
+      }
+      return nullptr;
+    }
+
+
+    llvm::Value*
+    generateLoad(BinaryExprNode binaryNode,
+                 llvm::Value* lhs,
+                 llvm::Value* rhs) {
+      auto* withType = binaryNode.value->getType();
+      llvm::errs() << "\nGenerating Load "
+                   << *binaryNode.value
+                   << " with type" << *withType
+                   << "\nPointer Operand" << *rhs;
+      return builder.CreateLoad(withType, rhs);
+    }
+
+    llvm::Value*
+    generateSwitch(BinaryExprNode binaryNode,
+                   llvm::Value* lhs,
+                   llvm::Value* rhs) {
+      return generateIcmp(binaryNode, lhs, rhs);
+    }
+
+    llvm::Value*
+    generateGEP(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      // TODO: Verify with Nick. Run on custom testcase
+      auto* generated = builder.CreateGEP(lhs, rhs, "gep");
+      return generated;
+    }
+
+    llvm::Value*
+    generateCall(BinaryExprNode binaryNode,
+                 llvm::Value* lhs,
+                 llvm::Value* rhs) {
+      llvm::ArrayRef<llvm::Value*> opArray{};
+      if (rhs) {
+        opArray = llvm::ArrayRef<llvm::Value*>{rhs};
+      }
+
+      if (auto* func = llvm::dyn_cast<llvm::Function>(lhs)) {
+        auto* functionType = func->getFunctionType();
+        auto* generated    = builder.CreateCall(functionType, func, opArray);
+        return generated;
+      } else if (auto* callInst = llvm::dyn_cast<llvm::CallInst>(lhs)) {
+        auto* func         = callInst->getCalledFunction();
+        auto* functionType = func->getFunctionType();
+        assert(func);
+        std::vector<llvm::Value*> operands;
+        for (auto& arg : callInst->arg_operands()) {
+          operands.push_back(arg);
+        }
+        if (rhs) {  // skip sentinel
+          // llvm::errs() << "\n rhs for CallAST " << *rhs << "with exprID " <<
+          // binaryNode.rhs;
+          operands.push_back(rhs);
+        }
+        auto* generated = builder.CreateCall(
+            functionType, func, llvm::ArrayRef<llvm::Value*>{operands});
+
+        callInst->eraseFromParent();
+        return generated;
+      } else {
+        llvm::errs() << "\nlhs is unknown " << *lhs;
+        llvm_unreachable("lhs unknown");
+        return nullptr;
+      }
+    }
+
+    llvm::Value*
+    generateAlias(BinaryExprNode binaryNode,
+                  llvm::Value* lhs,
+                  llvm::Value* rhs) {
+      return builder.CreateICmpEQ(lhs, rhs, "aliasEQ");
+    }
+
+    llvm::Value*
+    generateCast(BinaryExprNode binaryNode,
+                 llvm::Value* lhs,
+                 llvm::Value* rhs) {
+      auto* castInst = llvm::dyn_cast<llvm::CastInst>(binaryNode.value);
+      auto castType  = castInst->getOpcode();
+      return builder.CreateCast(castType, lhs, castInst->getDestTy());
+    }
+
+    llvm::Value*
+    generateSub(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      return builder.CreateSub(lhs, rhs);
+    }
+  };
+
+  void
+  printLineNumber(llvm::Instruction* const inst) const {
+    // out.changeColor(llvm::raw_ostream::Colors::RED);
+    if (const llvm::DILocation* debugLoc = inst->getDebugLoc()) {
+      out << "At " << debugLoc->getFilename() << " line " << debugLoc->getLine()
+          << "  " << *inst;
+    } else {
+      out << "At an unknown location" << *inst;
+    }
+    // out.changeColor(llvm::raw_ostream::Colors::WHITE);
+  }
+
 
   llvm::DenseMap<OpKey, const char*> opMap;
   const char* delimiter = "x";
@@ -76,8 +479,6 @@ private:
   };
   template <class... Ts>
   overloaded(Ts...)->overloaded<Ts...>;
-  //
-
 
   std::string
   getDebugData(llvm::Instruction* const location) const {
@@ -267,275 +668,6 @@ private:
         }};
     generator->inOrderFor(exprID, visitor);
     return flatAST;
-  }
-
-  void
-  insertIRImpl(llvm::Instruction* location,
-               const Disjunction& disjunction,
-               llvm::IRBuilder<>& builder) {
-    Visitor visitor{builder, location};
-    auto applyForm = [&](const Conjunct& conjunct,
-                         llvm::Value* value) -> llvm::Value* {
-      if (!conjunct.notNegated) {
-        return builder.CreateNot(value);
-      }
-      return value;
-    };
-
-    auto generateDisjunct = [&](const Disjunct& disjunct) -> llvm::Value* {
-      std::vector<llvm::Value*> generatedConjuncts;
-      std::transform(disjunct.begin(),
-                     disjunct.end(),
-                     std::back_inserter(generatedConjuncts),
-                     [&](const Conjunct& conjunct) -> llvm::Value* {
-                       auto [retConjunct, generatedIR] =
-                           generator->postOrderFor(conjunct, visitor);
-                       return applyForm(conjunct, generatedIR);
-                     });
-      return std::accumulate(generatedConjuncts.begin(),
-                             generatedConjuncts.end(),
-                             *generatedConjuncts.begin(),
-                             [&](auto* lhs, auto* rhs) -> llvm::Value* {
-                               return builder.CreateAnd(lhs, rhs);
-                             });
-    };
-
-    auto generateDisjunction = [&](const Disjunction& disjunction) {
-      std::vector<llvm::Value*> generatedDisjuncts;
-      std::transform(
-          disjunction.begin(),
-          disjunction.end(),
-          std::back_inserter(generatedDisjuncts),
-          [&](const auto& disjunct) { return generateDisjunct(disjunct); });
-      return std::accumulate(generatedDisjuncts.begin(),
-                             generatedDisjuncts.end(),
-                             *generatedDisjuncts.begin(),
-                             [&](auto* lhs, auto* rhs) -> llvm::Value* {
-                               return builder.CreateOr(lhs, rhs);
-                             });
-    };
-    generateDisjunction(disjunction);
-  }
-
-
-  class Visitor {
-  public:
-    Visitor(llvm::IRBuilder<>& irb, llvm::Instruction* const loc)
-      : builder{irb}, location{loc} {}
-    llvm::Value*
-    operator()(ExprID exprID,
-               BinaryExprNode binaryNode,
-               llvm::Value* lhs,
-               llvm::Value* rhs) {
-      return binaryDispatch(exprID, binaryNode, lhs, rhs);
-    }
-
-    // TODO: Handle Special cases
-    // Do not handle a vacuousExprNodes as lowering is guaranteed
-    // at locations where the constraints are not vacuously true
-    llvm::Value*
-    operator()(ExprID exprID, ConstantExprNode node) {
-      if (node.constant)
-        llvm::errs() << "\n Direct Return Constant" << *node.constant;
-      return node.constant;
-    }
-
-    llvm::Value*
-    operator()(ExprID exprID, ValueExprNode node) {
-      return node.value;
-    }
-
-  private:
-    llvm::IRBuilder<>& builder;
-    llvm::Instruction* const location;
-
-    bool
-    isInScope(llvm::Value* const value) {
-      auto* asInst = llvm::dyn_cast<llvm::Instruction>(value);
-      if (!asInst) {
-        llvm::errs() << "\n Used Value is not an instruction" << *value;
-        return value;
-      }
-      auto* valueFunction    = asInst->getParent()->getParent();
-      auto* locationFunction = location->getParent()->getParent();
-      return valueFunction == locationFunction;
-    }
-
-
-    llvm::Value*
-    binaryDispatch(ExprID exprID,
-                   BinaryExprNode binaryNode,
-                   llvm::Value* lhs,
-                   llvm::Value* rhs) {
-      llvm::errs() << "\n"
-                   << exprID << " (binaryNode.value) " << *(binaryNode.value);
-      llvm::errs() << "\n"
-                   << exprID << " (binaryNode.op.opCode) "
-                   << (binaryNode.op.opCode);
-      if (lhs && rhs) {
-        llvm::errs() << "\n"
-                     << " lhs " << *lhs << "\n rhs " << *rhs << "\n";
-        auto lhsInst = llvm::dyn_cast<llvm::Instruction>(lhs);
-        auto rhsInst = llvm::dyn_cast<llvm::Instruction>(rhs);
-        if (lhsInst && rhsInst
-            && lhsInst->getParent()->getParent()
-                   != rhsInst->getParent()->getParent()) {
-          llvm::errs() << "\n Different Parents";
-        } else {
-          llvm::errs() << " \n Same parent or not inst";
-        }
-      }
-      switch (binaryNode.op.opCode) {
-        case llvm::Instruction::Add:
-          return generateAdd(binaryNode, lhs, rhs);
-          break;
-        case llvm::Instruction::ICmp:
-          return generateIcmp(binaryNode, lhs, rhs);
-          break;
-        case llvm::Instruction::Load:
-          return generateLoad(binaryNode, lhs, rhs);
-          break;
-        case llvm::Instruction::Switch:
-          return generateSwitch(binaryNode, lhs, rhs);
-          break;
-        case llvm::Instruction::GetElementPtr:
-          return generateGEP(binaryNode, lhs, rhs);
-          break;
-        case llvm::Instruction::Call:
-          return generateCall(binaryNode, lhs, rhs);
-          break;
-        case OpIDs::Cast:
-          llvm::errs() << "\nFound castOp";
-          return generateCast(binaryNode, lhs, rhs);
-          // llvm_unreachable("Found unknown instruction");
-          break;
-        case OpIDs::Alias: return generateAlias(binaryNode, lhs, rhs); break;
-        case llvm::Instruction::Sub: return generateSub(binaryNode, lhs, rhs);
-        default:
-          llvm::errs() << "\n (binaryNode.op.opCode) "
-                       << (binaryNode.op.opCode);
-          llvm_unreachable("Found unknown instruction");
-          return nullptr;
-          break;
-      }
-    }
-
-    llvm::Value*
-    generateAdd(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
-      llvm::Value* generated = builder.CreateAdd(lhs, rhs);
-      return generated;
-    }
-
-    llvm::Value*
-    generateIcmp(BinaryExprNode binaryNode,
-                 llvm::Value* lhs,
-                 llvm::Value* rhs) {
-      switch (binaryNode.op.predicate) {
-        case Predicate::ICMP_EQ: return builder.CreateICmpEQ(lhs, rhs); break;
-        case Predicate::ICMP_SLT: return builder.CreateICmpSLT(lhs, rhs); break;
-        case Predicate::ICMP_SGT: return builder.CreateICmpSGT(lhs, rhs); break;
-        default:
-          llvm::errs() << "\n (binaryNode.op.predicate) "
-                       << (binaryNode.op.predicate);
-          llvm_unreachable("Found unknown predicate");
-          return nullptr;
-          break;
-      }
-      return nullptr;
-    }
-
-
-    llvm::Value*
-    generateLoad(BinaryExprNode binaryNode,
-                 llvm::Value* lhs,
-                 llvm::Value* rhs) {
-      return builder.CreateLoad(rhs);
-    }
-
-    llvm::Value*
-    generateSwitch(BinaryExprNode binaryNode,
-                   llvm::Value* lhs,
-                   llvm::Value* rhs) {
-      return generateIcmp(binaryNode, lhs, rhs);
-    }
-
-    llvm::Value*
-    generateGEP(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
-      // TODO: Verify with Nick. Run on custom testcase
-      auto* generated = builder.CreateGEP(lhs, rhs, "gep");
-      return generated;
-    }
-
-    llvm::Value*
-    generateCall(BinaryExprNode binaryNode,
-                 llvm::Value* lhs,
-                 llvm::Value* rhs) {
-      llvm::ArrayRef<llvm::Value*> opArray{};
-      if (rhs) {
-        opArray = llvm::ArrayRef<llvm::Value*>{rhs};
-      }
-
-      if (auto* func = llvm::dyn_cast<llvm::Function>(lhs)) {
-        auto* functionType = func->getFunctionType();
-        auto* generated    = builder.CreateCall(functionType, func, opArray);
-        return generated;
-      } else if (auto* callInst = llvm::dyn_cast<llvm::CallInst>(lhs)) {
-        auto* func         = callInst->getCalledFunction();
-        auto* functionType = func->getFunctionType();
-        assert(func);
-        std::vector<llvm::Value*> operands;
-        for (auto& arg : callInst->arg_operands()) {
-          operands.push_back(arg);
-        }
-        if (rhs) {  // skip sentinel
-          // llvm::errs() << "\n rhs for CallAST " << *rhs << "with exprID " <<
-          // binaryNode.rhs;
-          operands.push_back(rhs);
-        }
-        auto* generated = builder.CreateCall(
-            functionType, func, llvm::ArrayRef<llvm::Value*>{operands});
-
-        callInst->eraseFromParent();
-        return generated;
-      } else {
-        llvm::errs() << "\nlhs is unknown " << *lhs;
-        llvm_unreachable("lhs unknown");
-        return nullptr;
-      }
-    }
-
-    llvm::Value*
-    generateAlias(BinaryExprNode binaryNode,
-                  llvm::Value* lhs,
-                  llvm::Value* rhs) {
-      return builder.CreateICmpEQ(lhs, rhs, "aliasEQ");
-    }
-
-    llvm::Value*
-    generateCast(BinaryExprNode binaryNode,
-                 llvm::Value* lhs,
-                 llvm::Value* rhs) {
-      auto* castInst = llvm::dyn_cast<llvm::CastInst>(binaryNode.value);
-      auto castType  = castInst->getOpcode();
-      return builder.CreateCast(castType, lhs, castInst->getDestTy());
-    }
-
-    llvm::Value*
-    generateSub(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
-      return builder.CreateSub(lhs, rhs);
-    }
-  };
-
-  void
-  printLineNumber(llvm::Instruction* const inst) const {
-    // out.changeColor(llvm::raw_ostream::Colors::RED);
-    if (const llvm::DILocation* debugLoc = inst->getDebugLoc()) {
-      out << "At " << debugLoc->getFilename() << " line " << debugLoc->getLine()
-          << "  " << *inst;
-    } else {
-      out << "At an unknown location" << *inst;
-    }
-    // out.changeColor(llvm::raw_ostream::Colors::WHITE);
   }
 
   void

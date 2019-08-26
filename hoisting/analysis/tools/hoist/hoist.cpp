@@ -78,7 +78,7 @@ static cl::opt<string> inPath{cl::Positional,
 
 std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
-std::unique_ptr<lowering::Printer> printer;
+//std::unique_ptr<lowering::Printer> printer;
 std::unique_ptr<PrivilegeResolver> privilegeResolver;
 
 
@@ -99,8 +99,8 @@ using DisjunctionValue  = std::array<Disjunction, COUNT - 1>;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
-constexpr int MaxPrivilege{PLEDGE_RPATH};
-constexpr int MinPrivilege{PLEDGE_RPATH};
+constexpr int MaxPrivilege{4};
+constexpr int MinPrivilege{0};
 
 void
 makeVacuouslyTrue(Disjunction& disjunction) {
@@ -145,7 +145,7 @@ public:
       }
       auto& orderedInsts = *oInstMap[currFunction];
       // llvm::errs() << "\noldProv = " << oldProv->getFunction()->getName()
-      //             << "\nnewProv = " << newProv->getFunction()->getName();
+      //              << "\nnewProv = " << newProv->getFunction()->getName();
       llvm::errs() << "\nCheckin newProv = " << *newProv << "\ndominates oldProv = " << *oldProv;
       return orderedInsts.dominates(newProv, oldProv);
       // true if oldProv before newProv
@@ -582,7 +582,7 @@ public:
         if (node.constant && isConstant) {
           constants.push_back(node.constant);
         }         
-        return nullptr;
+        return node.constant;
       }
 
       llvm::Value*
@@ -671,11 +671,22 @@ public:
       return false;
     };
 
+    auto isConstantNode = [](auto& conjunct) -> bool {
+      auto exprID = conjunct.exprID;
+      auto node   = generator->GetExprNode(exprID);
+      if (auto* constantNode = std::get_if<const ConstantExprNode>(&node); 
+          exprID > 0 && constantNode) {
+        llvm::errs() << "\nTop Level Constant: " << *constantNode->constant;
+        return true;
+      }
+      return false;
+    };
+
     llvm::DenseMap<ExprID, llvm::Constant*> idConstantMap;
     bool foundConstant = false;
     for (auto& disjunct : disjunction) {
       for (auto& conjunct : disjunct) {
-        if (!isCmpInst(conjunct)) {
+        if (!isCmpInst(conjunct) && !isConstantNode(conjunct)) {
           continue;
         }
         if (auto* constant = generateFolded(conjunct)) {
@@ -689,7 +700,7 @@ public:
       return disjunction;
     }
 
-    auto handle =  [](auto& conjunct, bool conjunctIsTrue) -> bool {
+    auto handle = [](auto& conjunct, bool conjunctIsTrue) -> bool {
       if (conjunct.notNegated xor conjunctIsTrue) {
         /* Either the constraint is negated && evaluated to true
          * Or the constraint is true and it evaluates to false 
@@ -709,31 +720,38 @@ public:
         }
       
         auto* constant = idConstantMap[exprID];
-        //llvm::errs() << "\nFound Generated constant for " << exprID
-        //             << "\nConstant " << *constant;
+        llvm::errs() << "\nFound Generated constant for " << exprID
+                     << "\nConstant " << *constant;
         bool evaluatesToTrue = constant->isOneValue();
         if (handle(conjunct, evaluatesToTrue)) {
           return true;
         }
       }
-
-      //auto& conjuncts = disjunct.conjunctIDs;
-      //auto from       = 
-      //  std::remove(conjuncts.begin(), conjuncts.end(), generator->GetVacuousConjunct());
-      //conjuncts.erase(from, disjunct.end());
       return false;
     };
-
-    bool shouldKill = false;
-    for (auto& disjunct : disjunction) {
-      shouldKill = checkDisjunct(disjunct);
-      if (shouldKill) {
-        break;
+  
+    auto strictLogical = [&disjunction, &checkDisjunct]() {
+      llvm::errs() << "\nBefore constant simplification";
+      disjunction.print(llvm::errs());
+      auto from = std::remove_if(disjunction.begin(), disjunction.end(), checkDisjunct);
+      auto& disjuncts = disjunction.disjuncts;
+      disjuncts.erase(from, disjuncts.end());
+    };
+    
+    auto trueOnNegation = [&disjunction, &checkDisjunct] {
+      bool shouldKill = false;
+      for (auto& disjunct : disjunction) {
+        shouldKill = checkDisjunct(disjunct);
+        if (shouldKill) {
+          break;
+        }
       }
-    }
-    if (shouldKill) {
-      makeVacuouslyTrue(disjunction);
-    }
+      if (shouldKill) {
+        makeVacuouslyTrue(disjunction);
+      }
+    };
+    
+    trueOnNegation();
     return disjunction.simplifyDisjuncts(generator->GetVacuousConjunct());
   }
 
@@ -1231,7 +1249,6 @@ public:
   }
 
 private:
-  ArgumentRewriter argRewriter;
   SemanticSimplifier semSimplifier;
 
   template <Promises promise>
@@ -2179,8 +2196,6 @@ BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
   generator = std::make_unique<Generator>(Generator{});
   //resolver  = std::make_unique<IndirectCallResolver>(IndirectCallResolver{m});
   privilegeResolver = std::make_unique<PrivilegeResolver>(m);
-  //printer =
-  //    std::make_unique<lowering::Printer>(generator.get(), llvm::outs(), m);
 
   svfResults = analysis::getSVFResults(m);
   //AndersenWaveDiffWithType::createAndersenWaveDiffWithType(m);
@@ -2218,35 +2233,80 @@ dumpGlobals(llvm::Module& m) {
   privilegeResolver->dumpToFile(m);
 }
 
-template<typename Results, typename ContextMerger>
-class Lowering {
-public:
-  Lowering(llvm::Module& m, Results& r, Printer& p)
-   : module{m}, results{r}, printer{p} {}
 
+std::vector<llvm::Instruction*>&
+operator+=(std::vector<llvm::Instruction*>& to, std::vector<llvm::Instruction*>&& from) {
+  std::copy(from.begin(), from.end(), std::back_inserter(to));
+  return to;
+}
+
+template<typename ContextMerger>
+class Instrument {
+  using LoweringInfo = llvm::DenseMap<llvm::Instruction*, DisjunctionValue>;
+public:
   std::vector<llvm::Instruction*>
-  getLoweringLocations() {
+  getFunctionTops(llvm::Module& module) {
     std::vector<llvm::Instruction*> insertionPts;
     for (auto& function : module) {
-      auto& entryBlock = function.getEntryBlock();
-      llvm::Instruction* insertionPt = entryBlock->getFirstInsertionPt();
-      if (insertionPt) {
-        llvm_unreachable("Not an instruction");
+      if (function.isDeclaration()) {
+        continue;
       }
-      insertionPts.push_back(insertionPt);
+      auto& entryBlock = function.getEntryBlock();
+      llvm::Instruction& insertionPt = *(entryBlock.getFirstInsertionPt());
+      insertionPts.push_back(&insertionPt);
     }
+    return insertionPts;
   }
 
-  llvm::DenseMap<llvm::Instruction*, DisjunctionValue>
-  getMergedResults(std::vector<llvm::Instruction*> locations) {
-    auto getStates = [this](auto* instruction) {
+  template<typename Results>
+  std::vector<llvm::Instruction*>
+  firstNonTrivial(Results& results) {
+    auto getFirstNonTrivial = [this](auto* function, auto& functionResults) -> llvm::Instruction* {
+      for (auto* bb : llvm::ReversePostOrderTraversal(function)) {
+        for (auto& inst : *bb) {
+          auto& state = functionResults[&inst][nullptr];
+          if (filter(state)) {
+            return &inst;
+          }
+        }
+      }
+      return nullptr;
+    };
+
+    llvm::DenseSet<llvm::Instruction*> locations;
+    for (auto& [context, cResults] : results) {
+      for (auto& [function, functionResults] : cResults) {
+        llvm::errs() << "\nfunction " << function->getName();
+        if (auto* location = getFirstNonTrivial(function, functionResults)) {
+          locations.insert(location);
+        }
+      }
+    }
+
+    return {locations.begin(), locations.end()};
+  }
+
+  template<typename Results>
+  std::vector<llvm::Instruction*>
+  getLoweringLocations(llvm::Module& module, Results& results) {
+    std::vector<llvm::Instruction*> locations;
+    //locations += getFunctionTops(module);
+    locations  += firstNonTrivial(results);
+    return locations;
+  }
+
+  template<typename Results>
+  LoweringInfo
+  getMergedResults(std::vector<llvm::Instruction*>& locations, Results& results) {
+    auto getStates = [&results](auto* instruction) {
       std::vector<DisjunctionValue> states;
       auto* function = instruction->getFunction();
       for (auto& [context, cResults] : results) {
-        if (cResults.count(instruction) < 1) {
+        if (cResults.count(function) < 1) {
           continue;
         }
-        auto state = cResults[instruction][nullptr];
+        auto& funcResults = cResults[function]; // @context
+        auto state = funcResults[instruction][nullptr];
         states.push_back(state);
       }
       return states;
@@ -2256,8 +2316,8 @@ public:
     auto& merger = this->merger;
     return std::accumulate(values.begin(), values.end(),
       DisjunctionValue(),
-      [merger] (auto& v1, auto& v2) {
-        return merger(v1, v2);
+      [merger] (DisjunctionValue v1, DisjunctionValue v2) {
+        return merger.meetPair(v1, v2);
       });
     };
 
@@ -2266,27 +2326,72 @@ public:
       return merge({states});
     };
 
-    llvm::DenseMap<llvm::Instruction*, DisjunctionValue> ret;
+    LoweringInfo ret;
     auto addToMap = [&mergeStates, this, &ret] (auto* inst) {
-      auto mergedState = &mergeStates(inst);
-      llvm::errs() << "\nMerged State For " << *inst;
-      mergedState[PLEDGE_RPATH].print(llvm::errs());
+      auto mergedState = mergeStates(inst);
+      //printMerged(mergedState);
       auto shouldAdd = filter(mergedState);
       if (shouldAdd) {
         ret[inst] = mergedState;
       }
     };
+
     for (auto* inst : locations) {
       addToMap(inst);
     }
     return ret;
   }
+  
+  bool
+  makeInsertions(llvm::Module& module, LoweringInfo& info) {
+    auto lower = [](auto* inst, auto& stateArray) {
+      auto* module = inst->getModule();
+      auto printer = lowering::Printer{generator.get(), llvm::outs(), module};
+      auto* loc = printer.insertStringResetter(inst);
+      // TODO: constexpr away
+      for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
+        auto& disjunction = stateArray[privilege];
+        if (disjunction.conjunctCount() < 1) {
+          continue;
+        }
+        llvm::errs() << "\nGenerating disjunct";
+        disjunction.print(llvm::errs());
+        auto asEnum = static_cast<Promises>(privilege);
+        printer.insertStringBuilder(inst, disjunction, asEnum);
+      }
+      printer.insertPledgeCall(inst);
+      printer.insertStringResetter(inst);
+      llvm::errs() << "\nAfter insertions";
+      llvm::errs() << *(loc->getParent());
+    };
+
+    for (auto& [inst, stateArray] : info) {
+      lower(inst, stateArray);
+    }
+    return true;
+  }
+
+  template<typename Results>
+  void
+  operator()(llvm::Module& module, Results& results) {
+    auto asInsts = getLoweringLocations(module, results);
+    auto loweringInfo = getMergedResults(asInsts, results);
+    makeInsertions(module, loweringInfo);
+    auto ec = std::error_code{};
+    auto fileOuts =
+        llvm::raw_fd_ostream{"/home/shreeasish/pledgerize-reboot/hoisting/"
+                             "build-release/instrumented/fileStream",
+                             ec};
+    llvm::errs() << "\n\nRunning Verifier\n";
+    if (!llvm::verifyModule(module, &llvm::errs())) {
+      llvm::WriteBitcodeToFile(module, fileOuts);
+    }
+  }
 
 private:
-  llvm::Module& module;
-  Results results;
+  //llvm::Module& module;
+  //Results results;
   ContextMerger merger;
-  Printer& printer;
 
   bool
   filter(DisjunctionValue& stateArray) {
@@ -2295,6 +2400,16 @@ private:
       if (disjunction.conjunctCount() > 1) {
         return true;
       }
+    }
+    return false;
+  }
+
+  bool
+  printMerged(DisjunctionValue& stateArray) {
+    for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
+      llvm::errs() << "\nMerged State for--" << PromiseNames[privilege];
+      auto& disjunction = stateArray[privilege];
+      disjunction.print(llvm::errs());
     }
     return false;
   }
@@ -2329,6 +2444,8 @@ runAnalysisFor(llvm::Module& m,
                        "build-release/debug.ll",ec};
   fileOuts << m;
 
+  // Instrumentation class
+  Instrument<DisjunctionMeet> instrument;
   for (auto fname : functionNames) {
     auto* entryPoint = m.getFunction(fname);
     if (!entryPoint) {
@@ -2339,11 +2456,12 @@ runAnalysisFor(llvm::Module& m,
     llvm::outs().changeColor(llvm::raw_ostream::Colors::GREEN);
     llvm::outs() << "\nFinished " << entryPoint->getName() << "\n";
     llvm::outs().resetColor();
-
-    //lowerInstructions(m, mergedResults);
-    dumpAnnotatedCFG(entryPoint, {nullptr, nullptr}, results);
+    dumpGlobals(m);
+  
+    instrument(m, results);
+    //dumpAnnotatedCFG(entryPoint, {nullptr, nullptr}, results);
   }
-  dumpGlobals(m);
+  //dumpGlobals(m);
 }
 
 
@@ -2411,7 +2529,6 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   //    }
   //  }
   //}
-
 
   // auto ec = std::error_code{};
   // auto fileOuts =

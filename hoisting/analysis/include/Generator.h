@@ -159,6 +159,7 @@ public:
 
   llvm::Instruction* // Fail for bad queuries
   getOrigin(ExprID exprID) {
+    llvm::errs() << "\nGetting origin for" << exprID;
     assert(originMap.count(exprID) && "Does not have an origin");
     return originMap[exprID];
   };
@@ -679,7 +680,7 @@ private:
     leafTable.insert({constant, constantExprCounter});
 
     auto* location = getLocation();
-    originMap[binaryExprCounter] = location;
+    originMap[constantExprCounter] = location;
     return constantExprCounter++; 
   }
 

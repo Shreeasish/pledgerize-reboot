@@ -328,21 +328,19 @@ public:
         
          auto newState = meet({passedAbstract.second, retState});
          needsUpdate |= !(newState == retState);
-         {
-           llvm::errs() << "\nChecking Ret State at " << *cs.getInstruction();
-           llvm::errs() << " parent" << cs.getInstruction()->getParent()->getParent()->getName();
-           llvm::errs() << "\nretState";
-           retState[PLEDGE_CPATH].print(llvm::errs());
+         //llvm::errs() << "\nChecking Ret State at " << *cs.getInstruction();
+         //llvm::errs() << " parent" << cs.getInstruction()->getParent()->getParent()->getName();
+         //llvm::errs() << "\nretState";
+         //retState[PLEDGE_CPATH].print(llvm::errs());
 
-           llvm::errs() << "\nnewState";
-           newState[PLEDGE_CPATH].print(llvm::errs());
-           llvm::errs() << "\n----end check----";
-           if (needsUpdate) {
-             llvm::errs() << " yes update";
-           } else {
-             llvm::errs() << " no update";
-           }
-         }
+         //llvm::errs() << "\nnewState";
+         //newState[PLEDGE_CPATH].print(llvm::errs());
+         //llvm::errs() << "\n----end check----";
+         //if (needsUpdate) {
+         //  llvm::errs() << " yes update";
+         //} else {
+         //  llvm::errs() << " no update";
+         //}
          retState = newState;
        }
      }
@@ -494,8 +492,10 @@ public:
       llvm::errs() << "\n\nEXTRA: For BB in " << bb->getParent()->getName();
       llvm::errs() << "\nEXTRA: First inst in BB " << *bb->begin();
       llvm::errs() << "\nEXTRA: Merging with function Key " << getSummaryKey(f)->getName();
-      mergeInState(state, results[getSummaryKey(f)]);
-
+      auto* terminator = bb->getTerminator();
+      if (auto ret = llvm::dyn_cast<llvm::ReturnInst>(terminator)) {
+        mergeInState(state, results[getSummaryKey(f)]);
+      }
       // If we have already processed the block and no changes have been made to
       // the abstract input, we can skip processing the block. Otherwise, save
       // the new entry state and proceed processing this block.
