@@ -6,7 +6,7 @@ extern "C" {
 #include <stdio.h>
 #include <err.h>
 
-char pledge_string[256] = "stdio";
+char pledge_string[1024] = {'\0'};
 # define CLEAR_STRING ClEaR_StRiNg
 void
 CLEAR_STRING(){
@@ -16,9 +16,9 @@ CLEAR_STRING(){
 #define ADD(X) AdD_##X
 void
 ADD(stdio)(bool shouldAdd) {
-//  if (shouldAdd) {
-//    strcat(pledge_string, " stdio");
-//  }
+  if (shouldAdd) {
+    strcat(pledge_string, " stdio");
+  }
   return;
 }
 
@@ -39,13 +39,17 @@ ADD(rpath)(bool shouldAdd) {
 #define MAKE_PLEDGE MaKe_pLeDgE
 void
 MAKE_PLEDGE() {
-  fprintf(stderr, "\nPLEDGING WITH \"%s\"\n", pledge_string);
+  int length = strlen(pledge_string);
+  char* built_string = pledge_string;
+  if (length > 1) {
+    built_string = built_string + 1;
+  }
+  fprintf(stderr, "\nPLEDGING WITH \"%s\"\n",built_string);
   fflush(stderr);
-  if (pledge(pledge_string, NULL) == -1) {
+  if (pledge(built_string, NULL) == -1) {
     err(1, "pledge");
   }
-  strcpy(pledge_string, "stdio");
-  //pledge_string[0] = '\0';
+  pledge_string[0] = '\0';
   return;
 }
 

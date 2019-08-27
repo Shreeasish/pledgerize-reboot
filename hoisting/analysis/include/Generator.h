@@ -492,8 +492,8 @@ public:
   // Accounts for state becoming true
   Disjunction
   pushToTrue(const Disjunction& disjunction, const ExprID oldExprID) {
-    Disjunction localDisjunction = disjunction;
-    for (auto& disjunct : localDisjunction) {
+    Disjunction copy = disjunction;
+    for (auto& disjunct : copy) {
       auto from = std::remove_if(
           disjunct.begin(), disjunct.end(), [&](const auto& conjunct) {
             return find(conjunct, oldExprID);
@@ -503,11 +503,28 @@ public:
       if (!disjunct.size()) {  // Drop state to true
         Disjunct disjunct{};
         disjunct.addConjunct(GetVacuousConjunct());
-        localDisjunction.disjuncts = Disjuncts{disjunct};
+        copy.disjuncts = Disjuncts{disjunct};
         break;
       }
     }
-    return localDisjunction;
+
+    if (!(copy == disjunction)) {
+      // Track approximation locations
+      approximationMap[location] = oldExprID;
+    }
+    return copy;
+  }
+
+  Disjunction
+  pushAllToTrue(const Disjunction& disjunction) {
+    Disjunction copy = disjunction;
+    Disjunct disjunct{};
+    disjunct.addConjunct(this->GetVacuousConjunct());
+    copy.disjuncts = Disjuncts{disjunct};
+    if (!(copy == disjunction)) {
+      approximationMap[location] = 0;
+    }
+    return copy;
   }
 
   bool
@@ -646,6 +663,11 @@ public:
     return std::make_pair(conjunct, finalRet);
   }
 
+  llvm::DenseMap<llvm::Instruction*, ExprID>&
+  getApproxMap() {
+    return approximationMap;
+  }
+
 private:
   std::deque<ConstantExprNode> constantSlab;
   std::deque<ValueExprNode>    valueSlab;
@@ -660,7 +682,9 @@ private:
 
   llvm::Instruction* location = nullptr;
   using Origin = llvm::Instruction*;
+
   llvm::DenseMap<ExprID, Origin> originMap;
+  llvm::DenseMap<llvm::Instruction*, ExprID> approximationMap;
   
   constexpr ExprID reservedVExprBits() const {
     return 1 << (typeSize - 3); // -1 for sign bit

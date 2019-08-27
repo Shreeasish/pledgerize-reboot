@@ -104,9 +104,10 @@ constexpr int MinPrivilege{0};
 
 void
 makeVacuouslyTrue(Disjunction& disjunction) {
-  Disjunct disjunct{};
-  disjunct.addConjunct(generator->GetVacuousConjunct());
-  disjunction.disjuncts = Disjuncts{disjunct};
+  disjunction = generator->pushAllToTrue(disjunction);
+  //Disjunct disjunct{};
+  //disjunct.addConjunct(generator->GetVacuousConjunct());
+  //disjunction.disjuncts = Disjuncts{disjunct};
 }
 
 /*--------------------------------------------------------*
@@ -747,10 +748,12 @@ public:
         }
       }
       if (shouldKill) {
+        // isApproximation
         makeVacuouslyTrue(disjunction);
       }
     };
     
+    //strictLogical();
     trueOnNegation();
     return disjunction.simplifyDisjuncts(generator->GetVacuousConjunct());
   }
@@ -912,16 +915,22 @@ public:
     };
 
     auto vacuousConjunct = generator->GetVacuousConjunct();
+    std::vector<ExprID> toPush;
     for (auto& disjunct : disjunction) {
       for (auto& conjunct : disjunct) {
         if (conjunct == vacuousConjunct
             || !isFromLoop(conjunct)) {
           continue;
         }
-        conjunct = generator->GetVacuousConjunct();
+        toPush.push_back(conjunct.exprID);
+        //conjunct = generator->GetVacuousConjunct();
       }
     }
 
+    for (auto exprID : toPush) {
+      disjunction = generator->pushToTrue(disjunction, exprID);
+    }
+    
     disjunction.simplifyDisjuncts(generator->GetVacuousConjunct());
     llvm::errs() << "\nAfter Cleaning BackEdges";
     disjunction.print(llvm::errs());
@@ -1113,7 +1122,6 @@ private:
 };
 
 
-
 /*--------------------------------------------------------*
  *------------------TRANSFER FUNCTION---------------------*
  *--------------------------------------------------------*/
@@ -1148,17 +1156,8 @@ public:
     Debugger::ContributionCounter counter{inst};
 
     constexpr Promises promise = static_cast<Promises>(PledgeCounter);
-    /* PLUGIN for stdio REMOVE THIS */
-    //if constexpr (promise == PLEDGE_STDIO) {
-    //  return;
-    //}
-    /* REMOVE THIS */
     auto state = StateAccessor<promise>{stateMap};
     bool notEmpty = !state[nullptr].isEmpty();
-
-    /* Get reachability. The transfers should not be changing the reachability
-     * but it does generate states which are default initialized to
-     * unreachable. */
     handled |= handleBrOrSwitch(inst, handled);
     handled |= handlePhiBackEdges(&value, state, handled);
     handled |= handleCallSite<promise>(&value, state, context, handled);
@@ -1397,6 +1396,7 @@ private:
 
     auto stubWorker = [&state, &value](bool isWhiteListed) {
       if (!isWhiteListed) {
+        //isApproximation
         makeVacuouslyTrue(state[nullptr]);
       } else if (isWhiteListed && generator->isUsed(value)) {
         auto oldExprID = generator->GetOrCreateExprID(value);
@@ -1408,6 +1408,7 @@ private:
       [&state,  &context, &stubWorker] (auto callInfo) { // FName or CallSite
       if (privilegeResolver->hasPrivilege<Promise>({callInfo}, context)) {
         llvm::errs() << "\nGoing to Top";
+        //isApproximation
         makeVacuouslyTrue(state[nullptr]);
       } else {
         privilegeResolver->handleStubs(stubWorker, {callInfo});
@@ -1438,6 +1439,7 @@ private:
             handleExternalCall(func->getName());
           } 
         }
+        //TODO: Customize here
       } else {  // if SVF is unable to find callees
         llvm::errs() << "\n Could Not Find Callee for"
                      << *callSite.getInstruction();
@@ -1503,7 +1505,6 @@ private:
 
     //llvm::errs() << "\nGep SRC type " << *gep->getSourceElementType();
     //llvm::errs() << "\nGep RES type " << *gep->getResultElementType();
-
     bool isArrayGEP = [&gep] {
       auto* resType = gep->getSourceElementType();
       //if (resType->isArrayTy()) {
@@ -1514,6 +1515,7 @@ private:
       return resType->isArrayTy();
     }();
 
+    //TODO: Customize Here
     if (isArrayGEP) {
       auto oldExprID = generator->GetOrCreateExprID(value);
       //llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
@@ -1521,12 +1523,13 @@ private:
       //state[nullptr].print(llvm::errs());
       state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
       dropOperands(value, state);
-      //state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
       //llvm::errs() << "\nAfter killing geps";
       //state[nullptr].print(llvm::errs());
       return true;
     }
     
+    //TODO: Customize Here
     auto* resType = gep->getResultElementType();
     if (resType->isPointerTy()) {
       //llvm::errs() << "\nFound gep ptr result type";
@@ -1547,6 +1550,7 @@ private:
       return true;
     }
 
+    //TODO: Customize here
     if (gep->getSourceElementType() == gep->getResultElementType()) {
       //llvm::errs() << "\nFound gep with src == result";
       //llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
@@ -1558,7 +1562,7 @@ private:
       //state[nullptr].print(llvm::errs());
       state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
       dropOperands(value, state);
-      //state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
+      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
       //llvm::errs() << "\nAfter killing geps";
       //state[nullptr].print(llvm::errs());
       return true;
@@ -1572,6 +1576,7 @@ private:
   }
 
   using NodeExprPair = std::pair<BinaryExprNode, ExprID>;
+  //TODO: Customize here
   auto
   seperateLoads(llvm::StoreInst* const storeInst, std::vector<NodeExprPair>& loads) {
     std::vector<NodeExprPair> otherLoads;
@@ -1590,8 +1595,25 @@ private:
         llvm::errs() << "\n Found no-alias for   " << *loadInst << " and " << *storeInst;
         return; //Discard NoAliases
       } else {
-        llvm::errs() << "\n Found may-alias for  " << *loadInst << " and " << *storeInst;
-        //llvm::errs() << "\n with ExprID" << exprID;
+        llvm::errs() << "\n Found may-alias for  " << *loadInst << " and " << *storeInst
+                     << " ExprID " << exprID;
+        auto* currFunction = storeInst->getFunction();
+        auto* loadFunction = loadInst->getFunction();
+        auto& fDTrees      = generator->functionDTs;
+        auto& oInstMap     = generator->orderedInstMap;
+        if (!oInstMap.count(currFunction)) {
+          auto dt     = std::make_unique<llvm::DominatorTree>(*currFunction);
+          auto oInsts = std::make_unique<llvm::OrderedInstructions>(dt.get());
+
+          fDTrees.try_emplace(currFunction, std::move(dt));
+          oInstMap.try_emplace(currFunction, std::move(oInsts));
+        }
+        auto& orderedInsts = *oInstMap[currFunction];
+        if (currFunction == loadFunction
+            && orderedInsts.dominates(storeInst, loadInst)) {
+          llvm::errs() << "\nStore dominates Load";
+        }
+        // llvm::errs() << "\n with ExprID" << exprID;
         otherLoads.push_back({node, exprID});
         return;
       }
@@ -1702,21 +1724,30 @@ private:
   }
 
   bool
-  validate(llvm::StoreInst* store) {
+  validate(llvm::StoreInst* store, const BinaryExprNode& node) {
     auto* valueOperand = store->getValueOperand();
     bool isFromLoad    = llvm::isa<llvm::LoadInst>(valueOperand);
     auto isPointer = valueOperand->getType()->isPointerTy();
     if (isFromLoad && isPointer) {
       llvm::errs() << "From load with pointer " << *valueOperand;
     }
-    return isFromLoad && isPointer;
+
+    auto* load = llvm::dyn_cast<llvm::LoadInst>(node.value);
+    auto interproceduralAlias = [&store, &load] {
+      return load->getFunction() != store->getFunction();
+    }();
+    return (isFromLoad && isPointer) || interproceduralAlias;
   }
 
   void
   sterilise(Disjunction& disjunction,
             const ExprID loadExprID,
             const BinaryExprNode& loadNode) {
+    llvm::errs() << "\nBefore Pushing LoadExprID " << loadExprID;
+    disjunction.print(llvm::errs());
     disjunction = generator->pushToTrue(disjunction, loadExprID);
+    llvm::errs() << "\nAfter Pushing LoadExprID " << loadExprID;
+    disjunction.print(llvm::errs());
     return;
   }
 
@@ -1745,7 +1776,6 @@ private:
     //llvm::errs() << "\n Handling store at " << *value;
     std::vector<NodeExprPair> asLoads = getLoads(state);
     auto [strongLoads, weakLoads]     = seperateLoads(storeInst, asLoads);
-    bool isValid = validate(storeInst);
     
     auto localDisjunction = state[nullptr];
     for (auto& [loadNode, exprID] : strongLoads) {
@@ -1755,11 +1785,10 @@ private:
 
     for (auto& [loadNode, exprID] : weakLoads) {
       //llvm::errs() << "\nWeak load for " << *(loadNode.value) << " id " << exprID;
-      if (!isValid) {
+      if (validate(storeInst, loadNode)) {
         sterilise(localDisjunction, exprID,  loadNode);
       } else {
-      state[nullptr] =
-          weakUpdate(localDisjunction, exprID, loadNode, storeInst);
+        state[nullptr] = weakUpdate(localDisjunction, exprID, loadNode, storeInst);
       }
     }
     return true;
@@ -1840,6 +1869,7 @@ private:
     llvm::errs() << "\nLoad     Type:" << *loadInst->getType();
     llvm::errs() << "\nLoad Ptr Type:" << *ptrOp->getType();
 
+    //TODO: Customize Here
     if (ptrTy->getPointerElementType()->isPointerTy()) {
       llvm::errs() << "\nLoad Inst " << *loadInst;
       llvm::errs() << "\nLoad with ptr2ptr as ptr";
@@ -1856,6 +1886,7 @@ private:
       return true;
     }
 
+    //TODO: Customize Here
     if (auto asGep = llvm::dyn_cast<llvm::GetElementPtrInst>(ptrOp);
         asGep && asGep->getSourceElementType() == asGep->getResultElementType()) {
       llvm::errs() << "\nfound load through gep with same src and result";
@@ -2090,8 +2121,8 @@ private:
     auto loadAsMemLoc  = llvm::MemoryLocation::get(loadInst);
     auto storeAsMemLoc = llvm::MemoryLocation::get(storeInst);
     auto aliasType = AAResults.alias(loadAsMemLoc, storeAsMemLoc);
-    if (aliasType == AliasResult::MayAlias
-        || aliasType == AliasResult::NoAlias) {
+    if (aliasType == AliasResult::MayAlias||
+         aliasType == AliasResult::NoAlias) {
       return getSVFResults(storeAsMemLoc, loadAsMemLoc);
     }
     return aliasType;
@@ -2158,10 +2189,6 @@ private:
     auto valExprID  = generator->GetOrCreateExprID(storeValue);
     //llvm::errs() << "\nRewriting load exprID " << loadExprID
     //             << "  with store value expr " << valExprID;
-    
-    // TODO: may-alias can screw with the constraints
-    // I expect loop dependent aliases to be must aliases though
-    // May-aliases can also be loop dependent
     auto rewritten = generator->rewrite(forRewrites, loadExprID, valExprID);
     //llvm::errs() << "\n rewritten disjunction";
     //rewritten.print(llvm::errs());
@@ -2244,6 +2271,7 @@ template<typename ContextMerger>
 class Instrument {
   using LoweringInfo = llvm::DenseMap<llvm::Instruction*, DisjunctionValue>;
 public:
+
   std::vector<llvm::Instruction*>
   getFunctionTops(llvm::Module& module) {
     std::vector<llvm::Instruction*> insertionPts;
@@ -2257,6 +2285,53 @@ public:
     }
     return insertionPts;
   }
+
+  //template<typename Results>
+  std::vector<llvm::Instruction*>
+  getApproximations() {
+    auto isInLoop = [](llvm::Instruction* inst) {
+      auto* block = inst->getParent();
+      auto* function = block->getParent();
+      auto* loopInfo = functionLoopInfos[function].get();
+      auto* loop     = loopInfo->getLoopFor(block);
+      return loop; //check if loop exists for BB
+    };
+
+    auto isLoopHeader = [](auto& loop, llvm::Instruction* inst) {
+      auto* block = inst->getParent();
+      auto* header = loop->getHeader();
+      return block == header;
+    };
+
+    auto getFirstInsertable = [](llvm::Instruction* inst) -> llvm::Instruction* {
+      auto BB = inst->getParent();
+      return &(*BB->getFirstInsertionPt());
+    };
+
+    llvm::DenseSet<llvm::Instruction*> locations;
+    auto& approximationMap = generator->getApproxMap();
+    for (auto& [inst, id] : approximationMap) {
+      llvm::errs() << "\nApproximation @" << *inst;
+      if (auto loop = isInLoop(inst);
+          loop && !isLoopHeader(loop, inst)) {
+        continue;
+      }
+      auto* bb = inst->getParent();
+      auto* nextInst = inst;
+      while (nextInst != getFirstInsertable(inst) 
+          && !nextInst->isTerminator()) {
+        nextInst = nextInst->getNextNode();
+      }
+
+      nextInst = nextInst == getFirstInsertable(inst) 
+                 ? nextInst : inst->getNextNode();
+      locations.insert(nextInst);
+      //auto* nextInst = inst->getNextNode();
+      locations.insert(nextInst);
+    }
+    return {locations.begin(), locations.end()};
+  }
+
 
   template<typename Results>
   std::vector<llvm::Instruction*>
@@ -2290,8 +2365,9 @@ public:
   std::vector<llvm::Instruction*>
   getLoweringLocations(llvm::Module& module, Results& results) {
     std::vector<llvm::Instruction*> locations;
-    //locations += getFunctionTops(module);
-    locations  += firstNonTrivial(results);
+    //locations += firstNonTrivial(results);
+    //locations += topOfProgram(module);
+    locations += getApproximations();
     return locations;
   }
 
@@ -2327,13 +2403,10 @@ public:
     };
 
     LoweringInfo ret;
-    auto addToMap = [&mergeStates, this, &ret] (auto* inst) {
+    auto addToMap = [&mergeStates, &ret] (auto* inst) {
       auto mergedState = mergeStates(inst);
       //printMerged(mergedState);
-      auto shouldAdd = filter(mergedState);
-      if (shouldAdd) {
-        ret[inst] = mergedState;
-      }
+      ret[inst] = mergedState;
     };
 
     for (auto* inst : locations) {
@@ -2354,9 +2427,9 @@ public:
         if (disjunction.conjunctCount() < 1) {
           continue;
         }
-        llvm::errs() << "\nGenerating disjunct";
-        disjunction.print(llvm::errs());
         auto asEnum = static_cast<Promises>(privilege);
+        llvm::errs() << "\nGenerating disjunct for---" << PromiseNames[privilege];
+        disjunction.print(llvm::errs());
         printer.insertStringBuilder(inst, disjunction, asEnum);
       }
       printer.insertPledgeCall(inst);
@@ -2397,7 +2470,7 @@ private:
   filter(DisjunctionValue& stateArray) {
     for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
       auto& disjunction = stateArray[privilege];
-      if (disjunction.conjunctCount() > 1) {
+      if (disjunction.conjunctCount() >= 1) {
         return true;
       }
     }
@@ -2407,7 +2480,7 @@ private:
   bool
   printMerged(DisjunctionValue& stateArray) {
     for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
-      llvm::errs() << "\nMerged State for--" << PromiseNames[privilege];
+      //llvm::errs() << "\nMerged State for--" << PromiseNames[privilege];
       auto& disjunction = stateArray[privilege];
       disjunction.print(llvm::errs());
     }

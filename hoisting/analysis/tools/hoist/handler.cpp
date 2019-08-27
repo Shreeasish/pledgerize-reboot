@@ -638,6 +638,11 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   //libCHandlers.try_emplace("isupper", 0);
   //libCHandlers.try_emplace("isxdigit", 0);
   //libCHandlers.try_emplace("rand", 0);
+  
+  // From cat
+  libCHandlers.try_emplace("iscntrl", 0);
+  libCHandlers.try_emplace("isascii", 0);
+  libCHandlers.try_emplace("toascii", 0);
 
   // From
   libCHandlers.try_emplace("__errno", 16);
