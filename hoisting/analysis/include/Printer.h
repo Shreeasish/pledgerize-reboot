@@ -108,7 +108,10 @@ public:
     return builder.CreateCall(pledgeCaller);
   }
 
-
+  bool isBlackListed(llvm::Instruction* inst) {
+    auto fname = inst->getFunction()->getName();
+    return functionBlackList.count(fname) > 0;
+  }
 private:
   Generator* const generator;
   llvm::raw_ostream& out;
@@ -119,8 +122,6 @@ private:
 
   llvm::DenseSet<llvm::StringRef> functionBlackList;
   void setLoweringBoundaries();
-
-
 
   llvm::DenseMap<Conjunct, llvm::Value*>    conjunctCache;
   llvm::DenseMap<Disjunct, llvm::Value*>    disjunctCache;

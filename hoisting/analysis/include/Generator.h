@@ -509,7 +509,7 @@ public:
     }
 
     if (!(copy == disjunction)) {
-      // Track approximation locations
+      // Track states at approximation locations
       approximationMap[location] = oldExprID;
     }
     return copy;
@@ -663,9 +663,25 @@ public:
     return std::make_pair(conjunct, finalRet);
   }
 
-  llvm::DenseMap<llvm::Instruction*, ExprID>&
+  using AbstractState = std::array<Disjunction, COUNT - 1>;
+  using States = std::vector<AbstractState>;
+
+  auto&
   getApproxMap() {
-    return approximationMap;
+    return stateApproxMap;
+  }
+
+  auto
+  hasApproximation(llvm::Instruction* inst) { 
+    return approximationMap.find(inst) 
+      != approximationMap.end();
+  }
+
+  void
+  storePreApproxState(const AbstractState& preApproxState, llvm::Instruction* inst) {
+    if (approximationMap.count(inst)) {
+      stateApproxMap[inst].push_back(preApproxState);
+    }
   }
 
 private:
@@ -684,6 +700,8 @@ private:
   using Origin = llvm::Instruction*;
 
   llvm::DenseMap<ExprID, Origin> originMap;
+
+  llvm::DenseMap<llvm::Instruction*, States> stateApproxMap;
   llvm::DenseMap<llvm::Instruction*, ExprID> approximationMap;
   
   constexpr ExprID reservedVExprBits() const {

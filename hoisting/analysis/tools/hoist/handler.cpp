@@ -109,10 +109,20 @@ public:
           return {1 << PLEDGE_WPATH};
           break;
         }
+        //O_WRONLY|O_TRUNC
+        case (1025): {
+          return {1 << PLEDGE_WPATH};
+          break;
+        }
 
+        //O_WRONLY | O_TRUNC | O_CREAT 
+        case (1537): {
+          return {1 << PLEDGE_WPATH};
+          break;
+        }
         default: {
-          llvm::outs() << "\n\n FOUND NOTHING";
-          llvm::outs() << *cs.getInstruction();
+          llvm::errs() << "\n\n FOUND NOTHING";
+          llvm::errs() << *cs.getInstruction();
           //exit(0);
           return 0;
           break;
@@ -415,27 +425,39 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("SHA384Update", 0);  
   libCHandlers.try_emplace("SHA512_256Update", 0);  
 
-  // For slaacd
-  /* Stubbed functions instead of including 
-   * them x_errx exits rest just need stdio */
-  //libCHandlers.try_emplace("event_err", 16);   
-  //libCHandlers.try_emplace("event_errx", 16);
-  //libCHandlers.try_emplace("event_msgx", 16); 
-
+  /* From slaacd */
+  libCHandlers.try_emplace("login_getclass", 0);
+  libCHandlers.try_emplace("auth_check_change", 0);
+  libCHandlers.try_emplace("auth_close", 0);
+  libCHandlers.try_emplace("auth_open", 0);
+  libCHandlers.try_emplace("auth_setpwd", 0);
+  libCHandlers.try_emplace("bcopy", 0);
+  //libCHandlers.try_emplace("execv", 0); in CallGraphAnalyzer.h
+  //libCHandlers.try_emplace("execvp", 0); in CallGraphAnalyzer.h
+  libCHandlers.try_emplace("fcntl", 0);
   libCHandlers.try_emplace("getenv", 16);
-  libCHandlers.try_emplace("imsg_compose", 16);
-  libCHandlers.try_emplace("imsg_flush", 16);
-  libCHandlers.try_emplace("imsg_init", 16);
-  libCHandlers.try_emplace("msgbuf_clear", 16);
-  libCHandlers.try_emplace("msgbuf_write", 16);
+  libCHandlers.try_emplace("llvm.va_copy", 0);
+  libCHandlers.try_emplace("llvm.va_end", 0);
+  libCHandlers.try_emplace("llvm.va_start", 0);
+  libCHandlers.try_emplace("login_getclass", 0);
   libCHandlers.try_emplace("realloc", 16);
-
+  libCHandlers.try_emplace("recallocarray", 16);
+  libCHandlers.try_emplace("tcsetattr", 0);
+  libCHandlers.try_emplace("ttyslot", 0);
+  //libCHandlers.try_emplace("llvm.dbg.declare", 0);
+  //libCHandlers.try_emplace("llvm.dbg.value", 0);
+  //libCHandlers.try_emplace("llvm.lifetime.end.p0i8", 0);
+  //libCHandlers.try_emplace("llvm.lifetime.start.p0i8", 0);
+  //libCHandlers.try_emplace("llvm.memcpy.p0i8.p0i8.i32", 0);
+  //libCHandlers.try_emplace("llvm.memcpy.p0i8.p0i8.i64", 0);
+  //libCHandlers.try_emplace("llvm.memmove.p0i8.p0i8.i64", 0);
+  //libCHandlers.try_emplace("llvm.memset.p0i8.i64", 0);
   /*TODO: chroot seems to require no privs. Confirm*/
   libCHandlers.try_emplace("chroot", 0);
+  libCHandlers.try_emplace("geteuid", 16);
 
   /* More handlers for slaacd */
   //libCHandlers.try_emplace("getpwnam", 1 << PLEDGE_GETPW);
-  libCHandlers.try_emplace("geteuid", 16);
 
   /* AF_UNIX, AF_INET and AF_INET6 handlers*/
   libCHandlers.try_emplace("socket", FunctionPrivilegesBuilder(16, package).add(std::make_unique<Check_socket>(0)).build());
@@ -449,7 +471,6 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("imsg_init", 16);
   libCHandlers.try_emplace("imsg_read", 16);
   libCHandlers.try_emplace("imsg_get", 16);
-  libCHandlers.try_emplace("imsg_compose", 16);
   libCHandlers.try_emplace("imsg_composev",16);
   libCHandlers.try_emplace("imsg_create", 16);
   libCHandlers.try_emplace("imsg_add", 16);
@@ -495,8 +516,6 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
    * require additional privs */
   libCHandlers.try_emplace("getifaddrs", 16);
   libCHandlers.try_emplace("reallocarray", 16);
-  /* From slaacd */
-  libCHandlers.try_emplace("recallocarray", 16);
   /* WhiteList fork */
   libCHandlers.try_emplace("fork",0);
   /*Tmux stuff*/
@@ -512,11 +531,6 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("Blowfish_expand0state", 0);
   libCHandlers.try_emplace("Blowfish_stream2word", 0);
   libCHandlers.try_emplace("blf_enc", 0);
-  //libCHandlers.try_emplace("auth_open", 16);
-  //libCHandlers.try_emplace("auth_setpwd", 4199418);
-  //libCHandlers.try_emplace("auth_check_change", 4199418);
-  //libCHandlers.try_emplace("auth_close", 56);
-  //libCHandlers.try_emplace("login_getclass", 58);
   libCHandlers.try_emplace("login_getcaptime", 16);
   libCHandlers.try_emplace("login_close", 16);
   libCHandlers.try_emplace("endpwent", 16);

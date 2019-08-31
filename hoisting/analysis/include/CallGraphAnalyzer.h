@@ -12,12 +12,22 @@
 using SyscallBitsetMap = llvm::StringMap<std::bitset<COUNT>>;
 using Privileges = std::bitset<COUNT>;
 
-static SyscallBitsetMap syscallBitsetMap {
-  //libCHandlers.try_emplace("options", 16);
+static SyscallBitsetMap syscallBitsetMap{
+    // libCHandlers.try_emplace("options", 16);
     {"options",
-     Privileges{}.set(PLEDGE_STDIO)
-         | Privileges{}.set(PLEDGE_CPATH)},
+     Privileges{}.set(PLEDGE_STDIO) | Privileges{}.set(PLEDGE_CPATH)},
+    {"fork", Privileges{}.set(PLEDGE_PROC)},
+    {"vfork", Privileges{}.set(PLEDGE_PROC)},
     {"execlp", Privileges{}.set(PLEDGE_PROC)},
+    {"execv", Privileges{}.set(PLEDGE_EXEC)},
+    {"execve", Privileges{}.set(PLEDGE_EXEC)},
+    {"execvp", Privileges{}.set(PLEDGE_EXEC)},
+    {"sendmsg", Privileges{}.set(PLEDGE_SENDFD)},
+    {"recvmsg", Privileges{}.set(PLEDGE_RECVFD)},
+    {"recvfrom", Privileges{}.set(PLEDGE_STDIO)},
+    {"sendto",
+     Privileges{}.set(PLEDGE_STDIO) 
+       | Privileges{}.set(PLEDGE_DNS)},
     /* Custom Input */
     /* End Custom */
     // {"exit", Privileges{}.set(PLEDGE_ALWAYS)}, //Set nothing for
@@ -70,17 +80,9 @@ static SyscallBitsetMap syscallBitsetMap {
     {"writev", Privileges{}.set(PLEDGE_STDIO)},
     {"pwrite", Privileges{}.set(PLEDGE_STDIO)},
     {"pwritev", Privileges{}.set(PLEDGE_STDIO)},
-    {"recvmsg", Privileges{}.set(PLEDGE_STDIO)},
-    {"recvfrom",
-     Privileges{}.set(PLEDGE_STDIO)
-         | Privileges{}.set(PLEDGE_YPACTIVE)},
     // {"ftruncate", Privileges{}.set(PLEDGE_STDIO)},
     {"lseek", Privileges{}.set(PLEDGE_STDIO)},
     // {"fpathconf", Privileges{}.set(PLEDGE_STDIO)},
-    {"sendto",
-     Privileges{}.set(PLEDGE_STDIO)
-         | Privileges{}.set(PLEDGE_YPACTIVE)},
-    {"sendmsg", Privileges{}.set(PLEDGE_STDIO)},
     {"nanosleep", Privileges{}.set(PLEDGE_STDIO)},
     {"sigaltstack", Privileges{}.set(PLEDGE_STDIO)},
     {"sigprocmask", Privileges{}.set(PLEDGE_STDIO)},
@@ -130,19 +132,13 @@ static SyscallBitsetMap syscallBitsetMap {
     {"__thrwakeup", Privileges{}.set(PLEDGE_STDIO)},
     {"__threxit", Privileges{}.set(PLEDGE_STDIO)},
     {"__thrsigdivert", Privileges{}.set(PLEDGE_STDIO)},
-    {"fork", Privileges{}.set(PLEDGE_PROC)},
-    {"vfork", Privileges{}.set(PLEDGE_PROC)},
     {"setpgid", Privileges{}.set(PLEDGE_PROC)},
     {"setsid", Privileges{}.set(PLEDGE_PROC)},
-    {"setrlimit",
-     Privileges{}.set(PLEDGE_PROC)
-         | Privileges{}.set(PLEDGE_ID)},
+    {"setrlimit", Privileges{}.set(PLEDGE_PROC) | Privileges{}.set(PLEDGE_ID)},
     {"getpriority",
-     Privileges{}.set(PLEDGE_PROC)
-         | Privileges{}.set(PLEDGE_ID)},
+     Privileges{}.set(PLEDGE_PROC) | Privileges{}.set(PLEDGE_ID)},
     {"setpriority",
-     Privileges{}.set(PLEDGE_PROC)
-         | Privileges{}.set(PLEDGE_ID)},
+     Privileges{}.set(PLEDGE_PROC) | Privileges{}.set(PLEDGE_ID)},
     {"setuid", Privileges{}.set(PLEDGE_ID)},
     {"seteuid", Privileges{}.set(PLEDGE_ID)},
     {"setreuid", Privileges{}.set(PLEDGE_ID)},
@@ -153,7 +149,6 @@ static SyscallBitsetMap syscallBitsetMap {
     {"setresgid", Privileges{}.set(PLEDGE_ID)},
     {"setgroups", Privileges{}.set(PLEDGE_ID)},
     {"setlogin", Privileges{}.set(PLEDGE_ID)},
-    {"execve", Privileges{}.set(PLEDGE_EXEC)},
     // {"chdir", Privileges{}.set(PLEDGE_RPATH)},
     // {"openat",
     //  Privileges{}.set(PLEDGE_SPCL_OPEN)},
@@ -162,8 +157,7 @@ static SyscallBitsetMap syscallBitsetMap {
     // //  Privileges{}.set(PLEDGE_RPATH)
     //      | Privileges{}.set(PLEDGE_WPATH)},
     {"faccessat",
-     Privileges{}.set(PLEDGE_RPATH)
-         | Privileges{}.set(PLEDGE_WPATH)},
+     Privileges{}.set(PLEDGE_RPATH) | Privileges{}.set(PLEDGE_WPATH)},
     // {"readlinkat",
     //  Privileges{}.set(PLEDGE_RPATH)
     //      | Privileges{}.set(PLEDGE_WPATH)},
@@ -190,8 +184,7 @@ static SyscallBitsetMap syscallBitsetMap {
     // {"mknod", Privileges{}.set(PLEDGE_DPATH)},
     // {"revoke", Privileges{}.set(PLEDGE_TTY)},
     {"__getcwd",
-     Privileges{}.set(PLEDGE_RPATH)
-         | Privileges{}.set(PLEDGE_WPATH)},
+     Privileges{}.set(PLEDGE_RPATH) | Privileges{}.set(PLEDGE_WPATH)},
     {"getdents", Privileges{}.set(PLEDGE_RPATH)},
     {"getfsstat", Privileges{}.set(PLEDGE_RPATH)},
     // {"statfs", Privileges{}.set(PLEDGE_RPATH)},
@@ -217,49 +210,32 @@ static SyscallBitsetMap syscallBitsetMap {
     //     | Privileges{}.set(PLEDGE_DNS)
     //     | Privileges{}.set(PLEDGE_YPACTIVE)},
     {"connect",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)
-         | Privileges{}.set(PLEDGE_DNS)
-         | Privileges{}.set(PLEDGE_YPACTIVE)},
+     Privileges{}.set(PLEDGE_INET) | Privileges{}.set(PLEDGE_UNIX)
+         | Privileges{}.set(PLEDGE_DNS) | Privileges{}.set(PLEDGE_YPACTIVE)},
     {"bind",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)
-         | Privileges{}.set(PLEDGE_DNS)
-         | Privileges{}.set(PLEDGE_YPACTIVE)},
+     Privileges{}.set(PLEDGE_INET) | Privileges{}.set(PLEDGE_UNIX)
+         | Privileges{}.set(PLEDGE_DNS) | Privileges{}.set(PLEDGE_YPACTIVE)},
     {"getsockname",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)
-         | Privileges{}.set(PLEDGE_DNS)
-         | Privileges{}.set(PLEDGE_YPACTIVE)},
-    {"listen",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)},
-    {"accept4",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)},
-    {"accept",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET) | Privileges{}.set(PLEDGE_UNIX)
+         | Privileges{}.set(PLEDGE_DNS) | Privileges{}.set(PLEDGE_YPACTIVE)},
+    {"listen", Privileges{}.set(PLEDGE_INET) | Privileges{}.set(PLEDGE_UNIX)},
+    {"accept4", Privileges{}.set(PLEDGE_INET) | Privileges{}.set(PLEDGE_UNIX)},
+    {"accept", Privileges{}.set(PLEDGE_INET) | Privileges{}.set(PLEDGE_UNIX)},
     {"getpeername",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET) | Privileges{}.set(PLEDGE_UNIX)},
     {"flock", Privileges{}.set(PLEDGE_FLOCK)},
     {"swapctl", Privileges{}.set(PLEDGE_VMINFO)},
 
     // Merged from manpledges
     {"getpeername",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET) | Privileges{}.set(PLEDGE_UNIX)},
     {"getsockname",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET) | Privileges{}.set(PLEDGE_UNIX)},
     {"setsockopt",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)
+     Privileges{}.set(PLEDGE_INET) | Privileges{}.set(PLEDGE_UNIX)
          | Privileges{}.set(PLEDGE_MCAST)},
     {"getsockopt",
-     Privileges{}.set(PLEDGE_INET)
-         | Privileges{}.set(PLEDGE_UNIX)},
+     Privileges{}.set(PLEDGE_INET) | Privileges{}.set(PLEDGE_UNIX)},
     {"getpwnam", Privileges{}.set(PLEDGE_GETPW)},
     {"getpwuid", Privileges{}.set(PLEDGE_GETPW)},
     {"getpwnam_r", Privileges{}.set(PLEDGE_GETPW)},
@@ -278,15 +254,11 @@ static SyscallBitsetMap syscallBitsetMap {
     {"getgrouplist", Privileges{}.set(PLEDGE_GETPW)},
 
     // Namei stuff
-    {"statfs", Privileges{}.set(PLEDGE_RPATH)},  // C2 - namei additions
-    {"mknod",
-     Privileges{}.set(PLEDGE_DPATH)},  // C2 - Present in kernmap
+    {"statfs", Privileges{}.set(PLEDGE_RPATH)},   // C2 - namei additions
+    {"mknod", Privileges{}.set(PLEDGE_DPATH)},    // C2 - Present in kernmap
     {"mknodat", Privileges{}.set(PLEDGE_DPATH)},  // C2
-    {"mkfifo",
-     Privileges{}.set(PLEDGE_DPATH)},  // C2 - Present in kernmap
-    {"access",
-     Privileges{}.set(PLEDGE_RPATH)
-         | Privileges{}.set(PLEDGE_STDIO)},
+    {"mkfifo", Privileges{}.set(PLEDGE_DPATH)},   // C2 - Present in kernmap
+    {"access", Privileges{}.set(PLEDGE_RPATH) | Privileges{}.set(PLEDGE_STDIO)},
     {"faccessat",
      Privileges{}.set(
          PLEDGE_RPATH)},  // C2 - faccessat calls dofaccessat, Basis pledge is
@@ -302,70 +274,46 @@ static SyscallBitsetMap syscallBitsetMap {
     {"fstat", Privileges{}.set(PLEDGE_STDIO)},
     {"fstatat", Privileges{}.set(PLEDGE_RPATH)},
     {"lstat", Privileges{}.set(PLEDGE_RPATH)},
-    {"stat",
-     Privileges{}.set(PLEDGE_RPATH)
-         | Privileges{}.set(PLEDGE_STDIO)},
+    {"stat", Privileges{}.set(PLEDGE_RPATH) | Privileges{}.set(PLEDGE_STDIO)},
     {"fpathconf", Privileges{}.set(PLEDGE_STDIO)},
     {"pathconf", Privileges{}.set(PLEDGE_RPATH)},
     {"readlink",
-     Privileges{}.set(PLEDGE_STDIO)
-         | Privileges{}.set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_STDIO) | Privileges{}.set(PLEDGE_RPATH)},
     {"readlinkat",
-     Privileges{}.set(PLEDGE_STDIO)
-         | Privileges{}.set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_STDIO) | Privileges{}.set(PLEDGE_RPATH)},
     {"chflags", Privileges{}.set(PLEDGE_FATTR)},
     {"chflagsat", Privileges{}.set(PLEDGE_FATTR)},
     {"fchflags", Privileges{}.set(PLEDGE_FATTR)},
-    {"chmod",
-     Privileges{}.set(PLEDGE_FATTR)
-         | Privileges{}.set(PLEDGE_RPATH)},
-    {"fchmod",
-     Privileges{}.set(PLEDGE_FATTR)
-         | Privileges{}.set(PLEDGE_RPATH)},
+    {"chmod", Privileges{}.set(PLEDGE_FATTR) | Privileges{}.set(PLEDGE_RPATH)},
+    {"fchmod", Privileges{}.set(PLEDGE_FATTR) | Privileges{}.set(PLEDGE_RPATH)},
     {"fchmodat",
-     Privileges{}.set(PLEDGE_FATTR)
-         | Privileges{}.set(PLEDGE_RPATH)},
-    {"chown",
-     Privileges{}.set(PLEDGE_CHOWN)
-         | Privileges{}.set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_FATTR) | Privileges{}.set(PLEDGE_RPATH)},
+    {"chown", Privileges{}.set(PLEDGE_CHOWN) | Privileges{}.set(PLEDGE_RPATH)},
     {"fchownat",
-     Privileges{}.set(PLEDGE_CHOWN)
-         | Privileges{}.set(PLEDGE_RPATH)},
-    {"lchown",
-     Privileges{}.set(PLEDGE_CHOWN)
-         | Privileges{}.set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_CHOWN) | Privileges{}.set(PLEDGE_RPATH)},
+    {"lchown", Privileges{}.set(PLEDGE_CHOWN) | Privileges{}.set(PLEDGE_RPATH)},
     {"fchown", Privileges{}.set(PLEDGE_CHOWN)},
-    {"utimes",
-     Privileges{}.set(PLEDGE_FATTR)
-         | Privileges{}.set(PLEDGE_RPATH)},
+    {"utimes", Privileges{}.set(PLEDGE_FATTR) | Privileges{}.set(PLEDGE_RPATH)},
     {"utimensat",
-     Privileges{}.set(PLEDGE_FATTR)
-         | Privileges{}.set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_FATTR) | Privileges{}.set(PLEDGE_RPATH)},
     {"futimens", Privileges{}.set(PLEDGE_FATTR)},
     {"futimes", Privileges{}.set(PLEDGE_FATTR)},
     {"ftruncate", Privileges{}.set(PLEDGE_STDIO)},
     {"truncate",
-     Privileges{}.set(PLEDGE_WPATH)
-         | Privileges{}.set(PLEDGE_RPATH)
+     Privileges{}.set(PLEDGE_WPATH) | Privileges{}.set(PLEDGE_RPATH)
          | Privileges{}.set(PLEDGE_FATTR)},
-    {"rename",
-     Privileges{}.set(PLEDGE_CPATH)
-         | Privileges{}.set(PLEDGE_RPATH)},
+    {"rename", Privileges{}.set(PLEDGE_CPATH) | Privileges{}.set(PLEDGE_RPATH)},
     {"renameat",
-     Privileges{}.set(PLEDGE_CPATH)
-         | Privileges{}.set(PLEDGE_RPATH)},
-    {"revoke",
-     Privileges{}.set(PLEDGE_TTY)
-         | Privileges{}.set(PLEDGE_RPATH)},
+     Privileges{}.set(PLEDGE_CPATH) | Privileges{}.set(PLEDGE_RPATH)},
+    {"revoke", Privileges{}.set(PLEDGE_TTY) | Privileges{}.set(PLEDGE_RPATH)},
     {"chdir", Privileges{}.set(PLEDGE_RPATH)},
-  
+
     // Handle Manually.
     //{"open", Privileges{}.set(PLEDGE_SPCL_OPEN)},
     //{"openat", Privileges{}.set(PLEDGE_SPCL_OPEN)},
-    
+
     /* Handrolled */
-    {"getpwnam", Privileges{}.set(PLEDGE_GETPW)}
-};
+    {"getpwnam", Privileges{}.set(PLEDGE_GETPW)}};
 
 static SyscallBitsetMap syscallManMap {
     {"openat", Privileges{}.set(PLEDGE_SPCL_OPEN)},

@@ -99,7 +99,7 @@ using DisjunctionValue  = std::array<Disjunction, COUNT - 1>;
 using DisjunctionState  = analysis::AbstractState<DisjunctionValue>;
 using DisjunctionResult = analysis::DataflowResult<DisjunctionValue>;
 
-constexpr int MaxPrivilege{4};
+constexpr int MaxPrivilege{18};
 constexpr int MinPrivilege{0};
 
 void
@@ -158,7 +158,8 @@ public:
       llvm::errs() << "\nKilling OldExprID: " << oldExprID;
       llvm::errs() << "\nFor New ExprID" << newExprID;
       llvm::errs() << "\nWith Pushed To True";
-      return generator->pushToTrue(disjunction, oldExprID);//.print(llvm::errs());
+      llvm_unreachable("Need to use promises for this. Not implemented");
+      //return generator->pushToTrue(disjunction, oldExprID);//.print(llvm::errs());
       //return std::nullopt;
     }
   }
@@ -192,7 +193,7 @@ class DisjunctionMeet : public analysis::Meet<DisjunctionValue, DisjunctionMeet>
 public:
   DisjunctionValue
   meetPair(DisjunctionValue& s1, DisjunctionValue& s2) const {
-    llvm::errs() << "\nPerforming Meet";
+    //llvm::errs() << "\nPerforming Meet";
     DisjunctionValue result;
     static_for<MaxPrivilege>(s1, s2, result);
     return result;
@@ -319,6 +320,7 @@ private:
              DisjunctionValue& result) const {
     static_for<Counter - 1>(s1, s2, result);
     Promises promise = static_cast<Promises>(Counter);
+    //llvm::errs() << "\n For Promise  " << PromiseNames[promise];
     result[promise] = meetPairImpl(s1[promise], s2[promise]);
   }
 
@@ -941,9 +943,6 @@ public:
   operator()(DisjunctionValue toMerge,
              llvm::Value* branchAsValue,
              llvm::Value* destination) {
-    // Store reachability
-    // Use the label of the basic block of the branch to replace the appropriate
-    // operand of the phi
     auto getAssocValue = [&branchAsValue](llvm::PHINode* const phi) {
       auto* basicBlock =
           llvm::dyn_cast<llvm::Instruction>(branchAsValue)->getParent();
@@ -982,8 +981,7 @@ public:
         return withPhi;
       }
 
-      auto&& retState = handle(branchOrSwitch, withPhi, destination);
-      return retState;
+      return handle(branchOrSwitch, withPhi, destination);
     };
 
     Debugger::ContributionCounter counter{branchOrSwitch};
@@ -1243,7 +1241,10 @@ public:
   operator()(llvm::Value& value,
              DisjunctionState& state,
              const Context& context) {
-    static_for<MaxPrivilege>(value, state, context);
+    auto abstractStateCopy = state[nullptr]; // get copy prior to rewrite/approximations
+    static_for<MaxPrivilege>(value, state, context); //destructive update
+    auto* asInst = llvm::dyn_cast<llvm::Instruction>(&value);
+    generator->storePreApproxState(abstractStateCopy, asInst); //store untainted
     return;
   }
 
@@ -2271,7 +2272,6 @@ template<typename ContextMerger>
 class Instrument {
   using LoweringInfo = llvm::DenseMap<llvm::Instruction*, DisjunctionValue>;
 public:
-
   std::vector<llvm::Instruction*>
   getFunctionTops(llvm::Module& module) {
     std::vector<llvm::Instruction*> insertionPts;
@@ -2286,7 +2286,6 @@ public:
     return insertionPts;
   }
 
-  //template<typename Results>
   std::vector<llvm::Instruction*>
   getApproximations() {
     auto isInLoop = [](llvm::Instruction* inst) {
@@ -2305,29 +2304,31 @@ public:
 
     auto getFirstInsertable = [](llvm::Instruction* inst) -> llvm::Instruction* {
       auto BB = inst->getParent();
-      return &(*BB->getFirstInsertionPt());
+      return &*BB->getFirstInsertionPt();
+    };
+
+    auto getInsertionPt = [&getFirstInsertable](llvm::Instruction* inst) -> llvm::Instruction* {
+      auto* bb = inst->getParent();
+      llvm::Instruction* prevInst =  bb->getTerminator();
+      auto* firstInsertable = getFirstInsertable(inst);
+      while (prevInst != inst && prevInst != firstInsertable) {
+        prevInst = prevInst->getPrevNode();
+      }
+      return prevInst;
     };
 
     llvm::DenseSet<llvm::Instruction*> locations;
     auto& approximationMap = generator->getApproxMap();
-    for (auto& [inst, id] : approximationMap) {
-      llvm::errs() << "\nApproximation @" << *inst;
-      if (auto loop = isInLoop(inst);
+    for (auto& [inst, __] : approximationMap) {
+      if (auto* loop = isInLoop(inst);
           loop && !isLoopHeader(loop, inst)) {
         continue;
       }
-      auto* bb = inst->getParent();
-      auto* nextInst = inst;
-      while (nextInst != getFirstInsertable(inst) 
-          && !nextInst->isTerminator()) {
-        nextInst = nextInst->getNextNode();
-      }
-
-      nextInst = nextInst == getFirstInsertable(inst) 
-                 ? nextInst : inst->getNextNode();
-      locations.insert(nextInst);
-      //auto* nextInst = inst->getNextNode();
-      locations.insert(nextInst);
+      auto* insertLoc = getInsertionPt(inst);
+      llvm::errs() << "\nApproximation @" << *inst;
+      //llvm::errs() << "\nDropping ID" << id;
+      llvm::errs() << "\nInserting instruction @" << *insertLoc;
+      locations.insert(insertLoc);
     }
     return {locations.begin(), locations.end()};
   }
@@ -2372,9 +2373,9 @@ public:
   }
 
   template<typename Results>
-  LoweringInfo
+  LoweringInfo  // Uses the results to merge states across context
   getMergedResults(std::vector<llvm::Instruction*>& locations, Results& results) {
-    auto getStates = [&results](auto* instruction) {
+    auto getStatesFromResults = [&results](auto* instruction) {
       std::vector<DisjunctionValue> states;
       auto* function = instruction->getFunction();
       for (auto& [context, cResults] : results) {
@@ -2388,6 +2389,19 @@ public:
       return states;
     };
 
+    // Approximation map is context unaware
+    using States = std::vector<DisjunctionValue>;
+    auto getState = [&getStatesFromResults](auto* instruction) -> std::pair<States, bool>  {
+      auto& approximationMap = generator->getApproxMap();
+      return 
+        approximationMap.count(instruction)
+        ? std::make_pair(approximationMap[instruction], true) 
+        : std::make_pair(getStatesFromResults(instruction), false);
+      // If the information doesn't exist in the approx map, then the
+      // approximation happened at a non-insertable location. Use
+      // the next best information from the general results instead.
+    };
+
     auto merge = [this](llvm::ArrayRef<DisjunctionValue> values) {
     auto& merger = this->merger;
     return std::accumulate(values.begin(), values.end(),
@@ -2397,14 +2411,17 @@ public:
       });
     };
 
-    auto mergeStates = [&getStates, &merge](auto* instruction) {
-      auto states = getStates(instruction);
-      return merge({states});
+    auto mergeStates = [&getState, &merge](auto* instruction) -> std::pair<DisjunctionValue, bool> {
+      auto [states, fromApprox] = getState(instruction);
+      return {merge({states}), fromApprox};
     };
 
     LoweringInfo ret;
     auto addToMap = [&mergeStates, &ret] (auto* inst) {
-      auto mergedState = mergeStates(inst);
+      auto [mergedState, fromApproxMap] = mergeStates(inst);
+      if (fromApproxMap && !inst->isTerminator()) {
+        inst = inst->getNextNode();
+      }
       //printMerged(mergedState);
       ret[inst] = mergedState;
     };
@@ -2420,6 +2437,13 @@ public:
     auto lower = [](auto* inst, auto& stateArray) {
       auto* module = inst->getModule();
       auto printer = lowering::Printer{generator.get(), llvm::outs(), module};
+      if (printer.isBlackListed(inst)) {
+        llvm::errs() << "\nSkipping BlackListedFunction" 
+                     << inst->getFunction()->getName() << " inst" << *inst;
+        return;
+      }
+      llvm::errs() << "\nInstrumenting at " << *inst;
+      llvm::errs() << " function " << inst->getFunction()->getName();
       auto* loc = printer.insertStringResetter(inst);
       // TODO: constexpr away
       for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
@@ -2450,20 +2474,21 @@ public:
     auto asInsts = getLoweringLocations(module, results);
     auto loweringInfo = getMergedResults(asInsts, results);
     makeInsertions(module, loweringInfo);
+
     auto ec = std::error_code{};
-    auto fileOuts =
-        llvm::raw_fd_ostream{"/home/shreeasish/pledgerize-reboot/hoisting/"
-                             "build-release/instrumented/fileStream",
-                             ec};
-    llvm::errs() << "\n\nRunning Verifier\n";
-    if (!llvm::verifyModule(module, &llvm::errs())) {
+    auto [modulePath, _]  = module.getName().split(".");
+    auto [__, moduleName] = modulePath.rsplit("/");
+    auto fileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
+                    "build-release/instrumented/" + moduleName.str() + ".bc";
+    auto fileOuts = llvm::raw_fd_ostream{fileName, ec};
+    llvm::outs() << "\nRunning Verifier\n";
+    if (!llvm::verifyModule(module, &llvm::errs())) { // returns true if broken
       llvm::WriteBitcodeToFile(module, fileOuts);
     }
+    llvm::outs() << "\nDone\n";
   }
 
 private:
-  //llvm::Module& module;
-  //Results results;
   ContextMerger merger;
 
   bool
@@ -2556,53 +2581,6 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
   }
 
   svfResults->releaseAndersenWaveDiffWithType();
-
-  //auto getLocationStates = [](llvm::Function* function, auto functionResults) {
-  //  auto* location = &*(function->getEntryBlock().getFirstInsertionPt());
-  //  auto state = functionResults[location][nullptr];
-  //  return std::make_pair(location, state);
-  //};
-
-  //auto getParent = [](auto& context) -> llvm::Instruction* {
-  //  llvm::Instruction* parent = nullptr;
-  //  for (auto* function : context) {
-  //    parent = function == nullptr ? function : nullptr;
-  //  }
-  //  return parent;
-  //};
-
-  //using ResolverQueue = std::deque<lowering::LocationState>;
-  //ResolverQueue resolverQueue;
-  //for (auto& [context, contextResults] : results) {
-  //  for (auto& [function, functionResults] : contextResults) {
-  //    auto [location, state] = getLocationStates(function, functionResults);
-  //    llvm::Instruction* parent = getParent(context);
-  //    resolverQueue.emplace_back(
-  //        lowering::LocationState{.parentCallSite = parent,
-  //                                .callee         = function,
-  //                                .location       = location,
-  //                                .state          = state,
-  //                                .context        = context});
-  //  }
-  //}
-  //lowering::InstructionResolver resolver{m, generator.get()};
-  //for (auto& locationState : resolverQueue) {
-  //  resolver(locationState);
-  //}
-
-
-  //for (auto& [context, contextResults] : results) {
-  //  for (auto& [function, functionResults] : contextResults) {
-  //    auto locationStates = getLocationStates(function, functionResults);
-  //    for (auto& [loc, state] : locationStates) {
-  //      if (state.isVacuouslyTrue() || state.isEmpty()) {
-  //        continue;
-  //      }
-  //      printer->insertIR(loc, context, state);
-  //    }
-  //  }
-  //}
-
   // auto ec = std::error_code{};
   // auto fileOuts =
   //     llvm::raw_fd_ostream{"/home/shreeasish/pledgerize-reboot/hoisting/"
