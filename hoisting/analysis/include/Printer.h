@@ -324,6 +324,9 @@ private:
         case llvm::Instruction::Sub: 
           return generateSub(binaryNode, lhs, rhs);
           break;
+        case llvm::Instruction::UDiv:
+          return generateUDiv(binaryNode, lhs, rhs);
+          break;
         default:
           llvm::errs() << "\n (binaryNode.op.opCode) "
                        << (binaryNode.op.opCode);
@@ -331,6 +334,12 @@ private:
           return nullptr;
           break;
       }
+    }
+
+    llvm::Value*
+    generateUDiv(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      llvm::Value* generated = builder.CreateUDiv(lhs, rhs);
+      return generated;
     }
 
     llvm::Value*
@@ -360,6 +369,8 @@ private:
         case Predicate::ICMP_SLT: return builder.CreateICmpSLT(lhs, rhs); break;
         case Predicate::ICMP_SGT: return builder.CreateICmpSGT(lhs, rhs); break;
         case Predicate::ICMP_NE:  return builder.CreateICmpNE(lhs, rhs); break;
+        case Predicate::ICMP_UGT: return builder.CreateICmpUGT(lhs, rhs); break;
+        case Predicate::ICMP_ULT: return builder.CreateICmpULT(lhs, rhs); break;
         default:
           llvm::errs() << "\n (binaryNode.op.predicate) "
                        << (binaryNode.op.predicate);

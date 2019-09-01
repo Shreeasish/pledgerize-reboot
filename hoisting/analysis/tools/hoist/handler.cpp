@@ -226,7 +226,8 @@ void
 LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("fread", FunctionPrivilegesBuilder(16).build());
   libCHandlers.try_emplace( "setsockopt", FunctionPrivilegesBuilder(16).add(std::make_unique<CheckMCAST>(2)).build());
-  libCHandlers.try_emplace( "fprintf", FunctionPrivilegesBuilder(16).build()); //Check the first argument(file pointer) for tmppath
+  libCHandlers.try_emplace( "fprintf", FunctionPrivilegesBuilder(16).build());
+  //Check the first argument(file pointer) for tmppath
   libCHandlers.try_emplace("getopt",FunctionPrivilegesBuilder(16).build());
   libCHandlers.try_emplace("isdigit",FunctionPrivilegesBuilder(0).build());
   libCHandlers.try_emplace("isspace",FunctionPrivilegesBuilder(0).build());
@@ -273,8 +274,6 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("__swsetup", 16);
   libCHandlers.try_emplace("__vfprintf", 16);
   libCHandlers.try_emplace("__vfwprintf", 16);
-  libCHandlers.try_emplace("_mktemp", 62);
-  libCHandlers.try_emplace("mktemp_internal", 62);
   libCHandlers.try_emplace("asprintf", 16);
   libCHandlers.try_emplace("dprintf", 16);
   libCHandlers.try_emplace("vdprintf", 16);
@@ -294,12 +293,6 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("getdelim", 16);
   libCHandlers.try_emplace("getline", 16);
   libCHandlers.try_emplace("getw", 16);
-  libCHandlers.try_emplace("mkdtemp", 62);
-  libCHandlers.try_emplace("mkostemp", 62);
-  libCHandlers.try_emplace("mkostemps", 62);
-  libCHandlers.try_emplace("mkstemp", 62);
-  libCHandlers.try_emplace("mkstemps", 62);
-  libCHandlers.try_emplace("mktemp", 62);
   libCHandlers.try_emplace("perror", 16);
   libCHandlers.try_emplace("printf", 16);
   libCHandlers.try_emplace("remove", 46);
@@ -314,8 +307,6 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("sscanf", 16);
   libCHandlers.try_emplace("swprintf", 16);
   libCHandlers.try_emplace("vswprintf", 16);
-  libCHandlers.try_emplace("tempnam", 62);
-  libCHandlers.try_emplace("tmpnam", 62);
   libCHandlers.try_emplace("vasprintf", 16);
   libCHandlers.try_emplace("vprintf", 16);
   libCHandlers.try_emplace("vscanf", 16);
@@ -575,7 +566,6 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("strvisx", 0);
   libCHandlers.try_emplace("realpath", 22);
   libCHandlers.try_emplace("strstr", 0);
-  libCHandlers.try_emplace("strftime", 18);
   libCHandlers.try_emplace("qsort", 16);
   libCHandlers.try_emplace("gmtime_r", 18);
   libCHandlers.try_emplace("memmem", 0);
@@ -683,4 +673,20 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   libCHandlers.try_emplace("ar_write", 16);
   libCHandlers.try_emplace("fn_match", 0);
   libCHandlers.try_emplace("str_offt", 0);
+  // From date
+  libCHandlers.try_emplace("puts", 0);
+  libCHandlers.try_emplace("getlogin", 0);
+  libCHandlers.try_emplace("logwtmp", 0);
+  libCHandlers.try_emplace("atoi", 0);
+  libCHandlers.try_emplace("strftime", 0);
+  // Moving tmp to cpath
+  //libCHandlers.try_emplace("mktemp_internal", 62);
+  //libCHandlers.try_emplace("tempnam", 62);
+  //libCHandlers.try_emplace("tmpnam", 62);
+  //libCHandlers.try_emplace("_mktemp", 62);
+  //libCHandlers.try_emplace("mkdtemp", 62);
+  //libCHandlers.try_emplace("mkostemp", 62);
+  //libCHandlers.try_emplace("mkostemps", 62);
+  //libCHandlers.try_emplace("mkstemp", 62);
+  //libCHandlers.try_emplace("mkstemps", 62);
 };

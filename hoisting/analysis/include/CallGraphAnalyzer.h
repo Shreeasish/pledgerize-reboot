@@ -13,7 +13,17 @@ using SyscallBitsetMap = llvm::StringMap<std::bitset<COUNT>>;
 using Privileges = std::bitset<COUNT>;
 
 static SyscallBitsetMap syscallBitsetMap{
-    // libCHandlers.try_emplace("options", 16);
+
+
+    {"mktemp_internal", Privileges{}.set(PLEDGE_CPATH)},
+    {"tempnam", Privileges{}.set(PLEDGE_CPATH)},
+    {"tmpnam", Privileges{}.set(PLEDGE_CPATH)},
+    {"_mktemp", Privileges{}.set(PLEDGE_CPATH)},
+    {"mkdtemp", Privileges{}.set(PLEDGE_CPATH)},
+    {"mkostemp", Privileges{}.set(PLEDGE_CPATH)},
+    {"mkostemps", Privileges{}.set(PLEDGE_CPATH)},
+    {"mkstemp", Privileges{}.set(PLEDGE_CPATH)},
+    {"mkstemps", Privileges{}.set(PLEDGE_CPATH)},
     {"options",
      Privileges{}.set(PLEDGE_STDIO) | Privileges{}.set(PLEDGE_CPATH)},
     {"fork", Privileges{}.set(PLEDGE_PROC)},
@@ -25,9 +35,7 @@ static SyscallBitsetMap syscallBitsetMap{
     {"sendmsg", Privileges{}.set(PLEDGE_SENDFD)},
     {"recvmsg", Privileges{}.set(PLEDGE_RECVFD)},
     {"recvfrom", Privileges{}.set(PLEDGE_STDIO)},
-    {"sendto",
-     Privileges{}.set(PLEDGE_STDIO) 
-       | Privileges{}.set(PLEDGE_DNS)},
+    {"sendto", Privileges{}.set(PLEDGE_STDIO) | Privileges{}.set(PLEDGE_DNS)},
     /* Custom Input */
     /* End Custom */
     // {"exit", Privileges{}.set(PLEDGE_ALWAYS)}, //Set nothing for
@@ -260,9 +268,8 @@ static SyscallBitsetMap syscallBitsetMap{
     {"mkfifo", Privileges{}.set(PLEDGE_DPATH)},   // C2 - Present in kernmap
     {"access", Privileges{}.set(PLEDGE_RPATH) | Privileges{}.set(PLEDGE_STDIO)},
     {"faccessat",
-     Privileges{}.set(
-         PLEDGE_RPATH)},  // C2 - faccessat calls dofaccessat, Basis pledge is
-                          // RPATH, STDIO removed
+     Privileges{}.set(PLEDGE_RPATH)},  // C2 - faccessat calls dofaccessat,
+                                       // Basis pledge is RPATH, STDIO removed
     // {"unlink", Privileges{}.set(PLEDGE_CPATH)  // C2 - Base pledge
     // set to cpath
     //   | Privileges{}.set(PLEDGE_TMPPATH)}, // cpath or tmppath may be

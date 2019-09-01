@@ -74,7 +74,29 @@ static cl::opt<string> inPath{cl::Positional,
                               cl::init(""),
                               cl::Required,
                               cl::cat{futureFunctionsCategory}};
+namespace Features {
+namespace GEP {
+  static bool enableApproximations;
+  static bool approxArrays;
+  static bool approxResPtrs;
+  static bool approxSrcEqRes;
+};
 
+namespace Load {
+  static bool enableApproximations;
+  static bool approxChainedPtrs;
+}; 
+
+namespace MayAlias {
+  static bool disableApproximations;
+  static bool allowInterprocedural;
+  static bool allowVPTyFLoad;
+  static bool allowLoadFromGEP;
+};
+
+static bool approximateOnNegations;
+static bool skipUnreachable; //Set to false to prevent unreachable block approximation
+};  // namespace Features
 
 std::unique_ptr<Generator> generator;
 std::unique_ptr<IndirectCallResolver> resolver;
@@ -237,8 +259,7 @@ public:
     [&privilege, &skip] (Disjunction prev, auto& incoming) {
       auto& [key, value] = incoming;                   // make ref for ease
       auto& state        = value[nullptr][privilege];  // State with nullptr
-      if (skip(state)) {
-        //llvm::errs() << "\nWould reject incoming";
+      if (Features::skipUnreachable && skip(state)) {
         return prev;
       }
       auto [larger, smaller] = prev.size() < state.size()
@@ -261,7 +282,7 @@ public:
     int intersectionSize = std::numeric_limits<int>::max();
     for (auto [key, state] : predecessors) {
       auto disjunction = state[nullptr][privilege];
-      if (skip(disjunction)) {
+      if (Features::skipUnreachable && skip(disjunction)) {
         continue;
       }
       intersection = intersectionSize < disjunction.size()
@@ -741,7 +762,7 @@ public:
       disjuncts.erase(from, disjuncts.end());
     };
     
-    auto trueOnNegation = [&disjunction, &checkDisjunct] {
+    auto trueOnNegation = [&disjunction, &checkDisjunct]() {
       bool shouldKill = false;
       for (auto& disjunct : disjunction) {
         shouldKill = checkDisjunct(disjunct);
@@ -755,8 +776,11 @@ public:
       }
     };
     
-    //strictLogical();
-    trueOnNegation();
+    if (Features::approximateOnNegations) {
+      trueOnNegation();
+    } else {
+      strictLogical();
+    }
     return disjunction.simplifyDisjuncts(generator->GetVacuousConjunct());
   }
 
@@ -1119,6 +1143,147 @@ private:
   }
 };
 
+/*--------------------------------------------------------*
+ *------------------- APPROXIMATIONS ---------------------*
+ *--------------------------------------------------------*/
+namespace Approximations {
+struct GEPs {
+  struct Options {
+    // False to disable approximation
+    bool arrays;    // Array suppression
+    bool resPtr;    // Ptr from Ptr access
+    bool srcEqRes;  // Linked Lists
+  }; //Options
+  Options options;
+
+  GEPs() = delete;
+  GEPs(const Options opts)
+    : options{opts} { }
+  
+  //TODO: Check SemSimplifier 
+  std::optional<Disjunction>
+  operator()(llvm::GetElementPtrInst* gep, const Disjunction& disjunction) const {
+    bool isArrayGEP = [&gep] {
+      auto* srcType = gep->getSourceElementType();
+      return srcType->isArrayTy();
+    }();
+    bool hasPtrRes = [&gep] {
+      auto* resType = gep->getResultElementType();
+      return resType->isPointerTy();
+    }();
+    bool hasSrcEqRes = [&gep] {
+      auto* srcType = gep->getSourceElementType();
+      auto* resType = gep->getResultElementType();
+      return resType == srcType;
+    }();
+
+    if (options.arrays && isArrayGEP) {
+      auto* value = llvm::dyn_cast<llvm::Value>(gep);
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      return generator->pushToTrue(disjunction, oldExprID);
+    }
+
+    if (options.resPtr && hasPtrRes) {
+      auto* value = llvm::dyn_cast<llvm::Value>(gep);
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      return generator->pushToTrue(disjunction, oldExprID);
+    }
+
+    if (options.srcEqRes && hasSrcEqRes) {
+      auto* value = llvm::dyn_cast<llvm::Value>(gep);
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      return generator->pushToTrue(disjunction, oldExprID);
+    }
+    return std::nullopt;
+  }
+}; //GEPs
+
+struct Loads {
+  struct Options {
+    // False to disable approximation
+    bool chainedPtr;  // recursive ptr access
+    //bool fromGEPSrcEqRes;
+    // Loads from a gep with src eq res. 
+    // Disable since geps handle that. Get from git if needed
+  }; //Options
+  Options options;
+
+  Loads() = delete;
+  Loads(const Options opts) 
+    : options{opts} { }
+
+  std::optional<Disjunction>
+  operator()(llvm::LoadInst* load, const Disjunction& disjunction) const {
+    auto hasChainedPtr = [&load] {
+      auto* ptrOp = load->getPointerOperand();
+      auto* ptrTy = ptrOp->getType();
+      return ptrTy->getPointerElementType()->isPointerTy();
+    }();
+
+    if (options.chainedPtr && hasChainedPtr) {
+      auto* value = llvm::dyn_cast<llvm::Value>(load);
+      auto oldExprID = generator->GetOrCreateExprID(value);
+      //state[nullptr] = semSimplifier.killLoad(loadInst, state[nullptr]);
+      //dropOperands(value, state);
+      return generator->pushToTrue(disjunction, oldExprID);
+    }
+
+    return std::nullopt;
+  }
+}; //Loads
+
+struct MayAliasApproximator {
+  struct Options {
+    // set to false to enable approximations
+    bool allowInterprocedural;
+    bool allowVPTyFLoad; // Value Is Ptr Type From Load: recursive ptrs
+    bool allowLoadFromGEP;
+  }; //Options
+  Options options;
+
+  MayAliasApproximator() = delete;
+  MayAliasApproximator(const Options opts)
+    : options{opts} { }
+  
+  bool
+  allow(llvm::StoreInst* store, llvm::LoadInst* load) const {
+    auto isInterprocedural = [&store, &load] {
+      return load->getFunction() != store->getFunction();
+    }(); //true if interprocedural
+    auto isVPTyFLoad = [&store] {
+      auto* valueOperand = store->getValueOperand();
+      bool isFromLoad    = llvm::isa<llvm::LoadInst>(valueOperand);
+      auto isPointer     = valueOperand->getType()->isPointerTy();
+      if (isFromLoad && isPointer) {
+        llvm::errs() << "From load with pointer " << *valueOperand;
+      }
+      return isFromLoad && isPointer;
+    }();
+    auto isLoadFromGEP = [&load] {
+      auto* loadPointer = load->getPointerOperand();
+      return llvm::isa<llvm::GetElementPtrInst>(loadPointer);
+    }();
+  
+
+    bool allow = true;
+    allow &= options.allowInterprocedural || !isInterprocedural;
+    allow &= options.allowVPTyFLoad || !isVPTyFLoad;
+    allow &= options.allowLoadFromGEP || !isLoadFromGEP;
+    return allow;
+  }
+
+  std::optional<Disjunction>
+  operator()(const Disjunction& disjunction, llvm::StoreInst* store, llvm::LoadInst* load) const {
+    if (!allow(store, load)) { // if not allowed push load to true, since stores are transient
+      auto loadExprID = generator->GetOrCreateExprID(load);
+      disjunction.print(llvm::errs());
+      return generator->pushToTrue(disjunction, loadExprID);
+    }
+    return std::nullopt;
+  }
+};
+
+};
 
 /*--------------------------------------------------------*
  *------------------TRANSFER FUNCTION---------------------*
@@ -1484,7 +1649,6 @@ private:
         return true;
         break;
     }
-
     assert(false && "Broken Casing");
     return true;
   }
@@ -1492,7 +1656,6 @@ private:
   template <Promises Promise>
   bool
   handleGep(llvm::Value* const value, StateAccessor<Promise>& state, bool handled) {
-    // Possibly can be guarded by isUsed
     if (handled) {
       return handled;
     } 
@@ -1503,69 +1666,16 @@ private:
     if (!generator->isUsed(value)) {
       return true;
     }
-
     //llvm::errs() << "\nGep SRC type " << *gep->getSourceElementType();
     //llvm::errs() << "\nGep RES type " << *gep->getResultElementType();
-    bool isArrayGEP = [&gep] {
-      auto* resType = gep->getSourceElementType();
-      //if (resType->isArrayTy()) {
-      //  llvm::errs() << "\nArray Type GEP ";
-      //  llvm::errs() << *resType;
-      //  llvm::errs() << "GEP:" << *gep;
-      //}
-      return resType->isArrayTy();
-    }();
-
-    //TODO: Customize Here
-    if (isArrayGEP) {
-      auto oldExprID = generator->GetOrCreateExprID(value);
-      //llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-      //llvm::errs() << "\nBefore killing geps";
-      //state[nullptr].print(llvm::errs());
-      state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
-      dropOperands(value, state);
-      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-      //llvm::errs() << "\nAfter killing geps";
-      //state[nullptr].print(llvm::errs());
-      return true;
-    }
-    
-    //TODO: Customize Here
-    auto* resType = gep->getResultElementType();
-    if (resType->isPointerTy()) {
-      //llvm::errs() << "\nFound gep ptr result type";
-      //llvm::errs() << *gep;
-      //llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
-      //             << "\nResultType" << *gep->getResultElementType();
-
-      auto oldExprID = generator->GetOrCreateExprID(value);
-      //llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-      //llvm::errs() << "\nBefore killing geps";
-      //state[nullptr].print(llvm::errs());
-      state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
-      dropOperands(value, state);
-      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-
-      //llvm::errs() << "\nAfter killing geps";
-      //state[nullptr].print(llvm::errs());
-      return true;
-    }
-
-    //TODO: Customize here
-    if (gep->getSourceElementType() == gep->getResultElementType()) {
-      //llvm::errs() << "\nFound gep with src == result";
-      //llvm::errs() << "\n\nSourceType" << *gep->getSourceElementType()
-      //             << "\nResultType" << *gep->getResultElementType();
-
-      auto oldExprID = generator->GetOrCreateExprID(value);
-      //llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-      //llvm::errs() << "\nBefore killing geps";
-      //state[nullptr].print(llvm::errs());
-      state[nullptr] = semSimplifier.killGEP(gep, state[nullptr]);
-      dropOperands(value, state);
-      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-      //llvm::errs() << "\nAfter killing geps";
-      //state[nullptr].print(llvm::errs());
+    using Options      = Approximations::GEPs::Options;
+    using Approximator = Approximations::GEPs;
+    Options options{.arrays   = Features::GEP::approxArrays,
+                    .resPtr   = Features::GEP::approxResPtrs,
+                    .srcEqRes = Features::GEP::approxSrcEqRes};
+    Approximator approximator{options};
+    if (auto disjunction = approximator(gep, state[nullptr])) {
+      state[nullptr] = *disjunction;
       return true;
     }
 
@@ -1724,35 +1834,6 @@ private:
         .simplifyImplication();
   }
 
-  bool
-  validate(llvm::StoreInst* store, const BinaryExprNode& node) {
-    auto* valueOperand = store->getValueOperand();
-    bool isFromLoad    = llvm::isa<llvm::LoadInst>(valueOperand);
-    auto isPointer = valueOperand->getType()->isPointerTy();
-    if (isFromLoad && isPointer) {
-      llvm::errs() << "From load with pointer " << *valueOperand;
-    }
-
-    auto* load = llvm::dyn_cast<llvm::LoadInst>(node.value);
-    auto interproceduralAlias = [&store, &load] {
-      return load->getFunction() != store->getFunction();
-    }();
-    return (isFromLoad && isPointer) || interproceduralAlias;
-  }
-
-  void
-  sterilise(Disjunction& disjunction,
-            const ExprID loadExprID,
-            const BinaryExprNode& loadNode) {
-    llvm::errs() << "\nBefore Pushing LoadExprID " << loadExprID;
-    disjunction.print(llvm::errs());
-    disjunction = generator->pushToTrue(disjunction, loadExprID);
-    llvm::errs() << "\nAfter Pushing LoadExprID " << loadExprID;
-    disjunction.print(llvm::errs());
-    return;
-  }
-
-
   template <Promises Promise>
   bool
   handleStore(llvm::Value* const value,
@@ -1773,7 +1854,6 @@ private:
      * works otherwise would be incorrect. Ensure that it works
      * for both indCallSite and regular load/store pairs */
     state[nullptr] = killConflicts(state[nullptr], storeInst);
-
     //llvm::errs() << "\n Handling store at " << *value;
     std::vector<NodeExprPair> asLoads = getLoads(state);
     auto [strongLoads, weakLoads]     = seperateLoads(storeInst, asLoads);
@@ -1784,13 +1864,20 @@ private:
       state[nullptr] = strongUpdate(localDisjunction, exprID, loadNode, storeInst);
     }
 
+    using Options = Approximations::MayAliasApproximator::Options;
+    using MayAliasApproximator = Approximations::MayAliasApproximator;
+    Options options{.allowInterprocedural = Features::MayAlias::allowInterprocedural,
+                    .allowVPTyFLoad       = Features::MayAlias::allowVPTyFLoad,
+                    .allowLoadFromGEP     = Features::MayAlias::allowLoadFromGEP};
+    MayAliasApproximator mayAliasApproximator{options};
     for (auto& [loadNode, exprID] : weakLoads) {
       //llvm::errs() << "\nWeak load for " << *(loadNode.value) << " id " << exprID;
-      if (validate(storeInst, loadNode)) {
-        sterilise(localDisjunction, exprID,  loadNode);
-      } else {
-        state[nullptr] = weakUpdate(localDisjunction, exprID, loadNode, storeInst);
+      auto* loadInst = llvm::dyn_cast<LoadInst>(loadNode.value);
+      if (auto approximated = mayAliasApproximator(localDisjunction, storeInst, loadInst)) {
+        localDisjunction = *approximated;
+        continue;
       }
+      state[nullptr] = weakUpdate(localDisjunction, exprID, loadNode, storeInst);
     }
     return true;
   }
@@ -1864,48 +1951,12 @@ private:
       return true;
     }
 
-
-    auto ptrOp = loadInst->getPointerOperand();
-    auto ptrTy = ptrOp->getType();
-    llvm::errs() << "\nLoad     Type:" << *loadInst->getType();
-    llvm::errs() << "\nLoad Ptr Type:" << *ptrOp->getType();
-
-    //TODO: Customize Here
-    if (ptrTy->getPointerElementType()->isPointerTy()) {
-      llvm::errs() << "\nLoad Inst " << *loadInst;
-      llvm::errs() << "\nLoad with ptr2ptr as ptr";
-
-      auto oldExprID = generator->GetOrCreateExprID(value);
-      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-      llvm::errs() << "\nBefore killing loads";
-      state[nullptr].print(llvm::errs());
-      state[nullptr] = semSimplifier.killLoad(loadInst, state[nullptr]);
-      dropOperands(value, state);
-      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-      llvm::errs() << "\nAfter killing loads";
-      state[nullptr].print(llvm::errs());
-      return true;
-    }
-
-    //TODO: Customize Here
-    if (auto asGep = llvm::dyn_cast<llvm::GetElementPtrInst>(ptrOp);
-        asGep && asGep->getSourceElementType() == asGep->getResultElementType()) {
-      llvm::errs() << "\nfound load through gep with same src and result";
-      llvm::errs() << "\nloadInst" << *loadInst;
-      llvm::errs() << "\npointer op" << *loadInst->getPointerOperand();
-
-      llvm::errs() << "\n\nSourceType" << *asGep->getSourceElementType()
-                   << "\nResultType" << *asGep->getResultElementType();
-
-      auto oldExprID = generator->GetOrCreateExprID(value);
-      llvm::errs() << "\nWith/Killing ExprID " << oldExprID;
-      llvm::errs() << "\nBefore killing loads";
-      state[nullptr].print(llvm::errs());
-      state[nullptr] = semSimplifier.killLoad(loadInst, state[nullptr]);
-      dropOperands(value, state);
-      state[nullptr] = generator->pushToTrue(state[nullptr], oldExprID);
-      llvm::errs() << "\nAfter killing loads";
-      state[nullptr].print(llvm::errs());
+    using Options = Approximations::Loads::Options;
+    using Approximator = Approximations::Loads;
+    Options options{.chainedPtr = true};
+    Approximator approximator{options};
+    if (auto disjunction = approximator(loadInst, state[nullptr])) {
+      state[nullptr] = *disjunction;
       return true;
     }
 
@@ -2045,9 +2096,7 @@ private:
     auto insertIfLoad =
         [&](const auto& exprID, const auto& node, const auto* value) {
           if (node.op.opCode == llvm::Instruction::Load
-              //llvm::isa<llvm::LoadInst>(value) 
-              //&& foundIDs.count(exprID) == 0
-              /*&& binaryNode.op.opCode*/) {
+              && foundIDs.count(exprID) == 0) {
             llvm::errs() << "\nInserting id" << exprID;
             foundIDs.insert(exprID);
             asLoads.push_back({node, exprID});
@@ -2198,9 +2247,9 @@ private:
 };
 
 
-class BuildPromiseTreePass : public llvm::ModulePass {
+class HoistConditions : public llvm::ModulePass {
 public:
-  BuildPromiseTreePass()
+  HoistConditions()
     : llvm::ModulePass{ID}
       { }
 
@@ -2212,15 +2261,15 @@ public:
 private:
   void initializeGlobals(llvm::Module&);
 };
-char BuildPromiseTreePass::ID = 0;
+char HoistConditions::ID = 0;
 
 llvm::StringRef
-BuildPromiseTreePass::getPassName() const {
-  return "BuildPromiseTreePass";
+HoistConditions::getPassName() const {
+  return "HoistConditionsPass";
 }
 
 void
-BuildPromiseTreePass::initializeGlobals(llvm::Module& m) {
+HoistConditions::initializeGlobals(llvm::Module& m) {
   generator = std::make_unique<Generator>(Generator{});
   //resolver  = std::make_unique<IndirectCallResolver>(IndirectCallResolver{m});
   privilegeResolver = std::make_unique<PrivilegeResolver>(m);
@@ -2514,7 +2563,6 @@ private:
 };
 
 
-
 void
 runAnalysisFor(llvm::Module& m,
                llvm::ArrayRef<llvm::StringRef> functionNames,
@@ -2564,7 +2612,7 @@ runAnalysisFor(llvm::Module& m,
 
 
 bool
-BuildPromiseTreePass::runOnModule(llvm::Module& m) {
+HoistConditions::runOnModule(llvm::Module& m) {
   initializeGlobals(m);
   auto isInterprocedural = true; // false for turning off interprocedural
   if (isInterprocedural) {
@@ -2594,7 +2642,7 @@ BuildPromiseTreePass::runOnModule(llvm::Module& m) {
 }
 
 void
-BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
+HoistConditions::getAnalysisUsage(llvm::AnalysisUsage &info) const {
   //info.setPreservesAll();
   info.addRequired<DominatorTreeWrapperPass>();
   info.addRequired<AAResultsWrapperPass>();
@@ -2605,7 +2653,7 @@ BuildPromiseTreePass::getAnalysisUsage(llvm::AnalysisUsage &info) const {
 
 
 static void
-instrumentPromiseTree(llvm::Module& m) {
+instrument(llvm::Module& m) {
   //llvm::DebugFlag = true;
   legacy::PassManager pm;
   pm.add(createGlobalsAAWrapperPass());
@@ -2618,10 +2666,30 @@ instrumentPromiseTree(llvm::Module& m) {
   pm.add(new MemorySSAWrapperPass());
   pm.add(new DominatorTreeWrapperPass());
   pm.add(new AAResultsWrapperPass());
-  pm.add(new BuildPromiseTreePass());
+  pm.add(new HoistConditions());
   pm.run(m);
 }
 
+void setFeatures() {
+  Features::GEP::enableApproximations = true;
+  Features::GEP::approxArrays   = true && Features::GEP::enableApproximations;
+  Features::GEP::approxResPtrs  = true && Features::GEP::enableApproximations;
+  Features::GEP::approxSrcEqRes = true && Features::GEP::enableApproximations;
+
+  Features::Load::enableApproximations = true;
+  Features::Load::approxChainedPtrs = true && Features::Load::enableApproximations;
+
+  Features::MayAlias::disableApproximations = false;
+  Features::MayAlias::allowInterprocedural =
+      false || Features::MayAlias::disableApproximations;
+  Features::MayAlias::allowVPTyFLoad =
+      false || Features::MayAlias::disableApproximations;
+  Features::MayAlias::allowLoadFromGEP =
+      false || Features::MayAlias::disableApproximations;
+
+  Features::approximateOnNegations = true;
+  Features::skipUnreachable        = true;
+}
 
 int
 main(int argc, char** argv) {
@@ -2645,6 +2713,7 @@ main(int argc, char** argv) {
     return -1;
   }
 
-  instrumentPromiseTree(*module);
+  setFeatures();
+  instrument(*module);
   return 0;
 }
