@@ -51,6 +51,41 @@ public:
     ostream << asFlatAST(exprID);
   }
 
+  void
+  instrumentCounters(llvm::Module& m) {
+    auto endRegionFn = [&m]() {
+      auto& context = m->getContext();
+      auto* voidTy = llvm::Type::getVoidTy(context);
+      auto* charPtrTy = llvm::Type::getInt8PtrTy(context);
+      auto* intTy = llvm::Type::getInt32Ty(context);
+
+      auto* functionTy = llvm::FunctionType::get(voidTy, {charPtrTy, charPtrTy, intTy}, false);
+      return module->getOrInsertFunction("EnD_ReGiOn", functionTy);
+    }();
+
+    auto beforeTerminator = [endRegionFn](auto* inst, int count) {
+      module->getOrCreate
+
+
+      Builder builder{inst};
+      builder.CreateCall(endRegionFn, "",  count)
+    };
+
+    for (auto& function : m) {
+      for (auto& bb : function) { 
+        int instCounter = 0;
+        for (auto& inst : bb) { 
+          instCounter++;
+          if (inst.isTerminator()) {
+            beforTerminator(inst)
+          } else if (llvm::isa<llvm::CallInst>(inst)) {
+
+          }
+        }
+      }
+    }
+  }
+
   auto*
   insertStringResetter(llvm::Instruction* location) {
     auto& context    = module->getContext();
@@ -77,10 +112,10 @@ public:
       auto  asString    = functionName.str();
       return module->getOrInsertFunction(asString, functionTy);
     };
-    //llvm::errs() << "\nInserting at " << *location << "\n parent function "
-    //             << location->getParent()->getParent()->getName();
-    //llvm::outs() << "\nInserting at " << *location << "\n parent function "
-    //             << location->getParent()->getParent()->getName();
+    // llvm::errs() << "\nInserting at " << *location << "\n parent function "
+    //              << location->getParent()->getParent()->getName();
+    // llvm::outs() << "\nInserting at " << *location << "\n parent function "
+    //              << location->getParent()->getParent()->getName();
     // printState(location, disjunction);
     this->location = location;
     llvm::IRBuilder<> builder{location};

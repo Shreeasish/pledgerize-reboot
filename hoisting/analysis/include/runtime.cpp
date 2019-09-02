@@ -1,3 +1,11 @@
+
+
+int
+std::unordered_map<std::string, std::deque<std::string>> promiseStringMap;
+
+int
+std::unorderd_map<std::string, int> promiseInstCounter;
+
 extern "C" {
 
 #include <unistd.h>
@@ -6,7 +14,9 @@ extern "C" {
 #include <stdio.h>
 #include <err.h>
 
-char pledge_string[256] = "stdio";
+char active_pledges[1024] = "";
+
+char pledge_string[1024] = "stdio";
 # define CLEAR_STRING ClEaR_StRiNg
 void
 CLEAR_STRING(){
@@ -44,9 +54,12 @@ MAKE_PLEDGE() {
   if (pledge(pledge_string, NULL) == -1) {
     err(1, "pledge");
   }
+  strcpy(active_pledges, pledge_string);
   strcpy(pledge_string, "stdio");
   //pledge_string[0] = '\0';
   return;
 }
+
+
 
 }

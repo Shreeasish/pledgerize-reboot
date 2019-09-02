@@ -2321,6 +2321,28 @@ template<typename ContextMerger>
 class Instrument {
   using LoweringInfo = llvm::DenseMap<llvm::Instruction*, DisjunctionValue>;
 public:
+  template<typename Results>
+  void
+  operator()(llvm::Module& module, Results& results) {
+    auto asInsts = getLoweringLocations(module, results);
+    auto loweringInfo = getMergedResults(asInsts, results);
+    makeStatInsertions(module);
+    makeInsertions(module, loweringInfo);
+
+    auto ec = std::error_code{};
+    auto [modulePath, _]  = module.getName().split(".");
+    auto [__, moduleName] = modulePath.rsplit("/");
+    auto fileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
+                    "build-release/instrumented/" + moduleName.str() + ".bc";
+    auto fileOuts = llvm::raw_fd_ostream{fileName, ec};
+    llvm::outs() << "\nRunning Verifier\n";
+    if (!llvm::verifyModule(module, &llvm::errs())) { // returns true if broken
+      llvm::WriteBitcodeToFile(module, fileOuts);
+    }
+    llvm::outs() << "\nDone\n";
+  }
+
+private:
   std::vector<llvm::Instruction*>
   getFunctionTops(llvm::Module& module) {
     std::vector<llvm::Instruction*> insertionPts;
@@ -2493,8 +2515,7 @@ public:
       }
       llvm::errs() << "\nInstrumenting at " << *inst;
       llvm::errs() << " function " << inst->getFunction()->getName();
-      auto* loc = printer.insertStringResetter(inst);
-      // TODO: constexpr away
+      //auto* loc = printer.insertStringResetter(inst);
       for (int privilege = MaxPrivilege; privilege >= MinPrivilege; privilege--) {
         auto& disjunction = stateArray[privilege];
         if (disjunction.conjunctCount() < 1) {
@@ -2508,7 +2529,7 @@ public:
       printer.insertPledgeCall(inst);
       printer.insertStringResetter(inst);
       llvm::errs() << "\nAfter insertions";
-      llvm::errs() << *(loc->getParent());
+      llvm::errs() << *(inst->getParent());
     };
 
     for (auto& [inst, stateArray] : info) {
@@ -2516,29 +2537,12 @@ public:
     }
     return true;
   }
-
-  template<typename Results>
+  
   void
-  operator()(llvm::Module& module, Results& results) {
-    auto asInsts = getLoweringLocations(module, results);
-    auto loweringInfo = getMergedResults(asInsts, results);
-    makeInsertions(module, loweringInfo);
-
-    auto ec = std::error_code{};
-    auto [modulePath, _]  = module.getName().split(".");
-    auto [__, moduleName] = modulePath.rsplit("/");
-    auto fileName = "/home/shreeasish/pledgerize-reboot/hoisting/"
-                    "build-release/instrumented/" + moduleName.str() + ".bc";
-    auto fileOuts = llvm::raw_fd_ostream{fileName, ec};
-    llvm::outs() << "\nRunning Verifier\n";
-    if (!llvm::verifyModule(module, &llvm::errs())) { // returns true if broken
-      llvm::WriteBitcodeToFile(module, fileOuts);
-    }
-    llvm::outs() << "\nDone\n";
+  makeStatInsertions(llvm::Module& module) {
+    auto printer = lowering::Printer{generator.get(), llvm::outs(), module};
+    printer.instrumentCounters(module);
   }
-
-private:
-  ContextMerger merger;
 
   bool
   filter(DisjunctionValue& stateArray) {
@@ -2560,6 +2564,9 @@ private:
     }
     return false;
   }
+
+  ContextMerger merger;
+
 };
 
 

@@ -13,8 +13,6 @@ using SyscallBitsetMap = llvm::StringMap<std::bitset<COUNT>>;
 using Privileges = std::bitset<COUNT>;
 
 static SyscallBitsetMap syscallBitsetMap{
-
-
     {"mktemp_internal", Privileges{}.set(PLEDGE_CPATH)},
     {"tempnam", Privileges{}.set(PLEDGE_CPATH)},
     {"tmpnam", Privileges{}.set(PLEDGE_CPATH)},
