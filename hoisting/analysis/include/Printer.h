@@ -53,37 +53,75 @@ public:
 
   void
   instrumentCounters(llvm::Module& m) {
-    auto endRegionFn = [&m]() {
-      auto& context = m->getContext();
-      auto* voidTy = llvm::Type::getVoidTy(context);
+    auto* endRegionFn = [&m]() {
+      auto& context   = m.getContext();
+      auto* voidTy    = llvm::Type::getVoidTy(context);
       auto* charPtrTy = llvm::Type::getInt8PtrTy(context);
-      auto* intTy = llvm::Type::getInt32Ty(context);
+      auto* intTy     = llvm::Type::getInt64Ty(context);
 
-      auto* functionTy = llvm::FunctionType::get(voidTy, {charPtrTy, charPtrTy, intTy}, false);
-      return module->getOrInsertFunction("EnD_ReGiOn", functionTy);
+      auto* functionTy =
+          llvm::FunctionType::get(voidTy, {charPtrTy, intTy}, false);
+      return m.getOrInsertFunction("EnD_ReGiOn", functionTy);
     }();
 
-    auto beforeTerminator = [endRegionFn](auto* inst, int count) {
-      module->getOrCreate
-
+    auto countBefore = [&m, endRegionFn](llvm::Instruction* inst, auto& region, uint64_t count) {
+      auto& context   = m.getContext();
+      auto* charPtrTy = llvm::Type::getInt8PtrTy(context);
+      
+      auto* int64Ty = llvm::Type::getInt64Ty(context);
+      auto* asConstant =
+          llvm::ConstantInt::get(int64Ty, count, /*unsigned*/ false);
 
       Builder builder{inst};
-      builder.CreateCall(endRegionFn, "",  count)
+      auto* regionString = builder.CreateGlobalStringPtr(region);
+      builder.CreateCall(endRegionFn, {regionString, asConstant});
     };
 
-    for (auto& function : m) {
-      for (auto& bb : function) { 
-        int instCounter = 0;
-        for (auto& inst : bb) { 
-          instCounter++;
-          if (inst.isTerminator()) {
-            beforTerminator(inst)
-          } else if (llvm::isa<llvm::CallInst>(inst)) {
+    struct CountInfo {
+      llvm::Instruction* location;
+      std::string region;
+      uint64_t count;
+    };
 
+    std::deque<CountInfo> locations;
+    for (auto& function : m) {
+      for (auto& bb : function) {
+        uint64_t instCounter = 0;
+        std::string streamHolder;
+        llvm::raw_string_ostream instructions(streamHolder);
+        for (auto& inst : bb) {
+          instructions << inst <<  "\n";
+          instCounter++;
+          if (inst.isTerminator() || llvm::isa<llvm::CallInst>(inst)) {
+            locations.push_back({.location = &inst,
+                                 .region   = instructions.str(),
+                                 .count    = instCounter});
+            streamHolder.clear();
+            instCounter = 0;
           }
         }
       }
     }
+
+    for (auto& info : locations) {
+      auto [inst, region, count] = info;
+      if (inst->isTerminator() || llvm::isa<llvm::CallInst>(inst)) {
+        countBefore(inst, region, count);
+      }
+    }
+
+    insertDataPrinter(*module);
+  }
+
+  void
+  insertDataPrinter(llvm::Module& module) {
+    auto& context = module.getContext();
+    auto* voidTy    = llvm::Type::getVoidTy(context);
+    auto* functionTy = llvm::FunctionType::get(voidTy, false);
+
+    auto* dumpFn = module.getOrInsertFunction("StAt_pRiNtEr", functionTy);
+    appendToGlobalDtors(module, llvm::cast<llvm::Function>(dumpFn), 0);
+    return;
   }
 
   auto*

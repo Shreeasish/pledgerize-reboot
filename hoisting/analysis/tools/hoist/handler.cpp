@@ -99,12 +99,10 @@ public:
           return privileges;
           break;
         }
-
         case O_RDONLY: {
           return {1 << PLEDGE_RPATH};
           break;
         }
-
         case O_WRONLY: {
           return {1 << PLEDGE_WPATH};
           break;
@@ -114,10 +112,10 @@ public:
           return {1 << PLEDGE_WPATH};
           break;
         }
-
         //O_WRONLY | O_TRUNC | O_CREAT 
         case (1537): {
           return {1 << PLEDGE_WPATH};
+          return {1 << PLEDGE_CPATH};
           break;
         }
         default: {
@@ -132,7 +130,8 @@ public:
       llvm::outs() << "\n Could not get argument for: " << *cs.getInstruction();
       llvm::outs() << "\nArgument " << *arg;
       Privileges privileges{1 << PLEDGE_RPATH};
-      privileges |= {1 << PLEDGE_WPATH};
+      privileges |= {1 << PLEDGE_WPATH };
+      privileges |= {1 << PLEDGE_CPATH };
       // TODO: CPATH
       return privileges;
     }
@@ -689,4 +688,7 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   //libCHandlers.try_emplace("mkostemps", 62);
   //libCHandlers.try_emplace("mkstemp", 62);
   //libCHandlers.try_emplace("mkstemps", 62);
+  
+  //ioctl only used to check if file is tape in DD
+  //libCHandlers.try_emplace("ioctl", 0);
 };

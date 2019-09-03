@@ -2433,12 +2433,19 @@ private:
     return {locations.begin(), locations.end()};
   }
 
+  std::vector<llvm::Instruction*>
+  topOfProgram(llvm::Module& module) {
+    auto* mainFn = module.getFunction("main");
+    auto& entryBlock = mainFn->getEntryBlock();
+    return {&*entryBlock.getFirstInsertionPt()};
+  };
+
   template<typename Results>
   std::vector<llvm::Instruction*>
   getLoweringLocations(llvm::Module& module, Results& results) {
     std::vector<llvm::Instruction*> locations;
     //locations += firstNonTrivial(results);
-    //locations += topOfProgram(module);
+    locations += topOfProgram(module);
     locations += getApproximations();
     return locations;
   }
@@ -2527,7 +2534,7 @@ private:
         printer.insertStringBuilder(inst, disjunction, asEnum);
       }
       printer.insertPledgeCall(inst);
-      printer.insertStringResetter(inst);
+      //printer.insertStringResetter(inst);
       llvm::errs() << "\nAfter insertions";
       llvm::errs() << *(inst->getParent());
     };
@@ -2540,7 +2547,7 @@ private:
   
   void
   makeStatInsertions(llvm::Module& module) {
-    auto printer = lowering::Printer{generator.get(), llvm::outs(), module};
+    auto printer = lowering::Printer{generator.get(), llvm::outs(), &module};
     printer.instrumentCounters(module);
   }
 
