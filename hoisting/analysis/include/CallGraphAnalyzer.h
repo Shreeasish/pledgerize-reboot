@@ -279,7 +279,9 @@ static SyscallBitsetMap syscallBitsetMap{
     {"fstat", Privileges{}.set(PLEDGE_STDIO)},
     {"fstatat", Privileges{}.set(PLEDGE_RPATH)},
     {"lstat", Privileges{}.set(PLEDGE_RPATH)},
-    {"stat", Privileges{}.set(PLEDGE_RPATH) | Privileges{}.set(PLEDGE_STDIO)},
+    {"stat", Privileges{}.set(PLEDGE_RPATH) 
+      | Privileges{}.set(PLEDGE_STDIO)
+      | Privileges{}.set(PLEDGE_WPATH)},
     {"fpathconf", Privileges{}.set(PLEDGE_STDIO)},
     {"pathconf", Privileges{}.set(PLEDGE_RPATH)},
     {"readlink",

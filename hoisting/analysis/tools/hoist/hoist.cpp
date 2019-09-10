@@ -96,6 +96,7 @@ namespace MayAlias {
 
 static bool approximateOnNegations;
 static bool skipUnreachable; //Set to false to prevent unreachable block approximation
+static bool lowerInLoopHeader;
 };  // namespace Features
 
 std::unique_ptr<Generator> generator;
@@ -2367,6 +2368,7 @@ private:
       return loop; //check if loop exists for BB
     };
 
+    [[maybe_unused]]
     auto isLoopHeader = [](auto& loop, llvm::Instruction* inst) {
       auto* block = inst->getParent();
       auto* header = loop->getHeader();
@@ -2391,8 +2393,9 @@ private:
     llvm::DenseSet<llvm::Instruction*> locations;
     auto& approximationMap = generator->getApproxMap();
     for (auto& [inst, __] : approximationMap) {
-      if (auto* loop = isInLoop(inst);
-          loop && !isLoopHeader(loop, inst)) {
+      if (auto* loop = isInLoop(inst)) {
+          //; loop && !Features::lowerInLoopHeader &&
+          //!isLoopHeader(loop, inst)) {
         continue;
       }
       auto* insertLoc = getInsertionPt(inst);
@@ -2490,7 +2493,7 @@ private:
     };
 
     auto mergeStates = [&getState, &merge](auto* instruction) -> std::pair<DisjunctionValue, bool> {
-      auto [states, fromApprox] = getState(instruction);
+      auto [states, fromApprox] = getState(instruction); 
       return {merge({states}), fromApprox};
     };
 
@@ -2701,8 +2704,10 @@ void setFeatures() {
   Features::MayAlias::allowLoadFromGEP =
       false || Features::MayAlias::disableApproximations;
 
-  Features::approximateOnNegations = true;
-  Features::skipUnreachable        = true;
+  Features::approximateOnNegations = false;
+  Features::skipUnreachable        = false;
+
+  Features::lowerInLoopHeader = true;
 }
 
 int

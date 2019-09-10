@@ -1,8 +1,0 @@
-#! /bin/bash
-cp -r -t ./ ~/pledgerize-reboot/shared.bsd/*
-for dir in */
-do
-  dir=${dir%*/}
-  llvm-link -v $dir/.*.bc  -o $dir/$dir.bc
-  opt -mem2reg $dir/*.bc -o $dir/$dir.bc
-done

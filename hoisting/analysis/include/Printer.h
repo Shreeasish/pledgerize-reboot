@@ -119,8 +119,11 @@ public:
     auto* voidTy    = llvm::Type::getVoidTy(context);
     auto* functionTy = llvm::FunctionType::get(voidTy, false);
 
+    auto* logOpenFn = module.getOrInsertFunction("OpEn_lOg_FiLe", functionTy);
+    llvm::appendToGlobalCtors(module, llvm::cast<llvm::Function>(logOpenFn), 0);
+
     auto* dumpFn = module.getOrInsertFunction("StAt_pRiNtEr", functionTy);
-    appendToGlobalDtors(module, llvm::cast<llvm::Function>(dumpFn), 0);
+    llvm::appendToGlobalDtors(module, llvm::cast<llvm::Function>(dumpFn), 0);
     return;
   }
 
@@ -464,7 +467,13 @@ private:
                    << *binaryNode.value
                    << " with type" << *withType
                    << "\nPointer Operand" << *rhs;
-      return builder.CreateLoad(withType, rhs);
+      auto* ptrToLoadValueTy = withType->getPointerTo();
+      if (ptrToLoadValueTy != rhs->getType()) {
+        makeTrue |= true;
+        /* force IR */
+        rhs = builder.CreatePointerCast(rhs, ptrToLoadValueTy, "load_cast");
+      }
+      return builder.CreateLoad(withType, rhs, "load");
     }
 
     llvm::Value*
@@ -476,6 +485,9 @@ private:
 
     llvm::Value*
     generateGEP(BinaryExprNode binaryNode, llvm::Value* lhs, llvm::Value* rhs) {
+      llvm::errs() << "\nGenerating GEP " << *binaryNode.value
+                   << "\nwith lhs" << *lhs
+                   << "\nwith rhs" << *rhs;
       // TODO: Verify with Nick. Run on custom testcase
       auto* generated = builder.CreateGEP(lhs, rhs, "gep");
       return generated;

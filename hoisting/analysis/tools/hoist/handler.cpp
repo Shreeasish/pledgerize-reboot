@@ -114,8 +114,7 @@ public:
         }
         //O_WRONLY | O_TRUNC | O_CREAT 
         case (1537): {
-          return {1 << PLEDGE_WPATH};
-          return {1 << PLEDGE_CPATH};
+          return {1 << PLEDGE_WPATH | 1 << PLEDGE_CPATH};
           break;
         }
         default: {
@@ -132,7 +131,6 @@ public:
       Privileges privileges{1 << PLEDGE_RPATH};
       privileges |= {1 << PLEDGE_WPATH };
       privileges |= {1 << PLEDGE_CPATH };
-      // TODO: CPATH
       return privileges;
     }
   }
@@ -675,7 +673,7 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   // From date
   libCHandlers.try_emplace("puts", 0);
   libCHandlers.try_emplace("getlogin", 0);
-  libCHandlers.try_emplace("logwtmp", 0);
+  //libCHandlers.try_emplace("logwtmp", 0);
   libCHandlers.try_emplace("atoi", 0);
   libCHandlers.try_emplace("strftime", 0);
   // Moving tmp to cpath
