@@ -528,9 +528,9 @@ public:
 
   static void
   exit(Disjunction& disjunction, llvm::Instruction* inst, llvm::raw_ostream& ostream) {
-    generator->dumpState(ostream);
+    //generator->dumpState(ostream);
     auto* asModule = inst->getParent()->getParent()->getParent();
-    generator->dumpToFile<lowering::Printer>(*asModule);
+    //generator->dumpToFile<lowering::Printer>(*asModule);
     ostream << "\n----  Exiting ---- with disjunction";
     ostream << "\n@Instruction" << *inst << "@parent: "
             << inst->getParent()->getParent()->getName();
@@ -2500,6 +2500,9 @@ private:
     LoweringInfo ret;
     auto addToMap = [&mergeStates, &ret] (auto* inst) {
       auto [mergedState, fromApproxMap] = mergeStates(inst);
+      if (!fromApproxMap) {
+        llvm::errs() << "\nNot from Approx Map";
+      }
       if (fromApproxMap && !inst->isTerminator()) {
         inst = inst->getNextNode();
       }
@@ -2508,6 +2511,9 @@ private:
     };
 
     for (auto* inst : locations) {
+      if (llvm::isa<llvm::UnreachableInst>(inst)) {
+        continue;
+      }
       addToMap(inst);
     }
     return ret;
@@ -2688,12 +2694,12 @@ instrument(llvm::Module& m) {
 }
 
 void setFeatures() {
-  Features::GEP::enableApproximations = true;
+  Features::GEP::enableApproximations = false;
   Features::GEP::approxArrays   = true && Features::GEP::enableApproximations;
   Features::GEP::approxResPtrs  = true && Features::GEP::enableApproximations;
   Features::GEP::approxSrcEqRes = true && Features::GEP::enableApproximations;
 
-  Features::Load::enableApproximations = true;
+  Features::Load::enableApproximations = false;
   Features::Load::approxChainedPtrs = true && Features::Load::enableApproximations;
 
   Features::MayAlias::disableApproximations = false;
@@ -2705,9 +2711,9 @@ void setFeatures() {
       false || Features::MayAlias::disableApproximations;
 
   Features::approximateOnNegations = false;
-  Features::skipUnreachable        = false;
+  Features::skipUnreachable        = true;
 
-  Features::lowerInLoopHeader = true;
+  Features::lowerInLoopHeader = false; // commented out.
 }
 
 int

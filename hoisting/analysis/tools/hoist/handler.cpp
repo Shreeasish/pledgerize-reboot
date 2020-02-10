@@ -689,4 +689,67 @@ LibCHandlersMap::buildLibCHandlers(AnalysisPackage* package) {
   
   //ioctl only used to check if file is tape in DD
   //libCHandlers.try_emplace("ioctl", 0);
+  
+  //libCHandlers.try_emplace("strftime", 0);
+  libCHandlers.try_emplace("freeaddrinfo", 16);
+  libCHandlers.try_emplace("getaddrinfo", 16);
+  libCHandlers.try_emplace("getservbyname", 16);
+  libCHandlers.try_emplace("getservbyport", 16);
+  libCHandlers.try_emplace("llvm.dbg.declare", 16);
+  libCHandlers.try_emplace("llvm.dbg.value", 16);
+  libCHandlers.try_emplace("llvm.lifetime.end.p0i8", 16);
+  libCHandlers.try_emplace("llvm.lifetime.start.p0i8", 16);
+  libCHandlers.try_emplace("llvm.memcpy.p0i8.p0i8.i64", 16);
+  libCHandlers.try_emplace("llvm.memmove.p0i8.p0i8.i64", 16);
+  libCHandlers.try_emplace("llvm.memset.p0i8.i64", 16);
+  libCHandlers.try_emplace("mktemp", 16);
+  libCHandlers.try_emplace("readpassphrase", 16);
+  libCHandlers.try_emplace("setrtable", 16);
+  libCHandlers.try_emplace("tls_accept_socket", 16);
+  libCHandlers.try_emplace("tls_client", 16);
+  libCHandlers.try_emplace("tls_close", 16);
+  libCHandlers.try_emplace("tls_config_error", 16);
+  libCHandlers.try_emplace("tls_config_free", 16);
+  libCHandlers.try_emplace("tls_config_insecure_noverifycert", 16);
+  libCHandlers.try_emplace("tls_config_insecure_noverifyname", 16);
+  libCHandlers.try_emplace("tls_config_new", 16);
+  libCHandlers.try_emplace("tls_config_ocsp_require_stapling", 16);
+  libCHandlers.try_emplace("tls_config_parse_protocols", 16);
+  libCHandlers.try_emplace("tls_config_set_ca_file", 16);
+  libCHandlers.try_emplace("tls_config_set_cert_file", 16);
+  libCHandlers.try_emplace("tls_config_set_ciphers", 16);
+  libCHandlers.try_emplace("tls_config_set_key_file", 16);
+  libCHandlers.try_emplace("tls_config_set_ocsp_staple_file", 16);
+  libCHandlers.try_emplace("tls_config_set_protocols", 16);
+  libCHandlers.try_emplace("tls_config_verify_client_optional", 16);
+  libCHandlers.try_emplace("tls_configure", 16);
+  libCHandlers.try_emplace("tls_conn_cipher", 16);
+  libCHandlers.try_emplace("tls_conn_version", 16);
+  libCHandlers.try_emplace("tls_connect_socket", 16);
+  libCHandlers.try_emplace("tls_error", 16);
+  libCHandlers.try_emplace("tls_free", 16);
+  libCHandlers.try_emplace("tls_handshake", 16);
+  libCHandlers.try_emplace("tls_init", 16);
+  libCHandlers.try_emplace("tls_peer_cert_chain_pem", 16);
+  libCHandlers.try_emplace("tls_peer_cert_contains_name", 16);
+  libCHandlers.try_emplace("tls_peer_cert_hash", 16);
+  libCHandlers.try_emplace("tls_peer_cert_issuer", 16);
+  libCHandlers.try_emplace("tls_peer_cert_notafter", 16);
+  libCHandlers.try_emplace("tls_peer_cert_notbefore", 16);
+  libCHandlers.try_emplace("tls_peer_cert_provided", 16);
+  libCHandlers.try_emplace("tls_peer_cert_subject", 16);
+  libCHandlers.try_emplace("tls_peer_ocsp_cert_status", 16);
+  libCHandlers.try_emplace("tls_peer_ocsp_crl_reason", 16);
+  libCHandlers.try_emplace("tls_peer_ocsp_next_update", 16);
+  libCHandlers.try_emplace("tls_peer_ocsp_response_status", 16);
+  libCHandlers.try_emplace("tls_peer_ocsp_result", 16);
+  libCHandlers.try_emplace("tls_peer_ocsp_revocation_time", 16);
+  libCHandlers.try_emplace("tls_peer_ocsp_this_update", 16);
+  libCHandlers.try_emplace("tls_peer_ocsp_url", 16);
+  libCHandlers.try_emplace("tls_read", 16);
+  libCHandlers.try_emplace("tls_server", 16);
+  libCHandlers.try_emplace("tls_write", 16);
+
+  // For netcat, infinite loop.
+  libCHandlers.try_emplace("readwrite", 16);
 };

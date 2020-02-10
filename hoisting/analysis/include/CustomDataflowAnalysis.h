@@ -361,7 +361,8 @@ functionBlackList {
   "ar_write", 
   "fn_match",
   "str_offt",
-  "options"
+  "options",
+  "readwrite"
 };
 
 llvm::Function*

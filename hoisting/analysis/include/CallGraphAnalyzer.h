@@ -306,9 +306,9 @@ static SyscallBitsetMap syscallBitsetMap{
     {"futimens", Privileges{}.set(PLEDGE_FATTR)},
     {"futimes", Privileges{}.set(PLEDGE_FATTR)},
     {"ftruncate", Privileges{}.set(PLEDGE_STDIO)},
-    {"truncate",
-     Privileges{}.set(PLEDGE_WPATH) | Privileges{}.set(PLEDGE_RPATH)
-         | Privileges{}.set(PLEDGE_FATTR)},
+    //{"truncate",
+    // Privileges{}.set(PLEDGE_WPATH) | Privileges{}.set(PLEDGE_RPATH)
+    //     | Privileges{}.set(PLEDGE_FATTR)},
     {"rename", Privileges{}.set(PLEDGE_CPATH) | Privileges{}.set(PLEDGE_RPATH)},
     {"renameat",
      Privileges{}.set(PLEDGE_CPATH) | Privileges{}.set(PLEDGE_RPATH)},
