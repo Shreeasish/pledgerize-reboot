@@ -1,5 +1,3 @@
-# <center> ᕕ( ᐛ )ᕗ </center>
-
 # Configs
 * #####  Allow extended regular expressions
     `git config --global grep.extendRegexp true`
